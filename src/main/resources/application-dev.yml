@@ -1,0 +1,13 @@
+server:
+  port: 8090
+spring:
+  thymeleaf:
+    cache: false
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: 1234
+    driver-class-name: org.postgresql.Driver
