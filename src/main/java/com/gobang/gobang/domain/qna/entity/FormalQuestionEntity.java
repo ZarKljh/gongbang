@@ -1,14 +1,12 @@
 package com.gobang.gobang.domain.qna.entity;
 
+import com.gobang.gobang.domain.member.entity.Member;
 import com.gobang.gobang.global.jpa.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -17,29 +15,36 @@ import java.time.LocalDateTime;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-@SQLDelete(sql = "UPDATE formal_question_entity SET deleted_date = NOW() where id = ?")
-@Where(clause = "deleted_date is NULL")
 public class FormalQuestionEntity extends BaseEntity {
 
-    @Column(length = 30, nullable = false)
-    private String category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Member member;
+    
+    //TODO: product 관계 매핑 필요
+    private Product product;
 
     @Column(length = 200, nullable = false)
     private String title;
+    
+    @Column(length = 30, nullable = false)
+    private String category;
 
     @Column(length = 2000, nullable = false)
     private String content;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    private String status;
+    private QnaStatus status;
 
+    // TODO: 관계 매핑 필요
     private Long imageId;
 
-    @Column(nullable = false)
-    private Long userId;
 
+    // TODO: 관계 매핑 필요
     private Long sellerId;
 
+    // TODO: 관계 매핑 필요
     private Long adminId;
 
     private LocalDateTime deletedDate;

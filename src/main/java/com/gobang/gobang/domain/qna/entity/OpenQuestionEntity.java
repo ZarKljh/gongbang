@@ -1,14 +1,12 @@
 package com.gobang.gobang.domain.qna.entity;
 
+import com.gobang.gobang.domain.member.entity.Member;
 import com.gobang.gobang.global.jpa.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -17,8 +15,6 @@ import java.time.LocalDateTime;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-@SQLDelete(sql = "UPDATE open_question_entity SET deleted_date = NOW() where id = ?")
-@Where(clause = "deleted_date is NULL")
 public class OpenQuestionEntity extends BaseEntity {
 
     @Column(length = 50, nullable = false)
@@ -27,18 +23,22 @@ public class OpenQuestionEntity extends BaseEntity {
     @Column(length = 500, nullable = false)
     private String content;
 
+    // TODO: 관계 매핑 필요
     @Column(nullable = false)
     private Long productId;
 
     @Column(nullable = false)
     private boolean visible;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    private String status;
+    private QnaStatus status;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Member member;
 
+    // TODO: 관계 매핑 필요
     private Long sellerId;
 
     private LocalDateTime deletedDate;

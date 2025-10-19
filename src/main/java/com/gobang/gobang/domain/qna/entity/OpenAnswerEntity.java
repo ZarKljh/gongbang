@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -16,14 +14,13 @@ import java.time.LocalDateTime;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-@SQLDelete(sql = "UPDATE open_answer_entity SET deleted_date = NOW() where id = ?")
-@Where(clause = "deleted_date is NULL")
 public class OpenAnswerEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "open_question_id", nullable = false)
     private OpenQuestionEntity openQuestion;
 
+    // TODO: 관계 매핑 필요
     @Column(nullable = false)
     private Long sellerId;
 
