@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Getter
@@ -21,7 +20,7 @@ public class Studio {
     private Long studioId;
 
     @ManyToOne
-    private List<SiteUser> userId;
+    private SiteUser siteUser;
 
     @Column(length = 150)
     private String studioName;

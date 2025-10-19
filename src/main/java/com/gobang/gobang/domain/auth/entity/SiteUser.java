@@ -58,8 +58,8 @@ public class SiteUser {
 
     private LocalDateTime deletedDate;
 
-    @OneToMany(mappedBy = "SiteUser", cascade = CascadeType.REMOVE)
-    private List<Studio> StudioList;
+    @OneToMany(mappedBy = "siteUser", cascade = CascadeType.REMOVE)
+    private List<Studio> studioList;
     /**
 
      @Column(name = "CREATEDATE", nullable = false, updatable = false)
