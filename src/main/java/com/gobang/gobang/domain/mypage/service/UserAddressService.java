@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class AddressService {
+public class UserAddressService {
 
     // 배송지 리스트 조회
     public List<Map<String, Object>> getAddressList() {

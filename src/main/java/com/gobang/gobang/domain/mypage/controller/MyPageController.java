@@ -14,7 +14,7 @@ import java.util.Map;
 public class MyPageController {
 
     private final ProfileService profileService;
-    private final AddressService addressService;
+    private final UserAddressService addressService;
     private final CartService cartService;
     private final OrderService orderService;
     private final WishlistService wishlistService;
@@ -39,7 +39,7 @@ public class MyPageController {
     }
 
     // 기본 정보 수정
-    @PutMapping("/profile")
+    @PatchMapping("/profile")
     public ResponseEntity<Void> updateProfile(@RequestBody Map<String, Object> request) {
         profileService.updateProfile(request);
         return ResponseEntity.ok().build();
@@ -78,7 +78,7 @@ public class MyPageController {
     }
 
     // 배송지 수정
-    @PutMapping("/addresses/{addressId}")
+    @PatchMapping("/addresses/{addressId}")
     public ResponseEntity<Void> updateAddress(@PathVariable Long addressId, @RequestBody Map<String, Object> request) {
         addressService.updateAddress(addressId, request);
         return ResponseEntity.ok().build();
@@ -101,7 +101,7 @@ public class MyPageController {
     }
 
     // 장바구니 수정
-    @PutMapping("/cart/{cartId}")
+    @PatchMapping("/cart/{cartId}")
     public ResponseEntity<Void> updateCart(@PathVariable Long cartId, @RequestBody Map<String, Object> request) {
         cartService.updateCart(cartId, request);
         return ResponseEntity.ok().build();
@@ -145,7 +145,7 @@ public class MyPageController {
     }
 
     // 배송지 수정
-    @PutMapping("/deliveries/{orderId}/address")
+    @PatchMapping("/deliveries/{orderId}/address")
     public ResponseEntity<Void> updateDeliveryAddress(@PathVariable Long orderId, @RequestBody Map<String, Object> request) {
         orderService.updateDeliveryAddress(orderId, request);
         return ResponseEntity.ok().build();
@@ -235,7 +235,7 @@ public class MyPageController {
     }
 
     // 리뷰 수정
-    @PutMapping("/reviews/{reviewId}")
+    @PatchMapping("/reviews/{reviewId}")
     public ResponseEntity<Void> updateReview(@PathVariable Long reviewId, @RequestBody Map<String, Object> request) {
         reviewService.updateReview(reviewId, request);
         return ResponseEntity.ok().build();
@@ -265,7 +265,7 @@ public class MyPageController {
     }
 
     // 결제수단 수정
-    @PutMapping("/payment-methods/{paymentId}")
+    @PatchMapping("/payment-methods/{paymentId}")
     public ResponseEntity<Void> updatePaymentMethod(@PathVariable Long paymentId, @RequestBody Map<String, Object> request) {
         paymentService.updatePaymentMethod(paymentId, request);
         return ResponseEntity.ok().build();
