@@ -3,9 +3,13 @@ package com.gobang.gobang.domain.review.controller;
 
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.entity.ReviewReport;
-import com.gobang.gobang.domain.review.repository.ReviewCommentRepository;
-import com.gobang.gobang.domain.review.repository.ReviewReportRepository;
-import com.gobang.gobang.domain.review.repository.ReviewRepository;
+import com.gobang.gobang.domain.review.service.ReviewCommentService;
+import com.gobang.gobang.domain.review.service.ReviewReportService;
+import com.gobang.gobang.domain.review.service.ReviewService;
+import com.gobang.gobang.global.RsData.RsData;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,112 +22,86 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final ReviewRepository reviewRepository;
-    private final ReviewReportRepository reviewReportRepository;
-    private final ReviewCommentRepository reviewCommentRepository;
+    private final ReviewReportService reviewReportService;
+    private final ReviewCommentService reviewCommentService;
+    private final ReviewService reviewService;
 
-    // 리뷰 목록 조회 (더미 데이터)
+
+    @Getter
+    @AllArgsConstructor
+    public static class ReviewsResponse {
+        private final List<Review> reviews;
+    }
+
+    // 리뷰 목록 조회 (다건)
     @GetMapping
-    public ResponseEntity<List<Review>> getAllReviews() {
-        Review review1 = Review.builder()
-                .id(1L)
-                .content("이 제품 너무 마음에 들어요~ 다음에 또 구매할게요")
-                .rating(5)
-                .isActive(true)
-                .build();
+    public RsData<ReviewsResponse> getAllReviews() {
+        List<Review> reviews = reviewService.getAllReviews();
 
-        Review review2 = Review.builder()
-                .id(2L)
-                .content("고민한 시간이 아깝네요! 최고입니다.")
-                .rating(3)
-                .isActive(true)
-                .build();
-
-        Review review3 = Review.builder()
-                .id(3L)
-                .content("부모님이 너무 좋아하셨어요. 정성 가득한 포장도 감사합니다.")
-                .rating(2)
-                .isActive(true)
-                .build();
-
-        List<Review> reviews = Arrays.asList(review1, review2, review3);
-        return ResponseEntity.ok(reviews);
+        return RsData.of(
+                "200",
+                "목록 조회 성공",
+                new ReviewsResponse(reviews)
+        );
     }
 
-    // 리뷰 신고 (더미)
-    @GetMapping("/reports/dummy")
-    public ResponseEntity<List<ReviewReport>> getDummyReports() {
-        Review review1 = Review.builder().id(1L).content("이 제품 너무 마음에 들어요~").rating(5).isActive(true).build();
-        Review review3 = Review.builder().id(3L).content("고민한 시간이 아깝네요!").rating(2).isActive(true).build();
-
-        ReviewReport report1 = ReviewReport.builder()
-                .id(1L)
-                .reason("욕설 포함")
-                .review(review1)
-                .build();
-
-        ReviewReport report2 = ReviewReport.builder()
-                .id(2L)
-                .reason("광고성 댓글")
-                .review(review3)
-                .build();
-
-        List<ReviewReport> reports = Arrays.asList(report1, report2);
-        return ResponseEntity.ok(reports);
+    @Getter
+    @AllArgsConstructor
+    public static class ReviewResponse {
+        private final Review review;
     }
-}
 
-    // 리뷰 목록 조회
-//    @GetMapping
-//    public ResponseEntity<List<Review>> getAllReviews() {
-//        return ResponseEntity.ok(reviewRepository.findAll());
-//    }
+    @GetMapping("/{id}")
+    public RsData<ReviewResponse> getReview(@PathVariable("id") Long id) {
+        return reviewService.getReviewById(id).map(review -> RsData.of(
+                "200",
+                "단건 조회 성공",
+                new ReviewResponse(review)
+        )).orElseGet(() -> RsData.of (
+                "400",
+                "%d번 리뷰는 존재하지 않습니다.".formatted(id),
+                null
+        ));
+    }
 
-    // 리뷰 등록
-//    @PostMapping
-//    public ResponseEntity<Review> createReview(@RequestBody Review review) {
-//        return ResponseEntity.ok(reviewRepository.save(review));
+//    @Getter
+//    @AllArgsConstructor
+//    public static class CreateResponse {
+//        private final Review review;
 //    }
 //
-//    // 리뷰 수정
-//    @PatchMapping("/{id}")
-//    public ResponseEntity<Review> updateReview(@PathVariable Long id, @RequestBody Review updatedReview) {
-//        return reviewRepository.findById(id)
-//                .map(r -> {
-//                    r.setContent(updatedReview.getContent());
-//                    r.setRating(updatedReview.getRating());
-//                    return ResponseEntity.ok(reviewRepository.save(r));
-//                })
-//                .orElse(ResponseEntity.notFound().build());
+//    // 리뷰 등록
+//    @PostMapping("")
+//    public ResponseEntity<Review> createReview(@RequestBody Review review) {
+//        return ResponseEntity.ok(reviewService.save(review));
 //    }
 
+    // 리뷰 수정
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<?> updateReview(@PathVariable Long id, @RequestBody Review updatedReview) {
+//        return reviewService.updateReview(id, updatedReview)
+//                .map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.notFound().build());
+//    }
+//
 //    // 리뷰 삭제 (소프트 딜리트) 추후 수정
 //    @DeleteMapping("/{id}")
-//    public ResponseEntity<?> deleteReview(@PathVariable Long id) {
-//        return reviewRepository.findById(id)
-//                .map(r -> {
-//                    r.setIsActive(false);
-//                    reviewRepository.save(r);
-//                    return ResponseEntity.ok().build();
-//                })
-//                .orElse(ResponseEntity.notFound().build());
+//    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
+//        boolean deleted = reviewService.deleteReview(id);
+//        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
 //    }
-//
 //    // 리뷰 신고 등록
 //    @PostMapping("/{id}/report")
-//    public ResponseEntity<ReviewReport> reportReview(@PathVariable Long id, @RequestBody ReviewReport report) {
-//        return reviewRepository.findById(id)
-//                .map(r -> {
-//                    report.setReview(r);
-//                    return ResponseEntity.ok(reviewReportRepository.save(report));
-//                })
-//                .orElse(ResponseEntity.notFound().build());
+//    public ResponseEntity<?> createReviewReport(@PathVariable Long id, @RequestBody ReviewReport report) {
+//        return reviewReportService.createReport(id, report)
+//                .map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.notFound().build());
 //    }
 //
 //    // 리뷰 신고 삭제
 //    @DeleteMapping("/reports/{reportId}")
 //    public ResponseEntity<Void> deleteReport(@PathVariable Long reportId) {
-//        reviewReportRepository.deleteById(reportId);
-//        return ResponseEntity.ok().build();
+//        boolean deleted = reviewReportService.deleteReport(reportId);
+//        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
 //    }
-//}
+}
