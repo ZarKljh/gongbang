@@ -27,21 +27,21 @@ public class ReviewController {
     public ResponseEntity<List<Review>> getAllReviews() {
         Review review1 = Review.builder()
                 .id(1L)
-                .content("게임이 정말 재밌어요! 그래픽도 훌륭하고 추천합니다.")
+                .content("이 제품 너무 마음에 들어요~ 다음에 또 구매할게요")
                 .rating(5)
                 .isActive(true)
                 .build();
 
         Review review2 = Review.builder()
                 .id(2L)
-                .content("조금 지루했어요. 다음 업데이트를 기대합니다.")
+                .content("고민한 시간이 아깝네요! 최고입니다.")
                 .rating(3)
                 .isActive(true)
                 .build();
 
         Review review3 = Review.builder()
                 .id(3L)
-                .content("서버가 자주 끊기네요. 개선 필요합니다.")
+                .content("부모님이 너무 좋아하셨어요. 정성 가득한 포장도 감사합니다.")
                 .rating(2)
                 .isActive(true)
                 .build();
@@ -53,8 +53,8 @@ public class ReviewController {
     // 리뷰 신고 (더미)
     @GetMapping("/reports/dummy")
     public ResponseEntity<List<ReviewReport>> getDummyReports() {
-        Review review1 = Review.builder().id(1L).content("게임이 정말 재밌어요!").rating(5).isActive(true).build();
-        Review review3 = Review.builder().id(3L).content("서버가 자주 끊기네요.").rating(2).isActive(true).build();
+        Review review1 = Review.builder().id(1L).content("이 제품 너무 마음에 들어요~").rating(5).isActive(true).build();
+        Review review3 = Review.builder().id(3L).content("고민한 시간이 아깝네요!").rating(2).isActive(true).build();
 
         ReviewReport report1 = ReviewReport.builder()
                 .id(1L)
