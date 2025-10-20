@@ -44,6 +44,12 @@ public class JwtProvider {
         return genToken(siteUser, 60 * 60 * 24 * 365 * 1);
     }
 
+    // accessToken 만들기
+    public String genAccessToken(SiteUser siteUser) {
+        return genToken(siteUser, 60 * 10);
+    }
+
+
     // 진짜 토큰 생성 로직
     public String genToken (SiteUser siteUser, int seconds) {
         Map<String, Object> claims = new HashMap<>();
