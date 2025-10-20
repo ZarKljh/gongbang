@@ -2,8 +2,6 @@ package com.gobang.gobang.domain.mypage.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -21,17 +19,12 @@ public class PaymentMethod {
     @Column(name = "payment_id")
     private Long paymentId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private SiteUser user;
 
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
-
-    @Column(name = "payment_status", nullable = false, length = 30)
-    private String paymentStatus;
-
-    @Column(name = "type", nullable = false, length = 30)
-    private String type; // '카드' 또는 '계좌'
+    @Column(name = "type", nullable = false, length = 10)
+    private String type;
 
     @Column(name = "bank_name", length = 50)
     private String bankName;
@@ -39,14 +32,29 @@ public class PaymentMethod {
     @Column(name = "account_number", length = 100)
     private String accountNumber;
 
-    @Column(name = "card_number", length = 100)
-    private String cardNumber; // 마스킹 저장
+    @Column(name = "card_company", length = 50)
+    private String cardCompany;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "card_number", length = 100)
+    private String cardNumber;
+
+    @Column(name = "default_payment", nullable = false)
+    private Boolean defaultPayment = false;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "modified_date", nullable = false)
     private LocalDateTime modifiedDate;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        modifiedDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        modifiedDate = LocalDateTime.now();
+    }
 }

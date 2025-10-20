@@ -13,18 +13,22 @@ public class UserAddressService {
         // 현재 사용자의 배송지 목록 조회
         return List.of(
                 Map.of(
-                        "id", 1L,
+                        "userAddressId", 1L,
+                        "userId", 1L,
                         "recipientName", "홍길동",
-                        "address", "서울시 강남구 테헤란로 123",
+                        "baseAddress", "서울시 강남구 테헤란로 123",
                         "detailAddress", "456호",
+                        "zipcode", "12345",
                         "phone", "010-1234-5678",
                         "isDefault", true
                 ),
                 Map.of(
-                        "id", 2L,
+                        "userAddressId", 2L,
+                        "userId", 2L,
                         "recipientName", "김철수",
-                        "address", "서울시 송파구 올림픽로 789",
+                        "baseAddress", "서울시 송파구 올림픽로 789",
                         "detailAddress", "101동 202호",
+                        "zipcode", "456789",
                         "phone", "010-9876-5432",
                         "isDefault", false
                 )

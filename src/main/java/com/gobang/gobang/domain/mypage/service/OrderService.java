@@ -13,20 +13,23 @@ public class OrderService {
         // 배송 중인 주문 조회
         return List.of(
                 Map.of(
+                        "deliveryId", 1L,
                         "orderId", 1L,
-                        "orderNumber", "ORD-20241001-001",
-                        "status", "배송중",
+                        "addressId", 1L,
+                        "deliveryStatus", "배송중",
                         "trackingNumber", "123456789",
-                        "courier", "CJ대한통운",
-                        "estimatedDelivery", "2024-10-25"
+                        "createdDate", "2024-10-10",
+                        "modifiedDate","2024-10-10"
                 ),
                 Map.of(
+                        "deliveryId", 2L,
                         "orderId", 2L,
-                        "orderNumber", "ORD-20241002-002",
+                        "addressId", 2L,
                         "status", "배송완료",
                         "trackingNumber", "987654321",
-                        "courier", "우체국택배",
-                        "deliveredAt", "2024-10-20"
+                        "completedAt", "2024-10-12",
+                        "createdDate", "2024-10-10",
+                        "modifiedDate","2024-10-10"
                 )
         );
     }

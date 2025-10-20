@@ -14,7 +14,8 @@ public class PaymentService {
         return List.of(
                 Map.of(
                         "paymentId", 1L,
-                        "method", "신용카드",
+                        "userId", 1L,
+                        "type", "카드",
                         "cardNumber", "1234-****-****-5678",
                         "cardCompany", "신한카드",
                         "isDefault", true,
@@ -22,7 +23,8 @@ public class PaymentService {
                 ),
                 Map.of(
                         "paymentId", 2L,
-                        "method", "계좌이체",
+                        "userId", 2L,
+                        "type", "계좌",
                         "bankName", "국민은행",
                         "accountNumber", "123-***-******",
                         "isDefault", false,

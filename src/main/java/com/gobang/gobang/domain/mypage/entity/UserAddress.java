@@ -2,10 +2,11 @@ package com.gobang.gobang.domain.mypage.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "user_address")
@@ -21,8 +22,9 @@ public class UserAddress {
     @Column(name = "user_address_id")
     private Long userAddressId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private SiteUser user;
 
     @Column(name = "recipient_name", nullable = false, length = 50)
     private String recipientName;
@@ -39,11 +41,22 @@ public class UserAddress {
     @Column(name = "is_default", nullable = false)
     private Boolean isDefault = false;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "address", cascade = CascadeType.ALL)
+    private List<Delivery> deliveries = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

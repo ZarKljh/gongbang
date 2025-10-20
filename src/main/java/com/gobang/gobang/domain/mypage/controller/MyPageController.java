@@ -234,20 +234,6 @@ public class MyPageController {
         return ResponseEntity.ok(reviews);
     }
 
-    // 리뷰 수정
-    @PatchMapping("/reviews/{reviewId}")
-    public ResponseEntity<Void> updateReview(@PathVariable Long reviewId, @RequestBody Map<String, Object> request) {
-        reviewService.updateReview(reviewId, request);
-        return ResponseEntity.ok().build();
-    }
-
-    // 리뷰 삭제
-    @DeleteMapping("/reviews/{reviewId}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
-        reviewService.deleteReview(reviewId);
-        return ResponseEntity.ok().build();
-    }
-
     // ========== 결제/쿠폰 관련 ==========
 
     // 결제수단 리스트 조회
