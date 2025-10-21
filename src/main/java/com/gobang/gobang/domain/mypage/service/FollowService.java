@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.FollowRequest;
 import com.gobang.gobang.domain.mypage.dto.response.FollowResponse;
 import com.gobang.gobang.domain.mypage.entity.Follow;
@@ -49,8 +50,8 @@ public class FollowService {
         }
 
         Follow follow = Follow.builder()
-                .user(SiteUser.builder().userId(request.getUserId()).build())
-                .sellerId(request.getSellerId())
+                .user(SiteUser.builder().id(request.getUserId()).build())
+                .seller(request.getSeller())
                 .build();
 
         Follow saved = followRepository.save(follow);
@@ -85,8 +86,8 @@ public class FollowService {
     private FollowResponse convertToResponse(Follow follow) {
         return FollowResponse.builder()
                 .followId(follow.getFollowId())
-                .userId(follow.getUser().getUserId())
-                .sellerId(follow.getSellerId())
+                .userId(follow.getUser().getId())
+                .seller(follow.getSeller())
                 .sellerName("판매자명") // TODO: Seller 엔티티에서 가져오기
                 .createdAt(follow.getCreatedAt())
                 .build();

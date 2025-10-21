@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.dto.request;
 
+import com.gobang.gobang.domain.auth.entity.Studio;
 import lombok.*;
 
 @Getter
@@ -11,4 +12,5 @@ public class FollowRequest {
 
     private Long userId;
     private Long sellerId;
+    private Studio seller;
 }

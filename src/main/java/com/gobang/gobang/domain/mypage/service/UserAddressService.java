@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.UserAddressRequest;
 import com.gobang.gobang.domain.mypage.dto.response.UserAddressResponse;
 import com.gobang.gobang.domain.mypage.entity.UserAddress;
@@ -36,7 +37,7 @@ public class UserAddressService {
         }
 
         UserAddress address = UserAddress.builder()
-                .user(SiteUser.builder().userId(request.getUserId()).build())
+                .user(SiteUser.builder().id(request.getUserId()).build())
                 .recipientName(request.getRecipientName())
                 .baseAddress(request.getBaseAddress())
                 .detailAddress(request.getDetailAddress())
@@ -56,7 +57,7 @@ public class UserAddressService {
 
         // 기본 배송지로 변경하는 경우
         if (request.getIsDefault() != null && request.getIsDefault() && !address.getIsDefault()) {
-            userAddressRepository.unsetDefaultByUserId(address.getUser().getUserId());
+            userAddressRepository.unsetDefaultByUserId(address.getUser().getId());
         }
 
         address.setRecipientName(request.getRecipientName());
@@ -97,7 +98,7 @@ public class UserAddressService {
     private UserAddressResponse convertToResponse(UserAddress address) {
         return UserAddressResponse.builder()
                 .userAddressId(address.getUserAddressId())
-                .userId(address.getUser().getUserId())
+                .userId(address.getUser().getId())
                 .recipientName(address.getRecipientName())
                 .baseAddress(address.getBaseAddress())
                 .detailAddress(address.getDetailAddress())

@@ -25,6 +25,7 @@ public class ApiSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/admin/*").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/reviews/*").hasRole("USER")
                                 .requestMatchers(HttpMethod.POST, "/api/reviews/*").hasRole("USER")
+                                .requestMatchers(HttpMethod.GET, "/api/*").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/*/members/login").permitAll() // 로그인은 누구나 가능, post 요청만 허용

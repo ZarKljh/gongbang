@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.PaymentMethodRequest;
 import com.gobang.gobang.domain.mypage.dto.response.PaymentMethodResponse;
 import com.gobang.gobang.domain.mypage.entity.PaymentMethod;
@@ -42,7 +43,7 @@ public class PaymentMethodService {
         }
 
         PaymentMethod paymentMethod = PaymentMethod.builder()
-                .user(SiteUser.builder().userId(request.getUserId()).build())
+                .user(SiteUser.builder().id(request.getUserId()).build())
                 .type(request.getType())
                 .bankName(request.getBankName())
                 .accountNumber(request.getAccountNumber())
@@ -63,7 +64,7 @@ public class PaymentMethodService {
 
         // 기본 결제수단으로 변경하는 경우
         if (request.getDefaultPayment() != null && request.getDefaultPayment() && !paymentMethod.getDefaultPayment()) {
-            paymentMethodRepository.unsetDefaultByUserId(paymentMethod.getUser().getUserId());
+            paymentMethodRepository.unsetDefaultByUserId(paymentMethod.getUser().getId());
         }
 
         paymentMethod.setType(request.getType());
@@ -118,7 +119,7 @@ public class PaymentMethodService {
     private PaymentMethodResponse convertToResponse(PaymentMethod paymentMethod) {
         return PaymentMethodResponse.builder()
                 .paymentId(paymentMethod.getPaymentId())
-                .userId(paymentMethod.getUser().getUserId())
+                .userId(paymentMethod.getUser().getId())
                 .type(paymentMethod.getType())
                 .bankName(paymentMethod.getBankName())
                 .accountNumber(paymentMethod.getAccountNumber())

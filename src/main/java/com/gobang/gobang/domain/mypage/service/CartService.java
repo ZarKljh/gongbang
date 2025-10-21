@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.mypage.service;
 
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.CartRequest;
 import com.gobang.gobang.domain.mypage.dto.response.CartResponse;
 import com.gobang.gobang.domain.mypage.entity.Cart;
@@ -44,8 +45,9 @@ public class CartService {
         } else {
             // 없으면 새로 추가
             Cart cart = Cart.builder()
-                    .user(SiteUser.builder().userId(request.getUserId()).build())
-                    .productId(request.getProductId())
+                    .user(SiteUser.builder().id(request.getUserId()).build())
+                    //.product(request.getProductId())
+                    .product(request.getProduct())
                     .quantity(request.getQuantity())
                     .build();
 
@@ -88,8 +90,10 @@ public class CartService {
     private CartResponse convertToResponse(Cart cart) {
         return CartResponse.builder()
                 .cartId(cart.getCartId())
-                .userId(cart.getUser().getUserId())
-                .productId(cart.getProductId())
+                //.userId(cart.getUser().getUserId())
+                .userId(cart.getUser().getId())
+                //.productId(cart.getProductId())
+                .product(cart.getProduct())
                 .productName("상품명") // TODO: Product 엔티티에서 가져오기
                 .quantity(cart.getQuantity())
                 .createdAt(cart.getCreatedAt())

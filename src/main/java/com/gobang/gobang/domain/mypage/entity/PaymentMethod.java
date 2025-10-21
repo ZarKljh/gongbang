@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.entity;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import jakarta.persistence.*;
 import lombok.*;
 

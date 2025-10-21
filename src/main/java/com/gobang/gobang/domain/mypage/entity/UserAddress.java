@@ -1,8 +1,9 @@
 package com.gobang.gobang.domain.mypage.entity;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

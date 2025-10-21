@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.WishListRequest;
 import com.gobang.gobang.domain.mypage.dto.response.WishListResponse;
 import com.gobang.gobang.domain.mypage.entity.WishList;
@@ -40,8 +41,8 @@ public class WishListService {
         }
 
         WishList wishList = WishList.builder()
-                .user(SiteUser.builder().userId(request.getUserId()).build())
-                .productId(request.getProductId())
+                .user(SiteUser.builder().id(request.getUserId()).build())
+                .product(request.getProduct())
                 .build();
 
         WishList saved = wishListRepository.save(wishList);
@@ -85,8 +86,8 @@ public class WishListService {
     private WishListResponse convertToResponse(WishList wishList) {
         return WishListResponse.builder()
                 .wishlistId(wishList.getWishlistId())
-                .userId(wishList.getUser().getUserId())
-                .productId(wishList.getProductId())
+                .userId(wishList.getUser().getId())
+                .product(wishList.getProduct())
                 .productName("상품명") // TODO: Product 엔티티에서 가져오기
                 .createdAt(wishList.getCreatedAt())
                 .build();
