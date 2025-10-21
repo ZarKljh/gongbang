@@ -29,7 +29,7 @@ public class SiteUserController {
     @PostMapping("/signup/user")
     public RsData<SignupUserResponse> join (@Valid @RequestBody SignupUserRequest signupUserRequest) {
         SiteUser siteUser = siteUserService.signupUser(signupUserRequest);
-        System.out.println("여기까지 확인되었습니다");
+        //System.out.println("여기까지 확인되었습니다");
         return RsData.of("200", "회원가입이 완료되었습니다.", new SignupUserResponse(siteUser));
     }
 

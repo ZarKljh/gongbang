@@ -26,7 +26,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
         if (request.getRequestURI().equals("/api/auth/login/user") || request.getRequestURI().equals("/api/auth/logout") || request.getRequestURI().equals("/api/auth/signup/user")) {
             filterChain.doFilter(request, response);
-            System.out.println("필터통과하였습니다");
             return;
         }
 
