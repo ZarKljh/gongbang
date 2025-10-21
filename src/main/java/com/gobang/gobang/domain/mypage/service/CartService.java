@@ -1,59 +1,98 @@
 package com.gobang.gobang.domain.mypage.service;
 
+
+import com.gobang.gobang.domain.mypage.dto.request.CartRequest;
+import com.gobang.gobang.domain.mypage.dto.response.CartResponse;
+import com.gobang.gobang.domain.mypage.entity.Cart;
+import com.gobang.gobang.domain.mypage.repository.CartRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CartService {
 
-    // 장바구니 리스트 조회
-    public List<Map<String, Object>> getCartList() {
-        // 현재 사용자의 장바구니 조회
-        return List.of(
-                Map.of(
-                        "id", 1L,
-                        "productId", 101L,
-                        "productName", "도자기 머그컵",
-                        "price", 25000,
-                        "quantity", 2,
-                        "imageUrl", "/images/product1.jpg",
-                        "sellerName", "행복공방",
-                        "isAvailable", true
-                ),
-                Map.of(
-                        "id", 2L,
-                        "productId", 102L,
-                        "productName", "가죽 지갑",
-                        "price", 45000,
-                        "quantity", 1,
-                        "imageUrl", "/images/product2.jpg",
-                        "sellerName", "가죽공작소",
-                        "isAvailable", true
-                )
-        );
+    private final CartRepository cartRepository;
+
+    // 사용자별 장바구니 목록 조회
+    public List<CartResponse> getCartsByUserId(Long userId) {
+        List<Cart> carts = cartRepository.findByUser_UserId(userId);
+
+        return carts.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
-    // 장바구니 수정 (주로 수량 변경)
-    public void updateCart(Long cartId, Map<String, Object> cartData) {
-        // 장바구니 항목 존재 여부 확인
-        // 권한 확인
-        // 수량 변경 (재고 확인)
-        // DB 수정
+    // 장바구니 담기
+    @Transactional
+    public CartResponse addToCart(CartRequest request) {
+        // 이미 장바구니에 있는 상품인지 확인
+        Optional<Cart> existingCart = cartRepository.findByUser_UserIdAndProductId(
+                request.getUserId(), request.getProductId());
+
+        if (existingCart.isPresent()) {
+            // 이미 있으면 수량 증가
+            Cart cart = existingCart.get();
+            cart.setQuantity(cart.getQuantity() + request.getQuantity());
+            return convertToResponse(cart);
+        } else {
+            // 없으면 새로 추가
+            Cart cart = Cart.builder()
+                    .user(SiteUser.builder().userId(request.getUserId()).build())
+                    .productId(request.getProductId())
+                    .quantity(request.getQuantity())
+                    .build();
+
+            Cart saved = cartRepository.save(cart);
+            return convertToResponse(saved);
+        }
+    }
+
+    // 장바구니 수량 수정
+    @Transactional
+    public CartResponse updateCartQuantity(Long cartId, Long quantity) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다."));
+
+        cart.setQuantity(quantity);
+        return convertToResponse(cart);
     }
 
     // 장바구니 항목 삭제
+    @Transactional
     public void deleteCart(Long cartId) {
-        // 장바구니 항목 존재 여부 확인
-        // 권한 확인
-        // DB 삭제
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다."));
+
+        cartRepository.delete(cart);
     }
 
-    // 선택 항목 삭제
-    public void deleteSelectedCart(List<Long> cartIds) {
-        // 각 항목에 대해 권한 확인
-        // 일괄 삭제
-        // 트랜잭션 처리
+    // 장바구니 전체 삭제
+    @Transactional
+    public void clearCart(Long userId) {
+        cartRepository.deleteByUser_UserId(userId);
+    }
+
+    // 장바구니 개수 조회
+    public long getCartCount(Long userId) {
+        return cartRepository.countByUser_UserId(userId);
+    }
+
+    // Entity -> Response DTO 변환
+    private CartResponse convertToResponse(Cart cart) {
+        return CartResponse.builder()
+                .cartId(cart.getCartId())
+                .userId(cart.getUser().getUserId())
+                .productId(cart.getProductId())
+                .productName("상품명") // TODO: Product 엔티티에서 가져오기
+                .quantity(cart.getQuantity())
+                .createdAt(cart.getCreatedAt())
+                .build();
     }
 }
