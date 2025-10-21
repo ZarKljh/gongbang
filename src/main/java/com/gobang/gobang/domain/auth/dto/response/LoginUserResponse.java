@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class SignupUserResponse {
+public class LoginUserResponse {
     private String email;
     private String userName;
     private String mobilePhone;
@@ -19,7 +19,7 @@ public class SignupUserResponse {
     private LocalDateTime createdDate;
 
 
-    public SignupUserResponse(SiteUser siteUser) {
+    public LoginUserResponse(SiteUser siteUser) {
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
         this.mobilePhone = siteUser.getMobilePhone();

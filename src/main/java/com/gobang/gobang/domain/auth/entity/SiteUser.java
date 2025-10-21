@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -23,6 +24,7 @@ public class SiteUser {
     @Column(unique = true, length = 100)
     private String email;
 
+    @JsonIgnore
     private String password;
 
     @Column(length = 50)
@@ -49,6 +51,7 @@ public class SiteUser {
 
     private LocalDateTime birth;
 
+    @JsonIgnore
     @Column(length = 254)
     private String refreshToken;
 

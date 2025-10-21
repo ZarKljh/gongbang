@@ -8,24 +8,27 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class ApiSecurityConfig {
+    private final JwtAuthorizationFilter jwtAuthorizationFilter;
     @Bean
     SecurityFilterChain apifilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/**")
                 .authorizeRequests(
                         authorizeRequests -> authorizeRequests
-                                .requestMatchers(HttpMethod.GET, "/api/admin/*").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/admin/*").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/reviews/*").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/reviews/*").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/auth/*").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/auth/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/admin/*").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/admin/*").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/reviews/*").hasRole("USER")
+                                .requestMatchers(HttpMethod.POST, "/api/reviews/*").hasRole("USER")
+                                .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/*/members/login").permitAll() // 로그인은 누구나 가능, post 요청만 허용
+                                .requestMatchers(HttpMethod.GET, "/api/*/members/logout").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(
@@ -40,6 +43,10 @@ public class ApiSecurityConfig {
                 ) // 폼 로그인 방식 끄기
                 .sessionManagement(
                         sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(
+                        jwtAuthorizationFilter, // 엑세스 토큰을 이용한 로그인 처리
+                        UsernamePasswordAuthenticationFilter.class
                 );
         ;
         return http.build();

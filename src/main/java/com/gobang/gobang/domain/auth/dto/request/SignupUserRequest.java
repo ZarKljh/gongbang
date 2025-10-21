@@ -8,15 +8,15 @@ import java.time.LocalDateTime;
 @Data
 public class SignupUserRequest {
     @NotBlank
-    private final String email;
+    private String email;
     @NotBlank
-    private final String password;
+    private String password;
     @NotBlank
-    private final String userName;
+    private String userName;
     @NotBlank
-    private final String mobilePhone;
-    private final String nickName;
-    private final String status;
-    private final String gender;
-    private final LocalDateTime birth;
+    private String mobilePhone;
+    private String nickName;
+    private String status;
+    private String gender;
+    private LocalDateTime birth;
 }
