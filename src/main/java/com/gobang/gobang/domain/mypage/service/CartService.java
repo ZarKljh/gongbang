@@ -23,7 +23,7 @@ public class CartService {
 
     // 사용자별 장바구니 목록 조회
     public List<CartResponse> getCartsByUserId(Long userId) {
-        List<Cart> carts = cartRepository.findByUser_UserId(userId);
+        List<Cart> carts = cartRepository.findByUser_Id(userId);
 
         return carts.stream()
                 .map(this::convertToResponse)
@@ -34,7 +34,7 @@ public class CartService {
     @Transactional
     public CartResponse addToCart(CartRequest request) {
         // 이미 장바구니에 있는 상품인지 확인
-        Optional<Cart> existingCart = cartRepository.findByUser_UserIdAndProductId(
+        Optional<Cart> existingCart = cartRepository.findByUser_IdAndProduct_Id(
                 request.getUserId(), request.getProductId());
 
         if (existingCart.isPresent()) {
@@ -78,12 +78,12 @@ public class CartService {
     // 장바구니 전체 삭제
     @Transactional
     public void clearCart(Long userId) {
-        cartRepository.deleteByUser_UserId(userId);
+        cartRepository.deleteByUser_Id(userId);
     }
 
     // 장바구니 개수 조회
     public long getCartCount(Long userId) {
-        return cartRepository.countByUser_UserId(userId);
+        return cartRepository.countByUser_Id(userId);
     }
 
     // Entity -> Response DTO 변환

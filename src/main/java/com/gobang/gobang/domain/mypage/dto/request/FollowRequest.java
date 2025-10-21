@@ -11,6 +11,6 @@ import lombok.*;
 public class FollowRequest {
 
     private Long userId;
-    private Long sellerId;
+    private Long studioId;
     private Studio seller;
 }

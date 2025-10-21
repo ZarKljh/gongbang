@@ -12,14 +12,14 @@ import java.util.Optional;
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
     // 사용자별 장바구니 목록 조회
-    List<Cart> findByUser_UserId(Long userId);
+    List<Cart> findByUser_Id(Long userId);
 
     // 사용자와 상품으로 장바구니 조회
-    Optional<Cart> findByUser_UserIdAndProductId(Long userId, Long productId);
+    Optional<Cart> findByUser_IdAndProduct_Id(Long userId, Long productId);
 
     // 사용자별 장바구니 전체 삭제
-    void deleteByUser_UserId(Long userId);
+    void deleteByUser_Id(Long userId);
 
     // 사용자별 장바구니 개수
-    long countByUser_UserId(Long userId);
+    long countByUser_Id(Long userId);
 }

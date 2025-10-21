@@ -14,16 +14,16 @@ import java.util.Optional;
 @Repository
 public interface UserAddressRepository extends JpaRepository<UserAddress, Long> {
     // 사용자별 배송지 목록 조회
-    List<UserAddress> findByUser_UserId(Long userId);
+    List<UserAddress> findByUser_UserId(Long id);
 
     // 사용자의 기본 배송지 조회
-    Optional<UserAddress> findByUser_UserIdAndIsDefaultTrue(Long userId);
+    Optional<UserAddress> findByUser_UserIdAndIsDefaultTrue(Long id);
 
     // 사용자의 모든 배송지를 기본 배송지 해제
     @Modifying
     @Query("UPDATE UserAddress ua SET ua.isDefault = false WHERE ua.user.userId = :userId")
-    void unsetDefaultByUserId(@Param("userId") Long userId);
+    void unsetDefaultByUserId(@Param("userId") Long id);
 
     // 사용자별 배송지 개수
-    long countByUser_UserId(Long userId);
+    long countByUser_UserId(Long id);
 }

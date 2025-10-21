@@ -12,20 +12,20 @@ import java.util.Optional;
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 사용자별 팔로우 목록 조회
-    List<Follow> findByUser_UserId(Long userId);
+    List<Follow> findByUser_Id(Long userId);
 
     // 특정 셀러의 팔로워 목록 조회
-    List<Follow> findBySellerId(Long sellerId);
+    List<Follow> findByStudioId(Long studioId);
 
     // 사용자가 특정 셀러를 팔로우하는지 확인
-    Optional<Follow> findByUser_UserIdAndSellerId(Long userId, Long sellerId);
+    Optional<Follow> existsByUser_IdAndSeller_StudioId(Long userId, Long studioId);
 
     // 셀러의 팔로워 수
-    long countBySellerId(Long sellerId);
+    long countByStudioId(Long studioId);
 
     // 사용자의 팔로잉 수
-    long countByUser_UserId(Long userId);
+    long countByUser_Id(Long userId);
 
     // 팔로우 여부 확인
-    boolean existsByUser_UserIdAndSellerId(Long userId, Long sellerId);
+    boolean existsByUser_IdAndStudioId(Long userId, Long studioId);
 }

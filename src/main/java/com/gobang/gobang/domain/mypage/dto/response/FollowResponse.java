@@ -14,7 +14,7 @@ public class FollowResponse {
 
     private Long followId;
     private Long userId;
-    private Long sellerId;
+    private Long studioId;
     private Studio seller;
     private String sellerName; // Seller 엔티티에서 가져올 예정
     private LocalDateTime createdAt;

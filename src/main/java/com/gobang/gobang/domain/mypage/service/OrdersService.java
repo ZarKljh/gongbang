@@ -58,7 +58,7 @@ public class OrdersService {
                 .map(item -> OrdersResponse.OrderItemResponse.builder()
                         .orderItemId(item.getOrderItemId())
                         .orderId(item.getOrder().getOrderId())
-                        .productId(item.getProductId())
+                        .productId(item.getProduct().getId())
                         .productName("상품명") // TODO: Product 엔티티에서 가져오기
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
@@ -95,7 +95,7 @@ public class OrdersService {
 
         return OrdersResponse.builder()
                 .orderId(order.getOrderId())
-                .userId(order.getUserId())
+                .userId(order.getUser().getId())
                 .orderCord(order.getOrderCord())
                 .totalPrice(order.getTotalPrice())
                 .orderItems(orderItemResponses)

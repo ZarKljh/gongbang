@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.mypage.controller;
 
-
 import com.gobang.gobang.domain.mypage.dto.request.FollowRequest;
 import com.gobang.gobang.domain.mypage.dto.response.FollowResponse;
 import com.gobang.gobang.domain.mypage.service.FollowService;
@@ -50,8 +49,8 @@ public class FollowController {
     @ResponseBody
     public ResponseEntity<Void> unfollow(
             @RequestParam Long userId,
-            @RequestParam Long sellerId) {
-        followService.unfollow(userId, sellerId);
+            @RequestParam Long studioId) {
+        followService.unfollow(userId, studioId);
         return ResponseEntity.ok().build();
     }
 
@@ -60,16 +59,16 @@ public class FollowController {
     @ResponseBody
     public ResponseEntity<Boolean> isFollowing(
             @RequestParam Long userId,
-            @RequestParam Long sellerId) {
-        boolean isFollowing = followService.isFollowing(userId, sellerId);
+            @RequestParam Long studioId) {
+        boolean isFollowing = followService.isFollowing(userId, studioId);
         return ResponseEntity.ok(isFollowing);
     }
 
     // 셀러의 팔로워 수 조회 (AJAX)
     @GetMapping("/count/followers")
     @ResponseBody
-    public ResponseEntity<Long> getFollowerCount(@RequestParam Long sellerId) {
-        long count = followService.getFollowerCount(sellerId);
+    public ResponseEntity<Long> getFollowerCount(@RequestParam Long studioId) {
+        long count = followService.getFollowerCount(studioId);
         return ResponseEntity.ok(count);
     }
 
