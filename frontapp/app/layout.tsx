@@ -28,7 +28,7 @@ export default function RootLayout({
       <body>
         <nav>
           <Link href="/">홈 </Link>
-          <Link href="/product">상품 </Link>
+          <Link href="/product/list">상품 </Link>
           <Link href="/theme">테마목록 </Link>
           <Link href="/review">리뷰</Link>
           <Link href="/auth/signup">회원가입</Link>

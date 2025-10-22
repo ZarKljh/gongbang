@@ -26,7 +26,7 @@ export default function Main() {
 
   const fetchAll = async (): Promise<void> => {
     try {
-      // 1️⃣ 카테고리 목록 먼저 요청
+      // 1 카테고리 목록 먼저 요청
       const res = await fetch("http://localhost:8090/api/category/v1");
       if (!res.ok) throw new Error("카테고리 조회 실패");
       const data = await res.json();
@@ -34,7 +34,7 @@ export default function Main() {
       const categoryList: Category[] = data.data.categoryList;
       setCategories(categoryList);
 
-      // 2️⃣ 카테고리 ID별로 서브카테고리 병렬 요청
+      // 2 카테고리 ID별로 서브카테고리 병렬 요청
       const subPromises = categoryList.map(async (cat) => {
         const res = await fetch(
           `http://localhost:8090/api/category/v1/${cat.id}/sub`
@@ -44,10 +44,10 @@ export default function Main() {
         return [cat.id, subData.data.subCategoryList] as const;
       });
 
-      // 3️⃣ 모든 fetch 결과를 병렬로 처리
+      // 3 모든 fetch 결과를 병렬로 처리
       const results = await Promise.all(subPromises);
 
-      // 4️⃣ categoryId를 key로 하는 객체 구조로 변환
+      // 4 categoryId를 key로 하는 객체 구조로 변환
       const subMap: Record<number, SubCategory[]> = {};
       results.forEach(([catId, subs]) => {
         subMap[catId] = subs;
@@ -117,7 +117,9 @@ export default function Main() {
             <strong className="text-lg font-semibold mb-2"> {cat.name}</strong>
             <ul>
               {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
-                <li key={sub.id}>{sub.name}</li>
+                <li key={sub.id}>
+                  <a href="#">{sub.name}</a>
+                </li>
               ))}
             </ul>
           </li>
