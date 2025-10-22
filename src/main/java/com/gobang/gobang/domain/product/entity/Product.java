@@ -85,4 +85,16 @@ public class Product extends BaseEntity {
             )
     )
     private Set<Theme> themes = new LinkedHashSet<>();
+
+    // 소유측: 조인테이블 정의
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "product_category_map",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"),
+            uniqueConstraints = @UniqueConstraint(
+                    name = "uk_product_category", columnNames = {"product_id","category_id"}
+            )
+    )
+    private Set<Category> categories = new LinkedHashSet<>();
 }

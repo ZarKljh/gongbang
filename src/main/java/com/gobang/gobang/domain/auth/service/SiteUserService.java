@@ -25,7 +25,7 @@ public class SiteUserService {
 
     public SiteUser signupUser(SignupUserRequest signupUserRequest){
 
-        SiteUser checkedSiteUser = siteUserRepository.findByEmail(signupUserRequest.getEmail());
+        SiteUser checkedSiteUser = siteUserRepository.findByUserName(signupUserRequest.getUserName());
         if(checkedSiteUser != null){
             throw new RuntimeException("이미 가입된 사용자입니다.");
         }
@@ -51,9 +51,10 @@ public class SiteUserService {
         return newUser;
     }
 
-    public SiteUser getSiteUser(String email) {
+    public SiteUser getSiteUserByEmail(String email) {
         return siteUserRepository.findByEmail(email);
     }
+    public SiteUser getSiteUserByUserName(String userName) { return siteUserRepository.findByUserName(userName);}
     public boolean validateToken(String accessToken) {
         return jwtProvider.verify(accessToken);
     }

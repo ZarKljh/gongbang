@@ -23,14 +23,14 @@ public class SiteUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto_increment
     private Long id;
 
-    @Column(unique = true, length = 100)
-    private String email;
+    @Column(unique = true, length = 50)
+    private String userName;
 
     @JsonIgnore
     private String password;
 
-    @Column(length = 50)
-    private String userName;
+    @Column(unique = true, length = 100)
+    private String email;
 
     @Column(length = 20)
     private String mobilePhone;

@@ -1,8 +1,8 @@
-package com.gobang.gobang.domain.product.themaService;
+package com.gobang.gobang.domain.product.theme.Service;
 
 import com.gobang.gobang.domain.product.dto.ThemeDto;
 import com.gobang.gobang.domain.product.entity.Theme;
-import com.gobang.gobang.domain.product.themeRepository.ThemeRepository;
+import com.gobang.gobang.domain.product.theme.Repository.ThemeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -16,12 +16,14 @@ public class ThemeService {
 
     public List<ThemeDto> getThemeList(int size) {
         int limit = Math.max(1, Math.min(size, 50));
-        List<Theme> themes = themeRepository.findActiveOrdered(PageRequest.of(0, limit));
+        List<Theme> themes = themeRepository.findActiveThemes(PageRequest.of(0, limit));
         return themes.stream()
                 .map(t -> ThemeDto.builder()
                         .id(t.getId())
                         .name(t.getName())
                         .code(t.getCode())
+                        .createdDate(t.getCreatedDate())
+                        .modifiedDate(t.getModifiedDate())
                         .build())
                 .toList();
     }
