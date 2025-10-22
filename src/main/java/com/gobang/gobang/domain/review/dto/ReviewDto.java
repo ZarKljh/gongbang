@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class ReviewDto {
@@ -37,6 +39,7 @@ public class ReviewDto {
 
         @NotBlank(message = "리뷰 내용을 입력해주세요.")
         private String content;
+
     }
 
     @Getter
