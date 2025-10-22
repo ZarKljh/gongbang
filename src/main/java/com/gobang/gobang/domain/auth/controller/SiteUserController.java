@@ -35,7 +35,7 @@ public class SiteUserController {
 
     @PostMapping("/login/user")
     public RsData<LoginUserResponse> login(@Valid @RequestBody LoginUserRequest loginUserRequest, HttpServletResponse res) {
-        SiteUser siteUser = siteUserService.getSiteUser(loginUserRequest.getEmail());
+        SiteUser siteUser = siteUserService.getSiteUserByUserName(loginUserRequest.getUserName());
 
         // accessToken 발급
         String accessToken = jwtProvider.genAccessToken(siteUser);
@@ -70,8 +70,8 @@ public class SiteUserController {
         }
 
         Map<String, Object> claims = jwtProvider.getClaims(accessToken);
-        String email = (String) claims.get("email");
-        SiteUser siteUser = this.siteUserService.getSiteUser(email);
+        String userName = (String) claims.get("userName");
+        SiteUser siteUser = this.siteUserService.getSiteUserByUserName(userName);
 
         return RsData.of("200", "내 회원정보", new LoginUserResponse(siteUser));
     }

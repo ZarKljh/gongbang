@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface SiteUserRepository extends JpaRepository<SiteUser, Long> {
     SiteUser findByEmail(String email);
+    SiteUser findByUserName(String userName);
     Optional<SiteUser> findByRefreshToken(String refreshToken);
 }
