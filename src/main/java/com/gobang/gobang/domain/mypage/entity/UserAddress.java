@@ -25,7 +25,7 @@ public class UserAddress {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private SiteUser user;
+    private SiteUser siteUser;
 
     @Column(name = "recipient_name", nullable = false, length = 50)
     private String recipientName;

@@ -20,8 +20,8 @@ public class UserAddressService {
     private final UserAddressRepository userAddressRepository;
 
     // 사용자별 배송지 목록 조회
-    public List<UserAddressResponse> getAddressesByUserId(Long userId) {
-        List<UserAddress> addresses = userAddressRepository.findByUser_UserId(userId);
+    public List<UserAddressResponse> getAddressesByUserId(SiteUser siteUser) {
+        List<UserAddress> addresses = userAddressRepository.findBySiteUser(siteUser);
 
         return addresses.stream()
                 .map(this::convertToResponse)
@@ -33,11 +33,11 @@ public class UserAddressService {
     public UserAddressResponse createAddress(UserAddressRequest request) {
         // 기본 배송지로 설정하는 경우, 기존 기본 배송지 해제
         if (request.getIsDefault() != null && request.getIsDefault()) {
-            userAddressRepository.unsetDefaultByUserId(request.getUserId());
+            userAddressRepository.unsetDefaultBySiteUser(request.getSiteUser());
         }
 
         UserAddress address = UserAddress.builder()
-                .user(SiteUser.builder().id(request.getUserId()).build())
+                .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
                 .recipientName(request.getRecipientName())
                 .baseAddress(request.getBaseAddress())
                 .detailAddress(request.getDetailAddress())
@@ -57,7 +57,7 @@ public class UserAddressService {
 
         // 기본 배송지로 변경하는 경우
         if (request.getIsDefault() != null && request.getIsDefault() && !address.getIsDefault()) {
-            userAddressRepository.unsetDefaultByUserId(address.getUser().getId());
+            userAddressRepository.unsetDefaultBySiteUser(address.getSiteUser());
         }
 
         address.setRecipientName(request.getRecipientName());
@@ -83,12 +83,12 @@ public class UserAddressService {
 
     // 기본 배송지 설정
     @Transactional
-    public void setDefaultAddress(Long addressId, Long userId) {
+    public void setDefaultAddress(Long addressId, SiteUser siteUser) {
         UserAddress address = userAddressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
 
         // 기존 기본 배송지 해제
-        userAddressRepository.unsetDefaultByUserId(userId);
+        userAddressRepository.unsetDefaultBySiteUser(siteUser);
 
         // 새로운 기본 배송지 설정
         address.setIsDefault(true);
@@ -98,7 +98,7 @@ public class UserAddressService {
     private UserAddressResponse convertToResponse(UserAddress address) {
         return UserAddressResponse.builder()
                 .userAddressId(address.getUserAddressId())
-                .userId(address.getUser().getId())
+                .siteUser(address.getSiteUser())
                 .recipientName(address.getRecipientName())
                 .baseAddress(address.getBaseAddress())
                 .detailAddress(address.getDetailAddress())

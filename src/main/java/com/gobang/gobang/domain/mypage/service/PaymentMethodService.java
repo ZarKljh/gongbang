@@ -20,8 +20,8 @@ public class PaymentMethodService {
     private final PaymentMethodRepository paymentMethodRepository;
 
     // 사용자별 결제수단 목록 조회
-    public List<PaymentMethodResponse> getPaymentMethodsByUserId(Long userId) {
-        List<PaymentMethod> paymentMethods = paymentMethodRepository.findByUser_UserId(userId);
+    public List<PaymentMethodResponse> getPaymentMethodsByUserId(SiteUser siteUser) {
+        List<PaymentMethod> paymentMethods = paymentMethodRepository.findBySiteUser(siteUser);
 
         return paymentMethods.stream()
                 .map(this::convertToResponse)
@@ -33,7 +33,7 @@ public class PaymentMethodService {
     public PaymentMethodResponse createPaymentMethod(PaymentMethodRequest request) {
         // 기본 결제수단으로 설정하는 경우, 기존 기본 결제수단 해제
         if (request.getDefaultPayment() != null && request.getDefaultPayment()) {
-            paymentMethodRepository.unsetDefaultByUserId(request.getUserId());
+            paymentMethodRepository.unsetDefaultBySiteUser(request.getSiteUser());
         }
 
         // 카드번호 마스킹 처리
@@ -43,7 +43,7 @@ public class PaymentMethodService {
         }
 
         PaymentMethod paymentMethod = PaymentMethod.builder()
-                .user(SiteUser.builder().id(request.getUserId()).build())
+                .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
                 .type(request.getType())
                 .bankName(request.getBankName())
                 .accountNumber(request.getAccountNumber())
@@ -64,7 +64,7 @@ public class PaymentMethodService {
 
         // 기본 결제수단으로 변경하는 경우
         if (request.getDefaultPayment() != null && request.getDefaultPayment() && !paymentMethod.getDefaultPayment()) {
-            paymentMethodRepository.unsetDefaultByUserId(paymentMethod.getUser().getId());
+            paymentMethodRepository.unsetDefaultBySiteUser(paymentMethod.getSiteUser());
         }
 
         paymentMethod.setType(request.getType());
@@ -94,12 +94,12 @@ public class PaymentMethodService {
 
     // 기본 결제수단 설정
     @Transactional
-    public void setDefaultPaymentMethod(Long paymentId, Long userId) {
+    public void setDefaultPaymentMethod(Long paymentId, SiteUser siteUser) {
         PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("결제수단을 찾을 수 없습니다."));
 
         // 기존 기본 결제수단 해제
-        paymentMethodRepository.unsetDefaultByUserId(userId);
+        paymentMethodRepository.unsetDefaultBySiteUser(siteUser);
 
         // 새로운 기본 결제수단 설정
         paymentMethod.setDefaultPayment(true);
@@ -119,7 +119,7 @@ public class PaymentMethodService {
     private PaymentMethodResponse convertToResponse(PaymentMethod paymentMethod) {
         return PaymentMethodResponse.builder()
                 .paymentId(paymentMethod.getPaymentId())
-                .userId(paymentMethod.getUser().getId())
+                .siteUser(paymentMethod.getSiteUser())
                 .type(paymentMethod.getType())
                 .bankName(paymentMethod.getBankName())
                 .accountNumber(paymentMethod.getAccountNumber())

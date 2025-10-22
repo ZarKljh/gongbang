@@ -1,10 +1,13 @@
 package com.gobang.gobang.domain.auth.entity;
 
+import com.gobang.gobang.domain.mypage.entity.Follow;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -63,4 +66,6 @@ public class Studio {
 
     private LocalDateTime updatedDate;
 
+    @OneToMany(mappedBy = "studio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Follow> follows = new ArrayList<>();
 }

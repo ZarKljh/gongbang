@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.dto.request;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import lombok.*;
 
 @Getter
@@ -9,7 +10,7 @@ import lombok.*;
 @Builder
 public class UserAddressRequest {
 
-    private Long userId;
+    private SiteUser siteUser;
     private String recipientName;
     private String baseAddress;
     private String detailAddress;

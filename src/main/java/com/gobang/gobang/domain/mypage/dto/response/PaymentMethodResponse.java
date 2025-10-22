@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.dto.response;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 public class PaymentMethodResponse {
 
     private Long paymentId;
-    private Long userId;
+    private SiteUser siteUser;
     private String type;
     private String bankName;
     private String accountNumber;

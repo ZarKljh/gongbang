@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.dto.response;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 public class UserAddressResponse {
 
     private Long userAddressId;
-    private Long userId;
+    private SiteUser siteUser;
     private String recipientName;
     private String baseAddress;
     private String detailAddress;

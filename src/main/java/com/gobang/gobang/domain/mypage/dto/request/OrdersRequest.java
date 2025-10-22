@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.mypage.dto.request;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.product.entity.Product;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -12,7 +14,7 @@ import java.util.List;
 @Builder
 public class OrdersRequest {
 
-    private Long userId;
+    private SiteUser siteUser;
     private Long deliveryAddressId;
     private BigDecimal totalPrice;
     private List<OrderItemRequest> orderItems;
@@ -23,7 +25,7 @@ public class OrdersRequest {
     @AllArgsConstructor
     @Builder
     public static class OrderItemRequest {
-        private Long productId;
+        private Product product;
         private Long quantity;
         private BigDecimal price;
     }

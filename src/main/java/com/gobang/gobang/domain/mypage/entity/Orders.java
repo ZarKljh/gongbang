@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.entity;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +20,9 @@ public class Orders {
     @Column(name = "order_id")
     private Long orderId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private SiteUser siteUser;
 
     @Column(name = "order_cord", nullable = false, unique = true, length = 100)
     private String orderCord;

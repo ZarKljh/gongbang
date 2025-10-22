@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.mypage.controller;
 
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.PaymentMethodRequest;
 import com.gobang.gobang.domain.mypage.dto.response.PaymentMethodResponse;
 import com.gobang.gobang.domain.mypage.service.PaymentMethodService;
@@ -21,15 +22,15 @@ public class PaymentMethodController {
 
     // 결제수단 목록 페이지
     @GetMapping
-    public String paymentMethodList(@RequestParam(required = false) Long userId, Model model) {
+    public String paymentMethodList(@RequestParam(required = false) SiteUser siteUser, Model model) {
         // TODO: 실제로는 세션에서 userId를 가져와야 함
-        if (userId == null) {
-            userId = 1L; // 테스트용 기본값
+        if (siteUser == null) {
+            return null; // 테스트용 기본값
         }
 
-        List<PaymentMethodResponse> paymentMethods = paymentMethodService.getPaymentMethodsByUserId(userId);
+        List<PaymentMethodResponse> paymentMethods = paymentMethodService.getPaymentMethodsByUserId(siteUser);
         model.addAttribute("paymentMethods", paymentMethods);
-        model.addAttribute("userId", userId);
+        model.addAttribute("siteUser", siteUser);
 
         return "mypage/payment-methods";
     }
@@ -65,8 +66,8 @@ public class PaymentMethodController {
     @ResponseBody
     public ResponseEntity<Void> setDefaultPaymentMethod(
             @PathVariable Long paymentId,
-            @RequestParam Long userId) {
-        paymentMethodService.setDefaultPaymentMethod(paymentId, userId);
+            @RequestParam SiteUser siteUser) {
+        paymentMethodService.setDefaultPaymentMethod(paymentId, siteUser);
         return ResponseEntity.ok().build();
     }
 }

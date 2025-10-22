@@ -23,7 +23,7 @@ public class Coupon {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private SiteUser user;
+    private SiteUser siteUser;
 
     @Column(name = "coupon_code", nullable = false, unique = true, length = 50)
     private String couponCode;

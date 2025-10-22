@@ -22,8 +22,8 @@ public class CartService {
     private final CartRepository cartRepository;
 
     // 사용자별 장바구니 목록 조회
-    public List<CartResponse> getCartsByUserId(Long userId) {
-        List<Cart> carts = cartRepository.findByUser_UserId(userId);
+    public List<CartResponse> getCartsByUserId(SiteUser siteUser) {
+        List<Cart> carts = cartRepository.findBySiteUser(siteUser);
 
         return carts.stream()
                 .map(this::convertToResponse)
@@ -34,8 +34,8 @@ public class CartService {
     @Transactional
     public CartResponse addToCart(CartRequest request) {
         // 이미 장바구니에 있는 상품인지 확인
-        Optional<Cart> existingCart = cartRepository.findByUser_UserIdAndProductId(
-                request.getUserId(), request.getProductId());
+        Optional<Cart> existingCart = cartRepository.findBySiteUserAndProduct(
+                request.getSiteUser(), request.getProduct());
 
         if (existingCart.isPresent()) {
             // 이미 있으면 수량 증가
@@ -45,7 +45,7 @@ public class CartService {
         } else {
             // 없으면 새로 추가
             Cart cart = Cart.builder()
-                    .user(SiteUser.builder().id(request.getUserId()).build())
+                    .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
                     //.product(request.getProductId())
                     .product(request.getProduct())
                     .quantity(request.getQuantity())
@@ -77,13 +77,13 @@ public class CartService {
 
     // 장바구니 전체 삭제
     @Transactional
-    public void clearCart(Long userId) {
-        cartRepository.deleteByUser_UserId(userId);
+    public void clearCart(SiteUser siteUser) {
+        cartRepository.deleteBySiteUser(siteUser);
     }
 
     // 장바구니 개수 조회
-    public long getCartCount(Long userId) {
-        return cartRepository.countByUser_UserId(userId);
+    public long getCartCount(SiteUser siteUser) {
+        return cartRepository.countBySiteUser(siteUser);
     }
 
     // Entity -> Response DTO 변환
@@ -91,7 +91,7 @@ public class CartService {
         return CartResponse.builder()
                 .cartId(cart.getCartId())
                 //.userId(cart.getUser().getUserId())
-                .userId(cart.getUser().getId())
+                .siteUser(cart.getSiteUser())
                 //.productId(cart.getProductId())
                 .product(cart.getProduct())
                 .productName("상품명") // TODO: Product 엔티티에서 가져오기
