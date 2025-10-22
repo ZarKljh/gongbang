@@ -1,4 +1,4 @@
-package com.gobang.gobang.domain.product.themeRepository;
+package com.gobang.gobang.domain.product.theme.Repository;
 
 import com.gobang.gobang.domain.product.entity.Theme;
 import org.springframework.data.domain.Pageable;
@@ -14,5 +14,5 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
         where t.active = true
         order by t.displayOrder asc, t.id desc
     """)
-    List<Theme> findActiveOrdered(Pageable pageable);
+    List<Theme> findActiveThemes(Pageable pageable);
 }
