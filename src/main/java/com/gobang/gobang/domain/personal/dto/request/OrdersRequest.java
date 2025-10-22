@@ -14,15 +14,4 @@ public class OrdersRequest {
     private Long deliveryAddressId;
     private BigDecimal totalPrice;
     private List<OrderItemRequest> orderItems;
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class OrderItemRequest {
-        private Product product;
-        private Long quantity;
-        private BigDecimal price;
-    }
 }

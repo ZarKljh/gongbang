@@ -1,7 +1,10 @@
 package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.personal.dto.response.DeliveryResponse;
+import com.gobang.gobang.domain.personal.dto.response.OrderItemResponse;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
+import com.gobang.gobang.domain.personal.dto.response.UserAddressResponse;
 import com.gobang.gobang.domain.personal.entity.Delivery;
 import com.gobang.gobang.domain.personal.entity.OrderItem;
 import com.gobang.gobang.domain.personal.entity.Orders;
@@ -55,8 +58,8 @@ public class OrdersService {
         // 주문 상품 목록 조회
         List<OrderItem> orderItems = orderItemRepository.findByOrder_OrderId(order.getOrderId());
 
-        List<OrdersResponse.OrderItemResponse> orderItemResponses = orderItems.stream()
-                .map(item -> OrdersResponse.OrderItemResponse.builder()
+        List<OrderItemResponse> orderItemResponses = orderItems.stream()
+                .map(item -> OrderItemResponse.builder()
                         .orderItemId(item.getOrderItemId())
                         .orderId(item.getOrder().getOrderId())
                         .product(item.getProduct())
@@ -67,13 +70,13 @@ public class OrdersService {
                 .collect(Collectors.toList());
 
         // 배송 정보 변환
-        OrdersResponse.DeliveryResponse deliveryResponse = null;
+        DeliveryResponse deliveryResponse = null;
         if (order.getDelivery() != null) {
             Delivery delivery = order.getDelivery();
 
-            OrdersResponse.UserAddressResponse addressResponse = null;
+            UserAddressResponse addressResponse = null;
             if (delivery.getAddress() != null) {
-                addressResponse = OrdersResponse.UserAddressResponse.builder()
+                addressResponse = UserAddressResponse.builder()
                         .userAddressId(delivery.getAddress().getUserAddressId())
                         .recipientName(delivery.getAddress().getRecipientName())
                         .baseAddress(delivery.getAddress().getBaseAddress())
@@ -82,7 +85,7 @@ public class OrdersService {
                         .build();
             }
 
-            deliveryResponse = OrdersResponse.DeliveryResponse.builder()
+            deliveryResponse = DeliveryResponse.builder()
                     .deliveryId(delivery.getDeliveryId())
                     .orderId(delivery.getOrder().getOrderId())
                     .trackingNumber(delivery.getTrackingNumber())
@@ -90,7 +93,7 @@ public class OrdersService {
                     .completedAt(delivery.getCompletedAt())
                     .createdDate(delivery.getCreatedDate())
                     .modifiedDate(delivery.getModifiedDate())
-                    .address(addressResponse)
+                    .addressId(delivery.getAddress().getUserAddressId())
                     .build();
         }
 
@@ -99,8 +102,6 @@ public class OrdersService {
                 .siteUser(order.getSiteUser())
                 .orderCord(order.getOrderCord())
                 .totalPrice(order.getTotalPrice())
-                .orderItems(orderItemResponses)
-                .delivery(deliveryResponse)
                 .build();
     }
 }

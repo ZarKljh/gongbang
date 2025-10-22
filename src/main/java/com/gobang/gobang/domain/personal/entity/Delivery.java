@@ -31,6 +31,7 @@ public class Delivery {
     @Column(name = "tracking_number", unique = true, length = 100)
     private String trackingNumber;
 
+    @Builder.Default
     @Column(name = "delivery_status", nullable = false, length = 30)
     private String deliveryStatus = "배송중";
 

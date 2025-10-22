@@ -41,7 +41,8 @@ public class CartService {
             // 이미 있으면 수량 증가
             Cart cart = existingCart.get();
             cart.setQuantity(cart.getQuantity() + request.getQuantity());
-            return convertToResponse(cart);
+            Cart saved = cartRepository.save(cart);
+            return convertToResponse(saved);
         } else {
             // 없으면 새로 추가
             Cart cart = Cart.builder()
