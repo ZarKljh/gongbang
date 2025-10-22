@@ -1,8 +1,9 @@
 package com.gobang.gobang.domain.review.service;
 
-import com.gobang.gobang.domain.review.dto.ReviewCreateRequestDto;
+import com.gobang.gobang.domain.review.dto.ReviewDto;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
+import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,23 +29,24 @@ public class ReviewService {
     }
 
     // 리뷰 등록
-//    @Transactional
-//    public Review save(Review review) {
-//        return reviewRepository.save(review);
-//    }
-//
-//    @Transactional
-//    public Review createReview(ReviewCreateRequestDto dto) {
-//        Review review = Review.builder()
-//                .orderId(dto.getOrderId())
-//                .orderItemId(dto.getOrderItemId())
-//                .productId(dto.getProductId())
-//                .userId(dto.getUserId())
-//                .rating(dto.getRating())
-//                .content(dto.getContent())
-//                .build();
-//        return save(review);
-//    }
+    @Transactional
+    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto) {
+        Review review = Review.builder()
+                .orderId(dto.getOrderId())
+                .orderItemId(dto.getOrderItemId())
+                .productId(dto.getProductId())
+                .userId(dto.getUserId())
+                .rating(dto.getRating())
+                .content(dto.getContent())
+                .isActive(true)
+                .reviewLike(0)
+                .viewCount(0)
+                .build();
+
+        reviewRepository.save(review);
+
+        return RsData.of("200","리뷰가 등록되었습니다.", review);
+    }
 //
 //    // 리뷰 수정
 //    @Transactional

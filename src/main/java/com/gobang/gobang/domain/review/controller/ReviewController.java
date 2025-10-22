@@ -1,20 +1,20 @@
 package com.gobang.gobang.domain.review.controller;
 
 
+import com.gobang.gobang.domain.review.dto.ReviewDto;
+import com.gobang.gobang.domain.review.dto.ReviewDto.ReviewCreateRequest;
+import com.gobang.gobang.domain.review.dto.ReviewDto.CreateReviewResponse;
 import com.gobang.gobang.domain.review.entity.Review;
-import com.gobang.gobang.domain.review.entity.ReviewReport;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.domain.review.service.ReviewReportService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -64,17 +64,47 @@ public class ReviewController {
         ));
     }
 
-//    @Getter
-//    @AllArgsConstructor
-//    public static class CreateResponse {
-//        private final Review review;
+    // dto에 옮겨놓음
+//    @Data
+//    public static class ReviewCreateRequest {
+//        @NotBlank
+//        private Long orderId;
+//
+//        @NotBlank
+//        private Long orderItemId;
+//
+//        @NotBlank
+//        private Long productId;
+//
+//        @NotBlank
+//        private Long userId;
+//
+//        @NotBlank
+//        private Integer rating;
+//
+//        @NotBlank
+//        private String content;
 //    }
 //
-//    // 리뷰 등록
-//    @PostMapping("")
-//    public ResponseEntity<Review> createReview(@RequestBody Review review) {
-//        return ResponseEntity.ok(reviewService.save(review));
+//    @Getter
+//    @AllArgsConstructor
+//    public static class CreateReviewResponse {
+//        private final Review review;
 //    }
+
+    // 리뷰 등록
+    @PostMapping("")
+    public RsData<ReviewDto.CreateReviewResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest) {
+        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest);
+
+        if (createRs.isFail()) return (RsData) createRs;
+
+        return RsData.of(
+                createRs.getResultCode(),
+                createRs.getMsg(),
+                new CreateReviewResponse(createRs.getData())
+        );
+    }
 
     // 리뷰 수정
 //    @PatchMapping("/{id}")
