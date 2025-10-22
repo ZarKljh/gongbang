@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 @Entity
 @Getter
 @Setter
@@ -12,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @ToString(callSuper = true)
-@Table(name = "product_category",
+@Table(name = "category",
         uniqueConstraints = @UniqueConstraint(name = "uk_category_code", columnNames = {"code"}),
         indexes = {@Index(name = "idx_category_active", columnList = "is_active")} )
 public class Category extends BaseEntity {
@@ -38,4 +41,8 @@ public class Category extends BaseEntity {
 
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
+
+    // 비소유측
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+    private Set<Product> products = new LinkedHashSet<>();
 }

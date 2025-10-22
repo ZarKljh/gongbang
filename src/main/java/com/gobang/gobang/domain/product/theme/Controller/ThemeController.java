@@ -1,8 +1,8 @@
-package com.gobang.gobang.domain.product.homeController;
+package com.gobang.gobang.domain.product.theme.Controller;
 
 import com.gobang.gobang.domain.product.dto.ThemeDto;
-import com.gobang.gobang.domain.product.dto.response.ProductResponse;
-import com.gobang.gobang.domain.product.themaService.ThemeService;
+import com.gobang.gobang.domain.product.dto.response.ThemeResponse;
+import com.gobang.gobang.domain.product.theme.Service.ThemeService;
 import com.gobang.gobang.global.RsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -15,15 +15,15 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/home")
-public class HomeController {
+@RequestMapping("/api/theme/v1")
+public class ThemeController {
 
     private final ThemeService themeService;
 
     @GetMapping("")
     @Operation(summary = "테마 다건 조회")
-    public RsData<ProductResponse> themeList(@RequestParam(defaultValue = "4") int size) {
+    public RsData<ThemeResponse> themeList(@RequestParam(defaultValue = "4") int size) {
         List<ThemeDto> themeList = themeService.getThemeList(size);
-        return RsData.of("200", "테마 다건 조회 성공", new ProductResponse(themeList));
+        return RsData.of("200", "테마 다건 조회 성공", new ThemeResponse(themeList));
     }
 }
