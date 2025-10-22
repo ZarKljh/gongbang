@@ -62,22 +62,66 @@ export default function Main() {
   return (
     <main className="p-4">
       <h1 className="font-bold text-lg mb-4">카테고리 </h1>
-      {categories.map((cat) => (
-        <div key={cat.id} className="mb-6">
-          <h2 className="text-lg font-semibold mb-2"> {cat.name}</h2>
-        </div>
-      ))}
-      <h1 className="font-bold text-lg mb-4">카테고리 / 서브카테고리 목록</h1>
+      <nav aria-label="카테고리 슬라이더">
+        <div class="slider" role="region" aria-roledescription="carousel">
+          <button type="button" class="slider-prev" aria-label="이전 카테고리">
+            &lt;
+          </button>
 
-      {categories.map((cat) => (
-        <div key={cat.id} className="mb-6">
-          <h2 className="text-lg font-semibold mb-2"> {cat.name}</h2>
-          <ul className="list-disc ml-5">
-            {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
-              <li key={sub.id}>{sub.name}</li>
+          <ul class="category-list" role="list">
+            {categories.map((cat) => (
+              <li key={cat.id} className="mb-6">
+                <button type="button" class="category-btn">
+                  {" "}
+                  {cat.name}
+                </button>
+              </li>
             ))}
           </ul>
+
+          <button type="button" class="slider-next" aria-label="다음 카테고리">
+            &gt;
+          </button>
         </div>
+      </nav>
+
+      <header class="category-header">
+        <div class="header-left">
+          <h2 class="header-title">목록별 카테고리</h2>
+          <button
+            type="button"
+            class="menu-toggle"
+            aria-label="카테고리 메뉴 열기"
+          >
+            <span class="menu-icon"></span>
+          </button>
+        </div>
+
+        <nav class="header-nav" aria-label="상단 메뉴">
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a href="#">이벤트</a>
+            </li>
+            <li class="nav-item">
+              <a href="#">셀러소개</a>
+            </li>
+            <li class="nav-item">
+              <a href="#">문의사항</a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+      {categories.map((cat) => (
+        <ul class="category-list" key={cat.id}>
+          <li>
+            <strong className="text-lg font-semibold mb-2"> {cat.name}</strong>
+            <ul>
+              {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
+                <li key={sub.id}>{sub.name}</li>
+              ))}
+            </ul>
+          </li>
+        </ul>
       ))}
     </main>
   );
