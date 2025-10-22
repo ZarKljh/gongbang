@@ -1,6 +1,6 @@
-package com.gobang.gobang.domain.product.category.Controller;
+package com.gobang.gobang.domain.product.category.controller;
 
-import com.gobang.gobang.domain.product.category.Service.CategoryService;
+import com.gobang.gobang.domain.product.category.service.CategoryService;
 import com.gobang.gobang.domain.product.dto.CategoryDto;
 import com.gobang.gobang.domain.product.dto.SubCategoryDto;
 import com.gobang.gobang.domain.product.dto.response.CategoryResponse;
@@ -20,7 +20,7 @@ public class CategoryController {
 
     @GetMapping("")
     @Operation(summary = "카테고리 다건 조회")
-    public RsData<CategoryResponse> categoryList(@RequestParam(defaultValue = "5") int size) {
+    public RsData<CategoryResponse> categoryList(@RequestParam(defaultValue = "10") int size) {
         List<CategoryDto> categoryList = categoryService.getCategoryList(size);
         return RsData.of("200", "카테고리 다건 조회 성공", new CategoryResponse(categoryList));
     }

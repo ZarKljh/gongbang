@@ -1,4 +1,4 @@
-package com.gobang.gobang.domain.product.category.Repository;
+package com.gobang.gobang.domain.product.category.repository;
 
 import com.gobang.gobang.domain.product.entity.Category;
 import org.springframework.data.domain.Pageable;

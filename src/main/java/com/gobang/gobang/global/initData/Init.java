@@ -1,7 +1,8 @@
 package com.gobang.gobang.global.initData;
 
-import com.gobang.gobang.domain.product.category.Service.CategoryService;
-import com.gobang.gobang.domain.product.theme.Service.ThemeService;
+import com.gobang.gobang.domain.product.category.service.CategoryService;
+import com.gobang.gobang.domain.product.filter.service.FilterService;
+import com.gobang.gobang.domain.product.theme.service.ThemeService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class Init {
 
     @Bean
-    CommandLineRunner initData(ThemeService themeService, CategoryService categoryService) {
+    CommandLineRunner initData(ThemeService themeService, CategoryService categoryService, FilterService filterService) {
         return args -> {
             themeService.InitTheme("Gift", "선물추천테마 GIFT", "", 1);
             themeService.InitTheme("Healing", "힐링/휴식", "", 2);
@@ -20,12 +21,12 @@ public class Init {
 
 
             // 1차 카테고리
-            categoryService.InitCategory("Mood", "감성소품", "", 1);
-            categoryService.InitCategory("Mini", "스몰굿즈", "", 2);
-            categoryService.InitCategory("Fabric", "패브릭소품", "", 3);
-            categoryService.InitCategory("Aroma", "향/아로마", "", 4);
-            categoryService.InitCategory("Light", "조명/무드등", "", 5);
-            categoryService.InitCategory("Rest", "휴식용품", "", 6);
+            categoryService.initCategory("Mood", "감성소품", "", 1);
+            categoryService.initCategory("Mini", "스몰굿즈", "", 2);
+            categoryService.initCategory("Fabric", "패브릭소품", "", 3);
+            categoryService.initCategory("Aroma", "향/아로마", "", 4);
+            categoryService.initCategory("Light", "조명/무드등", "", 5);
+            categoryService.initCategory("Rest", "휴식용품", "", 6);
 
 
             // 서브카테고리 시작
@@ -60,6 +61,41 @@ public class Init {
             categoryService.initSubCategory("Rest", "Sound", "힐링음향기기", 3);
 
             System.out.println("✅ 카테고리 데이터 초기화 완료!");
+
+
+            filterService.initGroupFilter("Mood", "style", "분위기", 1, false, true);
+            filterService.initGroupFilter("Mood", "PACKAGE", "포장옵션", 1, false, true);
+
+            // 2) 스몰굿즈
+            filterService.initGroupFilter("Mini", "COLOR", "색상", 1, false, true);
+            filterService.initGroupFilter("Mini", "DESIGN", "디자인", 2, false, true);
+            filterService.initGroupFilter("Mini", "PRICE", "가격대", 99, true, true);
+
+            // 3) 패브릭소품
+            filterService.initGroupFilter("Fabric", "MATERIAL", "소재", 1, false, true);
+            filterService.initGroupFilter("Fabric", "COLOR", "색상", 2, false, true);
+            filterService.initGroupFilter("Fabric", "SIZE", "사이즈", 3, false, true);
+            filterService.initGroupFilter("Fabric", "PRICE", "가격대", 99, true, true);
+
+            // 4) 향/아로마
+            filterService.initGroupFilter("Aroma", "SCENT", "향", 1, false, true);
+            filterService.initGroupFilter("Aroma", "DURATION", "지속시간", 2, false, true);
+            filterService.initGroupFilter("Aroma", "REFILL", "리필가능", 3, false, true);
+            filterService.initGroupFilter("Aroma", "PRICE", "가격대", 99, true, true);
+
+            // 5) 조명/무드등
+            filterService.initGroupFilter("Light", "BRIGHTNESS", "밝기", 1, false, true);
+            filterService.initGroupFilter("Light", "COLOR_TEMP", "색온도", 2, false, true);
+            filterService.initGroupFilter("Light", "POWER_TYPE", "충전방식", 3, false, true);
+            filterService.initGroupFilter("Light", "PRICE", "가격대", 99, true, true);
+
+            // 휴식용품(1차) 공통 필수 세트
+            filterService.initGroupFilter("Rest", "rest_type",   "휴식타입",  1, false, true);
+            filterService.initGroupFilter("Rest", "target_area", "사용부위",  2, false, true);
+            filterService.initGroupFilter("Rest", "color",       "색상",      4, false, true);
+            filterService.initGroupFilter("Rest", "price",       "가격대",   99, true,  true); // 전역
+
+            System.out.println("✅ 필터 데이터 초기화 완료!");
         };
     }
 }

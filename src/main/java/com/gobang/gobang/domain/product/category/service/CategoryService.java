@@ -1,7 +1,7 @@
-package com.gobang.gobang.domain.product.category.Service;
+package com.gobang.gobang.domain.product.category.service;
 
-import com.gobang.gobang.domain.product.category.Repository.CategoryRepository;
-import com.gobang.gobang.domain.product.category.Repository.SubCategoryRepository;
+import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
+import com.gobang.gobang.domain.product.category.repository.SubCategoryRepository;
 import com.gobang.gobang.domain.product.dto.CategoryDto;
 import com.gobang.gobang.domain.product.dto.SubCategoryDto;
 import com.gobang.gobang.domain.product.entity.Category;
@@ -68,7 +68,7 @@ public class CategoryService {
 
 
     @Transactional
-    public Category InitCategory(String code, String name, String description, int order) {
+    public Category initCategory(String code, String name, String description, int order) {
         Category category = Category.builder()
                 .code(code)
                 .name(name)

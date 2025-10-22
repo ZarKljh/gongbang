@@ -1,4 +1,4 @@
-package com.gobang.gobang.domain.product.theme.Repository;
+package com.gobang.gobang.domain.product.theme.repository;
 
 import com.gobang.gobang.domain.product.entity.Theme;
 import org.springframework.data.domain.Pageable;

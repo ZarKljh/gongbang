@@ -1,8 +1,8 @@
-package com.gobang.gobang.domain.product.theme.Controller;
+package com.gobang.gobang.domain.product.theme.controller;
 
 import com.gobang.gobang.domain.product.dto.ThemeDto;
 import com.gobang.gobang.domain.product.dto.response.ThemeResponse;
-import com.gobang.gobang.domain.product.theme.Service.ThemeService;
+import com.gobang.gobang.domain.product.theme.service.ThemeService;
 import com.gobang.gobang.global.RsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

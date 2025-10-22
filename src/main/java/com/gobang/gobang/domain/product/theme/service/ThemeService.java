@@ -1,8 +1,8 @@
-package com.gobang.gobang.domain.product.theme.Service;
+package com.gobang.gobang.domain.product.theme.service;
 
 import com.gobang.gobang.domain.product.dto.ThemeDto;
 import com.gobang.gobang.domain.product.entity.Theme;
-import com.gobang.gobang.domain.product.theme.Repository.ThemeRepository;
+import com.gobang.gobang.domain.product.theme.repository.ThemeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

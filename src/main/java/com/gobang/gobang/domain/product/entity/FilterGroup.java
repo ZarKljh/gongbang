@@ -37,10 +37,10 @@ public class FilterGroup extends BaseEntity {
     private Boolean isActive = true; // 사용 여부
 
 
-    //여러 FilterGroup 이 하나의 SubCategory 에 속함(소유측)
+    //여러 FilterGroup 이 하나의 category 에 속함(소유측)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_category_id", nullable = false)
-    private Subcategory subcategory;
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     // 그룹 : 옵션 = 1 : N
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
