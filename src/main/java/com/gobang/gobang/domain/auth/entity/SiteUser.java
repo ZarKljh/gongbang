@@ -1,7 +1,7 @@
 package com.gobang.gobang.domain.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gobang.gobang.domain.mypage.entity.*;
+import com.gobang.gobang.domain.personal.entity.*;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

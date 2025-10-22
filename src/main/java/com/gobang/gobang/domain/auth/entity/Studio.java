@@ -1,6 +1,6 @@
 package com.gobang.gobang.domain.auth.entity;
 
-import com.gobang.gobang.domain.mypage.entity.Follow;
+import com.gobang.gobang.domain.personal.entity.Follow;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
