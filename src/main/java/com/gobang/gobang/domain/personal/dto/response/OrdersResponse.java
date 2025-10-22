@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.personal.dto.response;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.product.entity.Product;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@SuperBuilder
 public class OrdersResponse {
 
     private Long orderId;

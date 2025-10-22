@@ -2,11 +2,13 @@ package com.gobang.gobang.domain.personal.dto.response;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
+@SuperBuilder
 public class PaymentMethodResponse {
 
     private Long paymentId;

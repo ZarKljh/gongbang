@@ -1,11 +1,13 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
+@SuperBuilder
 public class DeliveryResponse {
 
     private Long deliveryId;

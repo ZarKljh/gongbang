@@ -46,7 +46,6 @@ public class CartService {
             // 없으면 새로 추가
             Cart cart = Cart.builder()
                     .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
-                    //.product(request.getProductId())
                     .product(request.getProduct())
                     .quantity(request.getQuantity())
                     .build();
@@ -90,9 +89,7 @@ public class CartService {
     private CartResponse convertToResponse(Cart cart) {
         return CartResponse.builder()
                 .cartId(cart.getCartId())
-                //.userId(cart.getUser().getUserId())
                 .siteUser(cart.getSiteUser())
-                //.productId(cart.getProductId())
                 .product(cart.getProduct())
                 .productName("상품명") // TODO: Product 엔티티에서 가져오기
                 .quantity(cart.getQuantity())
