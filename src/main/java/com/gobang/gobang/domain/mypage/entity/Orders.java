@@ -22,7 +22,7 @@ public class Orders {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private SiteUser user;
+    private SiteUser siteUser;
 
     @Column(name = "order_cord", nullable = false, unique = true, length = 100)
     private String orderCord;

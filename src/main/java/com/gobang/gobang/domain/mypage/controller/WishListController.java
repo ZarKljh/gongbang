@@ -1,9 +1,11 @@
 package com.gobang.gobang.domain.mypage.controller;
 
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.WishListRequest;
 import com.gobang.gobang.domain.mypage.dto.response.WishListResponse;
 import com.gobang.gobang.domain.mypage.service.WishListService;
+import com.gobang.gobang.domain.product.entity.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,18 +23,18 @@ public class WishListController {
 
     // 찜목록 페이지
     @GetMapping
-    public String wishList(@RequestParam(required = false) Long userId, Model model) {
+    public String wishList(@RequestParam(required = false) SiteUser siteUser, Model model) {
         // TODO: 실제로는 세션에서 userId를 가져와야 함
-        if (userId == null) {
-            userId = 1L; // 테스트용 기본값
+        if (siteUser == null) {
+            return null; // 테스트용 기본값
         }
 
-        List<WishListResponse> wishLists = wishListService.getWishListByUserId(userId);
-        long wishCount = wishListService.getUserWishCount(userId);
+        List<WishListResponse> wishLists = wishListService.getWishListByUser(siteUser);
+        long wishCount = wishListService.getUserWishCount(siteUser);
 
         model.addAttribute("wishLists", wishLists);
         model.addAttribute("wishCount", wishCount);
-        model.addAttribute("userId", userId);
+        model.addAttribute("siteUser", siteUser);
 
         return "mypage/wishlist";
     }
@@ -57,9 +59,9 @@ public class WishListController {
     @DeleteMapping
     @ResponseBody
     public ResponseEntity<Void> removeWishListByUserAndProduct(
-            @RequestParam Long userId,
-            @RequestParam Long productId) {
-        wishListService.removeWishListByUserAndProduct(userId, productId);
+            @RequestParam SiteUser siteUser,
+            @RequestParam Product product) {
+        wishListService.removeWishListByUserAndProduct(siteUser, product);
         return ResponseEntity.ok().build();
     }
 
@@ -67,25 +69,25 @@ public class WishListController {
     @GetMapping("/check")
     @ResponseBody
     public ResponseEntity<Boolean> isWished(
-            @RequestParam Long userId,
-            @RequestParam Long productId) {
-        boolean isWished = wishListService.isWished(userId, productId);
+            @RequestParam SiteUser siteUser,
+            @RequestParam Product product) {
+        boolean isWished = wishListService.isWished(siteUser, product);
         return ResponseEntity.ok(isWished);
     }
 
     // 상품의 찜 개수 조회 (AJAX)
     @GetMapping("/count/product")
     @ResponseBody
-    public ResponseEntity<Long> getWishCount(@RequestParam Long productId) {
-        long count = wishListService.getWishCount(productId);
+    public ResponseEntity<Long> getWishCount(@RequestParam Product product) {
+        long count = wishListService.getWishCount(product);
         return ResponseEntity.ok(count);
     }
 
     // 사용자의 찜 개수 조회 (AJAX)
     @GetMapping("/count/user")
     @ResponseBody
-    public ResponseEntity<Long> getUserWishCount(@RequestParam Long userId) {
-        long count = wishListService.getUserWishCount(userId);
+    public ResponseEntity<Long> getUserWishCount(@RequestParam SiteUser siteUser) {
+        long count = wishListService.getUserWishCount(siteUser);
         return ResponseEntity.ok(count);
     }
 }

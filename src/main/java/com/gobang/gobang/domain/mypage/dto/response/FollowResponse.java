@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.dto.response;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import lombok.*;
 
@@ -13,9 +14,8 @@ import java.time.LocalDateTime;
 public class FollowResponse {
 
     private Long followId;
-    private Long userId;
-    private Long studioId;
-    private Studio seller;
+    private SiteUser siteUser;
+    private Studio studio;
     private String sellerName; // Seller 엔티티에서 가져올 예정
     private LocalDateTime createdAt;
 }

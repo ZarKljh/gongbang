@@ -22,7 +22,7 @@ public class PaymentMethod {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private SiteUser user;
+    private SiteUser siteUser;
 
     @Column(name = "type", nullable = false, length = 10)
     private String type;

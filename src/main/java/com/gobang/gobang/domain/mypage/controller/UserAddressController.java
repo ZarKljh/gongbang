@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.mypage.controller;
 
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.UserAddressRequest;
 import com.gobang.gobang.domain.mypage.dto.response.UserAddressResponse;
 import com.gobang.gobang.domain.mypage.service.UserAddressService;
@@ -21,15 +22,15 @@ public class UserAddressController {
 
     // 배송지 목록 페이지
     @GetMapping
-    public String addressList(@RequestParam(required = false) Long userId, Model model) {
+    public String addressList(@RequestParam(required = false) SiteUser siteUser, Model model) {
         // TODO: 실제로는 세션에서 userId를 가져와야 함
-        if (userId == null) {
-            userId = 1L; // 테스트용 기본값
+        if (siteUser == null) {
+            return null; // 테스트용 기본값
         }
 
-        List<UserAddressResponse> addresses = userAddressService.getAddressesByUserId(userId);
+        List<UserAddressResponse> addresses = userAddressService.getAddressesByUserId(siteUser);
         model.addAttribute("addresses", addresses);
-        model.addAttribute("userId", userId);
+        model.addAttribute("siteUser", siteUser);
 
         return "mypage/addresses";
     }
@@ -65,8 +66,8 @@ public class UserAddressController {
     @ResponseBody
     public ResponseEntity<Void> setDefaultAddress(
             @PathVariable Long addressId,
-            @RequestParam Long userId) {
-        userAddressService.setDefaultAddress(addressId, userId);
+            @RequestParam SiteUser siteUser) {
+        userAddressService.setDefaultAddress(addressId, siteUser);
         return ResponseEntity.ok().build();
     }
 }

@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.mypage.controller;
 
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.DeliveryRequest;
 import com.gobang.gobang.domain.mypage.dto.response.DeliveryResponse;
 import com.gobang.gobang.domain.mypage.dto.response.OrdersResponse;
@@ -24,15 +25,15 @@ public class OrdersController {
 
     // 주문 목록 페이지
     @GetMapping
-    public String ordersList(@RequestParam(required = false) Long userId, Model model) {
+    public String ordersList(@RequestParam(required = false) SiteUser siteUser, Model model) {
         // TODO: 실제로는 세션에서 userId를 가져와야 함
-        if (userId == null) {
-            userId = 1L; // 테스트용 기본값
+        if (siteUser == null) {
+            return null; // 테스트용 기본값
         }
 
-        List<OrdersResponse> orders = ordersService.getOrdersByUserId(userId);
+        List<OrdersResponse> orders = ordersService.getOrdersByUserId(siteUser);
         model.addAttribute("orders", orders);
-        model.addAttribute("userId", userId);
+        model.addAttribute("siteUser", siteUser);
 
         return "mypage/orders";
     }

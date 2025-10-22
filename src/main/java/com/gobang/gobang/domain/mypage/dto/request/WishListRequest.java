@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.dto.request;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.product.entity.Product;
 import lombok.*;
 
@@ -10,7 +11,6 @@ import lombok.*;
 @Builder
 public class WishListRequest {
 
-    private Long userId;
-    private Long productId;
+    private SiteUser siteUser;
     private Product product;
 }

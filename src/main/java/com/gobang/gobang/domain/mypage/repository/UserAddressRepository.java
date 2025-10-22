@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.mypage.repository;
 
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.entity.UserAddress;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -14,16 +15,16 @@ import java.util.Optional;
 @Repository
 public interface UserAddressRepository extends JpaRepository<UserAddress, Long> {
     // 사용자별 배송지 목록 조회
-    List<UserAddress> findByUser_UserId(Long id);
+    List<UserAddress> findBySiteUser(SiteUser siteUser);
 
     // 사용자의 기본 배송지 조회
-    Optional<UserAddress> findByUser_UserIdAndIsDefaultTrue(Long id);
+    Optional<UserAddress> findBySiteUserAndIsDefaultTrue(SiteUser siteUser);
 
     // 사용자의 모든 배송지를 기본 배송지 해제
     @Modifying
-    @Query("UPDATE UserAddress ua SET ua.isDefault = false WHERE ua.user.userId = :userId")
-    void unsetDefaultByUserId(@Param("userId") Long id);
+    @Query("UPDATE UserAddress ua SET ua.isDefault = false WHERE ua.siteUser = :siteUser")
+    void unsetDefaultBySiteUser(@Param("siteUser") SiteUser siteUser);
 
     // 사용자별 배송지 개수
-    long countByUser_UserId(Long id);
+    long countBySiteUser(SiteUser siteUser);
 }

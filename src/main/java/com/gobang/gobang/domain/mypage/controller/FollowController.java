@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.mypage.controller;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.mypage.dto.request.FollowRequest;
 import com.gobang.gobang.domain.mypage.dto.response.FollowResponse;
 import com.gobang.gobang.domain.mypage.service.FollowService;
@@ -20,18 +22,18 @@ public class FollowController {
 
     // 팔로우 목록 페이지
     @GetMapping
-    public String followList(@RequestParam(required = false) Long userId, Model model) {
+    public String followList(@RequestParam(required = false) SiteUser siteUser, Model model) {
         // TODO: 실제로는 세션에서 userId를 가져와야 함
-        if (userId == null) {
-            userId = 1L; // 테스트용 기본값
+        if (siteUser == null) {
+            return null; // 테스트용 기본값
         }
 
-        List<FollowResponse> follows = followService.getFollowsByUserId(userId);
-        long followingCount = followService.getFollowingCount(userId);
+        List<FollowResponse> follows = followService.getFollowsByUserId(siteUser);
+        long followingCount = followService.getFollowingCount(siteUser);
 
         model.addAttribute("follows", follows);
         model.addAttribute("followingCount", followingCount);
-        model.addAttribute("userId", userId);
+        model.addAttribute("siteUser", siteUser);
 
         return "mypage/follow";
     }
@@ -48,9 +50,9 @@ public class FollowController {
     @DeleteMapping
     @ResponseBody
     public ResponseEntity<Void> unfollow(
-            @RequestParam Long userId,
-            @RequestParam Long studioId) {
-        followService.unfollow(userId, studioId);
+            @RequestParam SiteUser siteUser,
+            @RequestParam Studio studio) {
+        followService.unfollow(siteUser, studio);
         return ResponseEntity.ok().build();
     }
 
@@ -58,25 +60,25 @@ public class FollowController {
     @GetMapping("/check")
     @ResponseBody
     public ResponseEntity<Boolean> isFollowing(
-            @RequestParam Long userId,
-            @RequestParam Long studioId) {
-        boolean isFollowing = followService.isFollowing(userId, studioId);
+            @RequestParam SiteUser siteUser,
+            @RequestParam Studio studio) {
+        boolean isFollowing = followService.isFollowing(siteUser, studio);
         return ResponseEntity.ok(isFollowing);
     }
 
     // 셀러의 팔로워 수 조회 (AJAX)
     @GetMapping("/count/followers")
     @ResponseBody
-    public ResponseEntity<Long> getFollowerCount(@RequestParam Long studioId) {
-        long count = followService.getFollowerCount(studioId);
+    public ResponseEntity<Long> getFollowerCount(@RequestParam Studio studio) {
+        long count = followService.getFollowerCount(studio);
         return ResponseEntity.ok(count);
     }
 
     // 사용자의 팔로잉 수 조회 (AJAX)
     @GetMapping("/count/following")
     @ResponseBody
-    public ResponseEntity<Long> getFollowingCount(@RequestParam Long userId) {
-        long count = followService.getFollowingCount(userId);
+    public ResponseEntity<Long> getFollowingCount(@RequestParam SiteUser siteUser) {
+        long count = followService.getFollowingCount(siteUser);
         return ResponseEntity.ok(count);
     }
 }

@@ -23,11 +23,11 @@ public class Follow {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private SiteUser user;
+    private SiteUser siteUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
-    private Studio studioId;
+    private Studio studio;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

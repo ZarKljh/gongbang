@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.response.OrdersResponse;
 import com.gobang.gobang.domain.mypage.entity.Delivery;
 import com.gobang.gobang.domain.mypage.entity.OrderItem;
@@ -24,8 +25,8 @@ public class OrdersService {
     private final DeliveryRepository deliveryRepository;
 
     // 사용자별 주문 목록 조회
-    public List<OrdersResponse> getOrdersByUserId(Long userId) {
-        List<Orders> orders = ordersRepository.findByUserIdWithDelivery(userId);
+    public List<OrdersResponse> getOrdersByUserId(SiteUser siteUser) {
+        List<Orders> orders = ordersRepository.findBySiteUserWithDelivery(siteUser);
 
         return orders.stream()
                 .map(this::convertToResponse)
@@ -58,7 +59,7 @@ public class OrdersService {
                 .map(item -> OrdersResponse.OrderItemResponse.builder()
                         .orderItemId(item.getOrderItemId())
                         .orderId(item.getOrder().getOrderId())
-                        .productId(item.getProduct().getId())
+                        .product(item.getProduct())
                         .productName("상품명") // TODO: Product 엔티티에서 가져오기
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
@@ -95,7 +96,7 @@ public class OrdersService {
 
         return OrdersResponse.builder()
                 .orderId(order.getOrderId())
-                .userId(order.getUser().getId())
+                .siteUser(order.getSiteUser())
                 .orderCord(order.getOrderCord())
                 .totalPrice(order.getTotalPrice())
                 .orderItems(orderItemResponses)

@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.mypage.controller;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.mypage.dto.request.CartRequest;
 import com.gobang.gobang.domain.mypage.dto.response.CartResponse;
 import com.gobang.gobang.domain.mypage.service.CartService;
@@ -20,18 +21,18 @@ public class CartController {
 
     // 장바구니 목록 페이지
     @GetMapping
-    public String cartList(@RequestParam(required = false) Long userId, Model model) {
+    public String cartList(@RequestParam(required = false) SiteUser siteUser, Model model) {
         // TODO: 실제로는 세션에서 userId를 가져와야 함
-        if (userId == null) {
-            userId = 1L; // 테스트용 기본값
+        if (siteUser == null) {
+            return null; // 테스트용 기본값
         }
 
-        List<CartResponse> carts = cartService.getCartsByUserId(userId);
-        long cartCount = cartService.getCartCount(userId);
+        List<CartResponse> carts = cartService.getCartsByUserId(siteUser);
+        long cartCount = cartService.getCartCount(siteUser);
 
         model.addAttribute("carts", carts);
         model.addAttribute("cartCount", cartCount);
-        model.addAttribute("userId", userId);
+        model.addAttribute("siteUser", siteUser);
 
         return "mypage/cart";
     }
@@ -65,16 +66,16 @@ public class CartController {
     // 장바구니 전체 삭제 (AJAX)
     @DeleteMapping("/clear")
     @ResponseBody
-    public ResponseEntity<Void> clearCart(@RequestParam Long userId) {
-        cartService.clearCart(userId);
+    public ResponseEntity<Void> clearCart(@RequestParam SiteUser siteUser) {
+        cartService.clearCart(siteUser);
         return ResponseEntity.ok().build();
     }
 
     // 장바구니 개수 조회 (AJAX)
     @GetMapping("/count")
     @ResponseBody
-    public ResponseEntity<Long> getCartCount(@RequestParam Long userId) {
-        long count = cartService.getCartCount(userId);
+    public ResponseEntity<Long> getCartCount(@RequestParam SiteUser siteUser) {
+        long count = cartService.getCartCount(siteUser);
         return ResponseEntity.ok(count);
     }
 }

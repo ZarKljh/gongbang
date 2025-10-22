@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.mypage.dto.response;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.product.entity.Product;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -14,7 +16,7 @@ import java.util.List;
 public class OrdersResponse {
 
     private Long orderId;
-    private Long userId;
+    private SiteUser siteUser;
     private String orderCord;
     private BigDecimal totalPrice;
     private LocalDateTime createdDate;
@@ -33,7 +35,7 @@ public class OrdersResponse {
     public static class OrderItemResponse {
         private Long orderItemId;
         private Long orderId;
-        private Long productId;
+        private Product product;
         private String productName;
         private Long quantity;
         private BigDecimal price;

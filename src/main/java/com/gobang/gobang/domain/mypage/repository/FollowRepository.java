@@ -1,6 +1,8 @@
 package com.gobang.gobang.domain.mypage.repository;
 
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.mypage.entity.Follow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,20 +14,20 @@ import java.util.Optional;
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 사용자별 팔로우 목록 조회
-    List<Follow> findByUser_Id(Long userId);
+    List<Follow> findBySiteUser(SiteUser siteUser);
 
     // 특정 셀러의 팔로워 목록 조회
-    List<Follow> findByStudioId(Long studioId);
+    List<Follow> findByStudio(Studio studio);
 
     // 사용자가 특정 셀러를 팔로우하는지 확인
-    Optional<Follow> existsByUser_IdAndSeller_StudioId(Long userId, Long studioId);
+    Optional<Follow> existsBySiteUserAndStudio(SiteUser siteUser, Studio studio);
 
     // 셀러의 팔로워 수
-    long countByStudioId(Long studioId);
+    long countByStudio(Studio studio);
 
     // 사용자의 팔로잉 수
-    long countByUser_Id(Long userId);
+    long countBySiteUser(SiteUser siteUser);
 
     // 팔로우 여부 확인
-    boolean existsByUser_IdAndStudioId(Long userId, Long studioId);
+    boolean existsBySiteUser_AndStudio(SiteUser siteUser, Studio studio);
 }

@@ -66,6 +66,6 @@ public class Studio {
 
     private LocalDateTime updatedDate;
 
-    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "studio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follow> follows = new ArrayList<>();
 }
