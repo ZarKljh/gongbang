@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -37,7 +40,12 @@ public class Subcategory extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
 
+    //1차카테고리 : 2차카테고리 1: N
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    // 2차카테고리 : 필터그룹 = 1 : N
+    @OneToMany(mappedBy = "subCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FilterGroup> filterGroups = new ArrayList<>();
 }
