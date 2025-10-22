@@ -2,11 +2,7 @@ package com.gobang.gobang.domain.personal.dto.request;
 
 import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data
 public class DeliveryRequest {
 
     private Long deliveryId;

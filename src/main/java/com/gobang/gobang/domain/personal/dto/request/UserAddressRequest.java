@@ -3,11 +3,7 @@ package com.gobang.gobang.domain.personal.dto.request;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data
 public class UserAddressRequest {
 
     private SiteUser siteUser;
