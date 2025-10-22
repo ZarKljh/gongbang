@@ -1,7 +1,5 @@
 package com.gobang.gobang.domain.product.entity;
 
-import com.gobang.gobang.domain.product.common.FilterInputType;
-import com.gobang.gobang.domain.product.common.FilterSelectType;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,15 +27,13 @@ public class FilterOption extends BaseEntity {
     @Column(name = "value_key", length = 100, nullable = false)
     private String valueKey;
 
-
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "input_type", length = 12, nullable = false)
-    private FilterInputType inputType;
+    private String inputType;
 
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "select_type", length = 9, nullable = false)
-    private FilterSelectType selectType;
+    private String selectType;
 
 
     @Column(name = "color_hex", length = 7)
@@ -56,6 +52,9 @@ public class FilterOption extends BaseEntity {
 
     @Column(name="max_value", precision=12, scale=2)
     private BigDecimal maxValue; // null이면 상한 없음
+
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder; // 노출 순서
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true; // 사용 여부

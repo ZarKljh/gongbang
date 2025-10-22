@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.product.filter.service;
 import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
 import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.FilterGroup;
+import com.gobang.gobang.domain.product.entity.FilterOption;
 import com.gobang.gobang.domain.product.filter.repository.FilterGroupRepository;
 import com.gobang.gobang.domain.product.filter.repository.FilterOptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +33,26 @@ public class FilterService {
                 .appliesToAll(appliesToAll)
                 .build();
 
-        filterGroupRepository.save(sub);     // ✅ 주인쪽 저장이면 FK 포함 INSERT
+        filterGroupRepository.save(sub);
     }
 
 
 
+    public void initOption(String CategoryCode, String groupCode,
+                           String label, String valueKey, int displayOrder, String inputType, String selectType) {
+        FilterGroup parent = filterGroupRepository.findByCategory_CodeAndCode(CategoryCode, groupCode)
+                .orElseThrow(() -> new RuntimeException("FilterGroup not found: " + groupCode + " / " + CategoryCode));
+
+        FilterOption sub = FilterOption.builder()
+                .group(parent)           // ✅ FK 세팅
+                .label(label)
+                .valueKey(valueKey)
+                .displayOrder(displayOrder)
+                .isActive(true)
+                .inputType(inputType)
+                .selectType(selectType)
+                .build();
+
+        filterOptionRepository.save(sub);
+    }
 }
