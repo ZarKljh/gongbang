@@ -3,7 +3,7 @@ package com.gobang.gobang.domain.auth.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class SignupUserRequest {
@@ -18,5 +18,5 @@ public class SignupUserRequest {
     private String nickName;
     private String status;
     private String gender;
-    private LocalDateTime birth;
+    private LocalDate birth;
 }

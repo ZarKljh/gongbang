@@ -29,6 +29,9 @@ public class SiteUserService {
         if(checkedSiteUser != null){
             throw new RuntimeException("이미 가입된 사용자입니다.");
         }
+        if (signupUserRequest.getStatus() == null) {
+            signupUserRequest.setStatus("ACTIVE");
+        }
         SiteUser newUser = SiteUser.builder()
                 .email(signupUserRequest.getEmail())
                 .password(signupUserRequest.getPassword())
@@ -39,7 +42,7 @@ public class SiteUserService {
                 .status(signupUserRequest.getStatus())
                 .gender(signupUserRequest.getGender())
                 //.profileImg(signupUserRequest.getProfileImg())
-                .birth(signupUserRequest.getBirth())
+                .birth(signupUserRequest.getBirth().atStartOfDay())
                 .createdDate(LocalDateTime.now())
                 .build();
 

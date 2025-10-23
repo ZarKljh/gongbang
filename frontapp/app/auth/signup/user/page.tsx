@@ -25,11 +25,14 @@ export default function SignupUser() {
     e.preventDefault();
 
     //ToDo: 입력값validate 코드 작성
-    const adjustedFormData = {
-      ...formData,
-      birth: formData.birth ? `${formData.birth}T00:00:00` : null,
-    };
+    /*
+    const birthDateTime = formData.birth ? `${formData.birth}T00:00:00` : null;
 
+    const payload = {
+      ...formData,
+      birth: birthDateTime,
+    };
+    */
     const response = await fetch(`http://localhost:8090/api/auth/signup/user`, {
       method: "POST",
       //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
