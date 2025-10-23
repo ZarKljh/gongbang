@@ -34,7 +34,7 @@ public class Subcategory extends BaseEntity {
 
 
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     private Boolean active = true;
 
     //1차카테고리 : 2차카테고리 1: N
