@@ -10,12 +10,13 @@ import com.gobang.gobang.domain.review.service.ReviewReportService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/reviews")
@@ -107,12 +108,40 @@ public class ReviewController {
     }
 
     // 리뷰 수정
-//    @PatchMapping("/{id}")
-//    public ResponseEntity<?> updateReview(@PathVariable Long id, @RequestBody Review updatedReview) {
-//        return reviewService.updateReview(id, updatedReview)
-//                .map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.notFound().build());
-//    }
+    @Getter
+    @Setter
+    public static class ModifyRequest {
+        @NotBlank
+        private Integer rating;
+
+        @NotBlank
+        private String content;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class ModifyResponse {
+        private final Review review;
+    }
+
+    @PatchMapping("/{id}")
+    public RsData modify(@Valid @RequestBody ModifyRequest modifyRequest, @PathVariable("id") Long id){
+        Optional<Review> opReview = reviewService.findById(id);
+
+        if ( opReview.isEmpty() ) return RsData.of(
+                "400",
+                "%d번 게시물은 존재하지 않습니다.".formatted(id)
+        );
+
+        /// 회원 권한 canModify
+        RsData<Review> modifyRs = reviewService.modify(opReview.get(), modifyRequest.getRating(), modifyRequest.getContent());
+
+        return RsData.of(
+                modifyRs.getResultCode(),
+                modifyRs.getMsg(),
+                new ModifyResponse((modifyRs.getData()))
+        );
+    }
 //
 //    // 리뷰 삭제 (소프트 딜리트) 추후 수정
 //    @DeleteMapping("/{id}")
