@@ -1,10 +1,11 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function ReviewModify() {
   const params = useParams();
+  const router = useRouter();
   const [review, setReview] = useState({
     rating: 0,
     content: "",
@@ -40,6 +41,7 @@ export default function ReviewModify() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          credentials: "include",
         },
         body: JSON.stringify(reviewToSend),
       }
@@ -47,6 +49,7 @@ export default function ReviewModify() {
 
     if (response.ok) {
       alert("modify success");
+      router.push(`/review/${params.id}`);
     } else {
       alert("modify fail");
     }

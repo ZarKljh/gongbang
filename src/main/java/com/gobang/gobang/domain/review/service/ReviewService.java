@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +55,11 @@ public class ReviewService {
         return reviewRepository.findById(id);
     }
 
-    public RsData<Review> modify(Review review, @NotBlank Integer rating, @NotBlank String content) {
+    @Transactional
+    public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
         review.setRating(rating);
         review.setContent(content);
+
         reviewRepository.save(review);
 
         return RsData.of(

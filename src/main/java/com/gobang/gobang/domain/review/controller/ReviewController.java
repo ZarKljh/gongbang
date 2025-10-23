@@ -11,6 +11,7 @@ import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -111,7 +112,7 @@ public class ReviewController {
     @Getter
     @Setter
     public static class ModifyRequest {
-        @NotBlank
+        @NotNull
         private Integer rating;
 
         @NotBlank
