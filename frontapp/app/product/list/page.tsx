@@ -129,7 +129,7 @@ export default function Product() {
               <ul className="subcategory-list">
                 {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
                   <li key={sub.id}>
-                    <a href="#">{sub.name}</a>
+                    <a onClick={() => onClickCategory(cat.id)}>{sub.name}</a>
                   </li>
                 ))}
               </ul>
