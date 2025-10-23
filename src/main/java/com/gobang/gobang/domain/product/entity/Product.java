@@ -96,5 +96,5 @@ public class Product extends BaseEntity {
                     name = "uk_product_category", columnNames = {"product_id","category_id"}
             )
     )
-    private Set<Category> categories = new LinkedHashSet<>();
+    private Set<Category> category = new LinkedHashSet<>();
 }

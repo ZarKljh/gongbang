@@ -10,21 +10,23 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class ApiSecurityConfig {
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
+    private final WebConfig webConfig;
     @Bean
     SecurityFilterChain apifilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/**")
                 .authorizeRequests(
                         authorizeRequests -> authorizeRequests
-                                .requestMatchers(HttpMethod.GET, "/api/admin/*").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/admin/*").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/reviews/*").hasRole("USER")
-                                .requestMatchers(HttpMethod.POST, "/api/reviews/*").hasRole("USER")
+                                .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/*").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
@@ -36,6 +38,7 @@ public class ApiSecurityConfig {
                         csrf -> csrf
                                 .disable()
                 ) // csrf 토큰 끄기
+                .cors(cors -> cors.configurationSource(webConfig.corsConfigurationSource()))
                 .httpBasic(
                         httpBasic -> httpBasic.disable()
                 ) // httpBasic 로그인 방식 끄기
@@ -52,4 +55,5 @@ public class ApiSecurityConfig {
         ;
         return http.build();
     }
+
 }
