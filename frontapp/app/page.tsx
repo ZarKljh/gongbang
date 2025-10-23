@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/app/utils/api";
 import { useEffect, useState } from "react";
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
@@ -27,21 +28,18 @@ export default function Main() {
   const fetchAll = async (): Promise<void> => {
     try {
       // 1 카테고리 목록 먼저 요청
-      const res = await fetch("http://localhost:8090/api/v1/category");
-      if (!res.ok) throw new Error("카테고리 조회 실패");
-      const data = await res.json();
+      const res = await api.get("/category");
 
-      const categoryList: Category[] = data.data.categoryList;
+      // ✅ 구조 분해 (axios는 자동으로 JSON 파싱)
+      const categoryList: Category[] = res.data.data.categoryList;
+
       setCategories(categoryList);
 
       // 2 카테고리 ID별로 서브카테고리 병렬 요청
       const subPromises = categoryList.map(async (cat) => {
-        const res = await fetch(
-          `http://localhost:8090/api/category/v1/${cat.id}/sub`
-        );
-        if (!res.ok) throw new Error(`서브카테고리 조회 실패: ${cat.id}`);
-        const subData = await res.json();
-        return [cat.id, subData.data.subCategoryList] as const;
+        const res = await api.get(`/category/${cat.id}/sub`);
+
+        return [cat.id, res.data.data.subCategoryList] as const;
       });
 
       // 3 모든 fetch 결과를 병렬로 처리
