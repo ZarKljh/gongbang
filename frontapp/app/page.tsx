@@ -27,7 +27,7 @@ export default function Main() {
   const fetchAll = async (): Promise<void> => {
     try {
       // 1 카테고리 목록 먼저 요청
-      const res = await fetch("http://localhost:8090/api/category/v1");
+      const res = await fetch("http://localhost:8090/api/v1/category");
       if (!res.ok) throw new Error("카테고리 조회 실패");
       const data = await res.json();
 
@@ -63,15 +63,19 @@ export default function Main() {
     <main className="p-4">
       <h1 className="font-bold text-lg mb-4">카테고리 </h1>
       <nav aria-label="카테고리 슬라이더">
-        <div class="slider" role="region" aria-roledescription="carousel">
-          <button type="button" class="slider-prev" aria-label="이전 카테고리">
+        <div className="slider" role="region" aria-roledescription="carousel">
+          <button
+            type="button"
+            className="slider-prev"
+            aria-label="이전 카테고리"
+          >
             &lt;
           </button>
 
-          <ul class="category-list" role="list">
+          <ul className="category-list" role="list">
             {categories.map((cat) => (
               <li key={cat.id} className="mb-6">
-                <button type="button" class="category-btn">
+                <button type="button" className="category-btn">
                   {" "}
                   {cat.name}
                 </button>
@@ -79,40 +83,44 @@ export default function Main() {
             ))}
           </ul>
 
-          <button type="button" class="slider-next" aria-label="다음 카테고리">
+          <button
+            type="button"
+            className="slider-next"
+            aria-label="다음 카테고리"
+          >
             &gt;
           </button>
         </div>
       </nav>
 
-      <header class="category-header">
-        <div class="header-left">
-          <h2 class="header-title">목록별 카테고리</h2>
+      <header className="category-header">
+        <div className="header-left">
+          <h2 className="header-title">목록별 카테고리</h2>
           <button
             type="button"
-            class="menu-toggle"
+            className="menu-toggle"
             aria-label="카테고리 메뉴 열기"
           >
-            <span class="menu-icon"></span>
+            <span className="menu-icon"></span>
           </button>
         </div>
 
-        <nav class="header-nav" aria-label="상단 메뉴">
-          <ul class="nav-list">
-            <li class="nav-item">
+        <nav className="header-nav" aria-label="상단 메뉴">
+          <ul className="nav-list">
+            <li className="nav-item">
               <a href="#">이벤트</a>
             </li>
-            <li class="nav-item">
+            <li className="nav-item">
               <a href="#">셀러소개</a>
             </li>
-            <li class="nav-item">
+            <li className="nav-item">
               <a href="#">문의사항</a>
             </li>
           </ul>
         </nav>
       </header>
       {categories.map((cat) => (
-        <ul class="category-list" key={cat.id}>
+        <ul className="category-list" key={cat.id}>
           <li>
             <strong className="text-lg font-semibold mb-2"> {cat.name}</strong>
             <ul>
