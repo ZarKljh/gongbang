@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.dto.request.UserAddressRequest;
 import com.gobang.gobang.domain.personal.dto.response.UserAddressResponse;
 import com.gobang.gobang.domain.personal.service.UserAddressService;
+import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,20 +23,17 @@ public class UserAddressController {
 
     // 배송지 목록 페이지
     @GetMapping
-    public String addressList(@RequestParam(required = false) SiteUser siteUser, Model model) {
-        // TODO: 실제로는 세션에서 userId를 가져와야 함
+    public RsData<List<UserAddressResponse>> addressList(@RequestParam(required = false) SiteUser siteUser) {
         if (siteUser == null) {
             return null; // 테스트용 기본값
         }
 
         List<UserAddressResponse> addresses = userAddressService.getAddressesByUserId(siteUser);
-        model.addAttribute("addresses", addresses);
-        model.addAttribute("siteUser", siteUser);
 
-        return "mypage/addresses";
+        return RsData.of("200", "장바구니 다건 조회 성공", addresses);
     }
 
-    // 배송지 등록 (AJAX)
+    // 배송지 등록
     @PostMapping
     @ResponseBody
     public ResponseEntity<UserAddressResponse> createAddress(@RequestBody UserAddressRequest request) {
@@ -53,7 +51,7 @@ public class UserAddressController {
         return ResponseEntity.ok(response);
     }
 
-    // 배송지 삭제 (AJAX)
+    // 배송지 삭제
     @DeleteMapping("/{addressId}")
     @ResponseBody
     public ResponseEntity<Void> deleteAddress(@PathVariable Long addressId) {
@@ -61,7 +59,7 @@ public class UserAddressController {
         return ResponseEntity.ok().build();
     }
 
-    // 기본 배송지 설정 (AJAX)
+    // 기본 배송지 설정
     @PatchMapping("/{addressId}/default")
     @ResponseBody
     public ResponseEntity<Void> setDefaultAddress(

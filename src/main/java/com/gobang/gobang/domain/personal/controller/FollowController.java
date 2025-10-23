@@ -5,10 +5,10 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.personal.dto.request.FollowRequest;
 import com.gobang.gobang.domain.personal.dto.response.FollowResponse;
 import com.gobang.gobang.domain.personal.service.FollowService;
+import com.gobang.gobang.global.RsData.RsData;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,63 +22,61 @@ public class FollowController {
 
     // 팔로우 목록 페이지
     @GetMapping
-    public String followList(@RequestParam(required = false) SiteUser siteUser, Model model) {
-        // TODO: 실제로는 세션에서 userId를 가져와야 함
+    @Operation(summary = "팔로우 다건 조회")
+    public RsData<List<FollowResponse>> followList(@RequestParam(required = false) SiteUser siteUser) {
         if (siteUser == null) {
-            return null; // 테스트용 기본값
+            return RsData.of("400", "유저 정보가 없습니다."); // 테스트용 기본값
         }
 
         List<FollowResponse> follows = followService.getFollowsByUserId(siteUser);
-        long followingCount = followService.getFollowingCount(siteUser);
 
-        model.addAttribute("follows", follows);
-        model.addAttribute("followingCount", followingCount);
-        model.addAttribute("siteUser", siteUser);
-
-        return "mypage/follow";
+        return RsData.of("200", "팔로우 다건 조회 성공", follows);
     }
 
-    // 팔로우 추가 (AJAX)
+    // 팔로우 추가
     @PostMapping
     @ResponseBody
-    public ResponseEntity<FollowResponse> addFollow(@RequestBody FollowRequest request) {
+    @Operation(summary = "팔로우 추가")
+    public RsData<FollowResponse> addFollow(@RequestBody FollowRequest request) {
         FollowResponse response = followService.addFollow(request);
-        return ResponseEntity.ok(response);
+        return RsData.of("200", "팔로우 추가 성공", response);
     }
 
-    // 팔로우 취소 (AJAX)
+    // 팔로우 취소
     @DeleteMapping
     @ResponseBody
-    public ResponseEntity<Void> unfollow(
-            @RequestParam SiteUser siteUser,
-            @RequestParam Studio studio) {
+    @Operation(summary = "팔로우 취소")
+    public RsData<String> unfollow(@RequestParam SiteUser siteUser, @RequestParam Studio studio) {
         followService.unfollow(siteUser, studio);
-        return ResponseEntity.ok().build();
+        return RsData.of("200", "삭제성공");
     }
 
-    // 팔로우 여부 확인 (AJAX)
+    // 팔로우 여부 확인
     @GetMapping("/check")
     @ResponseBody
-    public ResponseEntity<Boolean> isFollowing(
+    @Operation(summary = "팔로우 여부 확인")
+    public RsData<Boolean> isFollowing(
             @RequestParam SiteUser siteUser,
             @RequestParam Studio studio) {
         boolean isFollowing = followService.isFollowing(siteUser, studio);
-        return ResponseEntity.ok(isFollowing);
+        return RsData.of("200", "팔로우 여부 확인 성공", isFollowing);
     }
 
-    // 셀러의 팔로워 수 조회 (AJAX)
+    // 셀러의 팔로워 수 조회
     @GetMapping("/count/followers")
     @ResponseBody
-    public ResponseEntity<Long> getFollowerCount(@RequestParam Studio studio) {
+    @Operation(summary = "팔로우 여부 확인")
+    public RsData<Long> getFollowerCount(@RequestParam Studio studio) {
         long count = followService.getFollowerCount(studio);
-        return ResponseEntity.ok(count);
+        return RsData.of("200", "팔로우 여부 확인 성공", count);
     }
 
-    // 사용자의 팔로잉 수 조회 (AJAX)
+    // 사용자의 팔로잉 수 조회
     @GetMapping("/count/following")
     @ResponseBody
-    public ResponseEntity<Long> getFollowingCount(@RequestParam SiteUser siteUser) {
+    @Operation(summary = "사용자의 팔로잉 수 조회")
+    public RsData<Long> getFollowingCount(@RequestParam SiteUser siteUser) {
         long count = followService.getFollowingCount(siteUser);
-        return ResponseEntity.ok(count);
+        return RsData.of("200", "사용자의 팔로잉 수 조회", count);
     }
 }

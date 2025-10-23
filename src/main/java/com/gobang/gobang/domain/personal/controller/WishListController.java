@@ -3,9 +3,11 @@ package com.gobang.gobang.domain.personal.controller;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.dto.request.WishListRequest;
+import com.gobang.gobang.domain.personal.dto.response.CartResponse;
 import com.gobang.gobang.domain.personal.dto.response.WishListResponse;
 import com.gobang.gobang.domain.personal.service.WishListService;
 import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,23 +25,17 @@ public class WishListController {
 
     // 찜목록 페이지
     @GetMapping
-    public String wishList(@RequestParam(required = false) SiteUser siteUser, Model model) {
-        // TODO: 실제로는 세션에서 userId를 가져와야 함
+    public RsData<List<WishListResponse>> wishList(@RequestParam(required = false) SiteUser siteUser) {
         if (siteUser == null) {
             return null; // 테스트용 기본값
         }
 
         List<WishListResponse> wishLists = wishListService.getWishListByUser(siteUser);
-        long wishCount = wishListService.getUserWishCount(siteUser);
 
-        model.addAttribute("wishLists", wishLists);
-        model.addAttribute("wishCount", wishCount);
-        model.addAttribute("siteUser", siteUser);
-
-        return "mypage/wishlist";
+        return RsData.of("200", "장바구니 다건 조회 성공", wishLists);
     }
 
-    // 찜 추가 (AJAX)
+    // 찜 추가
     @PostMapping
     @ResponseBody
     public ResponseEntity<WishListResponse> addWishList(@RequestBody WishListRequest request) {
@@ -47,7 +43,7 @@ public class WishListController {
         return ResponseEntity.ok(response);
     }
 
-    // 찜 삭제 (AJAX)
+    // 찜 삭제
     @DeleteMapping("/{wishlistId}")
     @ResponseBody
     public ResponseEntity<Void> removeWishList(@PathVariable Long wishlistId) {
@@ -55,7 +51,7 @@ public class WishListController {
         return ResponseEntity.ok().build();
     }
 
-    // 찜 삭제 - 사용자+상품 (AJAX)
+    // 찜 삭제 - 사용자+상품
     @DeleteMapping
     @ResponseBody
     public ResponseEntity<Void> removeWishListByUserAndProduct(
@@ -65,7 +61,7 @@ public class WishListController {
         return ResponseEntity.ok().build();
     }
 
-    // 찜 여부 확인 (AJAX)
+    // 찜 여부 확인
     @GetMapping("/check")
     @ResponseBody
     public ResponseEntity<Boolean> isWished(
@@ -75,7 +71,7 @@ public class WishListController {
         return ResponseEntity.ok(isWished);
     }
 
-    // 상품의 찜 개수 조회 (AJAX)
+    // 상품의 찜 개수 조회
     @GetMapping("/count/product")
     @ResponseBody
     public ResponseEntity<Long> getWishCount(@RequestParam Product product) {
@@ -83,7 +79,7 @@ public class WishListController {
         return ResponseEntity.ok(count);
     }
 
-    // 사용자의 찜 개수 조회 (AJAX)
+    // 사용자의 찜 개수 조회
     @GetMapping("/count/user")
     @ResponseBody
     public ResponseEntity<Long> getUserWishCount(@RequestParam SiteUser siteUser) {

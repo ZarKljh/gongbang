@@ -84,7 +84,7 @@ public class CartService {
 
     // 장바구니 개수 조회
     public long getCartCount(SiteUser siteUser) {
-        return cartRepository.countBySiteUser(siteUser);
+        return cartRepository.sumQuantityBySiteUser(siteUser);
     }
 
     // Entity -> Response DTO 변환
@@ -93,7 +93,7 @@ public class CartService {
                 .cartId(cart.getCartId())
                 .siteUser(cart.getSiteUser())
                 .product(cart.getProduct())
-                .productName("상품명") // TODO: Product 엔티티에서 가져오기
+                .productName(cart.getProduct() != null ? cart.getProduct().getName() : null)
                 .quantity(cart.getQuantity())
                 .createdAt(cart.getCreatedAt())
                 .build();

@@ -43,7 +43,7 @@ public class FollowService {
     @Transactional
     public FollowResponse addFollow(FollowRequest request) {
         // 이미 팔로우 중인지 확인
-        Optional<Follow> existing = followRepository.existsBySiteUserAndStudio(
+        Optional<Follow> existing = followRepository.findBySiteUserAndStudio(
                 request.getSiteUser(), request.getStudio());
 
         if (existing.isPresent()) {
@@ -62,7 +62,7 @@ public class FollowService {
     // 팔로우 취소
     @Transactional
     public void unfollow(SiteUser siteUser, Studio studio) {
-        Follow follow = followRepository.existsBySiteUserAndStudio(siteUser, studio)
+        Follow follow = followRepository.findBySiteUserAndStudio(siteUser, studio)
                 .orElseThrow(() -> new IllegalArgumentException("팔로우 정보를 찾을 수 없습니다."));
 
         followRepository.delete(follow);

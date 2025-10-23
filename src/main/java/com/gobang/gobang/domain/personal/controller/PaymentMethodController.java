@@ -3,8 +3,11 @@ package com.gobang.gobang.domain.personal.controller;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.dto.request.PaymentMethodRequest;
+import com.gobang.gobang.domain.personal.dto.response.CartResponse;
 import com.gobang.gobang.domain.personal.dto.response.PaymentMethodResponse;
 import com.gobang.gobang.domain.personal.service.PaymentMethodService;
+import com.gobang.gobang.global.RsData.RsData;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,20 +25,18 @@ public class PaymentMethodController {
 
     // 결제수단 목록 페이지
     @GetMapping
-    public String paymentMethodList(@RequestParam(required = false) SiteUser siteUser, Model model) {
-        // TODO: 실제로는 세션에서 userId를 가져와야 함
+    @Operation(summary = "결제수단 목록 페이지")
+    public RsData<List<PaymentMethodResponse>> paymentMethodList(@RequestParam(required = false) SiteUser siteUser) {
         if (siteUser == null) {
-            return null; // 테스트용 기본값
+            return RsData.of("400", "유저 정보가 없습니다.");
         }
 
-        List<PaymentMethodResponse> paymentMethods = paymentMethodService.getPaymentMethodsByUserId(siteUser);
-        model.addAttribute("paymentMethods", paymentMethods);
-        model.addAttribute("siteUser", siteUser);
+        List<PaymentMethodResponse> paymentMethod = paymentMethodService.getPaymentMethodsByUserId(siteUser);
 
-        return "mypage/payment-methods";
+        return RsData.of("200", "결제수단 다건 조회 성공", paymentMethod);
     }
 
-    // 결제수단 등록 (AJAX)
+    // 결제수단 등록
     @PostMapping
     @ResponseBody
     public ResponseEntity<PaymentMethodResponse> createPaymentMethod(@RequestBody PaymentMethodRequest request) {
@@ -43,7 +44,7 @@ public class PaymentMethodController {
         return ResponseEntity.ok(response);
     }
 
-    // 결제수단 수정 (AJAX)
+    // 결제수단 수정
     @PatchMapping("/{paymentId}")
     @ResponseBody
     public ResponseEntity<PaymentMethodResponse> updatePaymentMethod(
@@ -53,7 +54,7 @@ public class PaymentMethodController {
         return ResponseEntity.ok(response);
     }
 
-    // 결제수단 삭제 (AJAX)
+    // 결제수단 삭제
     @DeleteMapping("/{paymentId}")
     @ResponseBody
     public ResponseEntity<Void> deletePaymentMethod(@PathVariable Long paymentId) {
@@ -61,7 +62,7 @@ public class PaymentMethodController {
         return ResponseEntity.ok().build();
     }
 
-    // 기본 결제수단 설정 (AJAX)
+    // 기본 결제수단 설정
     @PatchMapping("/{paymentId}/default")
     @ResponseBody
     public ResponseEntity<Void> setDefaultPaymentMethod(
