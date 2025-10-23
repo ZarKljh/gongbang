@@ -46,11 +46,9 @@ public class CartController {
     @PatchMapping("/{cartId}")
     @ResponseBody
     @Operation(summary = "장바구니 수량 수정")
-    public RsData<CartResponse> updateCartQuantity(
-            @PathVariable Long cartId,
-            @RequestParam Long quantity) {
+    public RsData<CartResponse> updateCartQuantity(@PathVariable Long cartId, @RequestParam Long quantity) {
         CartResponse response = cartService.updateCartQuantity(cartId, quantity);
-        return RsData.of("200", "수정성공", response);
+        return RsData.of("200", "수량 수정 성공", response);
     }
 
     // 장바구니 항목 삭제
@@ -58,9 +56,8 @@ public class CartController {
     @ResponseBody
     @Operation(summary = "장바구니 항목 삭제")
     public RsData<Cart> deleteCart(@PathVariable Long cartId) {
-        Cart cart = cartService.getCartByCartId(cartId);
         cartService.deleteCart(cartId);
-        return RsData.of("200", "삭제성공", cart);
+        return RsData.of("200", "삭제 성공");
     }
 
     // 장바구니 전체 삭제

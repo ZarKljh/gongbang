@@ -39,36 +39,36 @@ public class PaymentMethodController {
     // 결제수단 등록
     @PostMapping
     @ResponseBody
-    public ResponseEntity<PaymentMethodResponse> createPaymentMethod(@RequestBody PaymentMethodRequest request) {
+    @Operation(summary = "결제수단 등록")
+    public RsData<PaymentMethodResponse> createPaymentMethod(@RequestBody PaymentMethodRequest request) {
         PaymentMethodResponse response = paymentMethodService.createPaymentMethod(request);
-        return ResponseEntity.ok(response);
+        return RsData.of("200", "결제수단 등록 성공", response);
     }
 
     // 결제수단 수정
     @PatchMapping("/{paymentId}")
     @ResponseBody
-    public ResponseEntity<PaymentMethodResponse> updatePaymentMethod(
-            @PathVariable Long paymentId,
-            @RequestBody PaymentMethodRequest request) {
+    @Operation(summary = "결제수단 수정")
+    public RsData<PaymentMethodResponse> updatePaymentMethod(@PathVariable Long paymentId, @RequestBody PaymentMethodRequest request) {
         PaymentMethodResponse response = paymentMethodService.updatePaymentMethod(paymentId, request);
-        return ResponseEntity.ok(response);
+        return RsData.of("200", "수량 수정 성공", response);
     }
 
     // 결제수단 삭제
     @DeleteMapping("/{paymentId}")
     @ResponseBody
-    public ResponseEntity<Void> deletePaymentMethod(@PathVariable Long paymentId) {
+    @Operation(summary = "결제수단 삭제")
+    public RsData<Void> deletePaymentMethod(@PathVariable Long paymentId) {
         paymentMethodService.deletePaymentMethod(paymentId);
-        return ResponseEntity.ok().build();
+        return RsData.of("200", "삭제 성공");
     }
 
     // 기본 결제수단 설정
     @PatchMapping("/{paymentId}/default")
     @ResponseBody
-    public ResponseEntity<Void> setDefaultPaymentMethod(
-            @PathVariable Long paymentId,
-            @RequestParam SiteUser siteUser) {
+    @Operation(summary = "기본 결제수단 설정")
+    public RsData<Void> setDefaultPaymentMethod(@PathVariable Long paymentId, @RequestParam SiteUser siteUser) {
         paymentMethodService.setDefaultPaymentMethod(paymentId, siteUser);
-        return ResponseEntity.ok().build();
+        return RsData.of("200", "기본 결제수단 설정 성공");
     }
 }

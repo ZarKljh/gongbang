@@ -8,6 +8,7 @@ import com.gobang.gobang.domain.personal.dto.response.WishListResponse;
 import com.gobang.gobang.domain.personal.service.WishListService;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.global.RsData.RsData;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,8 +24,9 @@ public class WishListController {
 
     private final WishListService wishListService;
 
-    // 찜목록 페이지
+    // 위시리스트 페이지
     @GetMapping
+    @Operation(summary = "위시리스트")
     public RsData<List<WishListResponse>> wishList(@RequestParam(required = false) SiteUser siteUser) {
         if (siteUser == null) {
             return null; // 테스트용 기본값
@@ -32,58 +34,60 @@ public class WishListController {
 
         List<WishListResponse> wishLists = wishListService.getWishListByUser(siteUser);
 
-        return RsData.of("200", "장바구니 다건 조회 성공", wishLists);
+        return RsData.of("200", "위시 다건 조회 성공", wishLists);
     }
 
-    // 찜 추가
+    // 위시 추가
     @PostMapping
     @ResponseBody
-    public ResponseEntity<WishListResponse> addWishList(@RequestBody WishListRequest request) {
+    @Operation(summary = "위시 추가")
+    public RsData<WishListResponse> addWishList(@RequestBody WishListRequest request) {
         WishListResponse response = wishListService.addWishList(request);
-        return ResponseEntity.ok(response);
+        return RsData.of("200", "위시 추가 성공", response);
     }
 
-    // 찜 삭제
+    // 위시 삭제
     @DeleteMapping("/{wishlistId}")
     @ResponseBody
-    public ResponseEntity<Void> removeWishList(@PathVariable Long wishlistId) {
+    @Operation(summary = "위시 삭제")
+    public RsData<Void> removeWishList(@PathVariable Long wishlistId) {
         wishListService.removeWishList(wishlistId);
-        return ResponseEntity.ok().build();
+        return RsData.of("200", "위시 삭제 성공");
     }
 
-    // 찜 삭제 - 사용자+상품
+    // 위시 삭제 - 사용자+상품
     @DeleteMapping
     @ResponseBody
-    public ResponseEntity<Void> removeWishListByUserAndProduct(
-            @RequestParam SiteUser siteUser,
-            @RequestParam Product product) {
+    @Operation(summary = "위시 삭제")
+    public RsData<Void> removeWishListByUserAndProduct(@RequestParam SiteUser siteUser, @RequestParam Product product) {
         wishListService.removeWishListByUserAndProduct(siteUser, product);
-        return ResponseEntity.ok().build();
+        return RsData.of("200", "위시 삭제 성공");
     }
 
-    // 찜 여부 확인
+    // 위시 여부 확인
     @GetMapping("/check")
     @ResponseBody
-    public ResponseEntity<Boolean> isWished(
-            @RequestParam SiteUser siteUser,
-            @RequestParam Product product) {
+    @Operation(summary = "위시 여부 확인")
+    public RsData<Boolean> isWished(@RequestParam SiteUser siteUser, @RequestParam Product product) {
         boolean isWished = wishListService.isWished(siteUser, product);
-        return ResponseEntity.ok(isWished);
+        return RsData.of("200", "위시 여부 확인 성공", isWished);
     }
 
-    // 상품의 찜 개수 조회
+    // 상품의 위시 개수 조회
     @GetMapping("/count/product")
     @ResponseBody
-    public ResponseEntity<Long> getWishCount(@RequestParam Product product) {
+    @Operation(summary = "상품의 위시 개수 조회")
+    public RsData<Long> getWishCount(@RequestParam Product product) {
         long count = wishListService.getWishCount(product);
-        return ResponseEntity.ok(count);
+        return RsData.of("200", "상품의 위시 개수 조회 성공", count);
     }
 
-    // 사용자의 찜 개수 조회
+    // 사용자의 위시 개수 조회
     @GetMapping("/count/user")
     @ResponseBody
-    public ResponseEntity<Long> getUserWishCount(@RequestParam SiteUser siteUser) {
+    @Operation(summary = "사용자의 위시 개수 조회")
+    public RsData<Long> getUserWishCount(@RequestParam SiteUser siteUser) {
         long count = wishListService.getUserWishCount(siteUser);
-        return ResponseEntity.ok(count);
+        return RsData.of("200", "사용자의 위시 개수 조회 성공", count);
     }
 }

@@ -2,9 +2,11 @@ package com.gobang.gobang.domain.personal.controller;
 
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.personal.dto.MyPageDTO;
 import com.gobang.gobang.domain.personal.dto.request.DeliveryRequest;
 import com.gobang.gobang.domain.personal.dto.response.DeliveryResponse;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
+import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.service.DeliveryService;
 import com.gobang.gobang.domain.personal.service.OrdersService;
 import com.gobang.gobang.global.RsData.RsData;
@@ -41,24 +43,25 @@ public class OrdersController {
     @GetMapping("/{orderId}")
     @ResponseBody
     @Operation(summary = "주문 상세 조회")
-    public ResponseEntity<OrdersResponse> getOrderDetail(@PathVariable Long orderId) {
-        OrdersResponse order = ordersService.getOrderDetail(orderId);
-        return ResponseEntity.ok(order);
+    public RsData<OrdersResponse> getOrderDetail(@PathVariable Long orderId) {
+        OrdersResponse orders = ordersService.getOrderDetail(orderId);
+
+        return RsData.of("200", "게시글 단건 조회 성공", orders);
     }
 
     // 주문 삭제
     @DeleteMapping("/{orderId}")
     @ResponseBody
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId) {
+    public RsData<String> deleteOrder(@PathVariable Long orderId) {
         ordersService.deleteOrder(orderId);
-        return ResponseEntity.ok().build();
+        return RsData.of("200", "삭제성공");
     }
 
     // 배송 정보 수정
     @PatchMapping("/delivery")
     @ResponseBody
-    public ResponseEntity<DeliveryResponse> updateDelivery(@RequestBody DeliveryRequest request) {
+    public RsData<DeliveryResponse> updateDelivery(@RequestBody DeliveryRequest request) {
         DeliveryResponse response = deliveryService.updateDelivery(request);
-        return ResponseEntity.ok(response);
+        return RsData.of("200", "정보 수정 성공", response);
     }
 }
