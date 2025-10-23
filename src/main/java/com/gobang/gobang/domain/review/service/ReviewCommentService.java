@@ -1,14 +1,8 @@
 package com.gobang.gobang.domain.review.service;
 
-import com.gobang.gobang.domain.review.entity.ReviewComment;
-import com.gobang.gobang.domain.review.repository.ReviewCommentRepository;
-import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
