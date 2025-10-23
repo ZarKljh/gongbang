@@ -1,14 +1,12 @@
 package com.gobang.gobang.global.config;
 
 import com.gobang.gobang.domain.auth.service.SiteUserService;
-import com.gobang.gobang.global.RsData.RsData;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,7 +17,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final HttpServletRequest req;
-    private final HttpServletResponse resp;
+
     private final SiteUserService siteUserService;
     @Override
     @SneakyThrows
@@ -31,6 +29,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         String accessToken = _getCookie("accessToken");
         // accessToken 검증 or refreshToken 발급
+        /*
         if (!accessToken.isBlank()) {
             // 토큰 유효기간 검증
             if (!siteUserService.validateToken(accessToken)) {
@@ -45,6 +44,17 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             // 인가 처리
             SecurityContextHolder.getContext().setAuthentication(securityUser.genAuthentication());
         }
+        */
+
+        // accessToken 검증 or refreshToken 발급
+        if (!accessToken.isBlank()) {
+            // SecurityUser 가져오기
+            SecurityUser securityUser = siteUserService.getUserFromAccessToken(accessToken);
+
+            // 인가 처리
+            SecurityContextHolder.getContext().setAuthentication(securityUser.getAuthentication());
+        }
+
 
         filterChain.doFilter(request, response);
     }
@@ -60,14 +70,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 .orElse("");
     }
 
-    private void _addHeaderCookie(String tokenName, String token) {
-        ResponseCookie cookie = ResponseCookie.from(tokenName, token)
-                .path("/")
-                .sameSite("None")
-                .secure(true)
-                .httpOnly(true)
-                .build();
-
-        resp.addHeader("Set-Cookie", cookie.toString());
-    }
+//    private void _addHeaderCookie(String tokenName, String token) {
+//        ResponseCookie cookie = ResponseCookie.from(tokenName, token)
+//                .path("/")
+//                .sameSite("None")
+//                .secure(true)
+//                .httpOnly(true)
+//                .build();
+//
+//        resp.addHeader("Set-Cookie", cookie.toString());
+//    }
 }

@@ -17,7 +17,7 @@ public class SecurityUser extends User {
         this.id = id;
     }
 
-    public Authentication genAuthentication() {
+    public Authentication getAuthentication() {
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 this, // principal (securityUser 자기 자신)
                 this.getPassword(), // 비밀번호
