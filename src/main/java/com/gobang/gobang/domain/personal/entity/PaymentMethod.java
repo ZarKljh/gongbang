@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PaymentMethod {
 
     @Id
@@ -38,6 +39,7 @@ public class PaymentMethod {
     @Column(name = "card_number", length = 100)
     private String cardNumber;
 
+    @Builder.Default
     @Column(name = "default_payment", nullable = false)
     private Boolean defaultPayment = false;
 

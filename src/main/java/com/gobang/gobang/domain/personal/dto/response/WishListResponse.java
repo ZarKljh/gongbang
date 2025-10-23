@@ -1,15 +1,17 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.personal.entity.WishList;
 import com.gobang.gobang.domain.product.entity.Product;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-@SuperBuilder
+@Builder
 public class WishListResponse {
 
     private Long wishlistId;
@@ -17,4 +19,13 @@ public class WishListResponse {
     private Product product;
     private String productName; // Product 엔티티에서 가져올 예정
     private LocalDateTime createdAt;
+
+    public static WishListResponse from(WishList wishList) {
+        return WishListResponse.builder()
+                .wishlistId(wishList.getWishlistId())
+                .siteUser(wishList.getSiteUser())
+                .product(wishList.getProduct())
+                .createdAt(wishList.getCreatedAt())
+                .build();
+    }
 }

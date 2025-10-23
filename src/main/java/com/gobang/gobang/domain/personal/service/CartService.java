@@ -41,6 +41,7 @@ public class CartService {
             // 이미 있으면 수량 증가
             Cart cart = existingCart.get();
             cart.setQuantity(cart.getQuantity() + request.getQuantity());
+
             Cart saved = cartRepository.save(cart);
             return convertToResponse(saved);
         } else {
@@ -96,5 +97,10 @@ public class CartService {
                 .quantity(cart.getQuantity())
                 .createdAt(cart.getCreatedAt())
                 .build();
+    }
+
+    public Cart getCartByCartId(Long cartId) {
+        return cartRepository.findById(cartId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 장바구니가 존재하지 않습니다. ID: " + cartId));
     }
 }

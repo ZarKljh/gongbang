@@ -1,15 +1,17 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.product.entity.Product;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-@SuperBuilder
+@Builder
 public class CartResponse {
 
     private Long cartId;
@@ -18,4 +20,14 @@ public class CartResponse {
     private String productName; // Product 엔티티에서 가져올 예정
     private Long quantity;
     private LocalDateTime createdAt;
+
+    public static CartResponse from(Cart cart) {
+        return CartResponse.builder()
+                .cartId(cart.getCartId())
+                .siteUser(cart.getSiteUser())
+                .product(cart.getProduct())
+                .quantity(cart.getQuantity())
+                .createdAt(cart.getCreatedAt())
+                .build();
+    }
 }

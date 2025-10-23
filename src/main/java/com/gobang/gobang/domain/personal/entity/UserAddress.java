@@ -14,6 +14,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserAddress {
 
     @Id
@@ -37,6 +38,7 @@ public class UserAddress {
     @Column(name = "zipcode", nullable = false, length = 255)
     private String zipcode;
 
+    @Builder.Default
     @Column(name = "is_default", nullable = false)
     private Boolean isDefault = false;
 

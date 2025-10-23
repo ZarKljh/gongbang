@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Coupon {
 
     @Id
@@ -45,6 +46,7 @@ public class Coupon {
     @Column(name = "discount_category", nullable = false, length = 50)
     private String discountCategory;
 
+    @Builder.Default
     @Column(name = "coupon_status", nullable = false)
     private Boolean couponStatus = false;
 }
