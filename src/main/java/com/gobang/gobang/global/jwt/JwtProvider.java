@@ -57,6 +57,8 @@ public class JwtProvider {
         /*토큰안에 id와 username을 넣어서 body라는 키로 저장한다*/
         claims.put("id", siteUser.getId());
         claims.put("username", siteUser.getUserName());
+        /* 토큰 안에 role을 넣는다*/
+        claims.put("Role", siteUser.getRole().name());
 
         /*현재 시간에 second를 더해서 만료일을 만든다*/
         long now = new Date().getTime();
