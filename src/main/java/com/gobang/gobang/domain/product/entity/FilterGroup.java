@@ -33,8 +33,8 @@ public class FilterGroup extends BaseEntity {
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder; // 노출 순서
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true; // 사용 여부
+    @Column(name = "active", nullable = false)
+    private Boolean active = true; // 사용 여부
 
 
     //여러 FilterGroup 이 하나의 category 에 속함(소유측)

@@ -21,7 +21,7 @@ public class CategoryService {
 
     public List<CategoryDto> getCategoryList(int size) {
         int limit = Math.max(1, Math.min(size, 50));
-        List<Category> categories = categoryRepository.findActiveCategories(PageRequest.of(0, limit));
+        List<Category> categories = categoryRepository.findByActiveTrueOrderByDisplayOrderAsc(PageRequest.of(0, limit));
         return categories.stream()
                 .map(t -> CategoryDto.builder()
                         .id(t.getId())
@@ -38,7 +38,7 @@ public class CategoryService {
 
     public List<SubCategoryDto> getSubCategoryList(int size) {
         int limit = Math.max(1, Math.min(size, 50));
-        List<Subcategory> subCategory = subCategoryRepository.findAllByOrderByDisplayOrderAscIdAsc(PageRequest.of(0, limit));
+        List<Subcategory> subCategory = subCategoryRepository.findAllByActiveTrueOrderByDisplayOrderAscIdAsc(PageRequest.of(0, limit));
         return subCategory.stream()
                 .map(t -> SubCategoryDto.builder()
                         .id(t.getId())
@@ -52,7 +52,7 @@ public class CategoryService {
 
     public List<SubCategoryDto> getSubCategoryIdList(Long categoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
-        List<Subcategory> subCategory = subCategoryRepository.findAllByCategory_IdOrderByDisplayOrderAscIdAsc(categoryId, PageRequest.of(0, limit));
+        List<Subcategory> subCategory = subCategoryRepository.findAllByActiveTrueAndCategory_IdOrderByDisplayOrderAscIdAsc(categoryId, PageRequest.of(0, limit));
         return subCategory.stream()
                 .map(t -> SubCategoryDto.builder()
                         .id(t.getId())
