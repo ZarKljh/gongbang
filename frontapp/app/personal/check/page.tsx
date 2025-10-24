@@ -10,7 +10,6 @@ export default function Check() {
   }, []);
 
   const setChecked = () => {
-    setCheck([...Check, `${Check}`]);
   }
 
   return (

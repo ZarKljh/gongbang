@@ -4,20 +4,32 @@ import { useState, useEffect } from "react";
 import "@/app/personal/page.css"
 
 export default function Personal() {
-  const [personal, setPersonal] = useState([]);
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
-    fetchPersonal();
+    getData();
   }, []);
 
-  const fetchPersonal = () => {
-    setPersonal([...personal, `${personal}`]);
+  const getData = async () => {
+    const result = await fetch("http://localhost:8090/api/v1/mypage/cart").then(
+            (row) => row.json()
+        );
+        setCart(result.data.cart);
+        console.log(result.data.cart);
   }
 
   return (
     <>
       <h4>마이페이지</h4>
-      <div className="container_box">
+      <ul>
+        {cart.map((cart) => (
+          <li key={cart.cartId}>
+            {cart.product} / {cart.productName}
+          </li>
+        ))}
+      </ul>
+
+      {/* <div className="container_box">
         <div className="container">
           <div className="myCategory">
             <p className="me user">내 정보 관리</p>
@@ -34,7 +46,7 @@ export default function Personal() {
               <div className="profileImage"></div>
               <div className="myProfile_box">
                 <span>닉네임 님 안녕하세요.</span>
-                <span>아이디 : id</span>
+                <span>아이디 : {personal.id}</span>
               </div>
               <div className="myReview_box">
                 <span>상품 리뷰</span>
@@ -53,7 +65,7 @@ export default function Personal() {
           </div>
           
         </div>
-      </div>
+      </div> */}
     </>
   );
 }
