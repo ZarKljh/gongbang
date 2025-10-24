@@ -12,7 +12,7 @@ export default function SignupUser() {
     userName: "",
     gender: "",
     birth: "",
-    nickname: "",
+    nickName: "",
     mobilePhone: "",
   });
 
@@ -25,7 +25,14 @@ export default function SignupUser() {
     e.preventDefault();
 
     //ToDo: 입력값validate 코드 작성
+    /*
+    const birthDateTime = formData.birth ? `${formData.birth}T00:00:00` : null;
 
+    const payload = {
+      ...formData,
+      birth: birthDateTime,
+    };
+    */
     const response = await fetch(`http://localhost:8090/api/auth/signup/user`, {
       method: "POST",
       //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
@@ -61,7 +68,7 @@ export default function SignupUser() {
         <div>
           <label>패스워드</label>
           <input
-            type="text"
+            type="password"
             name="password"
             onChange={handleChange}
             value={formData.password}
@@ -71,7 +78,7 @@ export default function SignupUser() {
         <div>
           <label>패스워드확인</label>
           <input
-            type="text"
+            type="password"
             name="confirmPassword"
             onChange={handleChange}
             value={formData.confirmPassword}
@@ -91,7 +98,7 @@ export default function SignupUser() {
         <div>
           <label>성별</label>
           <select name="gender" value={formData.gender} onChange={handleChange}>
-            <option value="" disabled selected>
+            <option value="" disabled>
               성별을 선택해주세요
             </option>
             <option value="M">남성</option>

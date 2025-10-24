@@ -1,12 +1,7 @@
 package com.gobang.gobang.domain.review.controller;
 
-import com.gobang.gobang.domain.review.entity.ReviewReport;
-import com.gobang.gobang.domain.review.service.ReviewReportService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

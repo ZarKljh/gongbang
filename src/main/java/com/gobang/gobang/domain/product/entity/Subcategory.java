@@ -18,12 +18,6 @@ public class Subcategory extends BaseEntity {
 //    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    private Long id;
 
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-
     @Column(length = 50, nullable = false)
     private String code;
 
@@ -34,4 +28,19 @@ public class Subcategory extends BaseEntity {
 
     @Column(length = 255)
     private String description;
+
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder = 0;
+
+
+
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
+
+    //1차카테고리 : 2차카테고리 1: N
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+
 }

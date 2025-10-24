@@ -17,13 +17,13 @@ fetch(
       .then((result) => result.json())
       .then((result) => setReviews(result.data.review))
       .catch((err) => console.error(err)); //실패시
-  });
+  }, []);
   
   return  <>
   <h4>리뷰 상세 {params.id}번</h4>
   <div>{review.content}</div>
-  <div>{review.createdDate}</div>
-  <div>{review.modifiedDate}</div>
-  {/* <Link href={`/article/${params.id}/edit`}>수정</Link> */}
+  <div>{review.createdAt}</div>
+  <div text="수정됨">{review.modifiedAt}</div>
+  <Link href={`/review/${params.id}/modify`}>수정</Link>
   </>
 }
