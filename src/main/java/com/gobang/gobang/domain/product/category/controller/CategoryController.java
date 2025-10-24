@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/category/v1")
+@RequestMapping("/api/v1/category")
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -33,7 +33,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{categoryId}/sub")
-    @Operation(summary = "서브 카테고리 ID별 다건 조회")
+    @Operation(summary = "서브 카테고리 다건 조회 (ID별)")
     public RsData<SubCategoryResponse> subCategoryIdList(@PathVariable Long categoryId, @RequestParam(defaultValue = "5") int size) {
         List<SubCategoryDto> subcategoryList = categoryService.getSubCategoryIdList(categoryId, size);
         return RsData.of("200", "카테고리 다건 조회 성공", new SubCategoryResponse(subcategoryList));

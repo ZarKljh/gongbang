@@ -4,6 +4,8 @@ import com.gobang.gobang.domain.review.dto.ReviewDto;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +48,25 @@ public class ReviewService {
         reviewRepository.save(review);
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
+    }
+
+    public Optional<Review> findById(Long id) {
+
+        return reviewRepository.findById(id);
+    }
+
+    @Transactional
+    public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
+        review.setRating(rating);
+        review.setContent(content);
+
+        reviewRepository.save(review);
+
+        return RsData.of(
+                "200",
+                "%d번 리뷰가 수정되었습니다.".formatted(review.getId()),
+                review
+        );
     }
 //
 //    // 리뷰 수정

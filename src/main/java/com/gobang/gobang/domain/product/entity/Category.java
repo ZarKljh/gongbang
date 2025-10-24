@@ -41,7 +41,7 @@ public class Category extends BaseEntity {
     private Integer displayOrder = 0;
 
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     private Boolean active = true;
 
     // 비소유측
@@ -50,7 +50,7 @@ public class Category extends BaseEntity {
 
     //category관계의 주인이 아님 외래키 갖고있는 Subcategory의 category가 주인
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Subcategory> subCategories = new ArrayList<>();
+    private List<Subcategory> subCategory = new ArrayList<>();
 
     // 1차카테고리 : 필터그룹 = 1 : N
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
