@@ -1,7 +1,9 @@
+// app/layout.tsx (또는 app/layout.jsx)
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import ClientNav from "./components/ClientNav";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -10,17 +12,34 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
       <body>
+        {/* 1) Chatling 설정: embed.js보다 먼저 실행되어야 함 */}
+        <Script
+          id="chatling-config"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window.chtlConfig = { chatbotId: "9369741529" };`,
+          }}
+        />
+
+        {/* 2) Chatling 로더 */}
+        <Script
+          id="chatling-embed"
+          strategy="afterInteractive"
+          src="https://chatling.ai/js/embed.js"
+          data-id="9369741529"
+          async
+        />
+
         <nav>
           <Link href="/member/login">로그인</Link>
           <Link href="/member/logout">로그아웃</Link>
           <ClientNav />
         </nav>
+
         {children}
       </body>
     </html>
