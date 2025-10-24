@@ -1,22 +1,34 @@
 // auth/signup/seller/components/UserForm.tsx
 import React from "react";
 
-interface Props {
-  userInfo: {
-    email: "";
-    password: "";
-    confirmPassword: "";
-    userName: "";
-    gender: "";
-    birth: "";
-    nickName: "";
-    mobilePhone: "";
+interface UserInfo {
+  email: "";
+  password: "";
+  confirmPassword: "";
+  userName: "";
+  gender: "";
+  birth: "";
+  nickName: "";
+  mobilePhone: "";
+}
+/*
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
-  setUserInfo: (info: any) => void;
-  onNext: () => void;
+*/
+
+interface UserFormProps {
+  userInfo: UserInfo;
+  setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>;
+  onNextStep: () => void;
 }
 
-export default function UserForm({ userInfo, setUserInfo, onNext }: Props) {
+export default function UserForm({
+  userInfo,
+  setUserInfo,
+  onNextStep,
+}: UserFormProps) {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -26,7 +38,7 @@ export default function UserForm({ userInfo, setUserInfo, onNext }: Props) {
 
   return (
     <div>
-      <h3>사용자 정보 입력</h3>
+      <h4>사용자 정보 입력</h4>
       <label>이름</label>
       <input
         type="text"
@@ -43,11 +55,11 @@ export default function UserForm({ userInfo, setUserInfo, onNext }: Props) {
       <label>생년월일</label>
       <input
         type="date"
-        name="birthDate"
-        value={userInfo.birthDate}
+        name="birth"
+        value={userInfo.birth}
         onChange={handleChange}
       />
-      <button type="button" onClick={onNext}>
+      <button type="button" onClick={onNextStep}>
         다음 단계
       </button>
     </div>

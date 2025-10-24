@@ -1,14 +1,12 @@
-// auth/signup/seller/page.tsx
 "use client";
 import React, { useState } from "react";
-
-//사용자정보 입력폼과 매장(studio)정보 입력폼을 index.tsx를 통해  한꺼번에 import한다
-import { UserForm, StudioForm } from "./components/index.tsx";
+import { UserForm, StudioForm } from "./component/index.tsx";
+import { UserInfo, StudioInfo } from "./types";
 
 export default function SellerSignupPage() {
   const [step, setStep] = useState(1);
 
-  const [userInfo, setUserInfo] = useState({
+  const [userInfo, setUserInfo] = useState<UserInfo>({
     email: "",
     password: "",
     confirmPassword: "",
@@ -19,7 +17,7 @@ export default function SellerSignupPage() {
     mobilePhone: "",
   });
 
-  const [studioInfo, setStudioInfo] = useState({
+  const [studioInfo, setStudioInfo] = useState<StudioInfo>({
     categoryId: "",
     studioName: "",
     studioDescription: "",
@@ -34,6 +32,22 @@ export default function SellerSignupPage() {
     businessNumber: "",
     address: "",
   });
+
+  const handleUserChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setUserInfo({ ...userInfo, [name]: value });
+    //setUserInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleStudioChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setStudioInfo({ ...studioInfo, [name]: value });
+    //setStudioInfo((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleNext = () => setStep(2);
 
@@ -53,30 +67,26 @@ export default function SellerSignupPage() {
       }
     );
 
-    if (response.ok) {
-      alert("회원가입 완료!");
-    } else {
-      alert("회원가입 실패");
-    }
+    alert(response.ok ? "회원가입 완료!" : "회원가입 실패");
   };
 
   return (
-    <div>
-      <h2>셀러 회원가입</h2>
+    <section>
+      <h3>셀러 회원가입페이지</h3>
       {step === 1 && (
         <UserForm
           userInfo={userInfo}
-          setUserInfo={setUserInfo}
+          onChange={handleUserChange}
           onNext={handleNext}
         />
       )}
       {step === 2 && (
         <StudioForm
           studioInfo={studioInfo}
-          setStudioInfo={setStudioInfo}
+          onChange={handleStudioChange}
           onSubmit={handleSubmit}
         />
       )}
-    </div>
+    </section>
   );
 }

@@ -23,7 +23,7 @@ export default function StudioForm({
 
   return (
     <div>
-      <h3>매장 정보 입력</h3>
+      <h4>매장 정보 입력</h4>
       <label>매장이름</label>
       <input
         type="text"

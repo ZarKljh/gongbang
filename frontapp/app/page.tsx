@@ -63,7 +63,7 @@ export default function Main() {
     <main className="p-4">
       <h1 className="font-bold text-lg mb-4">카테고리 </h1>
       <nav aria-label="카테고리 슬라이더">
-        <div class="slider" role="region" aria-roledescription="carousel">
+        <div className="slider" role="region" aria-roledescription="carousel">
           <button type="button" class="slider-prev" aria-label="이전 카테고리">
             &lt;
           </button>
