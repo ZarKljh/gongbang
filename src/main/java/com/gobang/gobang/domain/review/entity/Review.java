@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.review.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -49,7 +50,10 @@ public class Review {
     @Column(name = "review_like", nullable = false)
     private Integer reviewLike = 0;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime updatedAt;
 
     private Long createdBy;

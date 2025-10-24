@@ -21,8 +21,13 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
 
     // 리뷰 다건 조회
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+//    public List<Review> getAllReviews() {
+//        return reviewRepository.findAll();
+//    }
+
+    // 리뷰 다건 조회
+    public List<Review> findAll() {
+        return reviewRepository.findAllByOrderByCreatedAtDesc();
     }
 
     // 리뷰 단건 조회
@@ -68,6 +73,8 @@ public class ReviewService {
                 review
         );
     }
+
+
 //
 //    // 리뷰 수정
 //    @Transactional

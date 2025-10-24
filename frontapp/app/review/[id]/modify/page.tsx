@@ -11,14 +11,14 @@ export default function ReviewModify() {
     content: "",
   });
 
-//   useEffect(() => {
-//     fetchReview();
-//   }, []);
+  //   useEffect(() => {
+  //     fetchReview();
+  //   }, []);
 
   useEffect(() => {
-  if (!params?.id) return; // id 없으면 fetch 안 함
-  fetchReview();
-}, [params.id]);
+    if (!params?.id) return; // id 없으면 fetch 안 함
+    fetchReview();
+  }, [params.id]);
 
   const fetchReview = () => {
     fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
@@ -63,7 +63,7 @@ export default function ReviewModify() {
 
   return (
     <div>
-      <h4>리뷰 수정</h4>
+      <h2>리뷰 수정</h2>
       <form onSubmit={handleSubmit}>
         {[1, 2, 3, 4, 5].map((num) => (
           <label key={num}>
@@ -78,17 +78,25 @@ export default function ReviewModify() {
           </label>
         ))}
         <br />
-        <label>
-          내용 :
-          <input
-            type="text"
-            name="content"
-            minLength={5}
-            onChange={handleChange}
-            value={review.content}
-            placeholder="5자 이상 300자 이하"
-          />
-        </label>
+        <div className="review-content">
+          <label>
+            내용 :
+            <input
+              style={{
+                height: "200px",
+                width: "400px",
+                border: '2px solid black',
+                borderRadius: "10px"
+              }}
+              type="text"
+              name="content"
+              minLength={5}
+              onChange={handleChange}
+              value={review.content}
+              placeholder="5자 이상 300자 이하"
+            />
+          </label>
+        </div>
         <br />
         <input type="submit" value="수정하기" />
       </form>

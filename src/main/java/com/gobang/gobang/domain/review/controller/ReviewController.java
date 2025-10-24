@@ -38,7 +38,7 @@ public class ReviewController {
     // 리뷰 목록 조회 (다건)
     @GetMapping
     public RsData<ReviewsResponse> getAllReviews() {
-        List<Review> reviews = reviewService.getAllReviews();
+        List<Review> reviews = reviewService.findAll();
 
         return RsData.of(
                 "200",

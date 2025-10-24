@@ -1,5 +1,7 @@
 "use client";
-// 조회 테스트용. 리뷰 상세 페이지가 필요한가 고민중
+// 조회 테스트용. 리뷰 상세 페이지가 필요한가
+// 필요할 거 같음. 내 정보 -> 내 리뷰 -> 내 리뷰 상세 페이지로 이동해야 할 거 같다.
+// 이 안에서 삭제 수정, 리뷰 메인에서도 삭제 수정 가능
 
 import { useParams } from "next/navigation";
 import { useState, useEffect} from "react";
@@ -8,7 +10,6 @@ import Link from "next/link";
 export default function ReviewDetail() {
   const params = useParams();
   const [review, setReviews] = useState({});
-  const [member, setmember] = useState({});
 
   useEffect(() => {
 fetch(
@@ -23,7 +24,9 @@ fetch(
   <h4>리뷰 상세 {params.id}번</h4>
   <div>{review.content}</div>
   <div>{review.createdAt}</div>
-  <div text="수정됨">{review.modifiedAt}</div>
+  <div>{review.modifiedAt}</div>
   <Link href={`/review/${params.id}/modify`}>수정</Link>
+  <br />
+  <Link href={`/review`}>목록으로</Link>
   </>
 }
