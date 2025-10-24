@@ -1,14 +1,19 @@
 package com.gobang.gobang.domain.product.filter.service;
 
 import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
+import com.gobang.gobang.domain.product.dto.FilterGroupDto;
+import com.gobang.gobang.domain.product.dto.FilterOptionDto;
 import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.FilterGroup;
 import com.gobang.gobang.domain.product.entity.FilterOption;
 import com.gobang.gobang.domain.product.filter.repository.FilterGroupRepository;
 import com.gobang.gobang.domain.product.filter.repository.FilterOptionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +34,7 @@ public class FilterService {
                 .code(subCode)
                 .name(subName)
                 .displayOrder(displayOrder)
-                .isActive(isActive)
+                .active(isActive)
                 .appliesToAll(appliesToAll)
                 .build();
 
@@ -48,11 +53,48 @@ public class FilterService {
                 .label(label)
                 .valueKey(valueKey)
                 .displayOrder(displayOrder)
-                .isActive(true)
+                .active(true)
                 .inputType(inputType)
                 .selectType(selectType)
                 .build();
 
         filterOptionRepository.save(sub);
+    }
+
+
+
+    public List<FilterGroupDto> getGroupListByCategoryId(Long categoryId, int size) {
+        int limit = Math.max(1, Math.min(size, 50));
+        List<FilterGroup> filterGroups = filterGroupRepository.findAllByCategory_IdAndActiveTrueOrderByDisplayOrderAscIdAsc(categoryId, PageRequest.of(0, limit));
+        return filterGroups.stream()
+                .map(t -> FilterGroupDto.builder()
+                        .id(t.getId())
+                        .name(t.getName())
+                        .code(t.getCode())
+                        .createdDate(t.getCreatedDate())
+                        .modifiedDate(t.getModifiedDate())
+                        .build())
+                .toList();
+
+    }
+    public List<FilterOptionDto> getOptionListByGroupId(Long groupId, int size) {
+        int limit = Math.max(1, Math.min(size, 50));
+        List<FilterOption> filterOptions = filterOptionRepository.findAllByGroupId_IdAndActiveTrueOrderByDisplayOrderAscIdAsc(groupId, PageRequest.of(0, limit));
+        return filterOptions.stream()
+                .map(t -> FilterOptionDto.builder()
+                        .id(t.getId())
+                        .label(t.getLabel())
+                        .inputType(t.getInputType())
+                        .selectType(t.getSelectType())
+                        .colorHex(t.getColorHex())
+                        .iconUrl(t.getIconUrl())
+                        .tooltip(t.getTooltip())
+                        .minValue(t.getMinValue())
+                        .maxValue(t.getMaxValue())
+                        .createdDate(t.getCreatedDate())
+                        .modifiedDate(t.getModifiedDate())
+                        .build())
+                .toList();
+
     }
 }
