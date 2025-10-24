@@ -26,6 +26,7 @@ import java.util.Optional;
 @Service
 public class SiteUserService {
     private final SiteUserRepository siteUserRepository;
+    private final StudioService studioService;
     private final JwtProvider jwtProvider;
 
 
@@ -121,7 +122,7 @@ public class SiteUserService {
                 .build();
 
         Studio newStudio = Studio.builder()
-                .categoryId(signupSellerRequest.getCategoryId())
+                .categoryId(Long.parseLong(signupSellerRequest.getCategoryId()))
                 .studioName(signupSellerRequest.getStudioName())
                 .studioDescription(signupSellerRequest.getStudioDescription())
                 .studioMobile(signupSellerRequest.getStudioMobile())
@@ -134,9 +135,11 @@ public class SiteUserService {
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
-
+        newStudio.setSiteUser(newUser);
         siteUserRepository.save(newUser);
-
+        System.out.println("유저정보가 저장되었습니다");
+        studioService.createStudio(newStudio);
+        System.out.println("공방이 저장되었습니다");
         return newUser;
 
     }

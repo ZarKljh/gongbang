@@ -10,6 +10,7 @@ import com.gobang.gobang.domain.auth.dto.response.SignupUserResponse;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.auth.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
 import com.gobang.gobang.global.rq.Rq;
@@ -31,6 +32,7 @@ import java.util.Map;
 @Tag(name = "ApiV1SiteUserController", description = "회원 인증/인가 API")
 public class SiteUserController {
     private final SiteUserService siteUserService;
+    private final StudioService studioService;
     private final JwtProvider jwtProvider;
     //private final HttpServletResponse resp;
     private final Rq rq;
@@ -43,8 +45,9 @@ public class SiteUserController {
     }
     @PostMapping("/signup/seller")
     public RsData<SignupSellerResponse> joinSeller(@Valid @RequestBody SignupSellerRequest signupSellerRequest){
-        SiteUser siteUser = siteUserService.signupSeller(signupSellerRequest);
-        return RsData.of("200", "회원가입이 완료되었습니다", new SignupSellerResponse(siteUser, new Studio()));
+        SiteUser newUser = siteUserService.signupSeller(signupSellerRequest);
+        Studio newStudio = studioService.getStudio(newUser);
+        return RsData.of("200", "회원가입이 완료되었습니다", new SignupSellerResponse(newUser, newStudio));
     }
 
     @Getter
