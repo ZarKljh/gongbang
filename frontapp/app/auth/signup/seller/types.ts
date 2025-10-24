@@ -21,6 +21,4 @@ export interface StudioInfo {
   studioAddPostNumber: string;
   studioAddMain: string;
   studioAddDetail: string;
-  businessNumber: string;
-  address: string;
 }

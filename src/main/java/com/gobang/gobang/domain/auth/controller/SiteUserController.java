@@ -2,10 +2,13 @@ package com.gobang.gobang.domain.auth.controller;
 
 import com.gobang.gobang.domain.auth.dto.SiteUserDto;
 import com.gobang.gobang.domain.auth.dto.request.LoginUserRequest;
+import com.gobang.gobang.domain.auth.dto.request.SignupSellerRequest;
 import com.gobang.gobang.domain.auth.dto.request.SignupUserRequest;
 import com.gobang.gobang.domain.auth.dto.response.LoginUserResponse;
+import com.gobang.gobang.domain.auth.dto.response.SignupSellerResponse;
 import com.gobang.gobang.domain.auth.dto.response.SignupUserResponse;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
@@ -33,10 +36,15 @@ public class SiteUserController {
     private final Rq rq;
 
     @PostMapping("/signup/user")
-    public RsData<SignupUserResponse> join (@Valid @RequestBody SignupUserRequest signupUserRequest) {
+    public RsData<SignupUserResponse> joinUser (@Valid @RequestBody SignupUserRequest signupUserRequest) {
         SiteUser siteUser = siteUserService.signupUser(signupUserRequest);
         //System.out.println("여기까지 확인되었습니다");
         return RsData.of("200", "회원가입이 완료되었습니다.", new SignupUserResponse(siteUser));
+    }
+    @PostMapping("/signup/seller")
+    public RsData<SignupSellerResponse> joinSeller(@Valid @RequestBody SignupSellerRequest signupSellerRequest){
+        SiteUser siteUser = siteUserService.signupSeller(signupSellerRequest);
+        return RsData.of("200", "회원가입이 완료되었습니다", new SignupSellerResponse(siteUser, new Studio()));
     }
 
     @Getter

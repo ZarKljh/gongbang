@@ -1,12 +1,15 @@
 package com.gobang.gobang.domain.auth.service;
 
+import com.gobang.gobang.domain.auth.dto.request.SignupSellerRequest;
 import com.gobang.gobang.domain.auth.dto.request.SignupUserRequest;
 import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.config.SecurityUser;
 import com.gobang.gobang.global.jwt.JwtProvider;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +73,7 @@ public class SiteUserService {
         } else {
             return null;
         }
+
     }
     public boolean validateToken(String accessToken) {
         return jwtProvider.verify(accessToken);
@@ -89,6 +93,51 @@ public class SiteUserService {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         return new SecurityUser(id, username, "", authorities);
+
+    }
+
+    public SiteUser signupSeller(@Valid SignupSellerRequest signupSellerRequest) {
+        Optional<SiteUser> checkedSiteUser = siteUserRepository.findByUserName(signupSellerRequest.getUserName());
+
+        if(checkedSiteUser.isPresent()){
+            throw new RuntimeException("이미 가입된 사용자입니다.");
+        }
+        if (signupSellerRequest.getStatus() == null) {
+            signupSellerRequest.setStatus("ACTIVE");
+        }
+
+        SiteUser newUser = SiteUser.builder()
+                .email(signupSellerRequest.getEmail())
+                .password(signupSellerRequest.getPassword())
+                .userName(signupSellerRequest.getUserName())
+                .mobilePhone(signupSellerRequest.getMobilePhone())
+                .nickName(signupSellerRequest.getNickName())
+                .role(RoleType.SELLER)
+                .status(signupSellerRequest.getStatus())
+                .gender(signupSellerRequest.getGender())
+                .birth(signupSellerRequest.getBirth().atStartOfDay())
+                .createdDate(LocalDateTime.now())
+                //.profileImg(signupUserRequest.getProfileImg())
+                .build();
+
+        Studio newStudio = Studio.builder()
+                .categoryId(signupSellerRequest.getCategoryId())
+                .studioName(signupSellerRequest.getStudioName())
+                .studioDescription(signupSellerRequest.getStudioDescription())
+                .studioMobile(signupSellerRequest.getStudioMobile())
+                .studioOfficeTell(signupSellerRequest.getStudioOfficeTell())
+                .studioFax(signupSellerRequest.getStudioFax())
+                .studioEmail(signupSellerRequest.getStudioEmail())
+                .studioBusinessNumber(signupSellerRequest.getStudioBusinessNumber())
+                .build();
+
+
+        String refreshToken = jwtProvider.genRefreshToken(newUser);
+        newUser.setRefreshToken(refreshToken);
+
+        siteUserRepository.save(newUser);
+
+        return newUser;
 
     }
 

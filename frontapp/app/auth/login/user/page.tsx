@@ -56,10 +56,18 @@ export default function LoginUser() {
     <>
       <h4>로그인</h4>
       <form onSubmit={handleSubmit}>
-        <label>닉네임</label>
-        <input type="text" name="userName" onChange={handleChange}></input>
-        <label>패스워드</label>
-        <input type="password" name="password" onChange={handleChange}></input>
+        <div>
+          <label>성명</label>
+          <input type="text" name="userName" onChange={handleChange}></input>
+        </div>
+        <div>
+          <label>패스워드</label>
+          <input
+            type="password"
+            name="password"
+            onChange={handleChange}
+          ></input>
+        </div>
         <div>
           <input type="submit" value="로그인" />
           {/* <button type="submit">등록</button> */}

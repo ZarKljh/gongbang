@@ -68,7 +68,7 @@ export default function SignupUser() {
         <div>
           <label>패스워드</label>
           <input
-            type="text"
+            type="password"
             name="password"
             onChange={handleChange}
             value={formData.password}
@@ -78,7 +78,7 @@ export default function SignupUser() {
         <div>
           <label>패스워드확인</label>
           <input
-            type="text"
+            type="password"
             name="confirmPassword"
             onChange={handleChange}
             value={formData.confirmPassword}

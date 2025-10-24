@@ -29,8 +29,6 @@ export default function SellerSignupPage() {
     studioAddPostNumber: "",
     studioAddMain: "",
     studioAddDetail: "",
-    businessNumber: "",
-    address: "",
   });
 
   const handleUserChange = (
@@ -49,7 +47,9 @@ export default function SellerSignupPage() {
     //setStudioInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleNext = () => setStep(2);
+  const handleNext = function () {
+    setStep(2);
+  };
 
   const handleSubmit = async () => {
     const payload = {
