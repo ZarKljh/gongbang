@@ -2,11 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Review() {
   const [reviews, setReviews] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
 
+  function getCookie(name) {
+  const cookieArr = document.cookie.split("; ");
+  for (let cookie of cookieArr) {
+    const [key, value] = cookie.split("=");
+    if (key === name) return decodeURIComponent(value);
+  }
+  return null;
+}
   useEffect(() => {
+    // // 로그인 여부 확인 
+    const token = getCookie("accessToken");
+    setIsLoggedIn(!!token);
+
     fetchReviews();
   }, []);
 
@@ -14,6 +28,7 @@ export default function Review() {
     try {
       const result = await fetch("http://localhost:8090/api/v1/reviews");
       const data = await result.json();
+
 
       // 배열 꺼내기
       setReviews(data.data.reviews || []);
@@ -24,9 +39,16 @@ export default function Review() {
 
   return (
     <>
-      <ReviewForm fetchReviews={fetchReviews} />
+      {/* ✅ 로그인한 경우에만 작성폼 표시 */}
+      {isLoggedIn ? (
+        <ReviewForm fetchReviews={fetchReviews} />
+      ) : (
+        <p style={{ color: "gray" }}>
+          리뷰를 작성하려면 <Link href="/auth/login">로그인</Link>이 필요합니다.
+        </p>
+      )}
 
-      <h4>번호 / 후기 내용 / 생성일 / 별점 / 유저이름</h4>
+      <h4>번호 / 후기 내용 / 생성일 / 별점 / 유저이름(현재는Id)</h4>
       {reviews.length === 0 ? (
         <p>현재 작성된 리뷰가 없습니다.</p>
       ) : (
@@ -35,7 +57,9 @@ export default function Review() {
             <li key={review.id}>
               {review.id} /
               <Link href={`/review/${review.id}`}>{review.content}</Link> /
-              {review.createdAt} /{review.rating} / /{review.username || "익명"}
+              {review.createdAt} / {review.rating} /{" "}
+              {/* 추후username으로 바꿀것 */}
+              {review.userId} 
             </li>
           ))}
         </ul>
@@ -44,24 +68,23 @@ export default function Review() {
   );
 }
 
-/////////////// 리뷰 작성 폼/////////////////
+/////////////// 리뷰 작성 폼 ///////////////////
 
 function ReviewForm({ fetchReviews }) {
-
   const [idCounter, setIdCounter] = useState({
     orderId: 1,
     orderItemId: 1,
     productId: 1,
-    userId: 1
+    userId: 1,
   });
   const [review, setReview] = useState({
-      orderId: 1,
-      orderItemId: 1,
-      productId: 1,
-      userId: 1,
-      rating: 0,
-      content: "",
-    });
+    orderId: 1,
+    orderItemId: 1,
+    productId: 1,
+    userId: 1,
+    rating: 0,
+    content: "",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,30 +108,33 @@ function ReviewForm({ fetchReviews }) {
       return;
     }
 
-    // 등록할 때마다 ID 자동 증가 (test용)
+    // 등록할 때마다 ID 자동 증가 (테스트용)
     const nextIds = {
       orderId: idCounter.orderId + 1,
       orderItemId: idCounter.orderItemId + 1,
       productId: idCounter.productId + 1,
-      userId: idCounter.userId + 1
+      userId: idCounter.userId + 1,
     };
 
     const reviewToSend = {
       ...review,
-      ...nextIds
+      ...nextIds,
     };
 
     try {
+      const token = localStorage.getItem("accessToken"); // 로그인 토큰 포함
       const response = await fetch("http://localhost:8090/api/v1/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
         },
         body: JSON.stringify(reviewToSend),
+        credentials: "include"
       });
 
       if (response.ok) {
-        alert("리뷰가 등록 되었습니다.");
+        alert("리뷰가 등록되었습니다.");
         fetchReviews();
 
         setReview({
@@ -120,11 +146,11 @@ function ReviewForm({ fetchReviews }) {
           content: "",
         });
 
-        // 다음 등록 시 ID 자동 증가값 유지
         setIdCounter(nextIds);
-    
+      } else if (response.status === 401) {
+        alert("로그인이 필요합니다.");
       } else {
-        alert("fail");
+        alert("리뷰 등록 실패");
       }
     } catch (err) {
       console.error("error", err);
@@ -160,7 +186,7 @@ function ReviewForm({ fetchReviews }) {
           />
         </label>
         <br />
-        <input type="submit" value="등록" onChange={handleChange} />
+        <input type="submit" value="등록" />
       </form>
     </div>
   );

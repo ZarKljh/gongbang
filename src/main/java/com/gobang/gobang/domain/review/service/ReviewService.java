@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.review.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.review.dto.ReviewDto;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
@@ -19,6 +21,7 @@ import java.util.Optional;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final SiteUserRepository siteUserRepository;
 
     // 리뷰 다건 조회
 //    public List<Review> getAllReviews() {
@@ -37,7 +40,11 @@ public class ReviewService {
 
     // 리뷰 등록
     @Transactional
-    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto) {
+    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto, String username) {
+
+        SiteUser user = siteUserRepository.findByUserName(username)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+
         Review review = Review.builder()
                 .orderId(dto.getOrderId())
                 .orderItemId(dto.getOrderItemId())

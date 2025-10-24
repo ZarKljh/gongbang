@@ -16,6 +16,7 @@ import lombok.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,10 +97,20 @@ public class ReviewController {
 
     // 리뷰 등록
     @PostMapping("")
-    public RsData<ReviewDto.CreateReviewResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest) {
-        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest);
+    public RsData<ReviewDto.CreateReviewResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest, Principal principal) {
+//        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest, username);
 
-        if (createRs.isFail()) return (RsData) createRs;
+        if(principal == null) {
+            return RsData.of("401", "로그인 후 작성할 수 있습니다.");
+        }
+
+        String username = principal.getName();
+
+        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest, username);
+
+        if (createRs.isFail()) {
+            return (RsData) createRs;
+        }
 
         return RsData.of(
                 createRs.getResultCode(),
