@@ -33,6 +33,7 @@ export default function RootLayout({
           <Link href="/review">리뷰</Link>
           <Link href="/auth/login">로그인</Link>
           <Link href="/auth/signup">회원가입</Link>
+          <Link href="/personal">마이페이지</Link>
         </nav>
         {children}
       </body>
