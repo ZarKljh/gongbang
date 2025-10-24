@@ -1,0 +1,73 @@
+div {
+    border: 1px solid red;
+}
+p {
+    /* border: 1px solid blue; */
+}
+
+/* 기본 그리드 */
+.container_box {
+    display: flex;
+    width: 100%;
+    max-width: 1920px;
+}
+
+.container {
+    display: inline-flex;
+    padding: 0;
+    margin: 0 auto;
+    gap: 10px;
+    width: 1440px;
+    max-width: 1440px;
+    height: 100vh;
+    border: 1px solid black;
+}
+.myCategory {
+    display: inline-flex;
+    flex-direction: column;
+    padding: 40px 20px;
+    height: 500px;
+}
+.me {
+    text-wrap: nowrap;
+    flex-grow: 1;
+    margin: 0;
+    line-height: 70px;
+}
+.userState_box {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.myState {
+    display: flex;
+    align-items: center;
+    width: calc(100% - 60px);
+    height: 150px;
+    padding: 0 30px;
+    gap: 50px;
+} 
+.profileImage {
+    display: flex;
+    min-width: 100px;
+    height: 100px;
+    border: 1px solid black;
+    border-radius: 70px;
+}
+.myProfile_box, .myReview_box, .myQna_box {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.myProfile_box {
+    min-width: 200px;
+}
+.myReview_box, .myQna_box {
+    min-width: 100px;
+}
+.order_delivery_box {
+    height: 100%;
+}
+.delivery_box {
+    height: 150px;
+}
