@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import "@/app/personal/page.css"
 
 export default function Personal() {
+  const [user, setUser] = useState([]);
   const [cart, setCart] = useState([]);
   const [follow, setFollow] = useState([]);
   const [delivery, setDelivery] = useState([]);
@@ -14,6 +15,7 @@ export default function Personal() {
   const [wishList, setWishListData] = useState([]);
 
   useEffect(() => {
+    getUser();
     getCartData();
     getFollowData();
     getDeliveryData();
@@ -23,6 +25,14 @@ export default function Personal() {
     getUserAddressData();
     getWishListData();
   }, []);
+
+  const getUser = async () => {
+    const result = await fetch(`http://localhost:8090/api/v1/mypage/${user.id}`).then(
+            (row) => row.json()
+        );
+        setUser(result.data.user);
+        console.log(result.data.user);
+  }
 
   const getCartData = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/cart").then(
@@ -108,7 +118,7 @@ export default function Personal() {
               <div className="profileImage"></div>
               <div className="myProfile_box">
                 <span>닉네임 님 안녕하세요.</span>
-                <span>아이디 : Id</span>
+                <span>아이디 : id{user.id}</span>
               </div>
               <div className="myReview_box">
                 <span>상품 리뷰</span>
