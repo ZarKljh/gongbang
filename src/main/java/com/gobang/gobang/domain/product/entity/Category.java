@@ -19,7 +19,7 @@ import java.util.Set;
 @ToString(callSuper = true)
 @Table(name = "category",
         uniqueConstraints = @UniqueConstraint(name = "uk_category_code", columnNames = {"code"}),
-        indexes = {@Index(name = "idx_category_active", columnList = "is_active")} )
+        indexes = {@Index(name = "idx_category_active", columnList = "active")} )
 public class Category extends BaseEntity {
 //    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    private Long id;

@@ -18,7 +18,7 @@ import java.util.Set;
 @Table(name = "theme",
         indexes = {
                 @Index(name = "idx_theme_parent", columnList = "parent_id"),
-                @Index(name = "idx_theme_active", columnList = "is_active")
+                @Index(name = "idx_theme_active", columnList = "active")
         },
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_theme_code", columnNames = {"code"})

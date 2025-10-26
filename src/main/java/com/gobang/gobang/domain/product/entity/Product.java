@@ -19,21 +19,42 @@ import java.util.Set;
 @Table(name = "product",
         uniqueConstraints = @UniqueConstraint(name = "uk_product_slug", columnNames = {"slug"}),
         indexes = {
-//                @Index(name = "idx_product_subcategory", columnList = "subcategory_id"),
-//                @Index(name = "idx_product_status", columnList = "status"),
+                @Index(name = "idx_product_subcategory", columnList = "subcategory_id"),
+                @Index(name = "idx_product_status", columnList = "status"),
                 @Index(name = "idx_product_active_stock", columnList = "stock_quantity")
         })
 public class Product extends BaseEntity {
 //    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    private Long id;
 
+    // 판매자
+    @Column(nullable = false)
+    private Long sellerId;
+
+    // 소속 테마
+    private Long themeId;
+
+    // 기본 카테고리
+    @Column(nullable = false)
+    private Long categoryId;
 
     @Column(length = 200, nullable = false)
     private String name;
 
+    // 짧은 요약
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    // 상세 설명
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(length = 200, nullable = false)
     private String slug;
+
+
+    // 한 줄 설명
+    private String subtitle;
 
 
     @Column(name = "base_price", nullable = false)
@@ -48,11 +69,10 @@ public class Product extends BaseEntity {
     private Boolean backorderable = false;
 
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "subcategory_id")
-//    private Subcategory subcategory;
-//
-//
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id")
+    private Subcategory subcategory;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 16, nullable = false)
     private ProductStatus status = ProductStatus.DRAFT;
@@ -63,6 +83,9 @@ public class Product extends BaseEntity {
     @Column(name = "seo_description", length = 255)
     private String seoDescription;
 
+    // 판매 중 여부
+    @Column(nullable = false)
+    private Boolean active = true;
 
 //    @CreationTimestamp
 //    @Column(name = "created_at", updatable = false)
