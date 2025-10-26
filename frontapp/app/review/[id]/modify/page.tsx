@@ -41,8 +41,8 @@ export default function ReviewModify() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          credentials: "include",
         },
+        credentials: "include",
         body: JSON.stringify(reviewToSend),
       }
     );

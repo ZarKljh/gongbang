@@ -55,6 +55,7 @@ public class ReviewService {
                 .isActive(true)
                 .reviewLike(0)
                 .viewCount(0)
+//                .createdBy(dto.getUserName()) //
                 .build();
 
         reviewRepository.save(review);

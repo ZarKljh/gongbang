@@ -35,6 +35,9 @@ public class Review {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+//    @Column(name = "created_by", nullable = false)
+//    private String userName;
+
     @Column(nullable = false)
     private Integer rating; // 1~5 점수
 

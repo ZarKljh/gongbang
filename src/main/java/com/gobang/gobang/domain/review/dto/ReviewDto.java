@@ -31,6 +31,10 @@ public class ReviewDto {
         @Positive
         private Long userId;
 
+//        @NotNull(message = "사용자 이름은 필수입니다.")
+//        @Positive
+//        private String userName;
+
         @NotNull(message = "평점은 필수입니다.")
         @Positive
         private Integer rating;
