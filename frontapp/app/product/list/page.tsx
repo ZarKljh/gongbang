@@ -138,11 +138,7 @@ export default function Product() {
                 {categories.map((cat) => (
                     <ul className="category-list" key={cat.id}>
                         <li className="category-item">
-                            <button
-                                className="category-toggle"
-                                aria-expanded="false"
-                                onClick={() => onClickCategory(cat.id)}
-                            >
+                            <button className="category-toggle" aria-expanded="false">
                                 {cat.name} <span className="icon">+</span>
                             </button>
                             <ul className="subcategory-list">
