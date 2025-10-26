@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import api from '@/app/utils/api'
+import styles from './Cards.module.css'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
+    id: number
+    name: string
+}
+
+type Product = {
     id: number
     name: string
 }
@@ -32,16 +38,22 @@ type FilterOptionDto = {
 //
 
 export default function Product() {
+    const [products, setProducts] = useState<Product[]>([])
+
     const [categories, setCategories] = useState<Category[]>([])
     const [subCategoriesByCat, setSubCategoriesByCat] = useState<Record<number, SubCategory[]>>({})
     //
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
+    const [selectedCategoryId, setSelectedCatId] = useState<number | null>(null)
+    const [selectedSubCategoryId, setSelectedSubCatId] = useState<number | null>(null)
 
     const [filterGroups, setFilterGroups] = useState<FilterGroupDto[]>([])
     // ✅ 상태 타입을 Record<number, FilterOptionDto[]> 로 변경
     const [filterOptions, setFilterOptions] = useState<Record<number, FilterOptionDto[]>>({})
     const onClickCategory = (id: number) => {
-        setSelectedCategoryId(id) // 클릭한 카테고리의 id를 상태에 저장
+        setSelectedCatId(id) // 클릭한 카테고리의 id를 상태에 저장
+    }
+    const onClickSubCategory = (id: number) => {
+        setSelectedSubCatId(id) // 클릭한 서브카테고리의 id를 상태에 저장
     }
     //
 
@@ -51,7 +63,7 @@ export default function Product() {
 
     const fetchAll = async (): Promise<void> => {
         // 1) 카테고리 목록 먼저 요청
-        const { data: catRes } = await api.get('/category')
+        const { data: catRes } = await api.get('category')
         // 백엔드 응답 구조가 { data: { categoryList: [...] } } 라고 가정
         const categoryList: Category[] = catRes.data.categoryList
         setCategories(categoryList)
@@ -59,7 +71,7 @@ export default function Product() {
         // 2) 카테고리 ID별 서브카테고리 병렬 요청
         const subPromises = categoryList.map((cat) =>
             api
-                .get(`/category/${cat.id}/sub`)
+                .get(`category/${cat.id}/sub`)
                 // 응답 구조: { data: { subCategoryList: [...] } }
                 .then(({ data }) => [cat.id, data.data.subCategoryList] as const),
         )
@@ -73,7 +85,6 @@ export default function Product() {
     }
     useEffect(() => {
         if (selectedCategoryId == null) return
-
         ;(async () => {
             try {
                 // 백엔드: GET /api/v1/filter/{id}/Group
@@ -103,6 +114,23 @@ export default function Product() {
         })()
     }, [selectedCategoryId])
 
+    useEffect(() => {
+        if (selectedSubCategoryId == null) return
+        ;(async () => {
+            try {
+                // 백엔드: GET /api/v1/product/{id}
+                const { data } = await api.get(`product/${selectedSubCategoryId}`)
+                const productList = data.data.productList
+
+                console.log('서버 응답:', productList) // ✅ 여기서 확인
+
+                setProducts(productList)
+            } catch (error) {
+                console.error('상품목록 조회 실패:', error)
+            }
+        })()
+    }, [selectedSubCategoryId])
+
     return (
         <>
             <nav className="category-tree" aria-label="카테고리 메뉴">
@@ -120,7 +148,14 @@ export default function Product() {
                             <ul className="subcategory-list">
                                 {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
                                     <li key={sub.id}>
-                                        <a onClick={() => onClickCategory(cat.id)}>{sub.name}</a>
+                                        <a
+                                            onClick={() => {
+                                                onClickCategory(cat.id)
+                                                onClickSubCategory(sub.id)
+                                            }}
+                                        >
+                                            {sub.name}
+                                        </a>
                                     </li>
                                 ))}
                             </ul>
@@ -135,7 +170,7 @@ export default function Product() {
                     필터 영역
                 </h2>
 
-                {filterGroups.length === 0 ? (
+                {filterGroups.length == 0 ? (
                     <p className="text-sm text-gray-500">표시할 필터그룹이 없습니다.</p>
                 ) : (
                     <ul className="space-y-2">
@@ -164,7 +199,38 @@ export default function Product() {
                     </ul>
                 )}
             </section>
-            {/* // */}
+
+            <section aria-labelledby="cards-title">
+                <h2 id="cards-title">카드섹션</h2>
+                {products.length == 0 ? (
+                    <p className="text-sm text-gray-500">표시할 상품목록이 없습니다.</p>
+                ) : (
+                    <ul className={styles.cardGrid} role="list">
+                        {products.map((p) => (
+                            <li className={styles.card} key={p.id}>
+                                <article>
+                                    <a href="#" className={styles.cardLink} aria-label="카드 1 자세히 보기">
+                                        <figure className={styles.cardMedia}>
+                                            <img
+                                                src="/images/placeholder.png"
+                                                alt="카드 1 대표 이미지"
+                                                loading="lazy"
+                                            />
+                                        </figure>
+                                        <h3 className={styles.cardTitle}>{p.name}</h3>
+                                        <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
+                                    </a>
+                                    <footer className={styles.cardActions}>
+                                        <a href="#" className={styles.btnRead}>
+                                            자세히
+                                        </a>
+                                    </footer>
+                                </article>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
         </>
     )
 }
