@@ -3,6 +3,9 @@ package com.gobang.gobang.domain.review.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,7 +38,7 @@ public class Review {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-//    @Column(name = "created_by", nullable = false)
+//    @Column(name = "user_name", nullable = false)
 //    private String userName;
 
     @Column(nullable = false)
@@ -59,8 +62,14 @@ public class Review {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime updatedAt;
 
-    private Long createdBy;
-    private Long updatedBy;
+    @CreatedBy
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
+
+
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    private String updatedBy;
 
     @PrePersist
     public void onCreate() {

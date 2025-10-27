@@ -98,15 +98,16 @@ public class ReviewController {
     // 리뷰 등록
     @PostMapping("")
     public RsData<ReviewDto.CreateReviewResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest, Principal principal) {
-//        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest, username);
+
+        String userName = principal.getName();
 
         if(principal == null) {
             return RsData.of("401", "로그인 후 작성할 수 있습니다.");
         }
 
-        String username = principal.getName();
+//        String userName = principal.getName();
 
-        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest, username);
+        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest, userName);
 
         if (createRs.isFail()) {
             return (RsData) createRs;

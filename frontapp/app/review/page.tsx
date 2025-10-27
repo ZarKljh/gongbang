@@ -89,7 +89,7 @@ export default function Review() {
             <li key={review.id}>
               {review.id} /{" "}
               <Link href={`/review/${review.id}`}>{review.content}</Link> /{" "}
-              {review.createdAt} / {review.rating} / {review.userId} / ({review.userName} || "익명")
+              {review.createdAt} / {review.rating} / {review.userId}({review.createdBy})
             </li>
           ))}
         </ul>

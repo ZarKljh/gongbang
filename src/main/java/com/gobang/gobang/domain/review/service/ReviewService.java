@@ -40,9 +40,10 @@ public class ReviewService {
 
     // 리뷰 등록
     @Transactional
-    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto, String username) {
+    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto, String userName) {
 
-        SiteUser user = siteUserRepository.findByUserName(username)
+
+        SiteUser user = siteUserRepository.findByUserName(userName)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
 
         Review review = Review.builder()
@@ -52,6 +53,7 @@ public class ReviewService {
                 .userId(dto.getUserId())
                 .rating(dto.getRating())
                 .content(dto.getContent())
+                .createdBy(userName)
                 .isActive(true)
                 .reviewLike(0)
                 .viewCount(0)

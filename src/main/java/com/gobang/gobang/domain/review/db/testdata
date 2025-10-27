@@ -7,10 +7,30 @@ TRUNCATE TABLE tbl_review_comment RESTART IDENTITY CASCADE;
 select * from tbl_review;
 select * from tbl_review_report;
 select * from tbl_review_comment;
+select * from site_user;
 
+
+
+// 회원가입
 INSERT INTO site_user (id, email, password, user_name, mobile_phone, nick_name, role, created_date, status)
 VALUES
 (1, 'alice@example.com', '123', '조현영', '010-1111-2222', '현영이', 'USER', NOW(), 'ACTIVE');
+
+
+-- 사업자 정보
+INSERT INTO seller (saller_id, user_id, saller_num, saller_name, saller_email, saller_phone, saller_address, saller_category, created_at)
+VALUES
+(1, 1, '2024-0001', '현영공방', 'hy_workshop@example.com', '02-111-1111', '서울 강남구 역삼동', '캔들', NOW()),
+(2, 2, '2024-0002', '보검의목공소', 'bgwood@example.com', '02-222-2222', '서울 서초구 반포동', '목공', NOW()),
+(3, 3, '2024-0003', '초코공예', 'chocoart@example.com', '02-333-3333', '서울 마포구 상수동', '공예', NOW()),
+(4, 4, '2024-0004', '수아도자기', 'soo_ceramic@example.com', '02-444-4444', '서울 종로구 삼청동', '도자기', NOW()),
+(5, 5, '2024-0005', '라이언가죽공방', 'lionleather@example.com', '02-555-5555', '서울 성동구 성수동', '가죽', NOW()),
+(6, 6, '2024-0006', '나나의향초', 'nana_candle@example.com', '02-666-6666', '서울 강서구 화곡동', '향초', NOW()),
+(7, 7, '2024-0007', '써니자수방', 'sunny_embroidery@example.com', '02-777-7777', '서울 동작구 사당동', '자수', NOW()),
+(8, 8, '2024-0008', '민트아트샵', 'mintart@example.com', '02-888-8888', '서울 중구 신당동', '그림', NOW()),
+(9, 9, '2024-0009', '소연패브릭', 'so_fabric@example.com', '02-999-9999', '서울 구로구 구로동', '패브릭', NOW()),
+(10, 10, '2024-0010', '해리의비누방', 'harrysoap@example.com', '02-101-1010', '서울 노원구 공릉동', '비누', NOW());
+
 
 -- test data에서 임의로 PK id값을 정해주는게 아닌 생성 순서대로 id값을 정해주기 위함
 SELECT setval(pg_get_serial_sequence('tbl_review', 'review_id'), COALESCE(MAX(review_id), 1), true) FROM tbl_review;
@@ -56,37 +76,6 @@ VALUES
 (8, 8, 8, '그림 마음에 드셨다니 기뻐요!', NOW()),
 (9, 9, 9, '컬러 옵션 관련 안내드리겠습니다.', NOW()),
 (10, 10, 10, '비누 제작 영상도 참고해보세요 :)', NOW());
-
-
--- 권한 관련은 나중에 테스트해보기
-INSERT INTO site_user (user_id, email, password, user_name, phone, nickname, role, created_at, status)
-VALUES
-(1, 'alice@example.com', 'pw1234', '조현영', '010-1111-2222', 'honey', 'USER', NOW(), 'ACTIVE'),
-(2, 'bob@example.com', 'pw1234', '박보검', '010-3333-4444', 'bobby', 'USER', NOW(), 'ACTIVE'),
-(3, 'choco@example.com', 'pw1234', '최초코', '010-5555-6666', 'choco', 'USER', NOW(), 'ACTIVE'),
-(4, 'soo@example.com', 'pw1234', '김수아', '010-1111-3333', 'soo', 'USER', NOW(), 'ACTIVE'),
-(5, 'ryan@example.com', 'pw1234', '라이언', '010-4444-5555', 'lion', 'USER', NOW(), 'ACTIVE'),
-(6, 'nana@example.com', 'pw1234', '안나', '010-2222-9999', 'nana', 'USER', NOW(), 'ACTIVE'),
-(7, 'sunny@example.com', 'pw1234', '윤선영', '010-3434-9898', 'sunny', 'USER', NOW(), 'ACTIVE'),
-(8, 'mint@example.com', 'pw1234', '이민트', '010-2323-2323', 'minty', 'USER', NOW(), 'ACTIVE'),
-(9, 'soyeon@example.com', 'pw1234', '박소연', '010-4545-5656', 'soyo', 'USER', NOW(), 'ACTIVE'),
-(10, 'harry@example.com', 'pw1234', '김해리', '010-1010-5050', 'harry', 'USER', NOW(), 'ACTIVE');
-
-
--- 사업자 정보
-INSERT INTO seller (seller_id, user_id, seller_num, seller_name, seller_email, seller_phone, seller_address, seller_category, created_at)
-VALUES
-(1, 1, '2024-0001', '현영공방', 'hy_workshop@example.com', '02-111-1111', '서울 강남구 역삼동', '캔들', NOW()),
-(2, 2, '2024-0002', '보검의목공소', 'bgwood@example.com', '02-222-2222', '서울 서초구 반포동', '목공', NOW()),
-(3, 3, '2024-0003', '초코공예', 'chocoart@example.com', '02-333-3333', '서울 마포구 상수동', '공예', NOW()),
-(4, 4, '2024-0004', '수아도자기', 'soo_ceramic@example.com', '02-444-4444', '서울 종로구 삼청동', '도자기', NOW()),
-(5, 5, '2024-0005', '라이언가죽공방', 'lionleather@example.com', '02-555-5555', '서울 성동구 성수동', '가죽', NOW()),
-(6, 6, '2024-0006', '나나의향초', 'nana_candle@example.com', '02-666-6666', '서울 강서구 화곡동', '향초', NOW()),
-(7, 7, '2024-0007', '써니자수방', 'sunny_embroidery@example.com', '02-777-7777', '서울 동작구 사당동', '자수', NOW()),
-(8, 8, '2024-0008', '민트아트샵', 'mintart@example.com', '02-888-8888', '서울 중구 신당동', '그림', NOW()),
-(9, 9, '2024-0009', '소연패브릭', 'so_fabric@example.com', '02-999-9999', '서울 구로구 구로동', '패브릭', NOW()),
-(10, 10, '2024-0010', '해리의비누방', 'harrysoap@example.com', '02-101-1010', '서울 노원구 공릉동', '비누', NOW());
-
 
 
 -- postman 리뷰 등록(생성) 테스트용(json)
