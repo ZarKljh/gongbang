@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Review extends BaseEntity {
 
     @Id
@@ -57,11 +58,11 @@ public class Review extends BaseEntity {
     @Column(name = "review_like", nullable = false)
     private Integer reviewLike = 0;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime createdDate;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime modifiedDate;
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+//    private LocalDateTime createdDate;
+//
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+//    private LocalDateTime modifiedDate;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false)
@@ -72,14 +73,14 @@ public class Review extends BaseEntity {
     @Column(name = "updated_by")
     private String updatedBy;
 
-    @PrePersist
-    public void onCreate() {
-        this.createdDate = LocalDateTime.now();
-        this.modifiedDate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.modifiedDate = LocalDateTime.now();
-    }
+//    @PrePersist
+//    public void onCreate() {
+//        this.createdDate = LocalDateTime.now();
+//        this.modifiedDate = LocalDateTime.now();
+//    }
+//
+//    @PreUpdate
+//    public void onUpdate() {
+//        this.modifiedDate = LocalDateTime.now();
+//    }
 }

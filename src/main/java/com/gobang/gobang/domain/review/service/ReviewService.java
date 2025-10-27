@@ -30,7 +30,7 @@ public class ReviewService {
 
     // 리뷰 다건 조회
     public List<Review> findAll() {
-        return reviewRepository.findAllByOrderByCreatedAtDesc();
+        return reviewRepository.findAllByOrderByCreatedDateDesc();
     }
 
     // 리뷰 단건 조회
