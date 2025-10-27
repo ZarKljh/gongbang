@@ -8,6 +8,9 @@ select * from tbl_review;
 select * from tbl_review_report;
 select * from tbl_review_comment;
 
+INSERT INTO site_user (id, email, password, user_name, mobile_phone, nick_name, role, created_date, status)
+VALUES
+(1, 'alice@example.com', '123', '조현영', '010-1111-2222', '현영이', 'USER', NOW(), 'ACTIVE');
 
 -- test data에서 임의로 PK id값을 정해주는게 아닌 생성 순서대로 id값을 정해주기 위함
 SELECT setval(pg_get_serial_sequence('tbl_review', 'review_id'), COALESCE(MAX(review_id), 1), true) FROM tbl_review;
