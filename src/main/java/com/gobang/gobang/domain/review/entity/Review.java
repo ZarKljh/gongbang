@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.review.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Review {
+public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,10 +58,10 @@ public class Review {
     private Integer reviewLike = 0;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime updatedAt;
+    private LocalDateTime modifiedDate;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false)
@@ -73,12 +74,12 @@ public class Review {
 
     @PrePersist
     public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdDate = LocalDateTime.now();
+        this.modifiedDate = LocalDateTime.now();
     }
 
     @PreUpdate
     public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.modifiedDate = LocalDateTime.now();
     }
 }

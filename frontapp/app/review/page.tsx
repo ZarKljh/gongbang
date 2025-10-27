@@ -80,7 +80,7 @@ export default function Review() {
       <hr />
 
       {/* 리뷰 목록 */}
-       <h4>번호 / 후기 내용 / 생성일 / 별점 / userId(이름) </h4>
+       <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름) </h4>
       {reviews.length === 0 ? (
         <p>현재 작성된 리뷰가 없습니다.</p>
       ) : (

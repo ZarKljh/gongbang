@@ -54,9 +54,11 @@ export default function ReviewDetail() {
     return (
         <>
             <h4>리뷰 상세 {params.id}번</h4>
-            <div>{review.content}</div>
-            <div>{review.createdAt}</div>
-            <div>{review.modifiedAt}</div>
+            <div>내용 : {review.content}</div>
+            <div>작성일 : {review.createdAt}</div>
+            <div>수정일 : {review.updatedAt}
+              <small>(수정됨)</small>
+            </div>
             {/* <Link href={`/review/${params.id}/modify`}>수정</Link> */}
                     <button
           onClick={handleModifyClick}
