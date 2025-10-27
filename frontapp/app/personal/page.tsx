@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import "@/app/personal/page.css"
+import api from "../utils/api"
 
 export default function Personal() {
   const [user, setUser] = useState([]);
@@ -16,14 +17,14 @@ export default function Personal() {
 
   useEffect(() => {
     getUser();
-    getCartData();
-    getFollowData();
-    getDeliveryData();
-    getOrdersData();
-    getOrderItemData();
-    getPaymentData();
-    getUserAddressData();
-    getWishListData();
+    getCart();
+    getFollow();
+    getDelivery();
+    getOrders();
+    getOrderItem();
+    getPayment();
+    getUserAddress();
+    getWishList();
   }, []);
 
   const getUser = async () => {
@@ -34,7 +35,7 @@ export default function Personal() {
         console.log(result.data.user);
   }
 
-  const getCartData = async () => {
+  const getCart = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/cart").then(
             (row) => row.json()
         );
@@ -42,7 +43,7 @@ export default function Personal() {
         console.log(result.data.cart);
   }
 
-  const getFollowData = async () => {
+  const getFollow = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/follow").then(
             (row) => row.json()
         );
@@ -50,7 +51,7 @@ export default function Personal() {
         console.log(result.data.follow);
   }
 
-  const getDeliveryData = async () => {
+  const getDelivery = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/delivery").then(
             (row) => row.json()
         );
@@ -58,7 +59,7 @@ export default function Personal() {
         console.log(result.data.delivery);
   }
 
-  const getOrdersData = async () => {
+  const getOrders = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/orders").then(
             (row) => row.json()
         );
@@ -66,7 +67,7 @@ export default function Personal() {
         console.log(result.data.orders);
   }
 
-  const getOrderItemData = async () => {
+  const getOrderItem = async () => {
     const result = await fetch(`http://localhost:8090/api/v1/mypage/orders/${orders.orderId}`).then(
             (row) => row.json()
         );
@@ -74,7 +75,7 @@ export default function Personal() {
         console.log(result.data.orderItem);
   }
 
-  const getPaymentData = async () => {
+  const getPayment = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/payment-methods").then(
             (row) => row.json()
         );
@@ -82,7 +83,7 @@ export default function Personal() {
         console.log(result.data.payment);
   }
 
-  const getUserAddressData = async () => {
+  const getUserAddress = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/addresses").then(
             (row) => row.json()
         );
@@ -90,7 +91,7 @@ export default function Personal() {
         console.log(result.data.userAddress);
   }
 
-  const getWishListData = async () => {
+  const getWishList = async () => {
     const result = await fetch("http://localhost:8090/api/v1/mypage/wishlist").then(
             (row) => row.json()
         );
@@ -101,6 +102,7 @@ export default function Personal() {
   return (
     <>
       <h4>마이페이지</h4>
+      <div>{}</div>
       <div className="container_box">
         <div className="container">
           <div className="myCategory">
@@ -132,7 +134,18 @@ export default function Personal() {
 
             <div className="order_delivery_box">
               <div className="delivery_box">
-                <div></div>
+                <div>
+                  <span>배송 대기 상품</span>
+                  <span>0</span>
+                </div>
+                <div>
+                  <span>배송 중 상품</span>
+                  <span>0</span>
+                </div>
+                <div>
+                  <span>배송 완료 상품</span>
+                  <span>0</span>
+                </div>
               </div>
             </div>
           </div>
