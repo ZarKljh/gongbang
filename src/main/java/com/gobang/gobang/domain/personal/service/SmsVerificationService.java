@@ -15,7 +15,7 @@ public class SmsVerificationService {
     private static final String CODE_PREFIX = "verify:";
     private static final String STATUS_PREFIX = "verified:";
 
-    // 인증번호 발송
+    // 인증번호 발송 -- API 연결할 것
     public void sendCode(String phoneNumber) {
         String code = String.format("%06d", new Random().nextInt(1000000));
         redisTemplate.opsForValue().set(CODE_PREFIX + phoneNumber, code, 3, TimeUnit.MINUTES);

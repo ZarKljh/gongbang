@@ -117,7 +117,7 @@ export default function Personal() {
             <div className="myState">
               <div className="profileImage"></div>
               <div className="myProfile_box">
-                <span>닉네임 님 안녕하세요.</span>
+                <span>{user.userName} 님 안녕하세요.</span>
                 <span>아이디 : id{user.id}</span>
               </div>
               <div className="myReview_box">

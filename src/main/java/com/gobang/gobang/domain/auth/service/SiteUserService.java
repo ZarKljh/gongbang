@@ -1,245 +1,490 @@
-package com.gobang.gobang.domain.auth.service;
+package com.gobang.gobang.global.initData;
 
-import com.gobang.gobang.domain.auth.dto.request.SignupSellerRequest;
-import com.gobang.gobang.domain.auth.dto.request.SignupUserRequest;
-import com.gobang.gobang.domain.auth.entity.RoleType;
-import com.gobang.gobang.domain.auth.entity.SiteUser;
-import com.gobang.gobang.domain.auth.entity.Studio;
-import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
-import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
-import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
-import com.gobang.gobang.domain.personal.service.SmsVerificationService;
-import com.gobang.gobang.global.RsData.RsData;
-import com.gobang.gobang.global.config.SecurityUser;
-import com.gobang.gobang.global.jwt.JwtProvider;
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-@RequiredArgsConstructor
-@Service
-public class SiteUserService {
-    private final SiteUserRepository siteUserRepository;
-    private final JwtProvider jwtProvider;
-    private final PasswordEncoder passwordEncoder;
-    private final SmsVerificationService smsVerificationService;
-
-    public SiteUser signupUser(SignupUserRequest signupUserRequest){
-
-        Optional<SiteUser> checkedSiteUser = siteUserRepository.findByUserName(signupUserRequest.getUserName());
-
-        if(checkedSiteUser.isPresent()){
-            throw new RuntimeException("이미 가입된 사용자입니다.");
-        }
-        if (signupUserRequest.getStatus() == null) {
-            signupUserRequest.setStatus("ACTIVE");
-        }
-        SiteUser newUser = SiteUser.builder()
-                .email(signupUserRequest.getEmail())
-                .password(signupUserRequest.getPassword())
-                .userName(signupUserRequest.getUserName())
-                .mobilePhone(signupUserRequest.getMobilePhone())
-                .nickName(signupUserRequest.getNickName())
-                .role(RoleType.USER)
-                .status(signupUserRequest.getStatus())
-                .gender(signupUserRequest.getGender())
-                //.profileImg(signupUserRequest.getProfileImg())
-                .birth(signupUserRequest.getBirth().atStartOfDay())
-                .createdDate(LocalDateTime.now())
-                .build();
-
-        String refreshToken = jwtProvider.genRefreshToken(newUser);
-        newUser.setRefreshToken(refreshToken);
-
-        siteUserRepository.save(newUser);
-
-        return newUser;
-    }
-
-    public SiteUser getSiteUserByEmail(String email) {
-        return siteUserRepository.findByEmail(email);
-    }
-    public SiteUser getSiteUserByUserName(String userName) {
-
-        Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
-
-        if ( os.isPresent() ) {
-            return os.get();
-        } else {
-            return null;
-        }
-
-    }
-    public boolean validateToken(String accessToken) {
-        return jwtProvider.verify(accessToken);
-    }
-    public RsData<String> refreshAccessToken(String refreshToken) {
-        SiteUser siteUser = siteUserRepository.findByRefreshToken(refreshToken).orElseThrow(() -> new RuntimeException("존재하지 않는 리프레시 토큰입니다."));
-
-        String accessToken = jwtProvider.genAccessToken(siteUser);
-
-        return RsData.of("200", "토큰 갱신 성공", accessToken);
-    }
-    public SecurityUser getUserFromAccessToken(String accessToken) {
-        Map<String, Object> payloadBody = jwtProvider.getClaims(accessToken);
-
-        long id = (int) payloadBody.get("id");
-        String username = (String) payloadBody.get("username");
-        List<GrantedAuthority> authorities = new ArrayList<>();
-
-        return new SecurityUser(id, username, "", authorities);
-
-    }
-
-    public SiteUser signupSeller(@Valid SignupSellerRequest signupSellerRequest) {
-        Optional<SiteUser> checkedSiteUser = siteUserRepository.findByUserName(signupSellerRequest.getUserName());
-
-        if(checkedSiteUser.isPresent()){
-            throw new RuntimeException("이미 가입된 사용자입니다.");
-        }
-        if (signupSellerRequest.getStatus() == null) {
-            signupSellerRequest.setStatus("ACTIVE");
-        }
-
-        SiteUser newUser = SiteUser.builder()
-                .email(signupSellerRequest.getEmail())
-                .password(signupSellerRequest.getPassword())
-                .userName(signupSellerRequest.getUserName())
-                .mobilePhone(signupSellerRequest.getMobilePhone())
-                .nickName(signupSellerRequest.getNickName())
-                .role(RoleType.SELLER)
-                .status(signupSellerRequest.getStatus())
-                .gender(signupSellerRequest.getGender())
-                .birth(signupSellerRequest.getBirth().atStartOfDay())
-                .createdDate(LocalDateTime.now())
-                //.profileImg(signupUserRequest.getProfileImg())
-                .build();
-
-        Studio newStudio = Studio.builder()
-                .categoryId(signupSellerRequest.getCategoryId())
-                .studioName(signupSellerRequest.getStudioName())
-                .studioDescription(signupSellerRequest.getStudioDescription())
-                .studioMobile(signupSellerRequest.getStudioMobile())
-                .studioOfficeTell(signupSellerRequest.getStudioOfficeTell())
-                .studioFax(signupSellerRequest.getStudioFax())
-                .studioEmail(signupSellerRequest.getStudioEmail())
-                .studioBusinessNumber(signupSellerRequest.getStudioBusinessNumber())
-                .build();
-
-
-        String refreshToken = jwtProvider.genRefreshToken(newUser);
-        newUser.setRefreshToken(refreshToken);
-
-        siteUserRepository.save(newUser);
-
-        return newUser;
-
-    }
-
-
-    @AllArgsConstructor
-    @Getter
-    public static class AuthAndMakeTokensResponseBody{
-        private SiteUser siteUser;
-        private String accessToken;
-        private String refreshToken;
-    }
-
-    public RsData<AuthAndMakeTokensResponseBody> authAndMakeTokens(String userName, String password) {
-        SiteUser siteUser = siteUserRepository.findByUserName(userName).orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
-
-        // 시간 설정 및 토큰 생성
-        //String accessToken = jwtProvider.genToken(siteUser, 60 * 60 * 5);
-        String accessToken = jwtProvider.genAccessToken(siteUser);
-        String refreshToken = jwtProvider.genRefreshToken(siteUser);
-
-        System.out.println("accessToken : " + accessToken);
-
-        return RsData.of("200-1", "로그인 성공", new AuthAndMakeTokensResponseBody(siteUser, accessToken, refreshToken));
-    }
-
-//    public SiteUserResponse getCurrentUserInfo() {
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String username;
+//@Configuration
+//@RequiredArgsConstructor
+//public class InitData {
 //
-//        if (principal instanceof UserDetails userDetails) {
-//            username = userDetails.getUsername();
-//        } else {
-//            username = principal.toString();
-//        }
+//    @Bean
+//    CommandLineRunner initData(
+//            ThemeService themeService,
+//            CategoryService categoryService,
+//            FilterService filterService,
+//            SiteUserRepository siteUserRepository,
+//            StudioRepository studioRepository,
+//            CartRepository cartRepository,
+//            OrdersRepository ordersRepository,
+//            OrderItemRepository orderItemRepository,
+//            DeliveryRepository deliveryRepository,
+//            UserAddressRepository userAddressRepository,
+//            PaymentMethodRepository paymentMethodRepository,
+//            WishListRepository wishListRepository,
+//            FollowRepository followRepository,
+//            ProductRepository productRepository,
+//            PasswordEncoder passwordEncoder) {
 //
-//        SiteUser siteUser = siteUserRepository.findByUserName(username)
-//                .orElseThrow(() -> new IllegalStateException("로그인된 사용자를 찾을 수 없습니다."));
+//        return args -> {
+//            // ==================== 테마 데이터 ====================
+//            themeService.InitTheme("Gift", "선물추천테마 GIFT", "", 1);
+//            themeService.InitTheme("Healing", "힐링/휴식", "", 2);
+//            themeService.InitTheme("Interior", "인테리어 소품", "", 3);
 //
-//        return new SiteUserResponse(siteUser);
+//            System.out.println("테마 데이터 초기화 완료!");
+//
+//            // ==================== 카테고리 데이터 ====================
+//            categoryService.initCategory("Mood", "감성소품", "", 1);
+//            categoryService.initCategory("Mini", "스몰굿즈", "", 2);
+//            categoryService.initCategory("Fabric", "패브릭소품", "", 3);
+//            categoryService.initCategory("Aroma", "향/아로마", "", 4);
+//            categoryService.initCategory("Light", "조명/무드등", "", 5);
+//            categoryService.initCategory("Rest", "휴식용품", "", 6);
+//
+//            // 서브카테고리
+//            categoryService.initSubCategory("Mood", "MoodLight", "무드조명", 1);
+//            categoryService.initSubCategory("Mood", "DisplayShelf", "소품진열장", 2);
+//            categoryService.initSubCategory("Mood", "DeskDeco", "탁상데코", 3);
+//
+//            categoryService.initSubCategory("Mini", "Keyring", "키링/뱃지", 1);
+//            categoryService.initSubCategory("Mini", "Sticker", "스티커/엽서", 2);
+//            categoryService.initSubCategory("Mini", "Toy", "인형/피규어", 3);
+//
+//            categoryService.initSubCategory("Fabric", "Cushion", "쿠션/방석", 1);
+//            categoryService.initSubCategory("Fabric", "Rug", "러그/매트", 2);
+//            categoryService.initSubCategory("Fabric", "Curtain", "커튼/패브릭포스터", 3);
+//
+//            categoryService.initSubCategory("Aroma", "Diffuser", "디퓨저", 1);
+//            categoryService.initSubCategory("Aroma", "Candle", "캔들", 2);
+//            categoryService.initSubCategory("Aroma", "Incense", "인센스", 3);
+//
+//            categoryService.initSubCategory("Light", "Stand", "스탠드", 1);
+//            categoryService.initSubCategory("Light", "Lamp", "무드램프", 2);
+//            categoryService.initSubCategory("Light", "LED", "LED소품", 3);
+//
+//            categoryService.initSubCategory("Rest", "Massage", "안마용품", 1);
+//            categoryService.initSubCategory("Rest", "Sleep", "수면용품", 2);
+//            categoryService.initSubCategory("Rest", "Sound", "힐링음향기기", 3);
+//
+//            System.out.println("카테고리 데이터 초기화 완료!");
+//
+//            // ==================== 필터 데이터 ====================
+//            filterService.initGroupFilter("Mood", "STYLE", "분위기", 1, false, true);
+//            filterService.initGroupFilter("Mood", "PACKAGE", "포장옵션", 1, false, true);
+//            filterService.initGroupFilter("Mood", "PRICE", "가격대", 99, true, true);
+//
+//            filterService.initGroupFilter("Mini", "COLOR", "색상", 1, false, true);
+//            filterService.initGroupFilter("Mini", "DESIGN", "디자인", 2, false, true);
+//            filterService.initGroupFilter("Mini", "PRICE", "가격대", 99, true, true);
+//
+//            filterService.initGroupFilter("Fabric", "MATERIAL", "소재", 1, false, true);
+//            filterService.initGroupFilter("Fabric", "COLOR", "색상", 2, false, true);
+//            filterService.initGroupFilter("Fabric", "PRICE", "가격대", 99, true, true);
+//
+//            filterService.initGroupFilter("Aroma", "SCENT", "향", 1, false, true);
+//            filterService.initGroupFilter("Aroma", "DURATION", "지속시간", 2, false, true);
+//            filterService.initGroupFilter("Aroma", "PRICE", "가격대", 99, true, true);
+//
+//            filterService.initGroupFilter("Light", "BRIGHTNESS", "밝기", 1, false, true);
+//            filterService.initGroupFilter("Light", "COLOR_TEMP", "색온도", 2, false, true);
+//            filterService.initGroupFilter("Light", "PRICE", "가격대", 99, true, true);
+//
+//            filterService.initGroupFilter("Rest", "REST_TYPE", "휴식타입", 1, false, true);
+//            filterService.initGroupFilter("Rest", "COLOR", "색상", 4, false, true);
+//            filterService.initGroupFilter("Rest", "PRICE", "가격대", 99, true, true);
+//
+//            // 필터 옵션
+//            filterService.initOption("Mood", "STYLE", "따뜻한", "WARM", 1, "CHECKBOX", "MULTI");
+//            filterService.initOption("Mood", "STYLE", "미니멀", "MINIMAL", 2, "CHECKBOX", "MULTI");
+//            filterService.initOption("Mood", "PACKAGE", "기본포장", "BASIC", 1, "RADIO", "SINGLE");
+//            filterService.initOption("Mood", "PACKAGE", "선물포장", "GIFT", 2, "RADIO", "SINGLE");
+//            filterService.initOption("Mood", "PRICE", "~1만원", "UNDER_10000", 1, "CHIP", "SINGLE");
+//            filterService.initOption("Mood", "PRICE", "1~3만원", "RANGE_1_3", 2, "CHIP", "SINGLE");
+//
+//            filterService.initOption("Mini", "COLOR", "화이트", "WHITE", 1, "COLOR", "MULTI");
+//            filterService.initOption("Mini", "COLOR", "베이지", "BEIGE", 2, "COLOR", "MULTI");
+//            filterService.initOption("Mini", "DESIGN", "캐릭터", "CHARACTER", 1, "CHECKBOX", "MULTI");
+//            filterService.initOption("Mini", "DESIGN", "심플", "SIMPLE", 2, "CHECKBOX", "MULTI");
+//            filterService.initOption("Mini", "PRICE", "~2만원", "UNDER_20000", 1, "CHIP", "SINGLE");
+//            filterService.initOption("Mini", "PRICE", "2~4만원", "RANGE_2_4", 2, "CHIP", "SINGLE");
+//
+//            filterService.initOption("Fabric", "MATERIAL", "면", "COTTON", 1, "CHECKBOX", "MULTI");
+//            filterService.initOption("Fabric", "MATERIAL", "극세사", "MICROFIBER", 2, "CHECKBOX", "MULTI");
+//            filterService.initOption("Fabric", "COLOR", "아이보리", "IVORY", 1, "COLOR", "MULTI");
+//            filterService.initOption("Fabric", "COLOR", "그레이", "GRAY", 2, "COLOR", "MULTI");
+//            filterService.initOption("Fabric", "PRICE", "~2만원", "UNDER_20000", 1, "CHIP", "SINGLE");
+//            filterService.initOption("Fabric", "PRICE", "2~4만원", "RANGE_2_4", 2, "CHIP", "SINGLE");
+//
+//            filterService.initOption("Aroma", "SCENT", "플로럴", "FLORAL", 1, "CHECKBOX", "MULTI");
+//            filterService.initOption("Aroma", "SCENT", "머스크", "MUSK", 2, "CHECKBOX", "MULTI");
+//            filterService.initOption("Aroma", "DURATION", "약 2시간", "HOUR_2", 1, "RADIO", "SINGLE");
+//            filterService.initOption("Aroma", "DURATION", "약 4시간", "HOUR_4", 2, "RADIO", "SINGLE");
+//            filterService.initOption("Aroma", "PRICE", "~2만원", "UNDER_20000", 1, "CHIP", "SINGLE");
+//            filterService.initOption("Aroma", "PRICE", "2~4만원", "RANGE_2_4", 2, "CHIP", "SINGLE");
+//
+//            filterService.initOption("Light", "BRIGHTNESS", "약함", "LOW", 1, "RADIO", "SINGLE");
+//            filterService.initOption("Light", "BRIGHTNESS", "강함", "HIGH", 2, "RADIO", "SINGLE");
+//            filterService.initOption("Light", "COLOR_TEMP", "2700K (따뜻한빛)", "TEMP_2700", 1, "SELECT", "SINGLE");
+//            filterService.initOption("Light", "COLOR_TEMP", "6500K (밝은빛)", "TEMP_6500", 2, "SELECT", "SINGLE");
+//            filterService.initOption("Light", "PRICE", "~3만원", "UNDER_30000", 1, "CHIP", "SINGLE");
+//            filterService.initOption("Light", "PRICE", "3만원 이상", "OVER_30000", 2, "CHIP", "SINGLE");
+//
+//            filterService.initOption("Rest", "REST_TYPE", "안대", "EYE_MASK", 1, "CHECKBOX", "MULTI");
+//            filterService.initOption("Rest", "REST_TYPE", "마사지기", "MASSAGER", 2, "CHECKBOX", "MULTI");
+//            filterService.initOption("Rest", "COLOR", "베이지", "BEIGE", 1, "COLOR", "MULTI");
+//            filterService.initOption("Rest", "COLOR", "네이비", "NAVY", 2, "COLOR", "MULTI");
+//            filterService.initOption("Rest", "PRICE", "~3만원", "UNDER_30000", 1, "CHIP", "SINGLE");
+//            filterService.initOption("Rest", "PRICE", "3만원 이상", "OVER_30000", 2, "CHIP", "SINGLE");
+//
+//            System.out.println("필터 데이터 초기화 완료!");
+//
+//            // ==================== 사용자 데이터 ====================
+//            SiteUser user1 = siteUserRepository.findByUserName("user1").orElseGet(() ->
+//                    siteUserRepository.save(SiteUser.builder()
+//                            .userName("user1")
+//                            .email("user1@example.com")
+//                            .password(passwordEncoder.encode("password123"))
+//                            .nickName("유저1")
+//                            .role("USER")
+//                            .status("ACTIVE")
+//                            .mobilePhone("010-1234-5678")
+//                            .gender("MALE")
+//                            .birth(LocalDate.of(1990, 1, 1).atStartOfDay())
+//                            .createdDate(LocalDateTime.now())
+//                            .build())
+//            );
+//
+//            SiteUser user2 = siteUserRepository.findByUserName("user2").orElseGet(() ->
+//                    siteUserRepository.save(SiteUser.builder()
+//                            .userName("user2")
+//                            .email("user2@example.com")
+//                            .password(passwordEncoder.encode("password123"))
+//                            .nickName("유저2")
+//                            .role("USER")
+//                            .status("ACTIVE")
+//                            .mobilePhone("010-2345-6789")
+//                            .gender("FEMALE")
+//                            .birth(LocalDate.of(1992, 5, 15).atStartOfDay())
+//                            .createdDate(LocalDateTime.now())
+//                            .build())
+//            );
+//
+//            SiteUser user3 = siteUserRepository.findByUserName("user3").orElseGet(() ->
+//                    siteUserRepository.save(SiteUser.builder()
+//                            .userName("user3")
+//                            .email("user3@example.com")
+//                            .password(passwordEncoder.encode("password123"))
+//                            .nickName("유저3")
+//                            .role("USER")
+//                            .status("ACTIVE")
+//                            .mobilePhone("010-3456-7890")
+//                            .gender("MALE")
+//                            .birth(LocalDate.of(1995, 8, 20).atStartOfDay())
+//                            .createdDate(LocalDateTime.now())
+//                            .build())
+//            );
+//
+//            SiteUser seller1 = siteUserRepository.findByUserName("seller1").orElseGet(() ->
+//                    siteUserRepository.save(SiteUser.builder()
+//                            .userName("seller1")
+//                            .email("seller1@example.com")
+//                            .password(passwordEncoder.encode("password123"))
+//                            .nickName("판매자1")
+//                            .role("SELLER")
+//                            .status("ACTIVE")
+//                            .mobilePhone("010-9876-5432")
+//                            .gender("FEMALE")
+//                            .birth(LocalDate.of(1988, 3, 10).atStartOfDay())
+//                            .createdDate(LocalDateTime.now())
+//                            .build())
+//            );
+//
+//            SiteUser seller2 = siteUserRepository.findByUserName("seller2").orElseGet(() ->
+//                    siteUserRepository.save(SiteUser.builder()
+//                            .userName("seller2")
+//                            .email("seller2@example.com")
+//                            .password(passwordEncoder.encode("password123"))
+//                            .nickName("판매자2")
+//                            .role("SELLER")
+//                            .status("ACTIVE")
+//                            .mobilePhone("010-8765-4321")
+//                            .gender("MALE")
+//                            .birth(LocalDate.of(1985, 12, 25).atStartOfDay())
+//                            .createdDate(LocalDateTime.now())
+//                            .build())
+//            );
+//
+//            System.out.println("사용자 데이터 초기화 완료!");
+//
+//            // ==================== 스튜디오 데이터 ====================
+//            Studio studio1 = studioRepository.findByStudioName("감성소품샵").orElseGet(() ->
+//                    studioRepository.save(Studio.builder()
+//                            .siteUser(seller1)
+//                            .studioName("감성소품샵")
+//                            .studioDescription("따뜻한 감성을 담은 소품들을 판매합니다.")
+//                            .studioEmail("shop1@example.com")
+//                            .studioMobile("010-1111-2222")
+//                            .studioOfficeTell("02-1234-5678")
+//                            .studioBusinessNumber("123-45-67890")
+//                            .studioAddMain("서울특별시 강남구 테헤란로 123")
+//                            .studioAddDetail("4층 401호")
+//                            .studioAddPostNumber("06234")
+//                            .createdDate(LocalDateTime.now())
+//                            .build())
+//            );
+//
+//            Studio studio2 = studioRepository.findByStudioName("미니멀라이프").orElseGet(() ->
+//                    studioRepository.save(Studio.builder()
+//                            .siteUser(seller2)
+//                            .studioName("미니멀라이프")
+//                            .studioDescription("심플하고 세련된 인테리어 소품을 제공합니다.")
+//                            .studioEmail("shop2@example.com")
+//                            .studioMobile("010-2222-3333")
+//                            .studioOfficeTell("02-2345-6789")
+//                            .studioBusinessNumber("234-56-78901")
+//                            .studioAddMain("서울특별시 마포구 홍대입구역 456")
+//                            .studioAddDetail("지상 2층")
+//                            .studioAddPostNumber("04044")
+//                            .createdDate(LocalDateTime.now())
+//                            .build())
+//            );
+//
+//            System.out.println("스튜디오 데이터 초기화 완료!");
+//
+//            // ==================== 배송지 데이터 ====================
+//            if (userAddressRepository.findBySiteUser(user1).isEmpty()) {
+//                userAddressRepository.save(UserAddress.builder()
+//                        .siteUser(user1)
+//                        .recipientName("홍길동")
+//                        .baseAddress("서울특별시 강남구 역삼동 123-45")
+//                        .detailAddress("아파트 101동 1001호")
+//                        .zipcode("06234")
+//                        .isDefault(true)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//
+//                userAddressRepository.save(UserAddress.builder()
+//                        .siteUser(user1)
+//                        .recipientName("김철수")
+//                        .baseAddress("경기도 성남시 분당구 정자동 67-89")
+//                        .detailAddress("오피스텔 502호")
+//                        .zipcode("13561")
+//                        .isDefault(false)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//            }
+//
+//            if (userAddressRepository.findBySiteUser(user2).isEmpty()) {
+//                userAddressRepository.save(UserAddress.builder()
+//                        .siteUser(user2)
+//                        .recipientName("이영희")
+//                        .baseAddress("서울특별시 송파구 잠실동 111-22")
+//                        .detailAddress("빌라 201호")
+//                        .zipcode("05551")
+//                        .isDefault(true)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//            }
+//
+//            System.out.println("배송지 데이터 초기화 완료!");
+//
+//            // ==================== 결제수단 데이터 ====================
+//            if (paymentMethodRepository.findBySiteUser(user1).isEmpty()) {
+//                paymentMethodRepository.save(PaymentMethod.builder()
+//                        .siteUser(user1)
+//                        .type("CARD")
+//                        .cardCompany("신한카드")
+//                        .cardNumber("1234-5678-****-****")
+//                        .defaultPayment(true)
+//                        .createdAt(LocalDateTime.now())
+//                        .modifiedDate(LocalDateTime.now())
+//                        .build());
+//
+//                paymentMethodRepository.save(PaymentMethod.builder()
+//                        .siteUser(user1)
+//                        .type("BANK")
+//                        .bankName("국민은행")
+//                        .accountNumber("123-456-******")
+//                        .defaultPayment(false)
+//                        .createdAt(LocalDateTime.now())
+//                        .modifiedDate(LocalDateTime.now())
+//                        .build());
+//            }
+//
+//            if (paymentMethodRepository.findBySiteUser(user2).isEmpty()) {
+//                paymentMethodRepository.save(PaymentMethod.builder()
+//                        .siteUser(user2)
+//                        .type("CARD")
+//                        .cardCompany("현대카드")
+//                        .cardNumber("9876-5432-****-****")
+//                        .defaultPayment(true)
+//                        .createdAt(LocalDateTime.now())
+//                        .modifiedDate(LocalDateTime.now())
+//                        .build());
+//            }
+//
+//            System.out.println("결제수단 데이터 초기화 완료!");
+//
+//            // ==================== 장바구니 데이터 (상품이 있을 경우) ====================
+//            if (productRepository.count() > 0) {
+//                List<Product> products = productRepository.findAll();
+//
+//                if (cartRepository.findBySiteUser(user1).isEmpty()) {
+//                    cartRepository.save(Cart.builder()
+//                            .siteUser(user1)
+//                            .product(products.get(0))
+//                            .quantity(2L)
+//                            .createdAt(LocalDateTime.now())
+//                            .build());
+//
+//                    if (products.size() > 1) {
+//                        cartRepository.save(Cart.builder()
+//                                .siteUser(user1)
+//                                .product(products.get(1))
+//                                .quantity(1L)
+//                                .createdAt(LocalDateTime.now())
+//                                .build());
+//                    }
+//                }
+//
+//                if (cartRepository.findBySiteUser(user2).isEmpty() && products.size() > 0) {
+//                    cartRepository.save(Cart.builder()
+//                            .siteUser(user2)
+//                            .product(products.get(0))
+//                            .quantity(3L)
+//                            .createdAt(LocalDateTime.now())
+//                            .build());
+//                }
+//
+//                System.out.println("장바구니 데이터 초기화 완료!");
+//            }
+//
+//            // ==================== 주문 데이터 (상품이 있을 경우) ====================
+//            if (productRepository.count() > 0 && ordersRepository.count() == 0) {
+//                List<Product> products = productRepository.findAll();
+//                UserAddress address1 = userAddressRepository.findBySiteUser(user1).stream()
+//                        .filter(UserAddress::getIsDefault)
+//                        .findFirst()
+//                        .orElse(null);
+//
+//                if (address1 != null) {
+//                    Orders order1 = ordersRepository.save(Orders.builder()
+//                            .siteUser(user1)
+//                            .orderCord("ORD-2024-0001")
+//                            .totalPrice(new BigDecimal("45000"))
+//                            .build());
+//
+//                    orderItemRepository.save(OrderItem.builder()
+//                            .order(order1)
+//                            .product(products.get(0))
+//                            .quantity(2L)
+//                            .price(new BigDecimal("22500"))
+//                            .build());
+//
+//                    deliveryRepository.save(Delivery.builder()
+//                            .order(order1)
+//                            .address(address1)
+//                            .trackingNumber("TRK-2024-0001")
+//                            .deliveryStatus("PREPARING")
+//                            .createdDate(LocalDateTime.now())
+//                            .modifiedDate(LocalDateTime.now())
+//                            .build());
+//                }
+//
+//                UserAddress address2 = userAddressRepository.findBySiteUser(user2).stream()
+//                        .filter(UserAddress::getIsDefault)
+//                        .findFirst()
+//                        .orElse(null);
+//
+//                if (address2 != null && products.size() > 1) {
+//                    Orders order2 = ordersRepository.save(Orders.builder()
+//                            .siteUser(user2)
+//                            .orderCord("ORD-2024-0002")
+//                            .totalPrice(new BigDecimal("38000"))
+//                            .build());
+//
+//                    orderItemRepository.save(OrderItem.builder()
+//                            .order(order2)
+//                            .product(products.get(1))
+//                            .quantity(1L)
+//                            .price(new BigDecimal("38000"))
+//                            .build());
+//
+//                    deliveryRepository.save(Delivery.builder()
+//                            .order(order2)
+//                            .address(address2)
+//                            .trackingNumber("TRK-2024-0002")
+//                            .deliveryStatus("PREPARING")
+//                            .createdDate(LocalDateTime.now())
+//                            .modifiedDate(LocalDateTime.now())
+//                            .build());
+//                }
+//
+//                System.out.println("주문/배송 데이터 초기화 완료!");
+//            }
+//
+//            // ==================== 위시리스트 데이터 (상품이 있을 경우) ====================
+//            if (productRepository.count() > 0 && wishListRepository.count() == 0) {
+//                List<Product> products = productRepository.findAll();
+//
+//                wishListRepository.save(WishList.builder()
+//                        .siteUser(user1)
+//                        .product(products.get(0))
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//
+//                if (products.size() > 1) {
+//                    wishListRepository.save(WishList.builder()
+//                            .siteUser(user1)
+//                            .product(products.get(1))
+//                            .createdAt(LocalDateTime.now())
+//                            .build());
+//
+//                    wishListRepository.save(WishList.builder()
+//                            .siteUser(user2)
+//                            .product(products.get(0))
+//                            .createdAt(LocalDateTime.now())
+//                            .build());
+//                }
+//
+//                if (products.size() > 2) {
+//                    wishListRepository.save(WishList.builder()
+//                            .siteUser(user3)
+//                            .product(products.get(2))
+//                            .createdAt(LocalDateTime.now())
+//                            .build());
+//                }
+//
+//                System.out.println("위시리스트 데이터 초기화 완료!");
+//            }
+//
+//            // ==================== 팔로우 데이터 ====================
+//            if (followRepository.count() == 0) {
+//                followRepository.save(Follow.builder()
+//                        .siteUser(user1)
+//                        .studio(studio1)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//
+//                followRepository.save(Follow.builder()
+//                        .siteUser(user1)
+//                        .studio(studio2)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//
+//                followRepository.save(Follow.builder()
+//                        .siteUser(user2)
+//                        .studio(studio1)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//
+//                followRepository.save(Follow.builder()
+//                        .siteUser(user3)
+//                        .studio(studio1)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//
+//                System.out.println("팔로우 데이터 초기화 완료!");
+//            }
+//
+//            System.out.println("모든 데이터 초기화 완료!");
+//        };
 //    }
-
-    // 현재 로그인된 사용자 조회
-    public SiteUser getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-
-        if (principal instanceof UserDetails userDetails) {
-            username = userDetails.getUsername();
-        } else {
-            username = principal.toString();
-        }
-
-        return siteUserRepository.findByUserName(username)
-                .orElseThrow(() -> new IllegalStateException("로그인된 사용자를 찾을 수 없습니다."));
-    }
-
-    // 현재 로그인된 사용자 정보 반환
-    public SiteUserResponse getCurrentUserInfo() {
-        return new SiteUserResponse(getCurrentUser());
-    }
-
-    // 현재 로그인된 사용자 상세 정보 반환
-    public SiteUserResponse getCurrentUserDetail() {
-        SiteUser user = getCurrentUser();
-        // 필요하다면 SiteUserResponse를 상세정보용으로 확장 가능
-        return new SiteUserResponse(user);
-    }
-
-    // 사용자 정보 수정 (전화번호 인증 필요)
-    @Transactional
-    public SiteUserResponse updateUserInfo(SiteUserUpdateRequest request) {
-        SiteUser currentUser = getCurrentUser();
-
-        // 전화번호 인증 확인
-        if (!smsVerificationService.isVerified(currentUser.getMobilePhone())) {
-            throw new IllegalStateException("전화번호 인증이 필요합니다.");
-        }
-
-        // 비밀번호, 이메일, 전화번호 변경
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            currentUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            currentUser.setEmail(request.getEmail());
-        }
-        if (request.getMobilePhone() != null && !request.getMobilePhone().isBlank()) {
-            currentUser.setMobilePhone(request.getMobilePhone());
-        }
-
-        siteUserRepository.save(currentUser);
-
-        // 인증 상태 초기화
-        smsVerificationService.clearVerification(currentUser.getMobilePhone());
-
-        return new SiteUserResponse(currentUser);
-    }
-}
+//}
