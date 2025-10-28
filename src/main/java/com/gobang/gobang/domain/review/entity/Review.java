@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -17,12 +19,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class Review extends BaseEntity {
+public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
-    private Long id;
+    private Long reviewId;
 
     // 주문 ID
     @Column(name = "order_id", nullable = false)
@@ -46,7 +48,7 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private Integer rating; // 1~5 점수
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Column(name = "view_count", nullable = false)
@@ -58,11 +60,14 @@ public class Review extends BaseEntity {
     @Column(name = "review_like", nullable = false)
     private Integer reviewLike = 0;
 
-//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-//    private LocalDateTime createdDate;
-//
-//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-//    private LocalDateTime modifiedDate;
+    @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime modifiedDate;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false)

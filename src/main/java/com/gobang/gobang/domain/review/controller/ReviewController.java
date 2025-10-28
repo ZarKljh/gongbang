@@ -138,12 +138,12 @@ public class ReviewController {
     }
 
     @PatchMapping("/{id}")
-    public RsData modify(@Valid @RequestBody ModifyRequest modifyRequest, @PathVariable("id") Long id){
-        Optional<Review> opReview = reviewService.findById(id);
+    public RsData modify(@Valid @RequestBody ModifyRequest modifyRequest, @PathVariable("id") Long reviewId){
+        Optional<Review> opReview = reviewService.findById(reviewId);
 
         if ( opReview.isEmpty() ) return RsData.of(
                 "400",
-                "%d번 게시물은 존재하지 않습니다.".formatted(id)
+                "%d번 게시물은 존재하지 않습니다.".formatted(reviewId)
         );
 
         /// 회원 권한 canModify

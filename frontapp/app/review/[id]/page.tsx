@@ -9,12 +9,13 @@ import Link from 'next/link'
 
 export default function ReviewDetail() {
     const params = useParams()
-    const [review, setReviews] = useState({})
+    const [review, setReview] = useState({})
     const [isLoggedIn, setIsLoggedIn] = useState(false) // 로그인 상태
 
     useEffect(() => {
         checkLoginStatus() // 로그인 확인
-    }, [])
+        fetchReviewDetail();
+    }, [params.id]);
 
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
@@ -33,6 +34,18 @@ export default function ReviewDetail() {
         }
     }
 
+      // ✅ 리뷰 상세 조회
+  const fetchReviewDetail = async () => {
+    try {
+      const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`);
+      const data = await res.json();
+      console.log("📦 리뷰 단건 조회 결과:", data);
+      setReview(data.data.review); // ✅ 구조에 맞게 수정됨
+    } catch (err) {
+      console.error("❌ 리뷰 상세 조회 실패:", err);
+    }
+  };
+
     // 리뷰 수정 버튼 클릭 시 동작
     const handleModifyClick = async () => {
         if (!isLoggedIn) {
@@ -44,16 +57,16 @@ export default function ReviewDetail() {
         }
     }
 
-    useEffect(() => {
-        fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
-            .then((result) => result.json())
-            .then((result) => setReviews(result.data.review))
-            .catch((err) => console.error(err)) //실패시
-    }, [])
+    // useEffect(() => {
+    //     fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
+    //         .then((result) => result.json())
+    //         .then((result) => setReview(result.data.review))
+    //         .catch((err) => console.error(err)) //실패시
+    // }, [])
 
     return (
         <>
-            <h4>리뷰 상세 {params.id}번</h4>
+            <h4>리뷰 상세 {review.reviewId}번</h4>
             <div>내용 : {review.content}</div>
             <div>작성일 : {review.createdDate}</div>
             <div>수정일 : {review.modifiedDate}

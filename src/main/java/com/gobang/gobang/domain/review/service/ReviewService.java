@@ -65,9 +65,9 @@ public class ReviewService {
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
 
-    public Optional<Review> findById(Long id) {
+    public Optional<Review> findById(Long reviewId) {
 
-        return reviewRepository.findById(id);
+        return reviewRepository.findById(reviewId);
     }
 
     @Transactional
@@ -79,7 +79,7 @@ public class ReviewService {
 
         return RsData.of(
                 "200",
-                "%d번 리뷰가 수정되었습니다.".formatted(review.getId()),
+                "%d번 리뷰가 수정되었습니다.".formatted(review.getReviewId()),
                 review
         );
     }

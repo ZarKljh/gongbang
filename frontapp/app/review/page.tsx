@@ -86,9 +86,9 @@ export default function Review() {
       ) : (
         <ul>
           {reviews.map((review) => (
-            <li key={review.id}>
-              {review.id} /{" "}
-              <Link href={`/review/${review.id}`}>{review.content}</Link> /{" "}
+            <li key={review.reviewId}>
+              {review.reviewId} /{" "}
+              <Link href={`/review/${review.reviewId}`}>{review.content}</Link> /{" "}
               {review.createdDate} / {review.rating} / {review.userId}({review.createdBy})
             </li>
           ))}
