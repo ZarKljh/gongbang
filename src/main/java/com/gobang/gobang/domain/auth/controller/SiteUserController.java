@@ -10,7 +10,7 @@ import com.gobang.gobang.domain.auth.dto.response.SignupUserResponse;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
-import com.gobang.gobang.domain.auth.service.StudioService;
+import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
 import com.gobang.gobang.global.rq.Rq;
@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,6 +33,7 @@ public class SiteUserController {
     private final JwtProvider jwtProvider;
     //private final HttpServletResponse resp;
     private final Rq rq;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/signup/user")
     public RsData<SignupUserResponse> joinUser (@Valid @RequestBody SignupUserRequest signupUserRequest) {
@@ -42,7 +44,7 @@ public class SiteUserController {
     @PostMapping("/signup/seller")
     public RsData<SignupSellerResponse> joinSeller(@Valid @RequestBody SignupSellerRequest signupSellerRequest){
         SiteUser newUser = siteUserService.signupSeller(signupSellerRequest);
-        Studio newStudio = studioService.getStudio(newUser);
+        Studio newStudio = studioService.getStudioBySiteUser(newUser);
         return RsData.of("200", "회원가입이 완료되었습니다", new SignupSellerResponse(newUser, newStudio));
     }
 
@@ -53,8 +55,11 @@ public class SiteUserController {
     }
 
     @PostMapping("/login/user")
-    public RsData<LoginResponseBody> login(@Valid @RequestBody LoginUserRequest loginUserRequest, HttpServletResponse res) {
-        SiteUser siteUser = siteUserService.getSiteUserByUserName(loginUserRequest.getUserName());
+    public RsData<LoginResponseBody> loginUser(@Valid @RequestBody LoginUserRequest loginUserRequest, HttpServletResponse res) {
+        SiteUser siteUser = siteUserService.getSiteUserByUserNamePassword(loginUserRequest.getUserName(), loginUserRequest.getPassword());
+        if(siteUser == null){
+            throw new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다.");
+        }
         RsData<SiteUserService.AuthAndMakeTokensResponseBody> authAndMakeTokensRs = siteUserService.authAndMakeTokens(loginUserRequest.getUserName(), loginUserRequest.getPassword());
 
 
@@ -69,6 +74,24 @@ public class SiteUserController {
                 new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
         );
     }
+    @PostMapping("/login/seller")
+    public RsData<LoginResponseBody> loginSeller(@Valid @RequestBody LoginUserRequest loginUserRequest, HttpServletResponse res) {
+        SiteUser siteUser = siteUserService.getSiteUserByUserNamePassword(loginUserRequest.getUserName(), loginUserRequest.getPassword());
+        RsData<SiteUserService.AuthAndMakeTokensResponseBody> authAndMakeTokensRs = siteUserService.authAndMakeTokens(loginUserRequest.getUserName(), loginUserRequest.getPassword());
+
+
+        // accessToken 발급
+        rq.setCrossDomainCookie("accessToken", authAndMakeTokensRs.getData().getAccessToken());
+        rq.setCrossDomainCookie("refreshToken", authAndMakeTokensRs.getData().getRefreshToken());
+
+
+        return RsData.of(
+                authAndMakeTokensRs.getResultCode(),
+                authAndMakeTokensRs.getMsg(),
+                new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
+        );
+    }
+
     /*
     @GetMapping("/me")
     public RsData<LoginUserResponse> me(HttpServletRequest req) {
@@ -91,9 +114,9 @@ public class SiteUserController {
     */
     @GetMapping("/me")
     public RsData<LoginUserResponse> me() {
-        System.out.println("me 시작");
+        //System.out.println("me 시작");
         SiteUser siteUser = rq.getSiteUser();
-        System.out.println("rq.getSiteuser동작" + siteUser.getEmail());
+        //System.out.println("rq.getSiteuser동작" + siteUser.getUserName());
         return RsData.of(
                 "200",
                 "내 정보 조회 성공",
