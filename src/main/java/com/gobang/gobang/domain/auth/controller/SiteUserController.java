@@ -37,12 +37,18 @@ public class SiteUserController {
 
     @PostMapping("/signup/user")
     public RsData<SignupUserResponse> joinUser (@Valid @RequestBody SignupUserRequest signupUserRequest) {
+        if (!signupUserRequest.getPassword().equals(signupUserRequest.getConfirmPassword())) {
+            throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+        }
         SiteUser siteUser = siteUserService.signupUser(signupUserRequest);
         //System.out.println("여기까지 확인되었습니다");
         return RsData.of("200", "회원가입이 완료되었습니다.", new SignupUserResponse(siteUser));
     }
     @PostMapping("/signup/seller")
     public RsData<SignupSellerResponse> joinSeller(@Valid @RequestBody SignupSellerRequest signupSellerRequest){
+        if (!signupSellerRequest.getPassword().equals(signupSellerRequest.getConfirmPassword())) {
+            throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+        }
         SiteUser newUser = siteUserService.signupSeller(signupSellerRequest);
         Studio newStudio = studioService.getStudioBySiteUser(newUser);
         return RsData.of("200", "회원가입이 완료되었습니다", new SignupSellerResponse(newUser, newStudio));
