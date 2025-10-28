@@ -10,6 +10,6 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByOrderByCreatedDateDesc();
 
-    // 기존 리뷰 찾아 수정
-    boolean existsByOrderItemId(Long orderItemId);
+//    // 기존 리뷰 찾아 수정
+//    boolean existsByOrderItemId(Long orderItemId);
 }

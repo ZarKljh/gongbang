@@ -22,8 +22,8 @@ public class ReviewCommentDto {
         private Long reviewId;
 
         @NotBlank(message = "댓글 내용을 입력해주세요.")
-        @JsonProperty("review_comment_content")
-        private String reviewCommentContent;
+        @JsonProperty("review_comment")
+        private String reviewComment;
     }
 
 //    @Getter
@@ -45,7 +45,7 @@ public class ReviewCommentDto {
 
         public Response(ReviewComment comment) {
             this.commentId = comment.getCommentId();
-            this.content = comment.getReviewCommentContent();
+            this.content = comment.getReviewComment();
             this.createdBy = comment.getCreatedBy();
             this.reviewId = comment.getReview() != null ? comment.getReview().getReviewId() : null; // ✅ 핵심
         }

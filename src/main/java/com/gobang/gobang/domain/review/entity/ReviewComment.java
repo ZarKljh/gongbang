@@ -42,7 +42,7 @@ public class ReviewComment{
     private String updatedBy;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String reviewCommentContent;
+    private String reviewComment;
 
     @CreatedDate
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
