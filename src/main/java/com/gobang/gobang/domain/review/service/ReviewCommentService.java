@@ -27,11 +27,18 @@ public class ReviewCommentService {
     @Transactional
     public Optional<ReviewComment> createComment(ReviewCommentDto.CreateRequest dto) {
         // 1리뷰 존재 여부 확인
+//        Optional<Review> reviewOpt = reviewRepository.findById(dto.getReviewId());
+//        if (reviewOpt.isEmpty()) return Optional.empty();
+
         Optional<Review> reviewOpt = reviewRepository.findById(dto.getReviewId());
-        if (reviewOpt.isEmpty()) return Optional.empty();
+        if (reviewOpt.isEmpty()) {
+            return Optional.empty();
+        }
 
         // 리뷰당 댓글 1개 제한
-        if (reviewCommentRepository.findByReview_ReviewId(dto.getReviewId()).isPresent()) return Optional.empty();
+        if (reviewCommentRepository.findByReview(reviewOpt.get()).isPresent()) {
+            return Optional.empty();
+        }
 
         // 로그인 사용자 검증 (SELLER만 가능)
         SiteUser seller = rq.getSiteUser();
