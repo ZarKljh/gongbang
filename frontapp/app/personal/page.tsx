@@ -1,181 +1,167 @@
 "use client";
+import React, { useState, useEffect } from "react";
 
-import { useState, useEffect } from "react";
-import "@/app/personal/page.css"
-import api from "../utils/api"
+export default function MyPage() {
+  const [activeTab, setActiveTab] = useState("orders");
+  const [activeSubTab, setActiveSubTab] = useState("product");
 
-export default function Personal() {
-  const [user, setUser] = useState([]);
-  const [cart, setCart] = useState([]);
-  const [follow, setFollow] = useState([]);
-  const [delivery, setDelivery] = useState([]);
+  const [userData, setUserData] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [orderItem, setOrderItem] = useState([]);
-  const [payment, setPaymentData] = useState([]);
-  const [userAddress, setUserAddressData] = useState([]);
-  const [wishList, setWishListData] = useState([]);
+  const [addresses, setAddresses] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [wishList, setWishList] = useState([]);
+  const [followList, setFollowList] = useState([]);
+  const [coupons, setCoupons] = useState([]);
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
-    getUser();
-    getCart();
-    getFollow();
-    getDelivery();
-    getOrders();
-    getOrderItem();
-    getPayment();
-    getUserAddress();
-    getWishList();
+    const fetchData = async () => {
+      try {
+        const resUser = await fetch("http://localhost:8090/api/v1/mypage/me");
+        const dataUser = await resUser.json();
+        setUserData(dataUser.data || null);
+
+        const resOrders = await fetch("http://localhost:8090/api/v1/mypage/orders");
+        const dataOrders = await resOrders.json();
+        setOrders(dataOrders.data || []);
+
+        const resAddresses = await fetch("http://localhost:8090/api/v1/mypage/addresses");
+        const dataAddresses = await resAddresses.json();
+        setAddresses(dataAddresses.data || []);
+
+        const resPayments = await fetch("http://localhost:8090/api/v1/mypage/payment-methods");
+        const dataPayments = await resPayments.json();
+        setPaymentMethods(dataPayments.data || []);
+
+        const resWishList = await fetch("http://localhost:8090/api/v1/mypage/wishlist");
+        const dataWishList = await resWishList.json();
+        setWishList(dataWishList.data || []);
+
+        const resFollow = await fetch("http://localhost:8090/api/v1/mypage/follow");
+        const dataFollow = await resFollow.json();
+        setFollowList(dataFollow.data || []);
+
+        const resCoupons = await fetch("http://localhost:8090/api/v1/mypage/coupon");
+        const dataCoupons = await resCoupons.json();
+        setCoupons(dataCoupons.data || []);
+
+        const resCart = await fetch("http://localhost:8090/api/v1/mypage/cart");
+        const dataCart = await resCart.json();
+        setCart(dataCart.data || []);
+
+      } catch (err) {
+        console.error("데이터 fetch 실패", err);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const getUser = async () => {
-    const result = await fetch(`http://localhost:8090/api/v1/mypage/${user.id}`).then(
-            (row) => row.json()
-        );
-        setUser(result.data.user);
-        console.log(result.data.user);
-  }
-
-  const getCart = async () => {
-    const result = await fetch("http://localhost:8090/api/v1/mypage/cart").then(
-            (row) => row.json()
-        );
-        setCart(result.data.cart);
-        console.log(result.data.cart);
-  }
-
-  const getFollow = async () => {
-    const result = await fetch("http://localhost:8090/api/v1/mypage/follow").then(
-            (row) => row.json()
-        );
-        setFollow(result.data.follow);
-        console.log(result.data.follow);
-  }
-
-  const getDelivery = async () => {
-    const result = await fetch("http://localhost:8090/api/v1/mypage/delivery").then(
-            (row) => row.json()
-        );
-        setDelivery(result.data.delivery);
-        console.log(result.data.delivery);
-  }
-
-  const getOrders = async () => {
-    const result = await fetch("http://localhost:8090/api/v1/mypage/orders").then(
-            (row) => row.json()
-        );
-        setOrders(result.data.orders);
-        console.log(result.data.orders);
-  }
-
-  const getOrderItem = async () => {
-    const result = await fetch(`http://localhost:8090/api/v1/mypage/orders/${orders.orderId}`).then(
-            (row) => row.json()
-        );
-        setOrderItem(result.data.orderItem);
-        console.log(result.data.orderItem);
-  }
-
-  const getPayment = async () => {
-    const result = await fetch("http://localhost:8090/api/v1/mypage/payment-methods").then(
-            (row) => row.json()
-        );
-        setPaymentData(result.data.payment);
-        console.log(result.data.payment);
-  }
-
-  const getUserAddress = async () => {
-    const result = await fetch("http://localhost:8090/api/v1/mypage/addresses").then(
-            (row) => row.json()
-        );
-        setUserAddressData(result.data.userAddress);
-        console.log(result.data.userAddress);
-  }
-
-  const getWishList = async () => {
-    const result = await fetch("http://localhost:8090/api/v1/mypage/wishlist").then(
-            (row) => row.json()
-        );
-        setWishListData(result.data.wishList);
-        console.log(result.data.wishList);
-  }
+  if (!userData) return <div>로딩중...</div>;
 
   return (
-    <>
-      <h4>마이페이지</h4>
-      <div>{}</div>
-      <div className="container_box">
-        <div className="container">
-          <div className="myCategory">
-            <a className="me user">내 정보 관리</a>
-            <a className="me oder_delivery">주문 및 배송 관리</a>
-            <a className="me cart">장바구니</a>
-            <a className="me wishList">위시 리스트</a>
-            <a className="me follow">팔로우</a>
-            <a className="me address">배송지 관리</a>
-            <a className="me payment">결제 수단 관리</a>
-          </div>
-          
-          <div className="userState_box">
-            <div className="myState">
-              <div className="profileImage"></div>
-              <div className="myProfile_box">
-                <span>{user.userName} 님 안녕하세요.</span>
-                <span>아이디 : {user.id}</span>
-              </div>
-              <div className="myReview_box">
-                <span>상품 리뷰</span>
-                <span>리뷰 수</span>
-              </div>
-              <div className="myQna_box">
-                <span>문의</span>
-                <span>문의 수</span>
-              </div>
-            </div>
-
-            <div className="my_info_box">
-              <div>
-                
-              </div>
-            </div>
-
-            <div className="order_delivery_box">
-              <span>배송 관리</span>
-              <div className="delivery_box">
-                <div className="before_delivery">
-                  <span>배송 대기 상품</span>
-                  <span>0</span>
-                </div>
-                <div className="during_delivery">
-                  <span>배송 중 상품</span>
-                  <span>0</span>
-                </div>
-                <div className="delivery_complete">
-                  <span>배송 완료 상품</span>
-                  <span>0</span>
-                </div>
-              </div>
-              <span>주문 관리</span>
-              <div className="order_box">
-                <span>주문 일시</span>
-                <div className="order">
-                  <div className="order_product_img">
-                    <div className="order_product_img_1"></div>
-                    <div className="order_product_img_2"></div>
-                    <div className="order_product_img_3"></div>
-                  </div>
-                   <a /*onClick={}*/ className="order_detail_btn">◦◦◦<br />더보기</a>
-                  <div className="order_info">
-                    <span>상품 정보</span>
-                    <span>상품 수량</span>
-                    <span>상품 총 가격</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
+    <div>
+      {/* 왼쪽 메뉴 */}
+      <div>
+        <h1>{userData.userName}</h1>
+        <nav>
+          <button onClick={() => setActiveTab("orders")}>주문배송조회</button>
+          <button onClick={() => setActiveTab("reviews")}>상품 리뷰</button>
+          <button onClick={() => setActiveTab("coupons")}>쿠폰</button>
+          <button onClick={() => setActiveTab("profile")}>회원정보수정</button>
+          <button onClick={() => setActiveTab("addresses")}>배송지 관리</button>
+          <button onClick={() => setActiveTab("payment")}>결제수단</button>
+          <button onClick={() => setActiveTab("wishlist")}>나의 좋아요</button>
+          <button onClick={() => setActiveTab("cart")}>장바구니</button>
+        </nav>
       </div>
-    </>
+
+      {/* 오른쪽 콘텐츠 */}
+      <div>
+        {activeTab === "profile" && (
+          <div>
+            <h2>회원정보</h2>
+            <p>이름: {userData.userName}</p>
+            <p>닉네임: {userData.nickName}</p>
+            <p>이메일: {userData.email}</p>
+            <p>휴대폰: {userData.mobilePhone}</p>
+          </div>
+        )}
+
+        {activeTab === "orders" && (
+          <div>
+            <h2>최근 주문</h2>
+            {orders.length === 0 && <p>주문 내역이 없습니다.</p>}
+            {orders.map(order => (
+              <div key={order.orderId}>
+                <p>주문번호: {order.orderCord}</p>
+                <p>총액: {order.totalPrice}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "addresses" && (
+          <div>
+            <h2>배송지 관리</h2>
+            {addresses.map(addr => (
+              <div key={addr.userAddressId}>
+                <p>{addr.recipientName}</p>
+                <p>{addr.baseAddress} {addr.detailAddress}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "payment" && (
+          <div>
+            <h2>결제수단</h2>
+            {paymentMethods.map(p => (
+              <div key={p.paymentId}>
+                <p>{p.cardCompany} {p.cardNumber}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "wishlist" && (
+          <div>
+            <h2>찜 목록</h2>
+            {wishList.map(item => (
+              <div key={item.wishlistId}>{item.productName} - {item.price}</div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "coupons" && (
+          <div>
+            <h2>쿠폰</h2>
+            {coupons.map(c => (
+              <div key={c.couponId}>{c.name}</div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "reviews" && (
+          <div>
+            <h2>상품 리뷰</h2>
+            <p>작성한 리뷰가 없습니다.</p>
+          </div>
+        )}
+
+        {activeTab === "cart" && (
+          <div>
+            <h2>장바구니</h2>
+            {cart.length === 0 && <p>장바구니가 비어있습니다.</p>}
+            {cart.map(item => (
+              <div key={item.cartId}>
+                <p>상품: {item.productName}</p>
+                <p>수량: {item.quantity}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
