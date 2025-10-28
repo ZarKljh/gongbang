@@ -54,7 +54,7 @@ export default function SellerSignupPage() {
             role: 'SELLER',
         }
 
-        const response = await fetch('http://localhost:8090/api/auth/signup/seller', {
+        const response = await fetch('http://localhost:8090/api/v1/auth/signup/seller', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),

@@ -15,8 +15,6 @@ import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
 import com.gobang.gobang.global.rq.Rq;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -24,10 +22,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
-@RequestMapping(value = "/api/auth")
+@RequestMapping(value = "/api/v1/auth")
 @RequiredArgsConstructor
 @Tag(name = "ApiV1SiteUserController", description = "회원 인증/인가 API")
 public class SiteUserController {
@@ -73,7 +69,7 @@ public class SiteUserController {
                 new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
         );
     }
-
+    /*
     @GetMapping("/me")
     public RsData<LoginUserResponse> me(HttpServletRequest req) {
         Cookie[] cookies = req.getCookies();
@@ -82,6 +78,7 @@ public class SiteUserController {
         for (Cookie cookie : cookies) {
             if ("accessToken".equals(cookie.getName())) {
                 accessToken = cookie.getValue();
+                //System.out.println("액세스토큰 : " + accessToken);
             }
         }
 
@@ -91,6 +88,19 @@ public class SiteUserController {
 
         return RsData.of("200", "내 회원정보", new LoginUserResponse(siteUser));
     }
+    */
+    @GetMapping("/me")
+    public RsData<LoginUserResponse> me() {
+        System.out.println("me 시작");
+        SiteUser siteUser = rq.getSiteUser();
+        System.out.println("rq.getSiteuser동작" + siteUser.getEmail());
+        return RsData.of(
+                "200",
+                "내 정보 조회 성공",
+                new LoginUserResponse(siteUser)
+        );
+    }
+
     @PostMapping("/logout")
     public RsData logout() {
         rq.removeCrossDomainCookie("accessToken");
