@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -212,9 +213,14 @@ public class SiteUserService {
 
     // 현재 로그인된 사용자 조회
     public SiteUser getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() ||
+                (auth.getPrincipal() instanceof String principal && principal.equals("anonymousUser"))) {
+            throw new IllegalStateException("로그인된 사용자가 없습니다.");
+        }
 
+        Object principal = auth.getPrincipal();
+        String username;
         if (principal instanceof UserDetails userDetails) {
             username = userDetails.getUsername();
         } else {
