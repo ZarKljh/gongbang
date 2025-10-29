@@ -1,0 +1,51 @@
+.cardGrid {
+    display: grid;
+    max-width: 1280px; /* ✅ 최대 너비 제한 */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.card {
+    border: 1px solid; /* color 생략 → currentColor 사용 */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 100%;
+}
+
+.cardLink {
+    display: block;
+    text-decoration: none;
+    padding: 12px;
+}
+
+.cardMedia {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* 정사각 미디어 영역 */
+    display: block;
+}
+
+.cardMedia > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cardTitle {
+    margin: 8px 0 4px;
+}
+.cardDesc {
+    margin: 0 0 12px;
+}
+
+.cardActions {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px solid;
+    margin-top: auto;
+    align-items: center;
+    justify-content: space-between;
+}
