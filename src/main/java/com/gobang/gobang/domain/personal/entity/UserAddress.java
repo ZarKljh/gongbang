@@ -29,13 +29,13 @@ public class UserAddress {
     @Column(name = "recipient_name", nullable = false, length = 50)
     private String recipientName;
 
-    @Column(name = "base_address", nullable = false, length = 10)
+    @Column(name = "base_address", nullable = false)
     private String baseAddress;
 
-    @Column(name = "detail_address", nullable = false, length = 255)
+    @Column(name = "detail_address", nullable = false)
     private String detailAddress;
 
-    @Column(name = "zipcode", nullable = false, length = 255)
+    @Column(name = "zipcode", nullable = false, length = 6)
     private String zipcode;
 
     @Builder.Default

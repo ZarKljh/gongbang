@@ -29,15 +29,25 @@ public class ThemeService {
     }
 
 
-    public Theme InitTheme(String code, String name, String description, int order) {
-        Theme theme = Theme.builder()
-                .code(code)
-                .name(name)
-                .description(description)
-                .displayOrder(order)
-                .active(true)
-                .build();
+    public void InitTheme(String code, String name, String description, int order) {
 
-        return themeRepository.save(theme);
+        if (themeRepository.existsByCode(code)) {
+            Theme t = themeRepository.findByCode(code).get();
+            t.setName(name);
+            t.setActive(true);
+            t.setDisplayOrder(order);
+            // JPA 변경감지로 update (save() 생략 가능하지만, 일관 위해 save 호출해도 OK)
+            themeRepository.save(t);
+        } else {
+            themeRepository.save(
+                    Theme.builder()
+                            .code(code)
+                            .name(name)
+                            .active(true)
+                            .displayOrder(order)
+                            .build()
+            );
+        }
+
     }
 }

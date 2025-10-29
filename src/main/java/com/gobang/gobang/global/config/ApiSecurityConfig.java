@@ -38,6 +38,7 @@ public class ApiSecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/*/members/logout").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/*/mypage/*").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/review/**").authenticated()
+
                                 .anyRequest().authenticated()
                 )
                 .csrf(

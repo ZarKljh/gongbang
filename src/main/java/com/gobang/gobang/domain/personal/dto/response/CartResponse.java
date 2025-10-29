@@ -17,7 +17,7 @@ public class CartResponse {
     private Long cartId;
     private SiteUser siteUser;
     private Product product;
-    private String productName; // Product 엔티티에서 가져올 예정
+    private String productName;
     private Long quantity;
     private LocalDateTime createdAt;
 
@@ -26,6 +26,7 @@ public class CartResponse {
                 .cartId(cart.getCartId())
                 .siteUser(cart.getSiteUser())
                 .product(cart.getProduct())
+                .productName(cart.getProduct().getName())
                 .quantity(cart.getQuantity())
                 .createdAt(cart.getCreatedAt())
                 .build();
