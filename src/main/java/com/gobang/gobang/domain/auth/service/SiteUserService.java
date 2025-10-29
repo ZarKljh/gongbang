@@ -9,7 +9,6 @@ import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
-import com.gobang.gobang.domain.personal.service.SmsVerificationService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.config.SecurityUser;
 import com.gobang.gobang.global.jwt.JwtProvider;

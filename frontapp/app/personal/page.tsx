@@ -97,7 +97,7 @@ export default function MyPage() {
     const fetchAddresses = async (id: number) => {
         if (!id) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/user-addresses?userId=${id}`, { withCredentials: true });
+            const { data } = await axios.get(`${API_BASE_URL}/addresses?userId=${id}`, { withCredentials: true });
             setAddresses(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('배송지 조회 실패:', error);
@@ -119,7 +119,7 @@ export default function MyPage() {
     const fetchWishList = async (id: number) => {
         if (!id) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlists?userId=${id}`, { withCredentials: true });
+            const { data } = await axios.get(`${API_BASE_URL}/wishlist?userId=${id}`, { withCredentials: true });
             setWishList(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('위시 목록 조회 실패:', error);
@@ -130,26 +130,11 @@ export default function MyPage() {
     const fetchFollowList = async (id: number) => {
         if (!id) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/follows?userId=${id}`, { withCredentials: true });
+            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, { withCredentials: true });
             setFollowList(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('팔로우 목록 조회 실패:', error);
             setFollowList([]);
-        }
-    };
-
-    const fetchStats = async (id: number) => {
-        if (!id) return;
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/users/${id}/stats`, { withCredentials: true });
-            setStats(data || {});
-        } catch (error) {
-            console.error('통계 조회 실패:', error);
-            setStats({
-                totalPoints: 0,
-                totalReviews: 0,
-                membershipLevel: 'Newbie',
-            });
         }
     };
 
