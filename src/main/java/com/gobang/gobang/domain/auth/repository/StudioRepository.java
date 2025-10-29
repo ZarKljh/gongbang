@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface StudioRepository extends JpaRepository<Studio, Long> {
     Optional<Studio> findBySiteUser(SiteUser siteUser);
+    Optional<Studio> findByStudioId(Long studioId);
 }

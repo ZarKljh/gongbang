@@ -29,7 +29,7 @@ public class StudioService {
         }
     }
     public Studio getStudioById(Long id) {
-        Optional<Studio> os = studioRepository.findById(id);
+        Optional<Studio> os = studioRepository.findByStudioId(id);
         if(os.isPresent()){
             return os.get();
         } else {

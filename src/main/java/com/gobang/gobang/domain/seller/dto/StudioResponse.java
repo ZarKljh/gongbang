@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -28,7 +27,7 @@ public class StudioResponse {
     private String studioAddPostNumber;
     private String studioAddMain;
     private String studioAddDetail;
-    private List<Studio> studioList;
+    //private List<Studio> studioList;
 
     public StudioResponse(SiteUser siteUser, Studio studio){
         this.email = siteUser.getEmail();
@@ -37,7 +36,7 @@ public class StudioResponse {
         this.birth = siteUser.getBirth();
         this.nickName = siteUser.getNickName();
         this.mobilePhone = siteUser.getMobilePhone();
-        this.studioList = siteUser.getStudioList();
+        //this.studioList = siteUser.getStudioList();
         this.categoryId = studio.getCategoryId();
         this.studioName = studio.getStudioName();
         this.studioDescription = studio.getStudioDescription();
