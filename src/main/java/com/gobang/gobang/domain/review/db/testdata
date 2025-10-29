@@ -11,6 +11,10 @@ select * from site_user;
 
 SELECT * FROM TBL_REVIEW WHERE id = 1;
 
+-- 댓글 권한 임시 허용
+ALTER TABLE tbl_review_comment
+ALTER COLUMN seller_id DROP NOT NULL;
+
 
 INSERT INTO site_user (id, email, password, user_name, mobile_phone, nick_name, role, created_date, status)
 VALUES

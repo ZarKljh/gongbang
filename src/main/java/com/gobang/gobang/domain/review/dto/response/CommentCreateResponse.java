@@ -10,16 +10,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CommentCreateResponse {
     private Long commentId;
-    private String content;
+    private String reviewComment;
     private String createdBy;
+    private String updatedBy;
     private Long reviewId;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
     public CommentCreateResponse(ReviewComment comment) {
         this.commentId = comment.getCommentId();
-        this.content = comment.getReviewComment();
+        this.reviewComment = comment.getReviewComment();
         this.createdBy = comment.getCreatedBy();
+        this.updatedBy = comment.getUpdatedBy();
         this.reviewId = comment.getReview() != null ? comment.getReview().getReviewId() : null; // ✅ 핵심
         this.createdDate = comment.getCreatedDate();
         this.modifiedDate = comment.getModifiedDate();

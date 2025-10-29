@@ -30,7 +30,8 @@ public class ReviewComment{
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
-    @Column(name = "seller_id", nullable = false)
+    // 테스트용 nullable=true
+    @Column(name = "seller_id", nullable = true)
     private String sellerId;
 
     @CreatedBy

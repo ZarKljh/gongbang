@@ -58,10 +58,34 @@ public class ReviewCommentService {
                 .createdBy(user.getUserName())
                 .build();
 
+        System.out.println("📥 받은 DTO: " + req);
         // 저장 후 반환
         ReviewComment saved = reviewCommentRepository.save(comment);
         return Optional.of(saved);
     }
+
+//@Transactional
+//public Optional<ReviewComment> createComment(Long reviewId, CommentCreateRequest req) {
+//    Optional<Review> reviewOpt = reviewRepository.findById(reviewId);
+//    if (reviewOpt.isEmpty()) return Optional.empty();
+//
+//    // 리뷰당 댓글 1개 제한
+//    if (reviewCommentRepository.findByReview(reviewOpt.get()).isPresent()) {
+//        return Optional.empty();
+//    }
+//
+//    SiteUser user = rq.getSiteUser();
+//    if (user == null) return Optional.empty();
+//
+//    ReviewComment comment = ReviewComment.builder()
+//            .review(reviewOpt.get())
+//            .reviewComment(req.getReviewComment())
+//            .createdBy(user.getUserName())
+//            .build();
+//
+//    return Optional.of(reviewCommentRepository.save(comment));
+//}
+
 
     // 댓글 수정
 //    @Transactional
