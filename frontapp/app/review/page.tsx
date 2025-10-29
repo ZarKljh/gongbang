@@ -12,6 +12,27 @@ export default function Review() {
     const [comments, setComments] = useState({})
     const [likeCounts, setLikeCounts] = useState({})
 
+
+
+    ///// 페이징 관련
+    // front에서의 페이징 관련
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
+    // 배열 10개씩 잘라 보여주기
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentReviews = reviews.slice(indexOfFirstItem, indexOfLastItem)
+
+    const totalPages = Math.ceil(reviews.length / itemsPerPage)
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber < 1 || pageNumber > totalPages) return
+        setCurrentPage(pageNumber)
+    }
+    ///// 페이징 관련
+
+
+
     useEffect(() => {
         checkLoginStatus()
         fetchReviews()
@@ -196,7 +217,7 @@ export default function Review() {
                 <p>현재 작성된 리뷰가 없습니다.</p>
             ) : (
                 <ul>
-                    {reviews.map((review) => (
+                    {currentReviews.map((review) => (
                         <li key={review.reviewId} style={{ marginBottom: '20px' }}>
                             {review.reviewId} /
                             <Link
@@ -301,6 +322,40 @@ export default function Review() {
                     ))}
                 </ul>
             )}
+            {/* 페이지네이션 */}
+<div style={{ marginTop: '20px', textAlign: 'center' }}>
+  <button
+    onClick={() => handlePageChange(currentPage - 1)}
+    disabled={currentPage === 1}
+    style={{
+      marginRight: '10px',
+      padding: '6px 12px',
+      borderRadius: '6px',
+      border: '1px solid #ccc',
+      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+    }}
+  >
+    ◀ 이전
+  </button>
+
+  <span>
+    {currentPage} / {totalPages}
+  </span>
+
+  <button
+    onClick={() => handlePageChange(currentPage + 1)}
+    disabled={currentPage === totalPages}
+    style={{
+      marginLeft: '10px',
+      padding: '6px 12px',
+      borderRadius: '6px',
+      border: '1px solid #ccc',
+      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+    }}
+  >
+    다음 ▶
+  </button>
+</div>
         </>
     )
 }
