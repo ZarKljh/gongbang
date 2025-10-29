@@ -22,7 +22,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     @SneakyThrows
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
-        if (request.getRequestURI().equals("/api/v1/auth/login/user") || request.getRequestURI().equals("/api/v1/auth/logout") || request.getRequestURI().equals("/api/v1/auth/signup/user") || request.getRequestURI().equals("/api/v1/auth/signup/seller")) {
+        if (request.getRequestURI().equals("/api/v1/auth/login/seller") || request.getRequestURI().equals("/api/v1/auth/login/user") || request.getRequestURI().equals("/api/v1/auth/logout") || request.getRequestURI().equals("/api/v1/auth/signup/user") || request.getRequestURI().equals("/api/v1/auth/signup/seller")) {
             filterChain.doFilter(request, response);
             return;
         }

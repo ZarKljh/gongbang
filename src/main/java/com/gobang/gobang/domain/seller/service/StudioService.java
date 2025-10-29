@@ -3,6 +3,8 @@ package com.gobang.gobang.domain.seller.service;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
+import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,18 +24,40 @@ public class StudioService {
 
     public Studio getStudioBySiteUser(SiteUser siteUser) {
         Optional<Studio> os = studioRepository.findBySiteUser(siteUser);
-        if ( os.isPresent() ) {
+        if (os.isPresent()) {
             return os.get();
         } else {
             return null;
         }
     }
+
     public Studio getStudioById(Long id) {
         Optional<Studio> os = studioRepository.findByStudioId(id);
-        if(os.isPresent()){
+        if (os.isPresent()) {
             return os.get();
         } else {
             return null;
         }
+    }
+
+    public Studio AddStudio(SiteUser seller, @Valid StudioAddRequest studioAddRequest) {
+
+
+        Studio newStudio = Studio.builder()
+                .siteUser(seller)
+                .categoryId(Long.parseLong(studioAddRequest.getCategoryId()))
+                .studioName(studioAddRequest.getStudioName())
+                .studioDescription(studioAddRequest.getStudioDescription())
+                .studioMobile(studioAddRequest.getStudioMobile())
+                .studioOfficeTell(studioAddRequest.getStudioOfficeTell())
+                .studioFax(studioAddRequest.getStudioFax())
+                .studioEmail(studioAddRequest.getStudioEmail())
+                .studioBusinessNumber(studioAddRequest.getStudioBusinessNumber())
+                .build();
+
+        studioRepository.save(newStudio);
+        System.out.println("공방이 저장되었습니다");
+        return newStudio;
+        //return RsData.of("S-2", "신규공방이 등록되었습니다", newStudio);
     }
 }
