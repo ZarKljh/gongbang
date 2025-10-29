@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-// import parseJWT from "@/app/utils/parseJWT";
 
 export default function MyPage() {
   const [activeTab, setActiveTab] = useState("orders");
@@ -12,12 +11,49 @@ export default function MyPage() {
   const [editMode, setEditMode] = useState({});
   const [loading, setLoading] = useState(true);
 
+  const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
+
   const API_BASE_URL = "/api";
 
-  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
-  const token = getToken();
-  const decoded = token ? parseJWT(token) : null;
-  const userId = decoded?.userId || decoded?.id || decoded?.sub;
+  // 클라이언트 전용: 쿠키에서 accessToken 가져오기
+  const getTokenFromCookie = () => {
+    if (typeof document === "undefined") return null;
+    const match = document.cookie.match(/accessToken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  };
+
+  // JWT 파싱 유틸
+  const parseJWT = (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error("JWT 파싱 실패:", e);
+      return null;
+    }
+  };
+
+  // 클라이언트에서만 토큰과 userId 설정
+  useEffect(() => {
+    const t = getTokenFromCookie();
+    if (t) {
+      setToken(t);
+      const decoded = parseJWT(t);
+      const id = decoded?.id || decoded?.userId || decoded?.sub || null;
+      setUserId(id);
+    } else {
+      console.warn("❌ accessToken을 찾을 수 없습니다.");
+      setLoading(false);
+    }
+  }, []);
 
   const [userData, setUserData] = useState(null);
   const [tempData, setTempData] = useState(null);
@@ -34,9 +70,11 @@ export default function MyPage() {
     membershipLevel: "Newbie",
   });
 
+  // userId가 세팅되면 데이터 로드
   useEffect(() => {
+    if (!userId) return;
     loadAllData();
-  }, []);
+  }, [userId]);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -110,7 +148,7 @@ export default function MyPage() {
       });
       setWishList(data);
     } catch (error) {
-      console.error("찜 목록 조회 실패:", error);
+      console.error("위시 목록 조회 실패:", error);
     }
   };
 
@@ -147,6 +185,7 @@ export default function MyPage() {
     }
   };
 
+  // SMS 인증 타이머
   useEffect(() => {
     if (isAuthenticated && authTimeLeft > 0) {
       const timer = setInterval(() => {
@@ -162,6 +201,7 @@ export default function MyPage() {
     }
   }, [isAuthenticated, authTimeLeft]);
 
+  // SMS 인증
   const handleAuth = async () => {
     try {
       const response = await axios.post(
@@ -180,12 +220,7 @@ export default function MyPage() {
     }
   };
 
-  const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}시간 ${minutes}분`;
-  };
-
+  // 기타 편집 함수들 (기존 동일)
   const handleEdit = (section) => {
     if (!isAuthenticated) {
       alert("정보 수정을 위해서는 SMS 인증이 필요합니다.");
