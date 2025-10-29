@@ -24,48 +24,66 @@ public class FilterService {
 
     @Transactional
     public void initGroupFilter(String parentCode, String subCode, String subName, int displayOrder,
-                                boolean appliesToAll,
-                                boolean isActive) {
+                                boolean appliesToAll, boolean Active) {
+        // 1) 부모 카테고리
         Category parent = categoryRepository.findByCode(parentCode)
                 .orElseThrow(() -> new RuntimeException("부모 카테고리를 찾을 수 없습니다: " + parentCode));
 
-        FilterGroup sub = FilterGroup.builder()
-                .category(parent)           // ✅ FK 세팅
-                .code(subCode)
-                .name(subName)
-                .displayOrder(displayOrder)
-                .active(isActive)
-                .appliesToAll(appliesToAll)
-                .build();
+        // 2) 그룹 업서트 (있으면 수정, 없으면 생성)
+        FilterGroup group = filterGroupRepository.findByCategory_CodeAndCode(parentCode, subCode)
+                .orElseGet(() -> FilterGroup.builder()
+                        .category(parent)   // INSERT일 때만 빌더로 기본 세팅
+                        .code(subCode)
+                        .build()
+                );
 
-        filterGroupRepository.save(sub);
+        // 3) 공통 필드 세팅 (INSERT/UPDATE 공통)
+        group.setName(subName);
+        group.setDisplayOrder(displayOrder);
+        group.setActive(Active);
+        group.setAppliesToAll(appliesToAll);
+
+        // 4) 저장 (id 있으면 UPDATE, 없으면 INSERT)
+        filterGroupRepository.save(group);
     }
 
 
 
-    public void initOption(String CategoryCode, String groupCode,
-                           String label, String valueKey, int displayOrder, String inputType, String selectType) {
-        FilterGroup parent = filterGroupRepository.findByCategory_CodeAndCode(CategoryCode, groupCode)
-                .orElseThrow(() -> new RuntimeException("FilterGroup not found: " + groupCode + " / " + CategoryCode));
+    @Transactional
+    public void initOption(String categoryCode, String groupCode,
+                           String label, String valueKey, int displayOrder,
+                           String inputType, String selectType) {
 
-        FilterOption sub = FilterOption.builder()
-                .group(parent)           // ✅ FK 세팅
-                .label(label)
-                .valueKey(valueKey)
-                .displayOrder(displayOrder)
-                .active(true)
-                .inputType(inputType)
-                .selectType(selectType)
-                .build();
+        // 1) 소속 그룹(자연키) 찾기
+        FilterGroup parent = filterGroupRepository.findByCategory_CodeAndCode(categoryCode, groupCode)
+                .orElseThrow(() -> new RuntimeException("FilterGroup not found: " + groupCode + " / " + categoryCode));
 
-        filterOptionRepository.save(sub);
+        // 2) 옵션 업서트 (동일 그룹 내 valueKey 기준)
+        FilterOption option = filterOptionRepository.findByGroup_IdAndValueKey(parent.getId(), valueKey)
+                .orElseGet(() -> FilterOption.builder()
+                        .group(parent)      // INSERT일 때만 빌더 사용
+                        .valueKey(valueKey)
+                        .build()
+                );
+
+        // 3) 공통 필드 세팅
+        option.setLabel(label);
+        option.setDisplayOrder(displayOrder);
+        option.setActive(true);
+        option.setInputType(inputType);
+        option.setSelectType(selectType);
+
+        // 4) 저장
+        filterOptionRepository.save(option);
     }
-
 
 
     public List<FilterGroupDto> getGroupListByCategoryId(Long categoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
         List<FilterGroup> filterGroups = filterGroupRepository.findAllByCategory_IdAndActiveTrueOrderByDisplayOrderAscIdAsc(categoryId, PageRequest.of(0, limit));
+        if (filterGroups.isEmpty()) {
+            throw new RuntimeException("필터그룹 목록이 비어있습니다.");
+        }
         return filterGroups.stream()
                 .map(t -> FilterGroupDto.builder()
                         .id(t.getId())
@@ -77,9 +95,13 @@ public class FilterService {
                 .toList();
 
     }
+
     public List<FilterOptionDto> getOptionListByGroupId(Long groupId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
         List<FilterOption> filterOptions = filterOptionRepository.findAllByGroupId_IdAndActiveTrueOrderByDisplayOrderAscIdAsc(groupId, PageRequest.of(0, limit));
+        if (filterOptions.isEmpty()) {
+            throw new RuntimeException("필터 옵션이 비어있습니다.");
+        }
         return filterOptions.stream()
                 .map(t -> FilterOptionDto.builder()
                         .id(t.getId())
