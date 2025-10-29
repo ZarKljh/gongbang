@@ -1,167 +1,195 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import api from '@/app/utils/api' //
 
 export default function Review() {
-  const [reviews, setReviews] = useState([]);
+    const [reviews, setReviews] = useState([])
+    const [isLoggedIn, setIsLoggedIn] = useState(false) // 로그인 상태
+    const [activeCommentBox, setActiveCommentBox] = useState(null)
+    const [reviewComment, setReviewComment] = useState(null)
 
-  useEffect(() => {
-    fetchReviews();
-  }, []);
+    useEffect(() => {
+        checkLoginStatus() // 로그인 확인
+        fetchReviews() // 리뷰 목록 불러오기
+    }, [])
 
-  const fetchReviews = async () => {
-    try {
-      const result = await fetch("http://localhost:8090/api/v1/reviews");
-      const data = await result.json();
-
-      // 배열 꺼내기
-      setReviews(data.data.reviews || []);
-    } catch (err) {
-      console.error("error", err);
+    // 로그인 여부 확인
+    const checkLoginStatus = async () => {
+        try {
+            const res = await fetch('http://localhost:8090/api/auth/me', {
+                method: 'GET',
+                credentials: 'include',
+            })
+            if (res.ok) {
+                setIsLoggedIn(true)
+            } else {
+                setIsLoggedIn(false)
+            }
+        } catch {
+            setIsLoggedIn(false)
+        }
     }
-  };
 
-  return (
-    <>
-      <ReviewForm fetchReviews={fetchReviews} />
-
-      <h4>번호 / 후기 내용 / 생성일 / 별점 / 유저이름</h4>
-      {reviews.length === 0 ? (
-        <p>현재 작성된 리뷰가 없습니다.</p>
-      ) : (
-        <ul>
-          {reviews.map((review) => (
-            <li key={review.id}>
-              {review.id} /
-              <Link href={`/review/${review.id}`}>{review.content}</Link> /
-              {review.createdAt} /{review.rating} / /{review.username || "익명"}
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
-  );
-}
-
-/////////////// 리뷰 작성 폼/////////////////
-
-function ReviewForm({ fetchReviews }) {
-
-  const [idCounter, setIdCounter] = useState({
-    orderId: 1,
-    orderItemId: 1,
-    productId: 1,
-    userId: 1
-  });
-  const [review, setReview] = useState({
-      orderId: 1,
-      orderItemId: 1,
-      productId: 1,
-      userId: 1,
-      rating: 0,
-      content: "",
-    });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const newValue = name === "rating" ? Number(value) : value;
-
-    setReview((prev) => ({
-      ...prev,
-      [name]: newValue,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (review.rating < 1) {
-      alert("별점을 선택해주세요. (1~5)");
-      return;
+    // 리뷰 목록 조회
+    const fetchReviews = async () => {
+        try {
+            const res = await api.get('/reviews')
+            setReviews(res.data.data.reviews || [])
+        } catch (err) {
+            console.error('리뷰 목록 조회 실패:', err)
+        }
     }
-    if (!review.content.trim()) {
-      alert("내용을 입력해주세요.");
+
+    // 리뷰 작성 버튼 클릭 시 동작
+    const handleCreateClick = async () => {
+        if (!isLoggedIn) {
+            if (confirm('리뷰를 작성하려면 로그인이 필요합니다. 로그인 하시겠습니까?')) {
+                window.location.href = '/auth/login'
+            }
+        } else {
+            window.location.href = '/review/create'
+        }
+    }
+
+      const handleCommentSubmit = async (reviewId) => {
+    if (!reviewComment.trim()) {
+      alert("댓글 내용을 입력해주세요.");
       return;
     }
 
-    // 등록할 때마다 ID 자동 증가 (test용)
-    const nextIds = {
-      orderId: idCounter.orderId + 1,
-      orderItemId: idCounter.orderItemId + 1,
-      productId: idCounter.productId + 1,
-      userId: idCounter.userId + 1
-    };
-
-    const reviewToSend = {
-      ...review,
-      ...nextIds
-    };
-
     try {
-      const response = await fetch("http://localhost:8090/api/v1/reviews", {
+      const res = await fetch("http://localhost:8090/api/v1/reviews/comments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(reviewToSend),
+        credentials: "include",
+        body: JSON.stringify({
+          review_id: reviewId,
+          reviewComment: reviewComment,
+        }),
       });
 
-      if (response.ok) {
-        alert("리뷰가 등록 되었습니다.");
-        fetchReviews();
-
-        setReview({
-          orderId: 1,
-          orderItemId: 1,
-          productId: 1,
-          userId: 1,
-          rating: 0,
-          content: "",
-        });
-
-        // 다음 등록 시 ID 자동 증가값 유지
-        setIdCounter(nextIds);
-    
+      if (res.ok) {
+        alert("댓글이 등록되었습니다.");
+        setReviewComment("");
+        setActiveCommentBox(null); // 입력창 닫기
+      } else if (res.status === 401) {
+        alert("로그인이 필요합니다.");
+        window.location.href = "/auth/login";
       } else {
-        alert("fail");
+        alert("댓글 등록 실패");
       }
     } catch (err) {
-      console.error("error", err);
+      console.error("댓글 등록 에러:", err);
     }
   };
 
-  return (
-    <div>
-      <h4>리뷰 작성</h4>
-      <form onSubmit={handleSubmit}>
-        {[1, 2, 3, 4, 5].map((num) => (
-          <label key={num}>
-            <input
-              type="radio"
-              name="rating"
-              value={num}
-              checked={review.rating === num}
-              onChange={handleChange}
-            />
-            {num}점
-          </label>
-        ))}
-        <br />
-        <label>
-          내용 :
-          <input
-            type="text"
-            name="content"
-            minLength={5}
-            onChange={handleChange}
-            value={review.content}
-            placeholder="5자 이상 300자 이하"
-          />
-        </label>
-        <br />
-        <input type="submit" value="등록" onChange={handleChange} />
-      </form>
-    </div>
-  );
+    return (
+        <>
+            {/* 제목 + 버튼 */}
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}
+            >
+                <h3>리뷰 목록</h3>
+                <button
+                    onClick={handleCreateClick}
+                    style={{
+                        backgroundColor: '#bfbfbf',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    리뷰 작성하기
+                </button>
+            </div>
+
+            <hr />
+
+            {/* 리뷰 목록 */}
+            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름) </h4>
+            {reviews.length === 0 ? (
+                <p>현재 작성된 리뷰가 없습니다.</p>
+            ) : (
+                <ul>
+                    {reviews.map((review) => (
+                        <li key={review.reviewId}>
+                            {review.reviewId} / <Link href={`/review/${review.reviewId}`}>{review.content}</Link> /{' '}
+                            {review.createdDate} / {review.rating} / {review.userId}({review.createdBy})
+                            <br />
+                            <div>댓글 내용 들어갈 자리</div>
+                            {/* 댓글달기 버튼 */}
+                            <button
+                                style={{
+                                    backgroundColor: '#bfbfbf',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '4px 10px',
+                                    marginTop: '5px',
+                                    cursor: 'pointer',
+                                }}
+                                onClick={() => {
+                                    if (!isLoggedIn) {
+                                        if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
+                                            window.location.href = '/auth/login'
+                                        }
+                                        return
+                                    }
+                                    setActiveCommentBox(activeCommentBox === review.reviewId ? null : review.reviewId)
+                                }}
+                            >
+                                💬 댓글 달기
+                            </button>
+                            {/* ✅ 로그인 상태에서만 댓글 입력창 표시 */}
+                            {isLoggedIn && activeCommentBox === review.reviewId && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <textarea
+                                        placeholder="댓글을 입력하세요."
+                                        maxLength={200}
+                                        style={{
+                                            width: '300px',
+                                            height: '60px',
+                                            border: '1px solid #ccc',
+                                            borderRadius: '8px',
+                                            padding: '5px',
+                                            resize: 'none',
+                                        }}
+                                        value={reviewComment || ""}
+                                        onChange={(e) => setReviewComment(e.target.value)}
+                                    />
+                                    <br />
+                                    <button
+                                        onClick={() => handleCommentSubmit(review.reviewId)}
+                                        style={{
+                                            backgroundColor: '#AD9263',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            padding: '6px 14px',
+                                            marginTop: '5px',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        댓글 등록
+                                    </button>
+
+                                    
+                                </div>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </>
+    )
 }

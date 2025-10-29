@@ -1,16 +1,15 @@
 package com.gobang.gobang.domain.review.dto;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.entity.Review;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class ReviewDto {
     @Data
     public static class ReviewCreateRequest {
@@ -31,6 +30,12 @@ public class ReviewDto {
         @Positive
         private Long userId;
 
+//        @NotNull(message = "사용자 이름은 필수입니다.")
+//        @Positive
+//        private String userName;
+
+        private String createdBy;
+
         @NotNull(message = "평점은 필수입니다.")
         @Positive
         private Integer rating;
@@ -39,6 +44,7 @@ public class ReviewDto {
         private String content;
 
     }
+
 
     @Getter
     @AllArgsConstructor

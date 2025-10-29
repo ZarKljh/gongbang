@@ -1,37 +1,50 @@
 package com.gobang.gobang.domain.review.controller;
 
+import com.gobang.gobang.domain.review.dto.ReviewCommentDto;
+import com.gobang.gobang.domain.review.entity.ReviewComment;
+import com.gobang.gobang.domain.review.service.ReviewCommentService;
+import com.gobang.gobang.global.RsData.RsData;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/reviews/{reviewId}/comments")
+@RequestMapping("/api/v1/reviews/comments")
 public class ReviewCommentController {
 
-//    private final ReviewCommentService reviewCommentService;
-//
-//    @GetMapping
-//    public ResponseEntity<List<ReviewComment>> getComments(@PathVariable Long reviewId) {
-//        return ResponseEntity.ok(reviewCommentService.getCommentsByReview(reviewId));
-//    }
-//
-//    @PostMapping
-//    public ResponseEntity<?> createComment(@PathVariable Long reviewId, @RequestBody ReviewComment comment) {
-//        return reviewCommentService.createComment(reviewId, comment)
-//                .map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.notFound().build());
-//    }
-//
+    private final ReviewCommentService reviewCommentService;
+
+    // ✅ 댓글 등록
+    @PostMapping("")
+    public RsData<ReviewCommentDto.Response> createComment(
+            @Valid @RequestBody ReviewCommentDto.CreateRequest createRequest
+    ) {
+        return reviewCommentService.createComment(createRequest)
+                .map(comment -> RsData.of("200", "댓글 등록 성공", new ReviewCommentDto.Response(comment)))
+                .orElseGet(() -> RsData.of("404", "리뷰를 찾을 수 없습니다."));
+    }
+
+    // ✅ 댓글 수정
 //    @PatchMapping("/{commentId}")
-//    public ResponseEntity<?> updateComment(@PathVariable Long commentId, @RequestBody String content) {
-//        return reviewCommentService.updateComment(commentId, content)
-//                .map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.notFound().build());
+//    public RsData<ReviewCommentDto.Response> updateComment(
+//            @PathVariable Long commentId,
+//            @Valid @RequestBody ReviewCommentDto.UpdateRequest updateRequest
+//    ) {
+//        return reviewCommentService.updateComment(commentId, updateRequest.getContent())
+//                .map(comment -> RsData.of("200", "댓글 수정 성공", new ReviewCommentDto.Response(comment)))
+//                .orElseGet(() -> RsData.of("404", "댓글을 찾을 수 없습니다."));
 //    }
 //
+//    // ✅ 댓글 삭제
 //    @DeleteMapping("/{commentId}")
-//    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+//    public RsData<?> deleteComment(@PathVariable Long commentId) {
 //        boolean deleted = reviewCommentService.deleteComment(commentId);
-//        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+//        return deleted
+//                ? RsData.of("200", "댓글 삭제 성공")
+//                : RsData.of("404", "댓글을 찾을 수 없습니다.");
 //    }
 }

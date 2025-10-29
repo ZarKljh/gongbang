@@ -6,6 +6,7 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.personal.service.SmsVerificationService;
@@ -33,9 +34,11 @@ import java.util.Optional;
 @Service
 public class SiteUserService {
     private final SiteUserRepository siteUserRepository;
+    private final StudioService studioService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
     private final SmsVerificationService smsVerificationService;
+
 
     public SiteUser signupUser(SignupUserRequest signupUserRequest){
 
@@ -47,9 +50,11 @@ public class SiteUserService {
         if (signupUserRequest.getStatus() == null) {
             signupUserRequest.setStatus("ACTIVE");
         }
+
         SiteUser newUser = SiteUser.builder()
                 .email(signupUserRequest.getEmail())
-                .password(signupUserRequest.getPassword())
+                //.password(signupUserRequest.getPassword())
+                .password(passwordEncoder.encode(signupUserRequest.getPassword()))
                 .userName(signupUserRequest.getUserName())
                 .mobilePhone(signupUserRequest.getMobilePhone())
                 .nickName(signupUserRequest.getNickName())
@@ -72,8 +77,8 @@ public class SiteUserService {
     public SiteUser getSiteUserByEmail(String email) {
         return siteUserRepository.findByEmail(email);
     }
-    public SiteUser getSiteUserByUserName(String userName) {
 
+    public SiteUser getSiteUserByUserName(String userName) {
         Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
 
         if ( os.isPresent() ) {
@@ -81,7 +86,22 @@ public class SiteUserService {
         } else {
             return null;
         }
+    }
 
+
+
+    public SiteUser getSiteUserByUserNamePassword(String userName, String password) {
+        String encodedPassword = passwordEncoder.encode(password);
+        Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
+
+        if (os.isPresent()) {
+            SiteUser siteUser = os.get();
+            if (passwordEncoder.matches(password, siteUser.getPassword())) {
+                return siteUser;
+            }
+        }
+        System.out.println("siteuser를 찾아올 수 없습니다");
+        return null;
     }
     public boolean validateToken(String accessToken) {
         return jwtProvider.verify(accessToken);
@@ -97,10 +117,10 @@ public class SiteUserService {
         Map<String, Object> payloadBody = jwtProvider.getClaims(accessToken);
 
         long id = (int) payloadBody.get("id");
-        String username = (String) payloadBody.get("username");
+        String userName = (String) payloadBody.get("userName");
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        return new SecurityUser(id, username, "", authorities);
+        return new SecurityUser(id, userName, "", authorities);
 
     }
 
@@ -129,7 +149,7 @@ public class SiteUserService {
                 .build();
 
         Studio newStudio = Studio.builder()
-                .categoryId(signupSellerRequest.getCategoryId())
+                .categoryId(Long.parseLong(signupSellerRequest.getCategoryId()))
                 .studioName(signupSellerRequest.getStudioName())
                 .studioDescription(signupSellerRequest.getStudioDescription())
                 .studioMobile(signupSellerRequest.getStudioMobile())
@@ -142,12 +162,15 @@ public class SiteUserService {
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
-
+        newStudio.setSiteUser(newUser);
         siteUserRepository.save(newUser);
-
+        System.out.println("유저정보가 저장되었습니다");
+        studioService.createStudio(newStudio);
+        System.out.println("공방이 저장되었습니다");
         return newUser;
 
     }
+
 
 
     @AllArgsConstructor
@@ -166,7 +189,7 @@ public class SiteUserService {
         String accessToken = jwtProvider.genAccessToken(siteUser);
         String refreshToken = jwtProvider.genRefreshToken(siteUser);
 
-        System.out.println("accessToken : " + accessToken);
+        //System.out.println("accessToken : " + accessToken);
 
         return RsData.of("200-1", "로그인 성공", new AuthAndMakeTokensResponseBody(siteUser, accessToken, refreshToken));
     }
