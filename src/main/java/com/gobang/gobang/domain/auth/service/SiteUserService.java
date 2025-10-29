@@ -97,10 +97,10 @@ public class SiteUserService {
         Map<String, Object> payloadBody = jwtProvider.getClaims(accessToken);
 
         long id = (int) payloadBody.get("id");
-        String username = (String) payloadBody.get("username");
+        String userName = (String) payloadBody.get("userName");
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        return new SecurityUser(id, username, "", authorities);
+        return new SecurityUser(id, userName, "", authorities);
 
     }
 

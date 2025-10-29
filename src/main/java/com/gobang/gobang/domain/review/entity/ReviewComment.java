@@ -1,7 +1,15 @@
 package com.gobang.gobang.domain.review.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,38 +18,56 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ReviewComment {
+@SuperBuilder
+public class ReviewComment{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private Long id;
+    private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
     @Column(name = "seller_id", nullable = false)
-    private Long sellerId;
+    private String sellerId;
+
+    @CreatedBy
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
+
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    private String updatedBy;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
+    private String reviewComment;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
 
-    private Long createdBy;
-    private Long updatedBy;
+    @LastModifiedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime modifiedDate;
 
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    // BaseEntity 추가로 필요 없음
+//    private LocalDateTime createdAt;
+//    private LocalDateTime updatedAt;
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+//    private Long createdBy;
+//    private Long updatedBy;
+
+//    @PrePersist
+//    public void onCreate() {
+//        this.createdAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+//    }
+//
+//    @PreUpdate
+//    public void onUpdate() {
+//        this.updatedAt = LocalDateTime.now();
+//    }
 }
