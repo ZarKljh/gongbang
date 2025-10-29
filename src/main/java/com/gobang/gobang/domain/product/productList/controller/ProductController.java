@@ -18,7 +18,7 @@ public class ProductController {
 
     @GetMapping("/{subCategoryId}")
     @Operation(summary = "상품 다건 조회")
-    public RsData<ProductResponse> categoryList(@PathVariable Long subCategoryId, @RequestParam(defaultValue = "10") int size) {
+    public RsData<ProductResponse> categoryList(@PathVariable Long subCategoryId, @RequestParam(defaultValue = "6") int size) {
         List<ProductDto> productList = productService.getProductList(subCategoryId, size);
         return RsData.of("200", "상품 다건 조회 성공", new ProductResponse(productList));
     }
