@@ -108,8 +108,8 @@ public class Init {
 
 
 // ☕ 스몰굿즈 (Mini)
-            filterService.initOption("Mini", "COLOR", "화이트", "WHITE", 1, "COLOR", "MULTI");
-            filterService.initOption("Mini", "COLOR", "베이지", "BEIGE", 2, "COLOR", "MULTI");
+            filterService.initOption("Mini", "COLOR", "화이트", "WHITE", 1, "submit", "MULTI");
+            filterService.initOption("Mini", "COLOR", "베이지", "BEIGE", 2, "submit", "MULTI");
 
             filterService.initOption("Mini", "DESIGN", "캐릭터", "CHARACTER", 1, "CHECKBOX", "MULTI");
             filterService.initOption("Mini", "DESIGN", "심플", "SIMPLE", 2, "CHECKBOX", "MULTI");
@@ -122,8 +122,8 @@ public class Init {
             filterService.initOption("Fabric", "MATERIAL", "면", "COTTON", 1, "CHECKBOX", "MULTI");
             filterService.initOption("Fabric", "MATERIAL", "극세사", "MICROFIBER", 2, "CHECKBOX", "MULTI");
 
-            filterService.initOption("Fabric", "COLOR", "아이보리", "IVORY", 1, "COLOR", "MULTI");
-            filterService.initOption("Fabric", "COLOR", "그레이", "GRAY", 2, "COLOR", "MULTI");
+            filterService.initOption("Fabric", "COLOR", "아이보리", "IVORY", 1, "submit", "MULTI");
+            filterService.initOption("Fabric", "COLOR", "그레이", "GRAY", 2, "submit", "MULTI");
 
             filterService.initOption("Fabric", "PRICE", "~2만원", "UNDER_20000", 1, "CHIP", "SINGLE");
             filterService.initOption("Fabric", "PRICE", "2~4만원", "RANGE_2_4", 2, "CHIP", "SINGLE");
@@ -144,8 +144,8 @@ public class Init {
             filterService.initOption("Light", "BRIGHTNESS", "약함", "LOW", 1, "RADIO", "SINGLE");
             filterService.initOption("Light", "BRIGHTNESS", "강함", "HIGH", 2, "RADIO", "SINGLE");
 
-            filterService.initOption("Light", "COLOR_TEMP", "2700K (따뜻한빛)", "TEMP_2700", 1, "SELECT", "SINGLE");
-            filterService.initOption("Light", "COLOR_TEMP", "6500K (밝은빛)", "TEMP_6500", 2, "SELECT", "SINGLE");
+            filterService.initOption("Light", "COLOR_TEMP", "따뜻한빛", "TEMP_2700", 1, "submit", "SINGLE");
+            filterService.initOption("Light", "COLOR_TEMP", "밝은빛", "TEMP_6500", 2, "submit", "SINGLE");
 
             filterService.initOption("Light", "PRICE", "~3만원", "UNDER_30000", 1, "CHIP", "SINGLE");
             filterService.initOption("Light", "PRICE", "3만원 이상", "OVER_30000", 2, "CHIP", "SINGLE");
@@ -155,8 +155,8 @@ public class Init {
             filterService.initOption("Rest", "REST_TYPE", "안대", "EYE_MASK", 1, "CHECKBOX", "MULTI");
             filterService.initOption("Rest", "REST_TYPE", "마사지기", "MASSAGER", 2, "CHECKBOX", "MULTI");
 
-            filterService.initOption("Rest", "COLOR", "베이지", "BEIGE", 1, "COLOR", "MULTI");
-            filterService.initOption("Rest", "COLOR", "네이비", "NAVY", 2, "COLOR", "MULTI");
+            filterService.initOption("Rest", "COLOR", "베이지", "BEIGE", 1, "submit", "MULTI");
+            filterService.initOption("Rest", "COLOR", "네이비", "NAVY", 2, "submit", "MULTI");
 
             filterService.initOption("Rest", "PRICE", "~3만원", "UNDER_30000", 1, "CHIP", "SINGLE");
             filterService.initOption("Rest", "PRICE", "3만원 이상", "OVER_30000", 2, "CHIP", "SINGLE");

@@ -31,9 +31,10 @@ type FilterGroupDto = {
 type FilterOptionDto = {
     id: number
     label: string
-    inputType: 'CHECKBOX' | 'RADIO' | 'CHIP'
+    inputType: 'CHECKBOX' | 'RADIO' | 'CHIP' | 'submit'
     selectionMode: 'SINGLE' | 'MULTI'
     sortOrder: number
+    colorHex: string
 }
 //
 
@@ -175,6 +176,7 @@ export default function Product() {
                                 <div className="font-medium truncate">{g.name}</div>
                                 <div className="min-w-0">
                                     {/* 옵션 목록 */}
+
                                     <ul className="flex flex-wrap gap-2">
                                         {(filterOptions[g.id] ?? []).length > 0 ? (
                                             filterOptions[g.id].map((o) => (
@@ -182,7 +184,24 @@ export default function Product() {
                                                     key={o.id}
                                                     className="px-3 py-1 text-sm border rounded hover:bg-gray-50 cursor-pointer"
                                                 >
-                                                    {o.label}
+                                                    <label>{o.label}</label>
+                                                    <input
+                                                        defaultValue=""
+                                                        type={o.inputType}
+                                                        name={o.inputType}
+                                                        style={
+                                                            o.inputType === 'submit'
+                                                                ? {
+                                                                      backgroundColor: o.colorHex,
+                                                                      borderRadius: '50%',
+                                                                      width: '40px',
+                                                                      height: '40px',
+                                                                      border: '1px solid #D6C8A4', // ✅ 따옴표로 묶어야 함
+                                                                      cursor: 'pointer',
+                                                                  }
+                                                                : {}
+                                                        }
+                                                    />
                                                 </li>
                                             ))
                                         ) : (
