@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.review.service;
 import ch.qos.logback.classic.Logger;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.dto.ReviewCommentDto;
+import com.gobang.gobang.domain.review.dto.request.CommentCreateRequest;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.review.entity.ReviewComment;
@@ -26,9 +27,9 @@ public class ReviewCommentService {
 
     // 판매자 댓글 작성 전용
     @Transactional
-    public Optional<ReviewComment> createComment(ReviewCommentDto.CreateRequest dto) {
+    public Optional<ReviewComment> createComment(CommentCreateRequest req) {
         // 1리뷰 존재 여부 확인
-        Optional<Review> reviewOpt = reviewRepository.findById(dto.getReviewId());
+        Optional<Review> reviewOpt = reviewRepository.findById(req.getReviewId());
         if (reviewOpt.isEmpty()) return Optional.empty();
 
 
@@ -52,7 +53,7 @@ public class ReviewCommentService {
         // 댓글 생성
         ReviewComment comment = ReviewComment.builder()
                 .review(reviewOpt.get())
-                .reviewComment(dto.getReviewComment())
+                .reviewComment(req.getReviewComment())
 //                .createdBy(seller.getUserName()) //BaseEntity의 createdBy에 저장
                 .createdBy(user.getUserName())
                 .build();

@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.review.service;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.review.dto.ReviewDto;
+import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +42,7 @@ public class ReviewService {
 
     // 리뷰 등록
     @Transactional
-    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto, String userName) {
+    public RsData<Review> createReview(ReviewCreateRequest dto, String userName) {
 
 
         SiteUser user = siteUserRepository.findByUserName(userName)
@@ -54,6 +56,8 @@ public class ReviewService {
                 .rating(dto.getRating())
                 .content(dto.getContent())
                 .createdBy(userName)
+                .createdDate(LocalDateTime.now())
+                .modifiedDate(LocalDateTime.now())
                 .isActive(true)
                 .reviewLike(0)
                 .viewCount(0)

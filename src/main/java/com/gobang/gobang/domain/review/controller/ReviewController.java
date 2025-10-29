@@ -1,19 +1,19 @@
 package com.gobang.gobang.domain.review.controller;
 
 
-import com.gobang.gobang.domain.review.dto.ReviewDto;
-import com.gobang.gobang.domain.review.dto.ReviewDto.ReviewCreateRequest;
-import com.gobang.gobang.domain.review.dto.ReviewDto.CreateReviewResponse;
+import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
+import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
+import com.gobang.gobang.domain.review.dto.response.ReviewCreateResponse;
+import com.gobang.gobang.domain.review.dto.response.ReviewModifyResponse;
+import com.gobang.gobang.domain.review.dto.response.ReviewResponse;
+import com.gobang.gobang.domain.review.dto.response.ReviewsResponse;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.domain.review.service.ReviewReportService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -30,12 +30,6 @@ public class ReviewController {
     private final ReviewService reviewService;
 
 
-    @Getter
-    @AllArgsConstructor
-    public static class ReviewsResponse {
-        private final List<Review> reviews;
-    }
-
     // 리뷰 목록 조회 (다건)
     @GetMapping
     public RsData<ReviewsResponse> getAllReviews() {
@@ -46,12 +40,6 @@ public class ReviewController {
                 "목록 조회 성공",
                 new ReviewsResponse(reviews)
         );
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public static class ReviewResponse {
-        private final Review review;
     }
 
     @GetMapping("/{id}")
@@ -67,37 +55,9 @@ public class ReviewController {
         ));
     }
 
-    // dto에 옮겨놓음
-//    @Data
-//    public static class ReviewCreateRequest {
-//        @NotBlank
-//        private Long orderId;
-//
-//        @NotBlank
-//        private Long orderItemId;
-//
-//        @NotBlank
-//        private Long productId;
-//
-//        @NotBlank
-//        private Long userId;
-//
-//        @NotBlank
-//        private Integer rating;
-//
-//        @NotBlank
-//        private String content;
-//    }
-//
-//    @Getter
-//    @AllArgsConstructor
-//    public static class CreateReviewResponse {
-//        private final Review review;
-//    }
-
     // 리뷰 등록
     @PostMapping("")
-    public RsData<ReviewDto.CreateReviewResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest, Principal principal) {
+    public RsData<ReviewCreateResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest, Principal principal) {
 
         String userName = principal.getName();
 
@@ -116,29 +76,16 @@ public class ReviewController {
         return RsData.of(
                 createRs.getResultCode(),
                 createRs.getMsg(),
-                new CreateReviewResponse(createRs.getData())
+                new ReviewCreateResponse(createRs.getData())
         );
     }
 
     // 리뷰 수정
-    @Getter
-    @Setter
-    public static class ModifyRequest {
-        @NotNull
-        private Integer rating;
 
-        @NotBlank
-        private String content;
-    }
 
-    @Getter
-    @AllArgsConstructor
-    public static class ModifyResponse {
-        private final Review review;
-    }
 
     @PatchMapping("/{id}")
-    public RsData modify(@Valid @RequestBody ModifyRequest modifyRequest, @PathVariable("id") Long reviewId){
+    public RsData modify(@Valid @RequestBody ReviewModifyRequest modifyRequest, @PathVariable("id") Long reviewId){
         Optional<Review> opReview = reviewService.findById(reviewId);
 
         if ( opReview.isEmpty() ) return RsData.of(
@@ -152,7 +99,7 @@ public class ReviewController {
         return RsData.of(
                 modifyRs.getResultCode(),
                 modifyRs.getMsg(),
-                new ModifyResponse((modifyRs.getData()))
+                new ReviewModifyResponse((modifyRs.getData()))
         );
     }
 //

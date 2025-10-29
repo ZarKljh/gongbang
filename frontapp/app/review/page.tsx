@@ -53,6 +53,7 @@ export default function Review() {
         }
     }
 
+    // 리뷰 댓글 달기 버튼 클릭 시 동작
       const handleCommentSubmit = async (reviewId) => {
     if (!reviewComment.trim()) {
       alert("댓글 내용을 입력해주세요.");
