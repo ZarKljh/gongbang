@@ -78,6 +78,7 @@ public class ReviewService {
     public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
         review.setRating(rating);
         review.setContent(content);
+        review.setModifiedDate(LocalDateTime.now());
 
         reviewRepository.save(review);
 
