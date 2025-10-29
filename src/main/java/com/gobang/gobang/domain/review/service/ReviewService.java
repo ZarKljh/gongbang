@@ -89,17 +89,19 @@ public class ReviewService {
         );
     }
 
+    @Transactional
+    public RsData<Review> delete(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
-//
-//    // 리뷰 수정
-//    @Transactional
-//    public Optional<Review> updateReview(Long id, Review updatedReview) {
-//        return reviewRepository.findById(id).map(review -> {
-//            review.setContent(updatedReview.getContent());
-//            review.setRating(updatedReview.getRating());
-//            return reviewRepository.save(review);
-//        });
-//    }
+
+        reviewRepository.delete(review);
+        return RsData.of(
+                "200",
+                "%d번 리뷰가 삭제되었습니다."
+        );
+    }
+
 
 
 //    // 리뷰 삭제

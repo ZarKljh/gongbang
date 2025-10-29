@@ -12,8 +12,6 @@ export default function Review() {
     const [comments, setComments] = useState({})
     const [likeCounts, setLikeCounts] = useState({})
 
-
-
     ///// 페이징 관련
     // front에서의 페이징 관련
     const [currentPage, setCurrentPage] = useState(1)
@@ -30,8 +28,6 @@ export default function Review() {
         setCurrentPage(pageNumber)
     }
     ///// 페이징 관련
-
-
 
     useEffect(() => {
         checkLoginStatus()
@@ -124,7 +120,7 @@ export default function Review() {
         }
     }
 
-    // ✅ 댓글 등록
+    // ✅ 댓글 등록 버튼
     const handleCommentSubmit = async (reviewId) => {
         if (!reviewComment.trim()) {
             alert('댓글 내용을 입력해주세요.')
@@ -155,6 +151,19 @@ export default function Review() {
             }
         } catch (err) {
             console.error('댓글 등록 에러:', err)
+        }
+    }
+
+    const handleDeleteClick = async (reviewId) => {
+        const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
+            method: 'DELETE',
+            credentials: 'include', 
+        })
+        if (res.ok) {
+            alert('리뷰가 삭제되었습니다.')
+            fetchReviews()
+        } else {
+            alert('리뷰 삭제에 실패했습니다.')
         }
     }
 
@@ -212,7 +221,7 @@ export default function Review() {
                 <hr style={{ marginTop: '100px' }} />
             </div>
             <h3>리뷰</h3>
-            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름)/ 좋아요버튼</h4>
+            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름)/ 좋아요버튼 / 삭제버튼</h4>
             {reviews.length === 0 ? (
                 <p>현재 작성된 리뷰가 없습니다.</p>
             ) : (
@@ -243,6 +252,7 @@ export default function Review() {
                             >
                                 ♡ {likeCounts[review.reviewId] ?? review.reviewLike}
                             </button>
+                            <button onClick={() => handleDeleteClick(review.reviewId)}>삭제</button>
                             <br />
                             {/* ✅ 댓글 표시 */}
                             <div
@@ -323,39 +333,39 @@ export default function Review() {
                 </ul>
             )}
             {/* 페이지네이션 */}
-<div style={{ marginTop: '20px', textAlign: 'center' }}>
-  <button
-    onClick={() => handlePageChange(currentPage - 1)}
-    disabled={currentPage === 1}
-    style={{
-      marginRight: '10px',
-      padding: '6px 12px',
-      borderRadius: '6px',
-      border: '1px solid #ccc',
-      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-    }}
-  >
-    ◀ 이전
-  </button>
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={{
+                        marginRight: '10px',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #ccc',
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                >
+                    ◀ 이전
+                </button>
 
-  <span>
-    {currentPage} / {totalPages}
-  </span>
+                <span>
+                    {currentPage} / {totalPages}
+                </span>
 
-  <button
-    onClick={() => handlePageChange(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    style={{
-      marginLeft: '10px',
-      padding: '6px 12px',
-      borderRadius: '6px',
-      border: '1px solid #ccc',
-      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-    }}
-  >
-    다음 ▶
-  </button>
-</div>
+                <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                        marginLeft: '10px',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #ccc',
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                >
+                    다음 ▶
+                </button>
+            </div>
         </>
     )
 }
