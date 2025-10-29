@@ -156,7 +156,7 @@ export default function Review() {
             <hr />
 
             {/* 리뷰 목록 */}
-            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름)/ 좋아요</h4>
+            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름)/ 좋아요버튼</h4>
             {reviews.length === 0 ? (
                 <p>현재 작성된 리뷰가 없습니다.</p>
             ) : (
@@ -177,14 +177,21 @@ export default function Review() {
                                 }}
                             >
                                 ♡ {likeCount}
-                            </button>
+                            </button> 
                             <br />
                             {/* ✅ 댓글 표시 */}
-                            <div style={{ marginTop: '8px' }}>
+                            <div style={{ marginTop: '8px',
+                                            width: '500px',
+                                            height: '80px',
+                                            border: '1px solid #ccc',
+                                            borderRadius: '8px',
+                                            padding: '5px',
+                                            resize: 'none',
+                             }}>
                                 💬 댓글:{' '}
                                 {comments[review.reviewId]?.reviewComment
                                     ? comments[review.reviewId].reviewComment
-                                    : '아직 등록된 댓글이 없습니다.'}
+                                    : '아직 등록된 댓글이 없습니다.(성공 후 db엔 저장됨)'}
                             </div>
                             {/* 댓글달기 버튼 */}
                             <button
