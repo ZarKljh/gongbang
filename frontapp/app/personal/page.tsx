@@ -6,6 +6,8 @@ import { ChevronRight } from "lucide-react";
 import "@/app/personal/page.css"
 
 export default function MyPage() {
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [activeTab, setActiveTab] = useState('orders')
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -29,6 +31,9 @@ export default function MyPage() {
         totalReviews: 0,
         membershipLevel: 'Newbie',
     })
+    const [nickName, setNickName] = useState(userData?.nickName || '');
+    const [email, setEmail] = useState(userData?.email || '');
+    const [phone, setPhone] = useState(userData?.phone || '');
 
     /** 서버에서 유저 정보 가져오기 */
     useEffect(() => {
@@ -54,19 +59,6 @@ export default function MyPage() {
 
         fetchUser();
     }, []);
-
-    //프론트에서 /api/v1/mypage/mail/send 호출 시 Turbopack dev 서버가 Spring Boot로 요청 전달
-    /** @type {import('next').NextConfig} */
-    const nextConfig = {
-    async rewrites() {
-        return [
-        {
-            source: '/api/:path*',
-            destination: 'http://localhost:8090/api/:path*',
-        },
-        ]
-    },
-    }
 
     /** userData 준비되면 모든 데이터 로드 */
     useEffect(() => {
@@ -150,7 +142,7 @@ export default function MyPage() {
     };
 
     const fetchStatsData = async (id: number) => {
-      console.log("📊 userId sent to stats API:", id);
+      console.log("userId sent to stats API:", id);
         if (!id) return;
         try {
             const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${id}`, { withCredentials: true });
@@ -223,25 +215,48 @@ export default function MyPage() {
     /** 편집 관련 함수 */
     const handleEdit = (section: string) => {
         if (!isAuthenticated) {
-            alert('정보 수정을 위해서는 이메일 인증이 필요합니다.')
-            return
+            alert('정보 수정을 위해서는 이메일 인증이 필요합니다.');
+            return;
         }
-        setEditMode({ ...editMode, [section]: true })
-        setTempData({ ...userData })
-    }
+        setEditMode({ ...editMode, [section]: true });
+        setTempData({ ...userData }); // 현재 데이터 복사
+    };
 
     const handleSave = async (section: string) => {
         if (!userData?.id) return;
-        try {
-            const { data } = await axios.patch(`${API_BASE_URL}/users/${userData.id}`, tempData, { withCredentials: true })
-            setUserData(data)
-            setEditMode({ ...editMode, [section]: false })
-            alert('정보가 수정되었습니다.')
-        } catch (error) {
-            console.error('정보 수정 실패:', error)
-            alert('수정에 실패했습니다.')
+
+        if (newPassword && newPassword !== confirmPassword) {
+            alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.');
+            return;
         }
-    }
+
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/me/${userData.id}`,
+                {
+                    nickName: tempData.nickName,
+                    email: tempData.email,
+                    mobilePhone: tempData.mobilePhone,
+                    ...(newPassword ? { password: newPassword } : {}),
+                },
+                { withCredentials: true }
+            );
+
+            if (data.code === "200" && data.data) {
+                setUserData(data.data);
+                setEditMode({ ...editMode, [section]: false });
+                setNewPassword('');
+                setConfirmPassword('');
+                alert('정보가 수정되었습니다.');
+            } else {
+                console.error('정보 수정 실패:', data);
+                alert(`수정에 실패했습니다: ${data.message}`);
+            }
+        } catch (error: any) {
+            console.error('정보 수정 실패:', error.response?.data || error.message);
+            alert('수정에 실패했습니다.');
+        }
+    };
 
     const handleCancel = (section: string) => {
         setTempData({ ...userData })
@@ -323,7 +338,7 @@ export default function MyPage() {
                     <button onClick={handleVerifyToken}>인증 확인</button>
                     </div>
                 ) : (
-                    <div className="auth-banner success">인증 완료 - 남은 시간: {formatTime(authTimeLeft)}</div>
+                    <div className="auth-banner success">인증 완료 {/*- 남은 시간: {formatTime(authTimeLeft)}*/}</div>
                 )}
 
                 {/* 등급 및 포인트 정보 */}
@@ -405,99 +420,87 @@ export default function MyPage() {
 
                     <div>
                         <div className="form-group">
-                        <label>이름</label>
-                        {editMode.profile ? (
-                            <input
-                            type="text"
-                            value={tempData.userName}
-                            onChange={(e) => setTempData({ ...tempData, userName: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.userName}</p>
-                        )}
+                            <label>이름</label>
+                            <p>{userData.userName}</p> {/* 읽기 전용 */}
                         </div>
 
                         <div className="form-group">
-                        <label>닉네임</label>
-                        {editMode.profile ? (
-                            <input
-                            type="text"
-                            value={tempData.nickName}
-                            onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.nickName}</p>
-                        )}
+                            <label>닉네임</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="text"
+                                    value={tempData.nickName || ''}
+                                    onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>{userData.nickName}</p>
+                            )}
                         </div>
 
                         <div className="form-group">
-                        <label>비밀번호</label>
-                        {editMode.profile ? (
-                            <input type="password" placeholder="새 비밀번호 입력" />
-                        ) : (
-                            <p>********</p>
-                        )}
+                            <label>비밀번호</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="password"
+                                    placeholder="새 비밀번호 입력"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>********</p>
+                            )}
                         </div>
 
                         {editMode.profile && (
-                        <div className="form-group">
-                            <label>비밀번호 확인</label>
-                            <input type="password" placeholder="비밀번호 재입력" />
-                        </div>
+                            <div className="form-group">
+                                <label>비밀번호 확인</label>
+                                <input
+                                    type="password"
+                                    placeholder="비밀번호 재입력"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+                            </div>
                         )}
 
                         <div className="form-group">
-                        <label>이메일</label>
-                        {editMode.profile ? (
-                            <input
-                            type="email"
-                            value={tempData.email}
-                            onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.email}</p>
-                        )}
+                            <label>이메일</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="email"
+                                    value={tempData.email || ''}
+                                    onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>{userData.email}</p>
+                            )}
                         </div>
 
                         <div className="form-group">
-                        <label>휴대폰</label>
-                        {editMode.profile ? (
-                            <input
-                            type="tel"
-                            value={tempData.mobilePhone}
-                            onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.mobilePhone}</p>
-                        )}
+                            <label>휴대폰</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="tel"
+                                    value={tempData.mobilePhone || ''}
+                                    onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>{userData.mobilePhone}</p>
+                            )}
                         </div>
 
                         <div className="form-group">
-                        <label>생년월일</label>
-                        {editMode.profile ? (
-                            <input
-                            type="date"
-                            value={tempData.birth}
-                            onChange={(e) => setTempData({ ...tempData, birth: e.target.value })}
-                            />
-                        ) : (
+                            <label>생년월일</label>
                             <p>{userData.birth}</p>
-                        )}
                         </div>
 
                         <div className="form-group">
-                        <label>성별</label>
-                        {editMode.profile ? (
-                            <select
-                            value={tempData.gender}
-                            onChange={(e) => setTempData({ ...tempData, gender: e.target.value })}
-                            >
-                            <option value="MALE">남성</option>
-                            <option value="FEMALE">여성</option>
-                            </select>
-                        ) : (
+                            <label>성별</label>
                             <p>{userData.gender === 'MALE' ? '남성' : '여성'}</p>
-                        )}
                         </div>
                     </div>
                     </div>

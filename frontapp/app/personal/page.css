@@ -176,7 +176,6 @@ body {
 
 .section-header button {
     font-size: 14px;
-    background: none;
     border: none;
     cursor: pointer;
     display: flex;
@@ -292,6 +291,12 @@ body {
     flex: 1;
     padding-top: 8px;
 }
+
+.form-group input.editable {
+    border-color: #000;
+    background: white;
+}
+
 
 /* 배송지/결제수단 카드 */
 .address-card,
