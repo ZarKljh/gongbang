@@ -1,27 +1,10 @@
-package com.gobang.gobang.domain.auth.dto.request;
+package com.gobang.gobang.domain.seller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 @Data
-public class SignupSellerRequest {
-
-    @NotBlank
-    private String email;
-    @NotBlank
-    private String password;
-    @NotBlank
-    private String confirmPassword;
-    @NotBlank
-    private String userName;
-    private String gender;
-    private LocalDate birth;
-    private String nickName;
-    @NotBlank
-    private String mobilePhone;
-    private String status;
+public class StudioAddRequest {
     @NotBlank
     private String categoryId;
     @NotBlank
