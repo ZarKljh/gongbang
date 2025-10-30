@@ -35,6 +35,8 @@ public class StudioController {
         List<StudioSimpleDto> studioList = new ArrayList<>();
         for (Studio s : seller.getStudioList()) {
             studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName()));
+            System.out.println("공방ID : " + s.getStudioId());
+            System.out.println("공방이름 : " + s.getStudioName());
         }
 
         StudioResponse studioResponse = new StudioResponse(seller, studio);

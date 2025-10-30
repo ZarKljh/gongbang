@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export default function viewStudioInfo() {
     const params = useParams()
@@ -43,26 +44,30 @@ export default function viewStudioInfo() {
                     throw new Error('스튜디오 정보를 불러올 수 없습니다.')
                 }
                 const result = await response.json()
-                const [studio, studioList] = result.data
+                const { studio: studioData, studioList: studioListData } = result.data
 
+                console.log('요청을 보냈습니다')
                 //도메인별 변수세팅
                 setSeller({
-                    userName: 'studio.userName',
-                    nickName: 'studio.nickName',
+                    userName: studioData.userName,
+                    nickName: studioData.nickName,
                 })
+                console.log('seller 정보를 셋팅하였습니다')
                 setStudio({
-                    studioName: 'studio.studioName',
-                    studioDescription: 'studio.studioDescription',
-                    studioMobile: 'studio.studioMobile',
-                    studioOfficeTell: 'studio.studioOfficeTell',
-                    studioFax: 'studio.studioFax',
-                    studioEmail: 'studio.studioEmail',
-                    studioBusinessNumber: 'studio.studioBusinessNumber',
-                    studioAddPostNumber: 'studio.studioAddPostNumber',
-                    studioAddMain: 'studio.studioAddMain',
-                    studioAddDetail: 'studio.studioAddDetail',
+                    studioName: studioData.studioName,
+                    studioDescription: studioData.studioDescription,
+                    studioMobile: studioData.studioMobile,
+                    studioOfficeTell: studioData.studioOfficeTell,
+                    studioFax: studioData.studioFax,
+                    studioEmail: studioData.studioEmail,
+                    studioBusinessNumber: studioData.studioBusinessNumber,
+                    studioAddPostNumber: studioData.studioAddPostNumber,
+                    studioAddMain: studioData.studioAddMain,
+                    studioAddDetail: studioData.studioAddDetail,
                 })
-                setStudioList(studioList)
+                console.log('studio 정보를 셋팅하였습니다')
+                setStudioList(studioListData)
+                console.log('studioList 정보를 셋팅하였습니다')
             } catch (error) {
                 alert('오류가 발생했습니다')
                 router.back()
@@ -70,4 +75,48 @@ export default function viewStudioInfo() {
         }
         fetchStudioById()
     }, [studioId])
+
+    return (
+        <>
+            <section>
+                <h2>공방정보</h2>
+                <div>
+                    <img src="null" alt="공방대표사진"></img>
+                </div>
+                <div>
+                    <img src="null" alt="공방로고사진"></img>
+                </div>
+                <h3>{studio.studioName}</h3>
+                <ul>
+                    <li>📞 모바일: {studio.studioMobile}</li>
+                    <li>☎️ 사무실 전화: {studio.studioOfficeTell}</li>
+                    <li>📠 팩스: {studio.studioFax}</li>
+                    <li>📧 이메일: {studio.studioEmail}</li>
+                    <li>
+                        📮 주소: ({studio.studioAddPostNumber}) {studio.studioAddMain} {studio.studioAddDetail}
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h2>셀러정보</h2>
+                <div>
+                    <img src="null" alt="셀러프로필사진"></img>
+                </div>
+                <ul>
+                    <li>👤 이름: {seller.userName}</li>
+                    <li>📝 닉네임: {seller.nickName}</li>
+                </ul>
+            </section>
+            <section>
+                <h2>{seller.nickName}님의 공방리스트</h2>
+                <ul>
+                    {studioList.map((item) => (
+                        <li key={item.studioId}>
+                            <Link href={`/seller/studio/${item.studioId}`}>🏠 {item.studioName}</Link>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        </>
+    )
 }
