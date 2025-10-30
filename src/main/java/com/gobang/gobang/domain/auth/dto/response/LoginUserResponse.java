@@ -15,6 +15,7 @@ public class LoginUserResponse {
     private String nickName;
     private String status;
     private String gender;
+    private String role;
     private LocalDateTime birth;
     private LocalDateTime createdDate;
 
@@ -27,6 +28,7 @@ public class LoginUserResponse {
         this.status = siteUser.getStatus();
         this.gender = siteUser.getGender();
         this.birth = siteUser.getBirth();
+        this.role = siteUser.getRole().name();
         this.createdDate = siteUser.getCreatedDate();
     }
 }

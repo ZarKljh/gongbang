@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtProvider {
@@ -51,7 +48,9 @@ public class JwtProvider {
 
     // hy 테스트 위해 만료 시간 늘림
     public String genAccessToken(SiteUser siteUser) {
-        return genToken(siteUser, 60 * 60);
+
+        return genToken(siteUser, 60 * 60 * 5);
+
     }
 
 
@@ -104,4 +103,25 @@ public class JwtProvider {
         return Util.toMap(body);
     }
 
+    @Value("${mail.auth-code-expiration-millis}")
+    private int jwtEmailExpirationMs;
+
+    public String getUsernameFromEmailJwt(String token) {
+        Map<String, Object> claims = getClaims(token);
+        return (String) claims.get("username");
+    }
+
+    public String generateEmailValidToken(String username) { //토큰을 JWT로 생성
+        long now = new Date().getTime();
+        Date validity = new Date(now + jwtEmailExpirationMs); // 만료 시간 적용
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("username", username);
+
+        return Jwts.builder()
+                .claim("body", Util.json.toStr(claims))
+                .setExpiration(validity)
+                .signWith(getSecretKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
 }

@@ -8,5 +8,9 @@ const api = axios.create({
   withCredentials: true,
 });
 
+export const fetchStats = async (userId: number) => {
+    const { data } = await api.get(`/mypage/stats?userId=${userId}`);
+    return data;
+}
 
 export default api;

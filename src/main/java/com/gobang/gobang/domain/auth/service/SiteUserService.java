@@ -6,9 +6,8 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
-import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
-import com.gobang.gobang.domain.personal.service.SmsVerificationService;
+import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.config.SecurityUser;
 import com.gobang.gobang.global.jwt.JwtProvider;
@@ -16,12 +15,12 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,9 +32,10 @@ import java.util.Optional;
 @Service
 public class SiteUserService {
     private final SiteUserRepository siteUserRepository;
+    private final StudioService studioService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
-    private final SmsVerificationService smsVerificationService;
+
 
     public SiteUser signupUser(SignupUserRequest signupUserRequest){
 
@@ -47,9 +47,11 @@ public class SiteUserService {
         if (signupUserRequest.getStatus() == null) {
             signupUserRequest.setStatus("ACTIVE");
         }
+
         SiteUser newUser = SiteUser.builder()
                 .email(signupUserRequest.getEmail())
-                .password(signupUserRequest.getPassword())
+                //.password(signupUserRequest.getPassword())
+                .password(passwordEncoder.encode(signupUserRequest.getPassword()))
                 .userName(signupUserRequest.getUserName())
                 .mobilePhone(signupUserRequest.getMobilePhone())
                 .nickName(signupUserRequest.getNickName())
@@ -72,8 +74,8 @@ public class SiteUserService {
     public SiteUser getSiteUserByEmail(String email) {
         return siteUserRepository.findByEmail(email);
     }
-    public SiteUser getSiteUserByUserName(String userName) {
 
+    public SiteUser getSiteUserByUserName(String userName) {
         Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
 
         if ( os.isPresent() ) {
@@ -81,7 +83,20 @@ public class SiteUserService {
         } else {
             return null;
         }
+    }
 
+    public SiteUser getSiteUserByUserNamePassword(String userName, String password) {
+        String encodedPassword = passwordEncoder.encode(password);
+        Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
+
+        if (os.isPresent()) {
+            SiteUser siteUser = os.get();
+            if (passwordEncoder.matches(password, siteUser.getPassword())) {
+                return siteUser;
+            }
+        }
+        System.out.println("siteuser를 찾아올 수 없습니다");
+        return null;
     }
     public boolean validateToken(String accessToken) {
         return jwtProvider.verify(accessToken);
@@ -116,7 +131,7 @@ public class SiteUserService {
 
         SiteUser newUser = SiteUser.builder()
                 .email(signupSellerRequest.getEmail())
-                .password(signupSellerRequest.getPassword())
+                .password(passwordEncoder.encode(signupSellerRequest.getPassword()))
                 .userName(signupSellerRequest.getUserName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())
@@ -129,7 +144,7 @@ public class SiteUserService {
                 .build();
 
         Studio newStudio = Studio.builder()
-                .categoryId(signupSellerRequest.getCategoryId())
+                .categoryId(Long.parseLong(signupSellerRequest.getCategoryId()))
                 .studioName(signupSellerRequest.getStudioName())
                 .studioDescription(signupSellerRequest.getStudioDescription())
                 .studioMobile(signupSellerRequest.getStudioMobile())
@@ -142,12 +157,15 @@ public class SiteUserService {
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
-
+        newStudio.setSiteUser(newUser);
         siteUserRepository.save(newUser);
-
+        System.out.println("유저정보가 저장되었습니다");
+        studioService.createStudio(newStudio);
+        System.out.println("공방이 저장되었습니다");
         return newUser;
 
     }
+
 
 
     @AllArgsConstructor
@@ -166,7 +184,7 @@ public class SiteUserService {
         String accessToken = jwtProvider.genAccessToken(siteUser);
         String refreshToken = jwtProvider.genRefreshToken(siteUser);
 
-        System.out.println("accessToken : " + accessToken);
+        //System.out.println("accessToken : " + accessToken);
 
         return RsData.of("200-1", "로그인 성공", new AuthAndMakeTokensResponseBody(siteUser, accessToken, refreshToken));
     }
@@ -189,9 +207,14 @@ public class SiteUserService {
 
     // 현재 로그인된 사용자 조회
     public SiteUser getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() ||
+                (auth.getPrincipal() instanceof String principal && principal.equals("anonymousUser"))) {
+            throw new IllegalStateException("로그인된 사용자가 없습니다.");
+        }
 
+        Object principal = auth.getPrincipal();
+        String username;
         if (principal instanceof UserDetails userDetails) {
             username = userDetails.getUsername();
         } else {
@@ -212,34 +235,5 @@ public class SiteUserService {
         SiteUser user = getCurrentUser();
         // 필요하다면 SiteUserResponse를 상세정보용으로 확장 가능
         return new SiteUserResponse(user);
-    }
-
-    // 사용자 정보 수정 (전화번호 인증 필요)
-    @Transactional
-    public SiteUserResponse updateUserInfo(SiteUserUpdateRequest request) {
-        SiteUser currentUser = getCurrentUser();
-
-        // 전화번호 인증 확인
-        if (!smsVerificationService.isVerified(currentUser.getMobilePhone())) {
-            throw new IllegalStateException("전화번호 인증이 필요합니다.");
-        }
-
-        // 비밀번호, 이메일, 전화번호 변경
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            currentUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            currentUser.setEmail(request.getEmail());
-        }
-        if (request.getMobilePhone() != null && !request.getMobilePhone().isBlank()) {
-            currentUser.setMobilePhone(request.getMobilePhone());
-        }
-
-        siteUserRepository.save(currentUser);
-
-        // 인증 상태 초기화
-        smsVerificationService.clearVerification(currentUser.getMobilePhone());
-
-        return new SiteUserResponse(currentUser);
     }
 }

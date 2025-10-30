@@ -9,9 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
 @Configuration
@@ -32,13 +29,17 @@ public class ApiSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/*").permitAll()
                                 .requestMatchers(HttpMethod.PATCH, "/api/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/studio/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/studio/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/*/members/login").permitAll() // 로그인은 누구나 가능, post 요청만 허용
                                 .requestMatchers(HttpMethod.GET, "/api/*/members/logout").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/*/mypage/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/mypage/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/mypage/**").permitAll()
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/v1/reviews/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/review/**").authenticated()
 
 
                                 .anyRequest().authenticated()
