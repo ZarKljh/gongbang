@@ -59,6 +59,12 @@ export default function Review() {
         }
     }
 
+    // 페이지 버튼 클릭 시에 호출(상단 이동)
+
+    const scrollToTop = () => {
+        reviewTopRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+
     // 리뷰 목록 조회
     const fetchReviews = async (page = 0) => {
         try {
@@ -72,9 +78,9 @@ export default function Review() {
             setCurrentPage(data.data.currentPage)
             setTotalpages(data.data.totalPages)
 
-            if (reviewTopRef.current) {
-                reviewTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
+            // if (reviewTopRef.current) {
+            //     reviewTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            // }
 
             // 리뷰별 좋아요 카운트 초기화
             const initialCounts = {}
@@ -302,6 +308,8 @@ export default function Review() {
                                     marginTop: '5px',
                                     cursor: 'pointer',
                                 }}
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d66464ff')}
+                                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF8080')}
                             >
                                 ♡ {likeCounts[review.reviewId] ?? review.reviewLike}
                             </button>{' '}
@@ -309,23 +317,30 @@ export default function Review() {
                             <br />
                             <h4 style={{ margin: '5px' }}>📃 리뷰 내용 </h4>
                             <div
+                                onClick={() => (window.location.href = `/review/${review.reviewId}`)}
                                 style={{
+                                    display: '-webkit-box',
                                     width: '800px',
                                     height: '80px',
                                     border: '1px solid #ccc',
                                     borderRadius: '8px',
                                     padding: '5px',
                                     resize: 'none',
+                                    overflow: 'hidden',
+                                    whiteSpace: 'normal',
+                                    wordBreak: 'keep-all',
+                                    WebkitLineClamp: '4',
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    textDecoration: 'none',
+                                    cursor: 'pointer',
+                                    transition: '.3s'
                                 }}
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
                             >
-                                <Link
-                                    style={{
-                                        textDecoration: 'none',
-                                    }}
-                                    href={`/review/${review.reviewId}`}
-                                >
-                                    {review.content}
-                                </Link>{' '}
+                                {/* <div><Link href={`/review/${review.reviewId}`}></Link>{' '}</div> */}
+                                <div>{review.content}</div>
                             </div>
                             {/* ✅ 댓글 표시 */}
                             <h4 style={{ margin: '5px' }}>💬 댓글</h4>
@@ -411,6 +426,7 @@ export default function Review() {
                 <button
                     onClick={() => {
                         if (currentPage > 0) fetchReviews(currentPage - 1)
+                        scrollToTop
                     }}
                     disabled={currentPage === 0}
                     style={{
@@ -423,11 +439,13 @@ export default function Review() {
                 >
                     ◀ 이전
                 </button>
-
                 {[...Array(totalPages)].map((_, index) => (
                     <button
                         key={index}
-                        onClick={() => fetchReviews(index)}
+                        onClick={() => {
+                            fetchReviews(index)
+                            scrollToTop()
+                        }}
                         style={{
                             margin: '0 4px',
                             padding: '6px 10px',
@@ -446,6 +464,7 @@ export default function Review() {
                 <button
                     onClick={() => {
                         if (currentPage + 1 < totalPages) fetchReviews(currentPage + 1)
+                        scrollToTop()
                     }}
                     disabled={currentPage + 1 >= totalPages}
                     style={{
