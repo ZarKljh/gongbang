@@ -104,7 +104,7 @@ public class Init {
             filterService.initOption("Mood", "PACKAGE", "선물포장", "GIFT", 2, "RADIO", "SINGLE");
 
             filterService.initOption("Mood", "PRICE", "", "UNDER_10000", 1, "CHIP", "SINGLE");
-            filterService.initOption("Mood", "PRICE", "", "RANGE_1_3", 2, "CHIP", "SINGLE");
+            //filterService.initOption("Mood", "PRICE", "", "RANGE_1_3", 2, "CHIP", "SINGLE");
 
 
 // ☕ 스몰굿즈 (Mini)
@@ -115,7 +115,7 @@ public class Init {
             filterService.initOption("Mini", "DESIGN", "심플", "SIMPLE", 2, "CHECKBOX", "MULTI");
 
             filterService.initOption("Mini", "PRICE", "", "UNDER_20000", 1, "CHIP", "SINGLE");
-            filterService.initOption("Mini", "PRICE", "", "RANGE_2_4", 2, "CHIP", "SINGLE");
+            //filterService.initOption("Mini", "PRICE", "", "RANGE_2_4", 2, "CHIP", "SINGLE");
 
 
 // 🧵 패브릭소품 (Fabric)
@@ -126,7 +126,7 @@ public class Init {
             filterService.initOption("Fabric", "COLOR", "그레이", "GRAY", 2, "submit", "MULTI");
 
             filterService.initOption("Fabric", "PRICE", "", "UNDER_20000", 1, "CHIP", "SINGLE");
-            filterService.initOption("Fabric", "PRICE", "", "RANGE_2_4", 2, "CHIP", "SINGLE");
+            //filterService.initOption("Fabric", "PRICE", "", "RANGE_2_4", 2, "CHIP", "SINGLE");
 
 
 // 🌸 향/아로마 (Aroma)
@@ -137,7 +137,7 @@ public class Init {
             filterService.initOption("Aroma", "DURATION", "약 4시간", "HOUR_4", 2, "RADIO", "SINGLE");
 
             filterService.initOption("Aroma", "PRICE", "", "UNDER_20000", 1, "CHIP", "SINGLE");
-            filterService.initOption("Aroma", "PRICE", "", "RANGE_2_4", 2, "CHIP", "SINGLE");
+            //filterService.initOption("Aroma", "PRICE", "", "RANGE_2_4", 2, "CHIP", "SINGLE");
 
 
 // 💡 조명/무드등 (Light)
@@ -148,7 +148,7 @@ public class Init {
             filterService.initOption("Light", "COLOR_TEMP", "밝은빛", "TEMP_6500", 2, "submit", "SINGLE");
 
             filterService.initOption("Light", "PRICE", "", "UNDER_30000", 1, "CHIP", "SINGLE");
-            filterService.initOption("Light", "PRICE", "", "OVER_30000", 2, "CHIP", "SINGLE");
+            //filterService.initOption("Light", "PRICE", "", "OVER_30000", 2, "CHIP", "SINGLE");
 
 
 // 🧘‍♀️ 휴식용품 (Rest)
@@ -159,7 +159,7 @@ public class Init {
             filterService.initOption("Rest", "COLOR", "네이비", "NAVY", 2, "submit", "MULTI");
 
             filterService.initOption("Rest", "PRICE", "", "UNDER_30000", 1, "CHIP", "SINGLE");
-            filterService.initOption("Rest", "PRICE", "", "OVER_30000", 2, "CHIP", "SINGLE");
+            //filterService.initOption("Rest", "PRICE", "", "OVER_30000", 2, "CHIP", "SINGLE");
 
 
 

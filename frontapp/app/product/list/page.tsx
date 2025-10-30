@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useEffect, useState } from 'react'
 import api from '@/app/utils/api'
 import styles from './Cards.module.css'
@@ -33,6 +34,7 @@ type FilterOptionDto = {
     label: string
     inputType: 'CHECKBOX' | 'RADIO' | 'CHIP' | 'submit'
     selectionMode: 'SINGLE' | 'MULTI'
+    filterCode: string
     sortOrder: number
     colorHex: string
 }
@@ -51,6 +53,9 @@ export default function Product() {
     const [filterGroups, setFilterGroups] = useState<FilterGroupDto[]>([])
     // ✅ 상태 타입을 Record<number, FilterOptionDto[]> 로 변경
     const [filterOptions, setFilterOptions] = useState<Record<number, FilterOptionDto[]>>({})
+    // code별로 선택된 값 집합 관리 (예: COLOR → {베이지, 화이트})
+    const [selectedBtn, setSelectedBtn] = useState<Record<string, string | null>>({})
+    const didMount = useRef(false)
     const onClickCategory = (id: number) => {
         setSelectedCatId(id) // 클릭한 카테고리의 id를 상태에 저장
     }
@@ -63,6 +68,23 @@ export default function Product() {
         // 입력 반영 직후 FormData가 맞게 잡히도록 다음 프레임에 실행
         requestAnimationFrame(() => submitFilter())
     }
+    const handleFilterClick = (code: string, label: string) => {
+        setSelectedBtn((prev) => {
+            const nextValue = prev[code] === label ? null : label
+            return { ...prev, [code]: nextValue }
+        })
+    }
+
+    /** 선택 상태 -> extra(flat) 변환 (싱글이므로 string 또는 미포함) */
+    const buildExtra = (state: Record<string, string | null>) => {
+        const extra: Record<string, string> = {}
+        for (const [k, v] of Object.entries(state)) {
+            if (v != null) extra[k] = v
+        }
+        return extra
+    }
+    // const [selectedMin, setSelectedMin] = useState<number | null>(null)
+    // const [selectedMax, setSelectedMax] = useState<number | null>(null)
 
     useEffect(() => {
         fetchAll()
@@ -110,9 +132,6 @@ export default function Product() {
                     const options: FilterOptionDto[] = res.data.data.filterOptionList ?? []
                     optionMap[groupId] = options
                 })
-
-                console.log('서버 응답:', groupsData) // ✅ 여기서 확인
-                console.log('서버 응답:', optionMap) // ✅ 여기서 확인
                 setFilterGroups(groupsData)
                 setFilterOptions(optionMap)
             } catch (error) {
@@ -129,8 +148,6 @@ export default function Product() {
                 const { data } = await api.get(`product/${selectedSubCategoryId}`)
                 const productList = data.data.productList
 
-                console.log('서버 응답:', productList) // ✅ 여기서 확인
-
                 setProducts(productList)
             } catch (error) {
                 console.error('상품목록 조회 실패:', error)
@@ -138,11 +155,17 @@ export default function Product() {
         })()
     }, [selectedSubCategoryId])
 
-    const submitFilter = async () => {
+    const submitFilter = (extra?: Record<string, string>) => {
         const form = document.getElementById('filterForm') as HTMLFormElement | null
         if (!form) return
+        // 폼의 현재 값 수집
 
         const fd = new FormData(form)
+
+        // 색선택 버튼에서 온 추가 pair 병합
+        if (extra) {
+            for (const [k, v] of Object.entries(extra)) fd.append(k, v)
+        }
 
         // checkbox/radio의 다중값까지 포함하려면 getAll 사용
         const payload: Record<string, string | string[]> = {}
@@ -151,20 +174,28 @@ export default function Product() {
             payload[k] = all.length > 1 ? all : all[0] // 단일/다중 자동 처리
         }
 
-        // ✅ 백엔드 API로 보내기 (예: POST JSON)
-        const res = await fetch('/api/v1/product/search', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+        api.get(`product/${selectedCategoryId}/search`, { params: payload }).then((res) => {
+            if (!res.data?.data?.items) {
+                console.warn('응답 데이터 구조 이상')
+                return
+            }
+            console.log(res.data.data.items)
+            setItems(res.data.data.items)
         })
+        // .catch((err) => {
+        //     console.error('상품 검색 실패:', err.response?.data ?? err.message)
+        //     alert('검색 요청에 실패했습니다. 잠시 후 다시 시도해주세요.')
+        // })
+    }
 
-        if (!res.ok) {
-            console.error('filter submit failed')
+    useEffect(() => {
+        if (!didMount.current) {
+            didMount.current = true
             return
         }
-        const data = await res.json()
-        setItems(data.data.items) // 백엔드 응답 구조에 맞게 갱신
-    }
+        const extra = buildExtra(selectedBtn)
+        submitFilter(extra)
+    }, [selectedBtn])
 
     return (
         <>
@@ -220,21 +251,59 @@ export default function Product() {
                                                     className="px-3 py-1 text-sm border rounded hover:bg-gray-50 cursor-pointer"
                                                 >
                                                     {o.label && <label>{o.label}</label>}
+                                                    {/* type을 submit이라고 썼지만 컬러값버튼임.. 수정해야함! */}
                                                     {o.inputType === 'submit' ? (
                                                         <>
                                                             <button
                                                                 form="filterForm"
-                                                                name={`${o.inputType}`}
-                                                                type="submit"
+                                                                name={`${o.filterCode}`}
+                                                                value={o.label}
+                                                                type="button"
+                                                                onClick={() => handleFilterClick(o.filterCode, o.label)}
+                                                                aria-pressed={selectedBtn[o.filterCode] === o.label}
+                                                                className={`${styles.chip} ${
+                                                                    selectedBtn[o.filterCode] === o.label
+                                                                        ? styles.active
+                                                                        : ''
+                                                                }`}
                                                                 style={{
                                                                     backgroundColor: o.colorHex,
-                                                                    borderRadius: '50%',
-                                                                    width: '40px',
-                                                                    height: '40px',
-                                                                    border: '1px solid #D6C8A4',
-                                                                    cursor: 'pointer',
                                                                 }}
                                                             />
+                                                        </>
+                                                    ) : o.inputType === 'CHIP' ? (
+                                                        <>
+                                                            {/* CHIP: 3만원 이하 */}
+                                                            <button
+                                                                form="filterForm"
+                                                                name="PRICE_MIN"
+                                                                type="button"
+                                                                onClick={() => handleFilterClick('PRICE_MIN', '30000')}
+                                                                aria-pressed={selectedBtn['PRICE_MIN'] === '30000'}
+                                                                className={`${styles.prChip} ${
+                                                                    selectedBtn['PRICE_MIN'] === '30000'
+                                                                        ? styles.active
+                                                                        : ''
+                                                                }`}
+                                                            >
+                                                                3만원 이하
+                                                            </button>
+
+                                                            {/* CHIP: 3만원 이상 */}
+                                                            <button
+                                                                form="filterForm"
+                                                                name="PRICE_MAX"
+                                                                type="button"
+                                                                onClick={() => handleFilterClick('PRICE_MAX', '30000')}
+                                                                aria-pressed={selectedBtn['PRICE_MAX'] === '30000'}
+                                                                className={`${styles.prChip} ${
+                                                                    selectedBtn['PRICE_MAX'] === '30000'
+                                                                        ? styles.active
+                                                                        : ''
+                                                                }`}
+                                                            >
+                                                                3만원 이상
+                                                            </button>
                                                         </>
                                                     ) : (
                                                         <>
@@ -242,12 +311,8 @@ export default function Product() {
                                                                 form="filterForm"
                                                                 onChange={handleImmediateSubmit} // ✅ 변경 즉시 submit
                                                                 type={o.inputType}
-                                                                name={
-                                                                    o.inputType === 'CHIP'
-                                                                        ? `${o.inputType}_${o.id}` // chip은 개별 name (토글용)
-                                                                        : o.inputType // radio/checkbox는 동일 name으로 묶음
-                                                                }
-                                                                // CHIP일 때만 읽기전용 표시용
+                                                                name={o.filterCode}
+                                                                value={o.label}
                                                             />
                                                         </>
                                                     )}
@@ -260,9 +325,6 @@ export default function Product() {
                                 </div>
                             </li>
                         ))}
-                        <button type="submit" className="filter-btn" form="filterForm">
-                            적용하기
-                        </button>
                     </ul>
                 )}
             </section>
