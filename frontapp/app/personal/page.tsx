@@ -162,61 +162,45 @@ export default function MyPage() {
 
     /** 이메일 인증 관련 */
     const handleSendEmail = async () => {
-        if (!userData?.id) {
-            alert('사용자 정보가 없습니다.');
-            return;
-        }
+        if (!userData?.email) return alert("사용자 이메일이 없습니다.");
 
         try {
-            const body = { 
-                userId: userData.id, 
-                email: userData.email,
-                username: userData.username
-            };
-
-            await axios.post(`${API_BASE_URL}/mail/send`, body, {
-                withCredentials: true
-            });
-
-            alert('인증 메일이 발송되었습니다. 메일을 확인해주세요.');
+            await axios.post(
+                `${API_BASE_URL}/mail/send`,
+                {
+                    email: userData.email,
+                    userId: userData.id,
+                    userName: userData.userName
+                },
+                { headers: { "Content-Type": "application/json" } }
+            );
+            alert("인증 메일이 발송되었습니다. 메일을 확인해주세요.");
         } catch (error: any) {
-            // 안전하게 에러 메시지 추출
-            let errMsg = '알 수 없는 에러';
-            if (axios.isAxiosError(error)) {
-                errMsg = error.response?.data?.message || error.response?.data || error.message;
-            } else if (error instanceof Error) {
-                errMsg = error.message;
-            } else {
-                errMsg = JSON.stringify(error);
-            }
-
-            console.error('메일 발송 실패:', errMsg);
-            alert('메일 발송에 실패했습니다. 콘솔을 확인해주세요.');
+            console.error("메일 발송 실패:", error);
+            alert("메일 발송에 실패했습니다. 콘솔을 확인해주세요.");
         }
     };
 
     const handleVerifyToken = async () => {
-        if (!tokenInput) {
-            alert('인증번호를 입력해주세요.');
-            return;
-        }
+        if (!tokenInput) return alert("인증번호를 입력해주세요.");
 
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/mail/verify?token=${tokenInput}`,
-                { withCredentials: true });
+            const { data } = await axios.post(`${API_BASE_URL}/mail/verify`, {
+                email: userData.email,
+                token: tokenInput,
+            });
 
-            if (data.status === 'success') {
+            if (data.status === "success") {
                 setIsAuthenticated(true);
-                setAuthTimeLeft(18000); // 5시간
-                alert('이메일 인증이 완료되었습니다.');
-            } else if (data.status === 'expired') {
-                alert('토큰이 만료되었습니다. 다시 인증해주세요.');
+                alert("이메일 인증이 완료되었습니다.");
+            } else if (data.status === "expired") {
+                alert("인증번호가 만료되었습니다. 다시 발송해주세요.");
             } else {
-                alert('인증에 실패했습니다.');
+                alert("인증번호가 올바르지 않습니다.");
             }
         } catch (error) {
-            console.error('인증 실패:', error);
-            alert('인증 중 오류가 발생했습니다.');
+            console.error("인증 실패:", error);
+            alert("인증 중 오류가 발생했습니다.");
         }
     };
 
@@ -332,7 +316,7 @@ export default function MyPage() {
                     <button onClick={handleSendEmail}>인증 메일 발송</button>
                     <input 
                         type="text" 
-                        placeholder="인증 토큰 입력" 
+                        placeholder="인증번호 입력" 
                         value={tokenInput} 
                         onChange={(e) => setTokenInput(e.target.value)} 
                     />
