@@ -12,8 +12,6 @@ public class SignupUserRequest {
     @NotBlank
     private String password;
     @NotBlank
-    private String confirmPassword;
-    @NotBlank
     private String userName;
     @NotBlank
     private String mobilePhone;

@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.review.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,9 +29,11 @@ public class ReviewComment{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = false)
+    @JsonIgnore
     private Review review;
 
-    @Column(name = "seller_id", nullable = false)
+    // 테스트용 nullable=true
+    @Column(name = "seller_id", nullable = true)
     private String sellerId;
 
     @CreatedBy

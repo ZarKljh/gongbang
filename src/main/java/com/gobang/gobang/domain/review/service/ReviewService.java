@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.review.service;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.review.dto.ReviewDto;
+import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +42,7 @@ public class ReviewService {
 
     // 리뷰 등록
     @Transactional
-    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto, String userName) {
+    public RsData<Review> createReview(ReviewCreateRequest dto, String userName) {
 
 
         SiteUser user = siteUserRepository.findByUserName(userName)
@@ -54,6 +56,8 @@ public class ReviewService {
                 .rating(dto.getRating())
                 .content(dto.getContent())
                 .createdBy(userName)
+                .createdDate(LocalDateTime.now())
+                .modifiedDate(LocalDateTime.now())
                 .isActive(true)
                 .reviewLike(0)
                 .viewCount(0)
@@ -74,6 +78,7 @@ public class ReviewService {
     public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
         review.setRating(rating);
         review.setContent(content);
+        review.setModifiedDate(LocalDateTime.now());
 
         reviewRepository.save(review);
 
@@ -84,17 +89,19 @@ public class ReviewService {
         );
     }
 
+    @Transactional
+    public RsData<Review> delete(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
-//
-//    // 리뷰 수정
-//    @Transactional
-//    public Optional<Review> updateReview(Long id, Review updatedReview) {
-//        return reviewRepository.findById(id).map(review -> {
-//            review.setContent(updatedReview.getContent());
-//            review.setRating(updatedReview.getRating());
-//            return reviewRepository.save(review);
-//        });
-//    }
+
+        reviewRepository.delete(review);
+        return RsData.of(
+                "200",
+                "%d번 리뷰가 삭제되었습니다."
+        );
+    }
+
 
 
 //    // 리뷰 삭제
