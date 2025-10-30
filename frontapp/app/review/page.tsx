@@ -104,7 +104,7 @@ export default function Review() {
             const data = await res.json()
             setComments((prev) => ({
                 ...prev,
-                [reviewId]: data.data.comment || null,
+                [reviewId]: data.data || null,
             }))
         } catch (err) {
             console.error(`댓글(${reviewId}) 조회 실패:`, err)
@@ -185,7 +185,7 @@ export default function Review() {
         }
 
         try {
-            const res = await fetch('http://localhost:8090/api/v1/reviews/comments', {
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
