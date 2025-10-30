@@ -23,7 +23,7 @@ public class SignupSellerRequest {
     private String mobilePhone;
     private String status;
     @NotBlank
-    private Long categoryId;
+    private String categoryId;
     @NotBlank
     private String studioName;
     @NotBlank

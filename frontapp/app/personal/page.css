@@ -1,0 +1,135 @@
+div {
+    border: 1px solid red;
+}
+p {
+    /* border: 1px solid blue; */
+}
+
+/* 기본 그리드 */
+.container_box {
+    display: flex;
+    width: 100%;
+    max-width: 1920px;
+}
+.container {
+    display: inline-flex;
+    padding: 0;
+    margin: 0 auto;
+    gap: 10px;
+    width: 1440px;
+    max-width: 1440px;
+    height: 100vh;
+    border: 1px solid black;
+}
+
+
+
+/* 마이페이지 카테고리 */
+.myCategory {
+    display: inline-flex;
+    flex-direction: column;
+    padding-top: 40px;
+    padding-bottom: 0;
+    height: 500px;
+}
+.me {
+    text-wrap: nowrap;
+    flex-grow: 1;
+    margin: 0;
+}
+.me:hover {
+    border-bottom: 1px solid blue;
+}
+
+
+
+/* 내 기본 정보 */
+.userState_box {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.myState {
+    display: flex;
+    align-items: center;
+    width: calc(100% - 60px);
+    height: 150px;
+    padding: 0 30px;
+    gap: 50px;
+} 
+.profileImage {
+    display: flex;
+    min-width: 100px;
+    height: 100px;
+    border: 1px solid black;
+    border-radius: 70px;
+}
+.myProfile_box, .myReview_box, .myQna_box {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.myProfile_box {
+    min-width: 200px;
+}
+.myReview_box, .myQna_box {
+    min-width: 100px;
+}
+
+
+/* 내 상세정보 */
+.my_info_box {
+    height: 100%;
+}
+
+
+/* 주문 및 배송 관리 */
+.order_delivery_box {
+    height: 100%;
+    display: none;
+}
+.delivery_box {
+    display: flex;
+    height: 150px;
+}
+.before_delivery {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.during_delivery {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.delivery_complete {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.order {
+    display: flex;
+    height: auto;
+}
+.order_product_img {
+    display: flex;
+    width: auto;
+    height: 100px;
+}
+.order_product_img_1, .order_product_img_2, .order_product_img_3 {
+    width: 100px;
+    height: 100px;
+}
+.order_detail_btn {
+    display: flex;
+    align-items: center;
+    text-wrap: nowrap;
+}
+.order_info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    text-align: end;
+    padding-right: 20px;
+}
