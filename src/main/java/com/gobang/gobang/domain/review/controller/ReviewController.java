@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.review.controller;
 
 
+import com.gobang.gobang.domain.review.dto.response.ReviewDeleteResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
 import com.gobang.gobang.domain.review.dto.response.ReviewCreateResponse;
@@ -90,7 +91,7 @@ public class ReviewController {
 
         if ( opReview.isEmpty() ) return RsData.of(
                 "400",
-                "%d번 게시물은 존재하지 않습니다.".formatted(reviewId)
+                "%d번 리뷰가 존재하지 않습니다.".formatted(reviewId)
         );
 
         /// 회원 권한 canModify
@@ -102,13 +103,22 @@ public class ReviewController {
                 new ReviewModifyResponse((modifyRs.getData()))
         );
     }
-//
-//    // 리뷰 삭제 (소프트 딜리트) 추후 수정
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-//        boolean deleted = reviewService.deleteReview(id);
-//        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
-//    }
+
+    // 리뷰 삭제
+    @DeleteMapping("/{id}")
+    public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
+        Optional<Review> opReview = reviewService.findById(reviewId);
+
+        if(opReview.isEmpty()) return RsData.of(
+                "400",
+                "%d번 리뷰가 존재하지 않습니다."
+                .formatted(reviewId));
+
+        RsData<Review> deleteRs = reviewService.delete(reviewId);
+
+        return RsData.of(deleteRs.getResultCode(),deleteRs.getMsg(),new ReviewDeleteResponse(deleteRs.getData()));
+    }
+
 //    // 리뷰 신고 등록
 //    @PostMapping("/{id}/report")
 //    public ResponseEntity<?> createReviewReport(@PathVariable Long id, @RequestBody ReviewReport report) {

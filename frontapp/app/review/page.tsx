@@ -10,7 +10,24 @@ export default function Review() {
     const [activeCommentBox, setActiveCommentBox] = useState(null)
     const [reviewComment, setReviewComment] = useState('') // ✅ null → ''
     const [comments, setComments] = useState({})
-    const [likeCount, setLikeCount] = useState()
+    const [likeCounts, setLikeCounts] = useState({})
+
+    ///// 페이징 관련
+    // front에서의 페이징 관련
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
+    // 배열 10개씩 잘라 보여주기
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentReviews = reviews.slice(indexOfFirstItem, indexOfLastItem)
+
+    const totalPages = Math.ceil(reviews.length / itemsPerPage)
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber < 1 || pageNumber > totalPages) return
+        setCurrentPage(pageNumber)
+    }
+    ///// 페이징 관련
 
     useEffect(() => {
         checkLoginStatus()
@@ -33,7 +50,6 @@ export default function Review() {
             setIsLoggedIn(false)
         }
     }
-
     // ✅ 리뷰 목록 조회
     const fetchReviews = async () => {
         try {
@@ -41,7 +57,14 @@ export default function Review() {
             const fetchedReviews = res.data.data.reviews || []
             setReviews(fetchedReviews)
 
-            // 각 리뷰별 댓글도 함께 조회
+            // ✅ 리뷰별 좋아요 카운트 초기화
+            const initialCounts = {}
+            fetchedReviews.forEach((r) => {
+                initialCounts[r.reviewId] = r.reviewLike
+            })
+            setLikeCounts(initialCounts)
+
+            // ✅ 각 리뷰별 댓글도 함께 조회
             fetchedReviews.forEach((review) => fetchComment(review.reviewId))
         } catch (err) {
             console.error('리뷰 목록 조회 실패:', err)
@@ -82,9 +105,13 @@ export default function Review() {
                 credentials: 'include',
             })
             const data = await res.json()
+
             if (res.ok) {
-                alert(data.msg)
-                setLikeCount(data.data) // 좋아요 개수 반영
+                // 리뷰별 카운트만 업데이트
+                setLikeCounts((prev) => ({
+                    ...prev,
+                    [reviewId]: (prev[reviewId] ?? 0) + (data.msg.includes('등록') ? 1 : -1),
+                }))
             } else {
                 alert(data.msg)
             }
@@ -93,7 +120,7 @@ export default function Review() {
         }
     }
 
-    // ✅ 댓글 등록
+    // ✅ 댓글 등록 버튼
     const handleCommentSubmit = async (reviewId) => {
         if (!reviewComment.trim()) {
             alert('댓글 내용을 입력해주세요.')
@@ -127,6 +154,19 @@ export default function Review() {
         }
     }
 
+    const handleDeleteClick = async (reviewId) => {
+        const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
+            method: 'DELETE',
+            credentials: 'include', 
+        })
+        if (res.ok) {
+            alert('리뷰가 삭제되었습니다.')
+            fetchReviews()
+        } else {
+            alert('리뷰 삭제에 실패했습니다.')
+        }
+    }
+
     return (
         <>
             {/* 제목 + 버튼 */}
@@ -137,7 +177,7 @@ export default function Review() {
                     alignItems: 'center',
                 }}
             >
-                <h3>리뷰 목록</h3>
+                <h2>리뷰 목록</h2>
                 <button
                     onClick={handleCreateClick}
                     style={{
@@ -154,20 +194,54 @@ export default function Review() {
             </div>
 
             <hr />
-
-            {/* 리뷰 목록 */}
-            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름)/ 좋아요버튼</h4>
+            <div className="photoReview">
+                <h3>포토 리뷰</h3>
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                    }}
+                >
+                    <div>
+                        <Link href="#">포토리뷰1</Link>
+                    </div>
+                    <div>
+                        <Link href="#">포토리뷰2</Link>
+                    </div>
+                    <div>
+                        <Link href="#">포토리뷰3</Link>
+                    </div>
+                    <div>
+                        <Link href="#">포토리뷰4</Link>
+                    </div>
+                    <div>
+                        <Link href="#">포토리뷰5</Link>
+                    </div>
+                </div>
+                <hr style={{ marginTop: '100px' }} />
+            </div>
+            <h3>리뷰</h3>
+            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름)/ 좋아요버튼 / 삭제버튼</h4>
             {reviews.length === 0 ? (
                 <p>현재 작성된 리뷰가 없습니다.</p>
             ) : (
                 <ul>
-                    {reviews.map((review) => (
+                    {currentReviews.map((review) => (
                         <li key={review.reviewId} style={{ marginBottom: '20px' }}>
-                            {review.reviewId} / <Link href={`/review/${review.reviewId}`}>{review.content}</Link> /{' '}
-                            {review.createdDate} / {review.rating} / {review.userId}({review.createdBy})/                             <button
+                            {review.reviewId} /
+                            <Link
+                                style={{
+                                    textDecoration: 'none',
+                                }}
+                                href={`/review/${review.reviewId}`}
+                            >
+                                {review.content}
+                            </Link>{' '}
+                            / {review.createdDate} /{review.rating} /{review.userId}({review.createdBy}) /
+                            <button
                                 onClick={() => handleLikeClick(review.reviewId)}
                                 style={{
-                                    backgroundColor:'#FF8080',
+                                    backgroundColor: '#FF8080',
                                     color: 'white',
                                     border: 'none',
                                     borderRadius: '8px',
@@ -176,18 +250,22 @@ export default function Review() {
                                     cursor: 'pointer',
                                 }}
                             >
-                                ♡ {likeCount}
-                            </button> 
+                                ♡ {likeCounts[review.reviewId] ?? review.reviewLike}
+                            </button>
+                            <button onClick={() => handleDeleteClick(review.reviewId)}>삭제</button>
                             <br />
                             {/* ✅ 댓글 표시 */}
-                            <div style={{ marginTop: '8px',
-                                            width: '500px',
-                                            height: '80px',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '8px',
-                                            padding: '5px',
-                                            resize: 'none',
-                             }}>
+                            <div
+                                style={{
+                                    marginTop: '8px',
+                                    width: '500px',
+                                    height: '80px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '8px',
+                                    padding: '5px',
+                                    resize: 'none',
+                                }}
+                            >
                                 💬 댓글:{' '}
                                 {comments[review.reviewId]?.reviewComment
                                     ? comments[review.reviewId].reviewComment
@@ -254,6 +332,40 @@ export default function Review() {
                     ))}
                 </ul>
             )}
+            {/* 페이지네이션 */}
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={{
+                        marginRight: '10px',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #ccc',
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                >
+                    ◀ 이전
+                </button>
+
+                <span>
+                    {currentPage} / {totalPages}
+                </span>
+
+                <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                        marginLeft: '10px',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #ccc',
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                >
+                    다음 ▶
+                </button>
+            </div>
         </>
     )
 }
