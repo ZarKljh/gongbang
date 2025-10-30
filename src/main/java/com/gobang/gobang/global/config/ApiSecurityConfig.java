@@ -35,9 +35,11 @@ public class ApiSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/v1/studio/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/*/members/login").permitAll() // 로그인은 누구나 가능, post 요청만 허용
                                 .requestMatchers(HttpMethod.GET, "/api/*/members/logout").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/*/mypage/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/mypage/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/mypage/**").permitAll()
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/v1/reviews/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/review/**").authenticated()
 
 
                                 .anyRequest().authenticated()
