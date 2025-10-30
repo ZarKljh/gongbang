@@ -10,6 +10,10 @@ import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,14 +30,16 @@ public class ReviewService {
     private final SiteUserRepository siteUserRepository;
 
     // 리뷰 다건 조회
-//    public List<Review> getAllReviews() {
-//        return reviewRepository.findAll();
+//    public List<Review> findAll() {
+//        return reviewRepository.findAllByOrderByCreatedDateDesc();
 //    }
 
-    // 리뷰 다건 조회
-    public List<Review> findAll() {
-        return reviewRepository.findAllByOrderByCreatedDateDesc();
+    // 리뷰 다건 조회 페이지네이션
+    public Page<Review> getReviews(int page) {
+        Pageable pageable = PageRequest.of(page,10, Sort.by(Sort.Direction.DESC, "createdDate"));
+        return this.reviewRepository.getAllReviews(pageable);
     }
+
 
     // 리뷰 단건 조회
     public Optional<Review> getReviewById(Long id) {

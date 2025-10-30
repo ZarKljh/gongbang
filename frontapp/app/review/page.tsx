@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import api from '@/app/utils/api'
 
 export default function Review() {
@@ -11,9 +11,11 @@ export default function Review() {
     const [reviewComment, setReviewComment] = useState('') // ✅ null → ''
     const [comments, setComments] = useState({})
     const [likeCounts, setLikeCounts] = useState({})
+    const [totalPages, setTotalpages] = useState(0)
+    const [currentPage, setCurrentPage] = useState(0)
+    const reviewTopRef = useRef<HTMLDivElement>(null)
 
-    ///// 페이징 관련
-    // front에서의 페이징 관련
+    ///// ======== font 페이징 관련 ========
     // const [currentPage, setCurrentPage] = useState(1)
     // const itemsPerPage = 10
     // // 배열 10개씩 잘라 보여주기
@@ -27,7 +29,13 @@ export default function Review() {
     //     if (pageNumber < 1 || pageNumber > totalPages) return
     //     setCurrentPage(pageNumber)
     // }
-    ///// 페이징 관련
+    ///// 페이징 관련 =======================
+
+    // 페이지 많아졌을 시 현재 5페이지면 “3 4 5 6 7”만 표시 (나중에 사용)
+    //     const visiblePages = [...Array(totalPages)].slice(
+    //   Math.max(0, currentPage - 2),
+    //   Math.min(totalPages, currentPage + 3)
+    // );
 
     useEffect(() => {
         checkLoginStatus()
@@ -50,16 +58,23 @@ export default function Review() {
             setIsLoggedIn(false)
         }
     }
+
     // 리뷰 목록 조회
-    const fetchReviews = async () => {
+    const fetchReviews = async (page = 0) => {
         try {
-            const res = await fetch('http://localhost:8090/api/v1/reviews', {
+            const res = await fetch(`http://localhost:8090/api/v1/reviews?page=${page}`, {
                 method: 'GET',
                 credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
             })
             const data = await res.json()
             const fetchedReviews = data.data.reviews || []
             setReviews(fetchedReviews)
+            setCurrentPage(data.data.currentPage)
+            setTotalpages(data.data.totalPages)
+
+            if (reviewTopRef.current) {
+                reviewTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
 
             // 리뷰별 좋아요 카운트 초기화
             const initialCounts = {}
@@ -263,14 +278,16 @@ export default function Review() {
                 </div>
                 <hr style={{ marginTop: '100px' }} />
             </div>
-            <h3>리뷰</h3>
+            <div ref={reviewTopRef} aria-hidden>
+                <h3>리뷰</h3>
+            </div>
             <h4>번호 / 작성일 / 별점 / userId(이름)/ 좋아요버튼 / 삭제버튼</h4>
             {reviews.length === 0 ? (
                 <p>현재 작성된 리뷰가 없습니다.</p>
             ) : (
                 <ul>
                     {/* {currentReviews.map((review) => ( */}
-                        {reviews.map((review) => (
+                    {reviews.map((review) => (
                         <li key={review.reviewId} style={{ marginBottom: '20px' }}>
                             {review.reviewId} / {review.createdDate} /{review.rating} /{review.userId}(
                             {review.createdBy}) /
@@ -320,7 +337,7 @@ export default function Review() {
                                     border: '1px solid #ccc',
                                     borderRadius: '5px',
                                     padding: '5px',
-                                    marginBottom: '8px'
+                                    marginBottom: '8px',
                                 }}
                             >
                                 {' '}
@@ -390,28 +407,47 @@ export default function Review() {
                 </ul>
             )}
             {/* 페이지네이션 */}
-            {/* <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
                 <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
+                    onClick={() => {
+                        if (currentPage > 0) fetchReviews(currentPage - 1)
+                    }}
+                    disabled={currentPage === 0}
                     style={{
                         marginRight: '10px',
                         padding: '6px 12px',
                         borderRadius: '6px',
                         border: '1px solid #ccc',
-                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                        cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
                     }}
                 >
                     ◀ 이전
                 </button>
 
-                <span>
-                    {currentPage} / {totalPages}
-                </span>
+                {[...Array(totalPages)].map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => fetchReviews(index)}
+                        style={{
+                            margin: '0 4px',
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid #ccc',
+                            backgroundColor: currentPage === index ? '#AD9263' : 'white',
+                            color: currentPage === index ? 'white' : 'black',
+                            cursor: currentPage === index ? 'default' : 'pointer',
+                            fontWeight: currentPage === index ? 'bold' : 'normal',
+                        }}
+                    >
+                        {index + 1}
+                    </button>
+                ))}
 
                 <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
+                    onClick={() => {
+                        if (currentPage + 1 < totalPages) fetchReviews(currentPage + 1)
+                    }}
+                    disabled={currentPage + 1 >= totalPages}
                     style={{
                         marginLeft: '10px',
                         padding: '6px 12px',
@@ -422,7 +458,7 @@ export default function Review() {
                 >
                     다음 ▶
                 </button>
-            </div> */}
+            </div>
         </>
     )
 }
