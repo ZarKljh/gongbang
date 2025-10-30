@@ -22,21 +22,20 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public MimeMessage createMail(String mail, String token) throws MessagingException {
-        // 메일 내용을 생상하는 메서드
-        // : 메일 주소와 JWT 토큰을 매개변수로 받음
         MimeMessage message = javaMailSender.createMimeMessage();
-        message.setFrom(senderEmail); // 발신자 이메일 주소 설정
-        message.setRecipients(MimeMessage.RecipientType.TO, mail); // 수신자 이메일 주소 설정
-        message.setSubject("이메일 인증 링크"); // 이메일 제목 설정
+        message.setFrom(senderEmail);
+        message.setRecipients(MimeMessage.RecipientType.TO, mail);
+        message.setSubject("이메일 인증번호 안내");
 
+        // body에 인증번호(token) 직접 표시
         String body = "";
-        body += "<h3>이메일 인증 링크입니다.</h3>";
-        body += "<a href=\"http://localhost:4040/api/v1/mail/verify?token=" + token + "\">여기를 클릭하여 인증하세요</a>";
+        body += "<h3>이메일 인증번호 안내</h3>";
+        body += "<p>인증번호: <strong>" + token + "</strong></p>";
+        body += "<p>해당 인증번호를 사이트에 입력하여 인증을 완료해주세요.</p>";
         body += "<p>감사합니다.</p>";
 
         message.setText(body, "UTF-8", "html");
-
-        return message; // 생성된 MimeMessage 객체 반환
+        return message;
     }
 
     @Override
@@ -60,7 +59,7 @@ public class MailServiceImpl implements MailService {
         try {
             String username = jwtProvider.getUsernameFromEmailJwt(token);
             System.out.println("이메일 인증이 완료되었습니다. 사용자명: " + username);
-            return username;
+            return "success";
         } catch (ExpiredJwtException e) {
             return "토큰이 만료되었습니다. 다시 진행해주세요.";
         }

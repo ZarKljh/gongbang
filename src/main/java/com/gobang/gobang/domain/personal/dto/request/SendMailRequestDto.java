@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SendMailRequestDto {
+    private Long userId;
     private String email;
-    private String username; // token에 보관할 것
+    private String userName; // token에 보관할 것
 }

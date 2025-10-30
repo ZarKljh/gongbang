@@ -55,6 +55,19 @@ export default function MyPage() {
         fetchUser();
     }, []);
 
+    //프론트에서 /api/v1/mypage/mail/send 호출 시 Turbopack dev 서버가 Spring Boot로 요청 전달
+    /** @type {import('next').NextConfig} */
+    const nextConfig = {
+    async rewrites() {
+        return [
+        {
+            source: '/api/:path*',
+            destination: 'http://localhost:8090/api/:path*',
+        },
+        ]
+    },
+    }
+
     /** userData 준비되면 모든 데이터 로드 */
     useEffect(() => {
         if (!userData?.id) return;
@@ -149,35 +162,63 @@ export default function MyPage() {
 
     /** 이메일 인증 관련 */
     const handleSendEmail = async () => {
-        if (!userData?.email) return;
-        try {
-            await axios.post(`${API_BASE_URL}/mypage/mail/send`, 
-                { userId: userData.id, email: userData.email }, 
-                { withCredentials: true }
-            );
-            alert('인증 메일이 발송되었습니다. 메일을 확인해주세요.');
-        } catch (error) {
-            console.error('메일 발송 실패:', error);
-            alert('메일 발송에 실패했습니다.');
+        if (!userData?.id) {
+            alert('사용자 정보가 없습니다.');
+            return;
         }
-    }
+
+        try {
+            const body = { 
+                userId: userData.id, 
+                email: userData.email,
+                username: userData.username
+            };
+
+            await axios.post(`${API_BASE_URL}/mail/send`, body, {
+                withCredentials: true
+            });
+
+            alert('인증 메일이 발송되었습니다. 메일을 확인해주세요.');
+        } catch (error: any) {
+            // 안전하게 에러 메시지 추출
+            let errMsg = '알 수 없는 에러';
+            if (axios.isAxiosError(error)) {
+                errMsg = error.response?.data?.message || error.response?.data || error.message;
+            } else if (error instanceof Error) {
+                errMsg = error.message;
+            } else {
+                errMsg = JSON.stringify(error);
+            }
+
+            console.error('메일 발송 실패:', errMsg);
+            alert('메일 발송에 실패했습니다. 콘솔을 확인해주세요.');
+        }
+    };
 
     const handleVerifyToken = async () => {
-        if (!tokenInput) return;
+        if (!tokenInput) {
+            alert('인증번호를 입력해주세요.');
+            return;
+        }
+
         try {
-            const { data } = await axios.get(`http://localhost:8090/api/v1/mail/verify?token=${tokenInput}`, { withCredentials: true });
-            if (data === 'success') {
+            const { data } = await axios.get(`${API_BASE_URL}/mail/verify?token=${tokenInput}`,
+                { withCredentials: true });
+
+            if (data.status === 'success') {
                 setIsAuthenticated(true);
                 setAuthTimeLeft(18000); // 5시간
                 alert('이메일 인증이 완료되었습니다.');
+            } else if (data.status === 'expired') {
+                alert('토큰이 만료되었습니다. 다시 인증해주세요.');
             } else {
-                alert('인증에 실패했습니다. 토큰을 확인해주세요.');
+                alert('인증에 실패했습니다.');
             }
         } catch (error) {
             console.error('인증 실패:', error);
             alert('인증 중 오류가 발생했습니다.');
         }
-    }
+    };
 
     /** 이메일 인증 타이머 */
     useEffect(() => {
@@ -242,400 +283,379 @@ export default function MyPage() {
                 <h1>{userData.userName}</h1>
 
                 <nav>
-                    <div className="nav-section">
-                        <h2>나의 쇼핑정보</h2>
-                        <ul>
-                            <li>
-                                <button className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>주문배송조회</button>
-                            </li>
-                            <li>
-                                <button className={`nav-btn ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>상품 리뷰</button>
-                            </li>
-                        </ul>
-                    </div>
+                <div className="nav-section">
+                    <h2>나의 쇼핑정보</h2>
+                    <ul>
+                    <li>
+                        <button className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>주문배송조회</button>
+                    </li>
+                    <li>
+                        <button className={`nav-btn ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>상품 리뷰</button>
+                    </li>
+                    </ul>
+                </div>
 
-                    <div className="nav-section">
-                        <h2>나의 계정정보</h2>
-                        <ul>
-                            <li>
-                                <button className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>회원정보수정</button>
-                            </li>
-                            <li>
-                                <button className={`nav-btn ${activeTab === 'addresses' ? 'active' : ''}`} onClick={() => setActiveTab('addresses')}>배송지 관리</button>
-                            </li>
-                            <li>
-                                <button className={`nav-btn ${activeTab === 'payment' ? 'active' : ''}`} onClick={() => setActiveTab('payment')}>결제수단</button>
-                            </li>
-                            <li>
-                                <button className={`nav-btn ${activeTab === 'wishlist' ? 'active' : ''}`} onClick={() => setActiveTab('wishlist')}>나의 좋아요</button>
-                            </li>
-                        </ul>
-                    </div>
+                <div className="nav-section">
+                    <h2>나의 계정정보</h2>
+                    <ul>
+                    <li>
+                        <button className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>회원정보수정</button>
+                    </li>
+                    <li>
+                        <button className={`nav-btn ${activeTab === 'addresses' ? 'active' : ''}`} onClick={() => setActiveTab('addresses')}>배송지 관리</button>
+                    </li>
+                    <li>
+                        <button className={`nav-btn ${activeTab === 'payment' ? 'active' : ''}`} onClick={() => setActiveTab('payment')}>결제수단</button>
+                    </li>
+                    <li>
+                        <button className={`nav-btn ${activeTab === 'wishlist' ? 'active' : ''}`} onClick={() => setActiveTab('wishlist')}>나의 좋아요</button>
+                    </li>
+                    </ul>
+                </div>
 
-                    <div className="nav-section">
-                        <h2>고객센터</h2>
-                        <ul>
-                            <li>1:1 문의</li>
-                            <li>상품 Q&A 내역</li>
-                            <li>FAQ</li>
-                        </ul>
-                    </div>
+                <div className="nav-section">
+                    <h2>고객센터</h2>
+                    <ul>
+                        <li>상품 문의 내역</li>
+                    </ul>
+                </div>
                 </nav>
             </div>
 
             {/* 오른쪽 콘텐츠 */}
             <div className="main-content">
                 <div className="content-wrapper">
-                    {/* 이메일 인증 */}
-                    {!isAuthenticated ? (
-                        <div className="auth-banner">
-                            <span>정보 수정을 위해 이메일 인증이 필요합니다 (5시간 유효)</span>
-                            <button onClick={handleSendEmail}>인증 메일 발송</button>
-                            <input 
-                                type="text" 
-                                placeholder="인증 토큰 입력" 
-                                value={tokenInput} 
-                                onChange={(e) => setTokenInput(e.target.value)} 
-                            />
-                            <button onClick={handleVerifyToken}>인증 확인</button>
-                        </div>
-                    ) : (
-                        <div className="auth-banner success">인증 완료 - 남은 시간: {formatTime(authTimeLeft)}</div>
-                    )}
+                {/* 이메일 인증 */}
+                {!isAuthenticated ? (
+                    <div className="auth-banner">
+                    <span>정보 수정을 위해 이메일 인증이 필요합니다 (5시간 유효)</span>
+                    <button onClick={handleSendEmail}>인증 메일 발송</button>
+                    <input 
+                        type="text" 
+                        placeholder="인증 토큰 입력" 
+                        value={tokenInput} 
+                        onChange={(e) => setTokenInput(e.target.value)} 
+                    />
+                    <button onClick={handleVerifyToken}>인증 확인</button>
+                    </div>
+                ) : (
+                    <div className="auth-banner success">인증 완료 - 남은 시간: {formatTime(authTimeLeft)}</div>
+                )}
 
-                    {/* 등급 및 포인트 정보 */}
-                    <div className="stats-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>프로필</th>
-                                    <th>문의 수</th>
-                                    <th>상품 리뷰</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><div className="profile-image"></div></td>
-                                    <td>{stats.totalInquiries || 0}</td>
-                                    <td>{stats.totalReviews || 0}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                {/* 등급 및 포인트 정보 */}
+                <div className="stats-table">
+                    <table>
+                    <thead>
+                        <tr>
+                        <th>프로필</th>
+                        <th>문의 수</th>
+                        <th>상품 리뷰</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        <td><div className="profile-image"></div></td>
+                        <td>{stats.totalInquiries || 0}</td>
+                        <td>{stats.totalReviews || 0}</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+
+                {/* 주문배송조회 */}
+                {activeTab === 'orders' && (
+                    <div className="tab-content">
+                    <div className="section-header">
+                        <h2>최근 주문</h2>
+                        <button>더보기 <ChevronRight size={16} /></button>
                     </div>
 
-                    {/* 주문배송조회 */}
-                    {activeTab === 'orders' && (
-                        <div className="tab-content">
-                            <div className="section-header">
-                                <h2>최근 주문</h2>
-                                <button>
-                                    더보기 <ChevronRight size={16} />
-                                </button>
+                    {orders.length === 0 ? (
+                        <div className="empty-state">주문 내역이 없습니다.</div>
+                    ) : (
+                        <div>
+                        {orders.map((order) => (
+                            <div key={order.orderId} className="order-card">
+                            <div className="order-header">
+                                <div>
+                                <p className="order-date">{order.createdDate}</p>
+                                <p className="order-date">주문번호: {order.orderCord}</p>
+                                </div>
+                                <span className="order-status">{order.deliveryStatus}</span>
                             </div>
 
-                            {orders.length === 0 ? (
-                                <div className="empty-state">주문 내역이 없습니다.</div>
-                            ) : (
-                                <div>
-                                    {orders.map((order) => (
-                                        <div key={order.orderId} className="order-card">
-                                            <div className="order-header">
-                                                <div>
-                                                    <p className="order-date">{order.createdDate}</p>
-                                                    <p className="order-date">주문번호: {order.orderCord}</p>
-                                                </div>
-                                                <span className="order-status">{order.deliveryStatus}</span>
-                                            </div>
-
-                                            {order.items &&
-                                                order.items.map((item, idx) => (
-                                                    <div key={idx} className="order-item">
-                                                        <p className="order-item-name">{item.productName}</p>
-                                                        <p className="order-item-detail">
-                                                            {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                        </p>
-                                                    </div>
-                                                ))}
-
-                                            <div className="order-footer">
-                                                <p className="order-date">{order.trackingNumber && `운송장: ${order.trackingNumber}`}</p>
-                                                <p className="order-total">총 {order.totalPrice?.toLocaleString()}원</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                            {order.items && order.items.map((item, idx) => (
+                                <div key={idx} className="order-item">
+                                <p className="order-item-name">{item.productName}</p>
+                                <p className="order-item-detail">
+                                    {item.price?.toLocaleString()}원 / {item.quantity}개
+                                </p>
                                 </div>
-                            )}
+                            ))}
+
+                            <div className="order-footer">
+                                <p className="order-date">{order.trackingNumber && `운송장: ${order.trackingNumber}`}</p>
+                                <p className="order-total">총 {order.totalPrice?.toLocaleString()}원</p>
+                            </div>
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                    </div>
+                )}
+
+                {/* 회원정보수정 */}
+                {activeTab === 'profile' && (
+                    <div className="tab-content">
+                    <div className="section-header">
+                        <h2>회원정보수정</h2>
+                        {!editMode.profile ? (
+                        <button className="btn-primary" onClick={() => handleEdit('profile')}>수정</button>
+                        ) : (
+                        <div style={{display: 'flex', gap: '8px'}}>
+                            <button className="btn-primary" onClick={() => handleSave('profile')}>저장</button>
+                            <button className="btn-secondary" onClick={() => handleCancel('profile')}>취소</button>
+                        </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <div className="form-group">
+                        <label>이름</label>
+                        {editMode.profile ? (
+                            <input
+                            type="text"
+                            value={tempData.userName}
+                            onChange={(e) => setTempData({ ...tempData, userName: e.target.value })}
+                            />
+                        ) : (
+                            <p>{userData.userName}</p>
+                        )}
+                        </div>
+
+                        <div className="form-group">
+                        <label>닉네임</label>
+                        {editMode.profile ? (
+                            <input
+                            type="text"
+                            value={tempData.nickName}
+                            onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
+                            />
+                        ) : (
+                            <p>{userData.nickName}</p>
+                        )}
+                        </div>
+
+                        <div className="form-group">
+                        <label>비밀번호</label>
+                        {editMode.profile ? (
+                            <input type="password" placeholder="새 비밀번호 입력" />
+                        ) : (
+                            <p>********</p>
+                        )}
+                        </div>
+
+                        {editMode.profile && (
+                        <div className="form-group">
+                            <label>비밀번호 확인</label>
+                            <input type="password" placeholder="비밀번호 재입력" />
+                        </div>
+                        )}
+
+                        <div className="form-group">
+                        <label>이메일</label>
+                        {editMode.profile ? (
+                            <input
+                            type="email"
+                            value={tempData.email}
+                            onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
+                            />
+                        ) : (
+                            <p>{userData.email}</p>
+                        )}
+                        </div>
+
+                        <div className="form-group">
+                        <label>휴대폰</label>
+                        {editMode.profile ? (
+                            <input
+                            type="tel"
+                            value={tempData.mobilePhone}
+                            onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
+                            />
+                        ) : (
+                            <p>{userData.mobilePhone}</p>
+                        )}
+                        </div>
+
+                        <div className="form-group">
+                        <label>생년월일</label>
+                        {editMode.profile ? (
+                            <input
+                            type="date"
+                            value={tempData.birth}
+                            onChange={(e) => setTempData({ ...tempData, birth: e.target.value })}
+                            />
+                        ) : (
+                            <p>{userData.birth}</p>
+                        )}
+                        </div>
+
+                        <div className="form-group">
+                        <label>성별</label>
+                        {editMode.profile ? (
+                            <select
+                            value={tempData.gender}
+                            onChange={(e) => setTempData({ ...tempData, gender: e.target.value })}
+                            >
+                            <option value="MALE">남성</option>
+                            <option value="FEMALE">여성</option>
+                            </select>
+                        ) : (
+                            <p>{userData.gender === 'MALE' ? '남성' : '여성'}</p>
+                        )}
+                        </div>
+                    </div>
+                    </div>
+                )}
+
+                {/* 배송지 관리 */}
+                {activeTab === 'addresses' && (
+                    <div className="tab-content">
+                    <div className="section-header">
+                        <h2>배송지 관리</h2>
+                        <button className="btn-primary" onClick={() => alert('배송지 추가 모달을 열어주세요')}>+ 새 배송지 추가</button>
+                    </div>
+
+                    {addresses.length === 0 ? (
+                        <div className="empty-state">등록된 배송지가 없습니다.</div>
+                    ) : (
+                        <div>
+                        {addresses.map((addr) => (
+                            <div key={addr.userAddressId} className="address-card">
+                            <div className="card-header">
+                                <div className="card-title">
+                                <span>{addr.recipientName}</span>
+                                {addr.isDefault && <span className="badge">기본배송지</span>}
+                                </div>
+                                <div className="card-actions">
+                                <button className="link-btn" onClick={() => alert('배송지 수정 모달을 열어주세요')}>수정</button>
+                                <button className="link-btn delete" onClick={() => handleDeleteAddress(addr.userAddressId)}>삭제</button>
+                                </div>
+                            </div>
+                            <div className="card-content">
+                                <p>[{addr.zipcode}]</p>
+                                <p>{addr.baseAddress}</p>
+                                <p>{addr.detailAddress}</p>
+                            </div>
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                    </div>
+                )}
+
+                {/* 결제수단 */}
+                {activeTab === 'payment' && (
+                    <div className="tab-content">
+                    <div className="section-header">
+                        <h2>결제수단</h2>
+                        <button className="btn-primary" onClick={() => alert('결제수단 추가 모달을 열어주세요')}>+ 결제수단 추가</button>
+                    </div>
+
+                    {paymentMethods.length === 0 ? (
+                        <div className="empty-state">등록된 결제수단이 없습니다.</div>
+                    ) : (
+                        <div>
+                        {paymentMethods.map((method) => (
+                            <div key={method.paymentId} className="payment-card">
+                            <div className="card-header">
+                                <div>
+                                <div className="card-title">
+                                    <span>{method.type === 'CARD' ? '신용카드' : '계좌이체'}</span>
+                                    {method.defaultPayment && <span className="badge">기본결제</span>}
+                                </div>
+                                <div className="card-content" style={{marginTop: '8px'}}>
+                                    <p>{method.cardCompany || method.bankName}</p>
+                                    <p>{method.cardNumber || method.accountNumber}</p>
+                                </div>
+                                </div>
+                                <button className="link-btn">수정</button>
+                            </div>
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                    </div>
+                )}
+
+                {/* 나의 좋아요 */}
+                {activeTab === 'wishlist' && (
+                    <div className="tab-content">
+                    <div className="section-header">
+                        <h2>나의 좋아요</h2>
+                    </div>
+                    
+                    <div className="tab-nav">
+                        <button className={`subtab-btn ${activeSubTab === 'product' ? 'active' : ''}`} onClick={() => setActiveSubTab('product')}>Product</button>
+                        <button className={`subtab-btn ${activeSubTab === 'brand' ? 'active' : ''}`} onClick={() => setActiveSubTab('brand')}>Brand</button>
+                    </div>
+
+                    {activeSubTab === 'product' && (
+                        <div className="subtab-content">
+                        {wishList.length === 0 ? (
+                            <div className="empty-state">좋아요한 상품이 없습니다.</div>
+                        ) : (
+                            <div className="wishlist-grid">
+                            {wishList.map((item) => (
+                                <div key={item.wishlistId} className="wishlist-item">
+                                <div className="wishlist-image"></div>
+                                <div className="wishlist-info">
+                                    <p>{item.productName}</p>
+                                    <p className="price">{item.price?.toLocaleString()}원</p>
+                                    <button className="link-btn delete" onClick={() => handleRemoveWish(item.wishlistId)}>삭제</button>
+                                </div>
+                                </div>
+                            ))}
+                            </div>
+                        )}
                         </div>
                     )}
 
-                    {/* 회원정보수정 */}
-                    {activeTab === 'profile' && (
-                        <div className="tab-content">
-                            <div className="section-header">
-                                <h2>회원정보수정</h2>
-                                {!editMode.profile ? (
-                                    <button className="btn-primary" onClick={() => handleEdit('profile')}>수정</button>
-                                ) : (
-                                    <div style={{display: 'flex', gap: '8px'}}>
-                                        <button className="btn-primary" onClick={() => handleSave('profile')}>저장</button>
-                                        <button className="btn-secondary" onClick={() => handleCancel('profile')}>취소</button>
-                                    </div>
-                                )}
-                            </div>
-
+                    {activeSubTab === 'brand' && (
+                        <div className="subtab-content">
+                        {followList.length === 0 ? (
+                            <div className="empty-state">팔로우한 브랜드가 없습니다.</div>
+                        ) : (
                             <div>
-                                <div className="form-group">
-                                    <label>이름</label>
-                                    {editMode.profile ? (
-                                        <input
-                                            type="text"
-                                            value={tempData.userName}
-                                            onChange={(e) => setTempData({ ...tempData, userName: e.target.value })}
-                                        />
-                                    ) : (
-                                        <p>{userData.userName}</p>
-                                    )}
-                                </div>
-
-                                <div className="form-group">
-                                    <label>닉네임</label>
-                                    {editMode.profile ? (
-                                        <input
-                                            type="text"
-                                            value={tempData.nickName}
-                                            onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
-                                        />
-                                    ) : (
-                                        <p>{userData.nickName}</p>
-                                    )}
-                                </div>
-
-                                <div className="form-group">
-                                    <label>비밀번호</label>
-                                    {editMode.profile ? (
-                                        <input
-                                            type="password"
-                                            placeholder="새 비밀번호 입력"
-                                        />
-                                    ) : (
-                                        <p>********</p>
-                                    )}
-                                </div>
-
-                                {editMode.profile && (
-                                    <div className="form-group">
-                                        <label>비밀번호 확인</label>
-                                        <input
-                                            type="password"
-                                            placeholder="비밀번호 재입력"
-                                        />
+                            {followList.map((follow) => (
+                                <div key={follow.followId} className="brand-item">
+                                <div className="brand-info">
+                                    <div className="brand-logo"></div>
+                                    <div>
+                                    <p className="brand-name">{follow.studioName}</p>
+                                    <p className="brand-date">{follow.createdAt}</p>
                                     </div>
-                                )}
-
-                                <div className="form-group">
-                                    <label>이메일</label>
-                                    {editMode.profile ? (
-                                        <input
-                                            type="email"
-                                            value={tempData.email}
-                                            onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
-                                        />
-                                    ) : (
-                                        <p>{userData.email}</p>
-                                    )}
                                 </div>
-
-                                <div className="form-group">
-                                    <label>휴대폰</label>
-                                    {editMode.profile ? (
-                                        <input
-                                            type="tel"
-                                            value={tempData.mobilePhone}
-                                            onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
-                                        />
-                                    ) : (
-                                        <p>{userData.mobilePhone}</p>
-                                    )}
+                                <button className="btn-secondary" onClick={() => handleUnfollow(follow.followId)}>언팔로우</button>
                                 </div>
-
-                                <div className="form-group">
-                                    <label>생년월일</label>
-                                    {editMode.profile ? (
-                                        <input
-                                            type="date"
-                                            value={tempData.birth}
-                                            onChange={(e) => setTempData({ ...tempData, birth: e.target.value })}
-                                        />
-                                    ) : (
-                                        <p>{userData.birth}</p>
-                                    )}
-                                </div>
-
-                                <div className="form-group">
-                                    <label>성별</label>
-                                    {editMode.profile ? (
-                                        <select
-                                            value={tempData.gender}
-                                            onChange={(e) => setTempData({ ...tempData, gender: e.target.value })}
-                                        >
-                                            <option value="MALE">남성</option>
-                                            <option value="FEMALE">여성</option>
-                                        </select>
-                                    ) : (
-                                        <p>{userData.gender === 'MALE' ? '남성' : '여성'}</p>
-                                    )}
-                                </div>
+                            ))}
                             </div>
+                        )}
                         </div>
                     )}
+                    </div>
+                )}
 
-                    {/* 배송지 관리 */}
-                    {activeTab === 'addresses' && (
-                        <div className="tab-content">
-                            <div className="section-header">
-                                <h2>배송지 관리</h2>
-                                <button className="btn-primary" onClick={() => alert('배송지 추가 모달을 열어주세요')}>+ 새 배송지 추가</button>
-                            </div>
-
-                            {addresses.length === 0 ? (
-                                <div className="empty-state">등록된 배송지가 없습니다.</div>
-                            ) : (
-                                <div>
-                                    {addresses.map((addr) => (
-                                        <div key={addr.userAddressId} className="address-card">
-                                            <div className="card-header">
-                                                <div className="card-title">
-                                                    <span>{addr.recipientName}</span>
-                                                    {addr.isDefault && <span className="badge">기본배송지</span>}
-                                                </div>
-                                                <div className="card-actions">
-                                                    <button className="link-btn" onClick={() => alert('배송지 수정 모달을 열어주세요')}>
-                                                        수정
-                                                    </button>
-                                                    <button className="link-btn delete" onClick={() => handleDeleteAddress(addr.userAddressId)}>
-                                                        삭제
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="card-content">
-                                                <p>[{addr.zipcode}]</p>
-                                                <p>{addr.baseAddress}</p>
-                                                <p>{addr.detailAddress}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* 결제수단 */}
-                    {activeTab === 'payment' && (
-                        <div className="tab-content">
-                            <div className="section-header">
-                                <h2>결제수단</h2>
-                                <button className="btn-primary" onClick={() => alert('결제수단 추가 모달을 열어주세요')}>
-                                    + 결제수단 추가
-                                </button>
-                            </div>
-
-                            {paymentMethods.length === 0 ? (
-                                <div className="empty-state">등록된 결제수단이 없습니다.</div>
-                            ) : (
-                                <div>
-                                    {paymentMethods.map((method) => (
-                                        <div key={method.paymentId} className="payment-card">
-                                            <div className="card-header">
-                                                <div>
-                                                    <div className="card-title">
-                                                        <span>{method.type === 'CARD' ? '신용카드' : '계좌이체'}</span>
-                                                        {method.defaultPayment && <span className="badge">기본결제</span>}
-                                                    </div>
-                                                    <div className="card-content" style={{marginTop: '8px'}}>
-                                                        <p>{method.cardCompany || method.bankName}</p>
-                                                        <p>{method.cardNumber || method.accountNumber}</p>
-                                                    </div>
-                                                </div>
-                                                <button className="link-btn">수정</button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* 나의 좋아요 */}
-                    {activeTab === 'wishlist' && (
-                        <div className="tab-content">
-                            <div className="section-header">
-                                <h2>나의 좋아요</h2>
-                            </div>
-                            
-                            <div className="tab-nav">
-                                <button className={`subtab-btn ${activeSubTab === 'product' ? 'active' : ''}`} onClick={() => setActiveSubTab('product')}>Product</button>
-                                <button className={`subtab-btn ${activeSubTab === 'brand' ? 'active' : ''}`} onClick={() => setActiveSubTab('brand')}>Brand</button>
-                            </div>
-
-                            {activeSubTab === 'product' && (
-                                <div className="subtab-content">
-                                    {wishList.length === 0 ? (
-                                        <div className="empty-state">좋아요한 상품이 없습니다.</div>
-                                    ) : (
-                                        <div className="wishlist-grid">
-                                            {wishList.map((item) => (
-                                                <div key={item.wishlistId} className="wishlist-item">
-                                                    <div className="wishlist-image"></div>
-                                                    <div className="wishlist-info">
-                                                        <p>{item.productName}</p>
-                                                        <p className="price">{item.price?.toLocaleString()}원</p>
-                                                        <button className="link-btn delete" onClick={() => handleRemoveWish(item.wishlistId)}>
-                                                            삭제
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {activeSubTab === 'brand' && (
-                                <div className="subtab-content">
-                                    {followList.length === 0 ? (
-                                        <div className="empty-state">팔로우한 브랜드가 없습니다.</div>
-                                    ) : (
-                                        <div>
-                                            {followList.map((follow) => (
-                                                <div key={follow.followId} className="brand-item">
-                                                    <div className="brand-info">
-                                                        <div className="brand-logo"></div>
-                                                        <div>
-                                                            <p className="brand-name">{follow.studioName}</p>
-                                                            <p className="brand-date">{follow.createdAt}</p>
-                                                        </div>
-                                                    </div>
-                                                    <button className="btn-secondary" onClick={() => handleUnfollow(follow.followId)}>
-                                                        언팔로우
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* 상품리뷰 */}
-                    {activeTab === 'reviews' && (
-                        <div className="tab-content">
-                            <div className="section-header">
-                                <h2>상품 리뷰</h2>
-                            </div>
-                            <div className="empty-state">작성한 리뷰가 없습니다.</div>
-                        </div>
-                    )}
+                {/* 상품리뷰 */}
+                {activeTab === 'reviews' && (
+                    <div className="tab-content">
+                    <div className="section-header">
+                        <h2>상품 리뷰</h2>
+                    </div>
+                    <div className="empty-state">작성한 리뷰가 없습니다.</div>
+                    </div>
+                )}
                 </div>
             </div>
         </div>

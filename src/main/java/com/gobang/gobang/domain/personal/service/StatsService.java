@@ -1,10 +1,12 @@
 package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,20 +14,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StatsService {
 
-    private final ReviewRepository reviewRepository; // Review JPA 리포지토리
+    private final ReviewRepository reviewRepository;
+    private final WishListRepository wishListRepository;
 
     public Map<String, Object> getStats(SiteUser user) {
         Map<String, Object> stats = new HashMap<>();
 
-        // 포인트가 SiteUser에 없다면 임시로 0
-        stats.put("totalPoints", 0);
+        long postCount = reviewRepository.countByUserId(user.getId());
 
-        // 리뷰 개수: userId로 Review 조회
-        int totalReviews = reviewRepository.countByUserIdAndIsActiveTrue(user.getId());
-        stats.put("totalReviews", totalReviews);
+        long wishCount = wishListRepository.countBySiteUser_Id(user.getId());
 
-        // 등급
-        stats.put("membershipLevel", "Newbie");
+        stats.put("postCount", postCount);
+        stats.put("wishCount", wishCount);
 
         return stats;
     }
