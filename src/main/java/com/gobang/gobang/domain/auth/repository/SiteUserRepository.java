@@ -10,6 +10,5 @@ import java.util.Optional;
 public interface SiteUserRepository extends JpaRepository<SiteUser, Long> {
     SiteUser findByEmail(String email);
     Optional<SiteUser> findByUserName(String userName);
-    Optional<SiteUser> findByUserNameAndPassword(String userName, String password);
     Optional<SiteUser> findByRefreshToken(String refreshToken);
 }

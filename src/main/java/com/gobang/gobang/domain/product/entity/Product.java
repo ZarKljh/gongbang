@@ -29,7 +29,7 @@ public class Product extends BaseEntity {
 
     // 판매자
     @Column(nullable = false)
-    private Long sellerId;
+    private Long studioId;
 
     // 소속 테마
     private Long themeId;

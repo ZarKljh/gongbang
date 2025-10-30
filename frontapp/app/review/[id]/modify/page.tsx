@@ -44,10 +44,10 @@ export default function ReviewModify() {
         })
 
         if (response.ok) {
-            alert('modify success')
+            alert('리뷰가 수정되었습니다.')
             router.push(`/review/${params.id}`)
         } else {
-            alert('modify fail')
+            alert('리뷰 수정에 실패했습니다.')
         }
     }
 

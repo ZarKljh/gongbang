@@ -1,15 +1,13 @@
 package com.gobang.gobang.domain.review.controller;
 
-import com.gobang.gobang.domain.review.dto.ReviewCommentDto;
-import com.gobang.gobang.domain.review.entity.ReviewComment;
+import com.gobang.gobang.domain.review.dto.request.CommentCreateRequest;
+import com.gobang.gobang.domain.review.dto.response.CommentCreateResponse;
+import com.gobang.gobang.domain.review.dto.response.CommentResponse;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,13 +18,20 @@ public class ReviewCommentController {
 
     // ✅ 댓글 등록
     @PostMapping("")
-    public RsData<ReviewCommentDto.Response> createComment(
-            @Valid @RequestBody ReviewCommentDto.CreateRequest createRequest
+    public RsData<CommentCreateResponse> createComment(
+            @Valid @RequestBody CommentCreateRequest createRequest
     ) {
         return reviewCommentService.createComment(createRequest)
-                .map(comment -> RsData.of("200", "댓글 등록 성공", new ReviewCommentDto.Response(comment)))
+                .map(comment -> RsData.of("200", "댓글 등록 성공", new CommentCreateResponse(comment)))
                 .orElseGet(() -> RsData.of("404", "리뷰를 찾을 수 없습니다."));
     }
+
+//    @GetMapping("/{reviewId}/comments")
+//    public RsData<CommentResponse> getComment(@PathVariable Long reviewId) {
+//        return reviewCommentService.getCommentByReviewId(reviewId)
+//                .map(comment -> RsData.of("200", "댓글 조회 성공", new CommentResponse(comment)))
+//                .orElseGet(() -> RsData.of("404", "댓글이 존재하지 않습니다."));
+//    }
 
     // ✅ 댓글 수정
 //    @PatchMapping("/{commentId}")

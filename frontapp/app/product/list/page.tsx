@@ -31,13 +31,15 @@ type FilterGroupDto = {
 type FilterOptionDto = {
     id: number
     label: string
-    inputType: 'CHECKBOX' | 'RADIO' | 'CHIP'
+    inputType: 'CHECKBOX' | 'RADIO' | 'CHIP' | 'submit'
     selectionMode: 'SINGLE' | 'MULTI'
     sortOrder: number
+    colorHex: string
 }
 //
 
 export default function Product() {
+    const [items, setItems] = useState<any[]>([])
     const [products, setProducts] = useState<Product[]>([])
 
     const [categories, setCategories] = useState<Category[]>([])
@@ -56,6 +58,11 @@ export default function Product() {
         setSelectedSubCatId(id) // 클릭한 서브카테고리의 id를 상태에 저장
     }
     //
+
+    const handleImmediateSubmit = () => {
+        // 입력 반영 직후 FormData가 맞게 잡히도록 다음 프레임에 실행
+        requestAnimationFrame(() => submitFilter())
+    }
 
     useEffect(() => {
         fetchAll()
@@ -131,6 +138,34 @@ export default function Product() {
         })()
     }, [selectedSubCategoryId])
 
+    const submitFilter = async () => {
+        const form = document.getElementById('filterForm') as HTMLFormElement | null
+        if (!form) return
+
+        const fd = new FormData(form)
+
+        // checkbox/radio의 다중값까지 포함하려면 getAll 사용
+        const payload: Record<string, string | string[]> = {}
+        for (const [k] of fd.entries()) {
+            const all = fd.getAll(k).map(String)
+            payload[k] = all.length > 1 ? all : all[0] // 단일/다중 자동 처리
+        }
+
+        // ✅ 백엔드 API로 보내기 (예: POST JSON)
+        const res = await fetch('/api/v1/product/search', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+            console.error('filter submit failed')
+            return
+        }
+        const data = await res.json()
+        setItems(data.data.items) // 백엔드 응답 구조에 맞게 갱신
+    }
+
     return (
         <>
             <nav className="category-tree" aria-label="카테고리 메뉴">
@@ -162,6 +197,7 @@ export default function Product() {
 
             {/*  */}
             <section aria-labelledby="filter-heading" className="filter-area">
+                <form id="filterForm" method="get" className="filter-form" action=""></form>
                 <h2 id="filter-heading" className="text-lg font-semibold mb-3">
                     필터 영역
                 </h2>
@@ -175,6 +211,7 @@ export default function Product() {
                                 <div className="font-medium truncate">{g.name}</div>
                                 <div className="min-w-0">
                                     {/* 옵션 목록 */}
+
                                     <ul className="flex flex-wrap gap-2">
                                         {(filterOptions[g.id] ?? []).length > 0 ? (
                                             filterOptions[g.id].map((o) => (
@@ -182,7 +219,38 @@ export default function Product() {
                                                     key={o.id}
                                                     className="px-3 py-1 text-sm border rounded hover:bg-gray-50 cursor-pointer"
                                                 >
-                                                    {o.label}
+                                                    {o.label && <label>{o.label}</label>}
+                                                    {o.inputType === 'submit' ? (
+                                                        <>
+                                                            <button
+                                                                form="filterForm"
+                                                                name={`${o.inputType}`}
+                                                                type="submit"
+                                                                style={{
+                                                                    backgroundColor: o.colorHex,
+                                                                    borderRadius: '50%',
+                                                                    width: '40px',
+                                                                    height: '40px',
+                                                                    border: '1px solid #D6C8A4',
+                                                                    cursor: 'pointer',
+                                                                }}
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <input
+                                                                form="filterForm"
+                                                                onChange={handleImmediateSubmit} // ✅ 변경 즉시 submit
+                                                                type={o.inputType}
+                                                                name={
+                                                                    o.inputType === 'CHIP'
+                                                                        ? `${o.inputType}_${o.id}` // chip은 개별 name (토글용)
+                                                                        : o.inputType // radio/checkbox는 동일 name으로 묶음
+                                                                }
+                                                                // CHIP일 때만 읽기전용 표시용
+                                                            />
+                                                        </>
+                                                    )}
                                                 </li>
                                             ))
                                         ) : (
@@ -192,6 +260,9 @@ export default function Product() {
                                 </div>
                             </li>
                         ))}
+                        <button type="submit" className="filter-btn" form="filterForm">
+                            적용하기
+                        </button>
                     </ul>
                 )}
             </section>
