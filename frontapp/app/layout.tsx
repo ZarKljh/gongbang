@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Link from "next/link";
+
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import Link from 'next/link'
+import ReactQueryProviders from '@/app/utils/ReactQueryProviders'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,20 +25,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="ko">
-      <body>
-        <nav>
-          <Link href="/">홈 </Link>
-          <Link href="/product/list">상품 </Link>
-          <Link href="/theme">테마목록 </Link>
-          <Link href="/review">리뷰</Link>
-          <Link href="/auth/login">로그인</Link>
-          <Link href="/auth/signup">회원가입</Link>
-          <Link href="/personal">마이페이지</Link>
-        </nav>
-        {children}
-      </body>
-    </html>
-  );
+
+    return (
+        <html lang="ko">
+            <body>
+                <nav>
+                    <Link href="/">홈 </Link>
+                    <Link href="/product/list">상품 </Link>
+                    <Link href="/theme">테마목록 </Link>
+                    <Link href="/review">리뷰</Link>
+                    <Link href="/personal">마이페이지</Link>
+                    <Link href="/auth/login">로그인</Link>
+                    <Link href="/auth/signup">회원가입</Link>
+                </nav>
+                <ReactQueryProviders>{children}</ReactQueryProviders>
+            </body>
+        </html>
+    )
 }

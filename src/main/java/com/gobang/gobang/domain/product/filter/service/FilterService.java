@@ -54,6 +54,33 @@ public class FilterService {
                            String label, String valueKey, int displayOrder,
                            String inputType, String selectType) {
 
+        String hexColor;
+
+        switch (valueKey.toLowerCase()) {
+            case "white":
+                hexColor = "#FFFFFF"; // 화이트
+                break;
+            case "beige":
+                hexColor = "#F5F5DC"; // 베이지
+                break;
+            case "ivory":
+                hexColor = "#FFFFF0"; // 아이보리
+                break;
+            case "navy":
+                hexColor = "#000080"; // 네이비
+                break;
+            case "temp_2700":
+                hexColor = "#FFD580"; // 따뜻한 빛
+                break;
+            case "temp_6500":
+                hexColor = "#F0F8FF"; // 밝은 빛
+                break;
+            default:
+                hexColor = "#000000"; // 기본값 (예: 블랙)
+                break;
+        }
+
+
         // 1) 소속 그룹(자연키) 찾기
         FilterGroup parent = filterGroupRepository.findByCategory_CodeAndCode(categoryCode, groupCode)
                 .orElseThrow(() -> new RuntimeException("FilterGroup not found: " + groupCode + " / " + categoryCode));
@@ -72,6 +99,7 @@ public class FilterService {
         option.setActive(true);
         option.setInputType(inputType);
         option.setSelectType(selectType);
+        option.setColorHex(hexColor);
 
         // 4) 저장
         filterOptionRepository.save(option);
