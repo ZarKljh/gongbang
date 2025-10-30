@@ -14,19 +14,19 @@ export default function Review() {
 
     ///// 페이징 관련
     // front에서의 페이징 관련
-    const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 10
-    // 배열 10개씩 잘라 보여주기
-    const indexOfLastItem = currentPage * itemsPerPage
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    const currentReviews = reviews.slice(indexOfFirstItem, indexOfLastItem)
+    // const [currentPage, setCurrentPage] = useState(1)
+    // const itemsPerPage = 10
+    // // 배열 10개씩 잘라 보여주기
+    // const indexOfLastItem = currentPage * itemsPerPage
+    // const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    // const currentReviews = reviews.slice(indexOfFirstItem, indexOfLastItem)
 
-    const totalPages = Math.ceil(reviews.length / itemsPerPage)
+    // const totalPages = Math.ceil(reviews.length / itemsPerPage)
 
-    const handlePageChange = (pageNumber) => {
-        if (pageNumber < 1 || pageNumber > totalPages) return
-        setCurrentPage(pageNumber)
-    }
+    // const handlePageChange = (pageNumber) => {
+    //     if (pageNumber < 1 || pageNumber > totalPages) return
+    //     setCurrentPage(pageNumber)
+    // }
     ///// 페이징 관련
 
     useEffect(() => {
@@ -34,7 +34,7 @@ export default function Review() {
         fetchReviews()
     }, [])
 
-    // ✅ 로그인 여부 확인
+    // 로그인 여부 확인
     const checkLoginStatus = async () => {
         try {
             const res = await fetch('http://localhost:8090/api/auth/me', {
@@ -50,28 +50,32 @@ export default function Review() {
             setIsLoggedIn(false)
         }
     }
-    // ✅ 리뷰 목록 조회
+    // 리뷰 목록 조회
     const fetchReviews = async () => {
         try {
-            const res = await api.get('/reviews')
-            const fetchedReviews = res.data.data.reviews || []
+            const res = await fetch('http://localhost:8090/api/v1/reviews', {
+                method: 'GET',
+                credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
+            })
+            const data = await res.json()
+            const fetchedReviews = data.data.reviews || []
             setReviews(fetchedReviews)
 
-            // ✅ 리뷰별 좋아요 카운트 초기화
+            // 리뷰별 좋아요 카운트 초기화
             const initialCounts = {}
             fetchedReviews.forEach((r) => {
                 initialCounts[r.reviewId] = r.reviewLike
             })
             setLikeCounts(initialCounts)
 
-            // ✅ 각 리뷰별 댓글도 함께 조회
+            // 각 리뷰별 댓글도 함께 조회
             fetchedReviews.forEach((review) => fetchComment(review.reviewId))
         } catch (err) {
             console.error('리뷰 목록 조회 실패:', err)
         }
     }
 
-    // ✅ 댓글 조회
+    // 댓글 조회
     const fetchComment = async (reviewId) => {
         try {
             const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments`)
@@ -86,7 +90,7 @@ export default function Review() {
         }
     }
 
-    // ✅ 리뷰 작성 버튼
+    // 리뷰 작성 버튼
     const handleCreateClick = async () => {
         if (!isLoggedIn) {
             if (confirm('리뷰를 작성하려면 로그인이 필요합니다. 로그인 하시겠습니까?')) {
@@ -104,23 +108,55 @@ export default function Review() {
                 method: 'POST',
                 credentials: 'include',
             })
+            // const data = await res.json()
+
+            //     if (res.ok) {
+            //         // 리뷰별 카운트만 업데이트
+            //         setLikeCounts((prev) => ({
+            //             ...prev,
+            //             [reviewId]: (prev[reviewId] ?? 0) + (data.msg.includes('등록') ? 1 : -1),
+            //         }))
+            //     } else {
+            //         alert(data.msg)
+            //     }
+            // } catch (err) {
+            //     console.error('좋아요 요청 실패:', err)
+            // }
+
+            if (!isLoggedIn) {
+                if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
+                    window.location.href = '/auth/login'
+                }
+            }
+
+            // ✅ 요청 실패 시 (서버 오류 등)
+            if (!res.ok) {
+                console.error('좋아요 요청 실패:', res.status)
+                return
+            }
+
             const data = await res.json()
 
-            if (res.ok) {
-                // 리뷰별 카운트만 업데이트
+            // ✅ 서버에서 메시지 보고 판단
+            if (data.msg.includes('등록')) {
+                // 좋아요 추가
                 setLikeCounts((prev) => ({
                     ...prev,
-                    [reviewId]: (prev[reviewId] ?? 0) + (data.msg.includes('등록') ? 1 : -1),
+                    [reviewId]: (prev[reviewId] ?? 0) + 1,
                 }))
-            } else {
-                alert(data.msg)
+            } else if (data.msg.includes('취소')) {
+                // 좋아요 취소
+                setLikeCounts((prev) => ({
+                    ...prev,
+                    [reviewId]: Math.max(0, (prev[reviewId] ?? 1) - 1), // 음수 방지
+                }))
             }
         } catch (err) {
             console.error('좋아요 요청 실패:', err)
         }
     }
 
-    // ✅ 댓글 등록 버튼
+    // 댓글 등록 버튼
     const handleCommentSubmit = async (reviewId) => {
         if (!reviewComment.trim()) {
             alert('댓글 내용을 입력해주세요.')
@@ -142,7 +178,7 @@ export default function Review() {
                 alert('댓글이 등록되었습니다.')
                 setReviewComment('')
                 setActiveCommentBox(null)
-                fetchComment(reviewId) // ✅ 등록 후 갱신
+                fetchComment(reviewId) // 등록 후 갱신
             } else if (res.status === 401) {
                 alert('로그인이 필요합니다.')
                 window.location.href = '/auth/login'
@@ -154,17 +190,24 @@ export default function Review() {
         }
     }
 
+    // 로그인 했을 때 userId와 맞는 리뷰에만 나타나게 수정해야함.
     const handleDeleteClick = async (reviewId) => {
         const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
             method: 'DELETE',
-            credentials: 'include', 
+            credentials: 'include',
         })
+        if (!isLoggedIn) {
+            if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
+                window.location.href = '/auth/login'
+            }
+        }
         if (res.ok) {
             alert('리뷰가 삭제되었습니다.')
             fetchReviews()
-        } else {
-            alert('리뷰 삭제에 실패했습니다.')
         }
+        // else {
+        //     alert('리뷰 삭제에 실패했습니다.')
+        // }
     }
 
     return (
@@ -221,23 +264,16 @@ export default function Review() {
                 <hr style={{ marginTop: '100px' }} />
             </div>
             <h3>리뷰</h3>
-            <h4>번호 / 후기 내용 / 작성일 / 별점 / userId(이름)/ 좋아요버튼 / 삭제버튼</h4>
+            <h4>번호 / 작성일 / 별점 / userId(이름)/ 좋아요버튼 / 삭제버튼</h4>
             {reviews.length === 0 ? (
                 <p>현재 작성된 리뷰가 없습니다.</p>
             ) : (
                 <ul>
-                    {currentReviews.map((review) => (
+                    {/* {currentReviews.map((review) => ( */}
+                        {reviews.map((review) => (
                         <li key={review.reviewId} style={{ marginBottom: '20px' }}>
-                            {review.reviewId} /
-                            <Link
-                                style={{
-                                    textDecoration: 'none',
-                                }}
-                                href={`/review/${review.reviewId}`}
-                            >
-                                {review.content}
-                            </Link>{' '}
-                            / {review.createdDate} /{review.rating} /{review.userId}({review.createdBy}) /
+                            {review.reviewId} / {review.createdDate} /{review.rating} /{review.userId}(
+                            {review.createdBy}) /
                             <button
                                 onClick={() => handleLikeClick(review.reviewId)}
                                 style={{
@@ -251,14 +287,13 @@ export default function Review() {
                                 }}
                             >
                                 ♡ {likeCounts[review.reviewId] ?? review.reviewLike}
-                            </button>
-                            <button onClick={() => handleDeleteClick(review.reviewId)}>삭제</button>
+                            </button>{' '}
+                            /<button onClick={() => handleDeleteClick(review.reviewId)}>삭제</button>
                             <br />
-                            {/* ✅ 댓글 표시 */}
+                            <h4 style={{ margin: '5px' }}>📃 리뷰 내용 </h4>
                             <div
                                 style={{
-                                    marginTop: '8px',
-                                    width: '500px',
+                                    width: '800px',
                                     height: '80px',
                                     border: '1px solid #ccc',
                                     borderRadius: '8px',
@@ -266,7 +301,29 @@ export default function Review() {
                                     resize: 'none',
                                 }}
                             >
-                                💬 댓글:{' '}
+                                <Link
+                                    style={{
+                                        textDecoration: 'none',
+                                    }}
+                                    href={`/review/${review.reviewId}`}
+                                >
+                                    {review.content}
+                                </Link>{' '}
+                            </div>
+                            {/* ✅ 댓글 표시 */}
+                            <h4 style={{ margin: '5px' }}>💬 댓글</h4>
+                            <div
+                                style={{
+                                    marginTop: '8px',
+                                    width: '800px',
+                                    height: '30px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '5px',
+                                    padding: '5px',
+                                    marginBottom: '8px'
+                                }}
+                            >
+                                {' '}
                                 {comments[review.reviewId]?.reviewComment
                                     ? comments[review.reviewId].reviewComment
                                     : '아직 등록된 댓글이 없습니다.(성공 후 db엔 저장됨)'}
@@ -333,7 +390,7 @@ export default function Review() {
                 </ul>
             )}
             {/* 페이지네이션 */}
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            {/* <div style={{ marginTop: '20px', textAlign: 'center' }}>
                 <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
@@ -365,7 +422,7 @@ export default function Review() {
                 >
                     다음 ▶
                 </button>
-            </div>
+            </div> */}
         </>
     )
 }

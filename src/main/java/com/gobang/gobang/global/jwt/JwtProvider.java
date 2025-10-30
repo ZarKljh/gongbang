@@ -44,9 +44,14 @@ public class JwtProvider {
         return genToken(siteUser, 60 * 60 * 24 * 365 * 1);
     }
 
-    // accessToken 만들기
+    // accessToken 만들기 hy 잠시 주석
+//    public String genAccessToken(SiteUser siteUser) {
+//        return genToken(siteUser, 60 * 10);
+//    }
+
+    // hy 테스트 위해 만료 시간 늘림
     public String genAccessToken(SiteUser siteUser) {
-        return genToken(siteUser, 60 * 10);
+        return genToken(siteUser, 60 * 60);
     }
 
 
