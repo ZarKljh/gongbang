@@ -31,16 +31,16 @@ public class Studio {
     @Column(columnDefinition = "TEXT")
     private String studioDescription;
 
-    @Column(length = 20)
+    @Column(length = 10)
     private String studioMobile;
 
-    @Column(length = 20)
+    @Column(length = 10)
     private String studioOfficeTell;
 
-    @Column(length = 20)
+    @Column(length = 10)
     private String studioFax;
 
-    @Column(length = 150)
+    @Column(length = 10)
     private String studioEmail;
 
     @Column(length = 15)

@@ -85,8 +85,6 @@ public class SiteUserService {
         }
     }
 
-
-
     public SiteUser getSiteUserByUserNamePassword(String userName, String password) {
         String encodedPassword = passwordEncoder.encode(password);
         Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
@@ -133,7 +131,7 @@ public class SiteUserService {
 
         SiteUser newUser = SiteUser.builder()
                 .email(signupSellerRequest.getEmail())
-                .password(signupSellerRequest.getPassword())
+                .password(passwordEncoder.encode(signupSellerRequest.getPassword()))
                 .userName(signupSellerRequest.getUserName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())

@@ -47,7 +47,6 @@ public class Rq {
 
     public SiteUser getSiteUser () {
         if (isLogout()) return null;
-
         if (siteUser == null) {
             siteUser = entityManager.getReference(SiteUser.class, getUser().getId());
         }

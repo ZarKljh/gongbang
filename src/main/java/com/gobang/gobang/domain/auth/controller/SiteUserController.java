@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.auth.controller;
 
 import com.gobang.gobang.domain.auth.dto.SiteUserDto;
+import com.gobang.gobang.domain.auth.dto.request.LoginSellerRequest;
 import com.gobang.gobang.domain.auth.dto.request.LoginUserRequest;
 import com.gobang.gobang.domain.auth.dto.request.SignupSellerRequest;
 import com.gobang.gobang.domain.auth.dto.request.SignupUserRequest;
@@ -81,6 +82,32 @@ public class SiteUserController {
         );
     }
     @PostMapping("/login/seller")
+    public RsData<LoginResponseBody> loginSeller(@Valid @RequestBody LoginSellerRequest loginSellerRequest, HttpServletResponse res){
+        if(!"SELLER".equals(loginSellerRequest.getRole())){
+            throw new IllegalArgumentException("사업자전용 로그인 화면입니다.");
+        }
+
+        SiteUser siteUser = siteUserService.getSiteUserByUserNamePassword(loginSellerRequest.getUserName(), loginSellerRequest.getPassword());
+        if(siteUser == null){
+            throw new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다.");
+        }
+        RsData<SiteUserService.AuthAndMakeTokensResponseBody> authAndMakeTokensRs = siteUserService.authAndMakeTokens(loginSellerRequest.getUserName(), loginSellerRequest.getPassword());
+
+
+        // accessToken 발급
+        rq.setCrossDomainCookie("accessToken", authAndMakeTokensRs.getData().getAccessToken());
+        rq.setCrossDomainCookie("refreshToken", authAndMakeTokensRs.getData().getRefreshToken());
+
+
+        return RsData.of(
+                authAndMakeTokensRs.getResultCode(),
+                authAndMakeTokensRs.getMsg(),
+                new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
+        );
+    }
+
+    /*
+    @PostMapping("/login/seller")
     public RsData<LoginResponseBody> loginSeller(@Valid @RequestBody LoginUserRequest loginUserRequest, HttpServletResponse res) {
         SiteUser siteUser = siteUserService.getSiteUserByUserNamePassword(loginUserRequest.getUserName(), loginUserRequest.getPassword());
         RsData<SiteUserService.AuthAndMakeTokensResponseBody> authAndMakeTokensRs = siteUserService.authAndMakeTokens(loginUserRequest.getUserName(), loginUserRequest.getPassword());
@@ -97,7 +124,7 @@ public class SiteUserController {
                 new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
         );
     }
-
+    */
     /*
     @GetMapping("/me")
     public RsData<LoginUserResponse> me(HttpServletRequest req) {

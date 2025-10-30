@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class StudioSimpleDto {
-    private Long id;
+    private Long studioId;
     private String studioName;
 }
