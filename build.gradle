@@ -49,6 +49,8 @@ dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-mail')
 	// 스프링 시큐리티 사용 스타터
 	implementation('org.springframework.boot:spring-boot-starter-security')
+    //Redis cache
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 

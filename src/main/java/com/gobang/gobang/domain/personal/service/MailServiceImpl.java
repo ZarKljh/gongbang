@@ -18,7 +18,7 @@ public class MailServiceImpl implements MailService {
     private final JwtProvider jwtProvider;
 
     @Value("${spring.mail.username}")
-    private static String senderEmail;
+    private String senderEmail;
 
     @Override
     public MimeMessage createMail(String mail, String token) throws MessagingException {

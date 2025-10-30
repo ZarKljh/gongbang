@@ -35,7 +35,7 @@ public class UserController {
     @PatchMapping("/update")
     public RsData<SiteUserResponse> updateUser(@RequestBody SiteUserUpdateRequest request) {
         try {
-            return RsData.of("200", "사용자 정보 수정 성공", siteUserService.updateUserInfo(request));
+            return RsData.of("200", "사용자 정보 수정 성공"/*, siteUserService.updateUserInfo(request)*/);
         } catch (IllegalStateException e) {
             return RsData.of("400", e.getMessage(), null); // 인증 실패 등은 400으로 처리 가능
         }

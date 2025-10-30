@@ -2,7 +2,6 @@ package com.gobang.gobang.global.jwt;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.global.util.Util;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -44,7 +43,7 @@ public class JwtProvider {
 
     // accessToken 만들기
     public String genAccessToken(SiteUser siteUser) {
-        return genToken(siteUser, 60 * 10);
+        return genToken(siteUser, 60 * 60 * 5);
     }
 
 
@@ -105,10 +104,17 @@ public class JwtProvider {
         return (String) claims.get("username");
     }
 
-    public String generateEmailValidToken(String username) {
-        // UUID를 이용한 랜덤 토큰 생성
-        String token = UUID.randomUUID().toString();
+    public String generateEmailValidToken(String username) { //토큰을 JWT로 생성
+        long now = new Date().getTime();
+        Date validity = new Date(now + jwtEmailExpirationMs); // 만료 시간 적용
 
-        return token;
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("username", username);
+
+        return Jwts.builder()
+                .claim("body", Util.json.toStr(claims))
+                .setExpiration(validity)
+                .signWith(getSecretKey(), SignatureAlgorithm.HS512)
+                .compact();
     }
 }

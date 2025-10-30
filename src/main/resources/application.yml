@@ -16,20 +16,3 @@ logging:
     example.demo.rest_api: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
     org.hibernate.orm.jdbc.extract: TRACE
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: dighxxx12@gmail.com
-    password: whyagmomympyywiz
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
-
-mail:
-  auth-code-expiration-millis: 180000

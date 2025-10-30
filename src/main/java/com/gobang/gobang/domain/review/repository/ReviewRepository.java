@@ -12,4 +12,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 //    // 기존 리뷰 찾아 수정
 //    boolean existsByOrderItemId(Long orderItemId);
+
+    int countByUserIdAndIsActiveTrue(Long userId);
 }

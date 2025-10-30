@@ -15,6 +15,9 @@ public class MailController {
     // 메일 발송
     @PostMapping("/send")
     public String sendEmail(@RequestBody SendMailRequestDto mailDto) throws MessagingException {
+        if (mailDto.getEmail() == null || mailDto.getUsername() == null) {
+            throw new IllegalArgumentException("email 또는 username이 없습니다.");
+        }
         return mailService.sendSimpleMessage(mailDto.getEmail(), mailDto.getUsername());
     }
 
