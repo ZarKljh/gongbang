@@ -368,11 +368,11 @@ export default function MyPage() {
             </div>
         )
 
-    const formatTime = (seconds: number) => {
-        const h = Math.floor(seconds / 3600)
-        const m = Math.floor((seconds % 3600) / 60)
-        const s = seconds % 60
-        return `${h}시간 ${m}분 ${s}초`
+    // ------------------- 클릭 시 수정 취소 -------------------
+    const handleTabClick = (tabName: string) => {
+        setActiveTab(tabName)
+        setEditMode({})
+        setTempData({ ...userData })
     }
 
     /** ------------------- 렌더링 ------------------- */
@@ -389,7 +389,7 @@ export default function MyPage() {
                             <li>
                                 <button
                                     className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('orders')}
+                                    onClick={() => handleTabClick('orders')}
                                 >
                                     주문배송조회
                                 </button>
@@ -397,7 +397,7 @@ export default function MyPage() {
                             <li>
                                 <button
                                     className={`nav-btn ${activeTab === 'reviews' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('reviews')}
+                                    onClick={() => handleTabClick('reviews')}
                                 >
                                     상품 리뷰
                                 </button>
@@ -411,7 +411,7 @@ export default function MyPage() {
                             <li>
                                 <button
                                     className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('profile')}
+                                    onClick={() => handleTabClick('profile')}
                                 >
                                     회원정보수정
                                 </button>
@@ -419,7 +419,7 @@ export default function MyPage() {
                             <li>
                                 <button
                                     className={`nav-btn ${activeTab === 'addresses' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('addresses')}
+                                    onClick={() => handleTabClick('addresses')}
                                 >
                                     배송지 관리
                                 </button>
@@ -427,7 +427,7 @@ export default function MyPage() {
                             <li>
                                 <button
                                     className={`nav-btn ${activeTab === 'payment' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('payment')}
+                                    onClick={() => handleTabClick('payment')}
                                 >
                                     결제수단
                                 </button>
@@ -435,7 +435,7 @@ export default function MyPage() {
                             <li>
                                 <button
                                     className={`nav-btn ${activeTab === 'wishlist' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('wishlist')}
+                                    onClick={() => handleTabClick('wishlist')}
                                 >
                                     나의 좋아요
                                 </button>
@@ -567,13 +567,7 @@ export default function MyPage() {
                             <div className="section-header">
                                 <h2>회원정보수정</h2>
                                 {!editMode.profile ? (
-                                    <button
-                                        className="btn-primary"
-                                        onClick={() => {
-                                            setEditMode({ ...editMode, profile: true }) // 수정 모드 켜기
-                                            setTempData({ ...userData }) // 수정용 임시 데이터 세팅
-                                        }}
-                                    >
+                                    <button className="btn-primary" onClick={() => handleEdit('profile')}>
                                         수정
                                     </button>
                                 ) : (
@@ -781,7 +775,7 @@ export default function MyPage() {
                                             <div className="card-header">
                                                 <div className="card-title">
                                                     <span>
-                                                        {addr.recipientName} ({addr.userName})
+                                                        {addr.recipientName}
                                                     </span>
                                                     {addr.isDefault && <span className="badge">기본배송지</span>}
                                                 </div>
