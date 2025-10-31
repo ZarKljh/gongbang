@@ -31,6 +31,10 @@ export default function MyPage() {
         membershipLevel: 'Newbie',
     })
 
+    // 모달
+    const [isAddressModal, setIsAddressModal] = useState(false)
+    const [isPaymentModal, setIsPaymentModal] = useState(false)
+    const [isOrdersModal, setIsOrdersModal] = useState(false)
     // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
         const fetchUser = async () => {
@@ -257,9 +261,9 @@ export default function MyPage() {
 
     /** ------------------- 렌더링 ------------------- */
     return (
-        <div className="container">
+        <div className="mypage-container">
             {/* 왼쪽 사이드바 */}
-            <div className="sidebar">
+            <div className="mypage-sidebar">
                 <h1>{userData.userName}</h1>
 
                 <nav>
@@ -347,8 +351,27 @@ export default function MyPage() {
                     <div className="tab-content">
                     <div className="section-header">
                         <h2>최근 주문</h2>
-                        <button>더보기 <ChevronRight size={16} /></button>
+                        <button className='btn-primary' onClick={() => setIsOrdersModal(true)}>더보기 <ChevronRight size={16} /></button>
                     </div>
+
+                    {isOrdersModal && (
+                        <div className='orders-modal'
+                            onClick={() => setIsOrdersModal(false)} // 바깥 클릭 시 닫힘
+                        >
+                            <div className='orders-modal-content'
+                            onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
+                            >
+                            <button className='orders-modal-close'
+                                onClick={() => setIsOrdersModal(false)}
+                            >
+                                &times;
+                            </button>
+
+                            <h2 style={{ marginBottom: '10px' }}>상세주문 확인</h2>
+                            <p>상세주문 폼</p>
+                            </div>
+                        </div>
+                    )}
 
                     {orders.length === 0 ? (
                         <div className="empty-state">주문 내역이 없습니다.</div>
@@ -492,8 +515,26 @@ export default function MyPage() {
                     <div className="tab-content">
                     <div className="section-header">
                         <h2>배송지 관리</h2>
-                        <button className="btn-primary" onClick={() => alert('배송지 추가 모달을 열어주세요')}>+ 새 배송지 추가</button>
+                        <button className="btn-primary" onClick={() => setIsAddressModal(true)}>+ 새 배송지 추가</button>
                     </div>
+                    {isAddressModal && (
+                        <div className='address-modal'
+                            onClick={() => setIsAddressModal(false)} // 바깥 클릭 시 닫힘
+                        >
+                            <div className='address-modal-content'
+                            onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
+                            >
+                            <button className='address-modal-close'
+                                onClick={() => setIsAddressModal(false)}
+                            >
+                                &times;
+                            </button>
+
+                            <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
+                            <p>배송지 폼</p>
+                            </div>
+                        </div>
+                    )}
 
                     {addresses.length === 0 ? (
                         <div className="empty-state">등록된 배송지가 없습니다.</div>
@@ -528,8 +569,26 @@ export default function MyPage() {
                     <div className="tab-content">
                     <div className="section-header">
                         <h2>결제수단</h2>
-                        <button className="btn-primary" onClick={() => alert('결제수단 추가 모달을 열어주세요')}>+ 결제수단 추가</button>
+                        <button className="btn-primary" onClick={() => setIsPaymentModal(true)}>+ 결제수단 추가</button>
                     </div>
+                    {isPaymentModal && (
+                        <div className='payment-modal'
+                            onClick={() => setIsPaymentModal(false)} // 바깥 클릭 시 닫힘
+                        >
+                            <div className='payment-modal-content'
+                            onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
+                            >
+                            <button className='payment-modal-close'
+                                onClick={() => setIsPaymentModal(false)}
+                            >
+                                &times;
+                            </button>
+
+                            <h2 style={{ marginBottom: '10px' }}>새 결제수단 추가</h2>
+                            <p>결제수단 폼</p>
+                            </div>
+                        </div>
+                    )}
 
                     {paymentMethods.length === 0 ? (
                         <div className="empty-state">등록된 결제수단이 없습니다.</div>
