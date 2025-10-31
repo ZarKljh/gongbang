@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import api from '@/app/utils/api'
-import { FaRegThumbsUp } from "react-icons/fa";
+import { FaRegThumbsUp, FaStar } from "react-icons/fa";
 
 export default function Review() {
     const [reviews, setReviews] = useState([])
@@ -406,6 +406,21 @@ export default function Review() {
                                     >
                                         {/* <div><Link href={`/review/${review.reviewId}`}></Link>{' '}</div> */}
                                         <div>{review.content}</div>
+                                                    {/* ⭐ 별점 표시 */}
+                                                    <small style={{ display: 'flex', alignItems: 'center', marginTop: '10px', 
+                                                    }}>
+                                                        {[1, 2, 3, 4, 5].map((num) => (
+                                                            <FaStar
+                                                                key={num}
+                                                                size={24}
+                                                                color={num <= review.rating ? '#FFD700' : '#E0E0E0'} // 채워진 별/빈 별 구분
+                                                                style={{
+                                                                    marginRight: '4px', 
+                                                                }}
+                                                            />
+                                                        ))}
+                                                        <small style={{ marginLeft: '6px', color: '#555' }}>{review.rating} / 5</small>
+                                                    </small>
                                     </div>
                                     {/* ✅ 댓글 표시 */}
                                     {/* ✅ 댓글 표시 / 수정 기능 */}

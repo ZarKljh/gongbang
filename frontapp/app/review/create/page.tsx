@@ -82,7 +82,9 @@ export default function ReviewCreate({fetchReviews}) {
                                 ...prev,
                                 rating: num,
                             }))
+                            
                         }
+                        
                     />
         ))}
         <br />
