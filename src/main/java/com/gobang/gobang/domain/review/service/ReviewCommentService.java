@@ -64,6 +64,10 @@ public class ReviewCommentService {
         return Optional.of(saved);
     }
 
+    public Optional<ReviewComment> getCommentByReviewId(Long reviewId) {
+        return reviewCommentRepository.findFirstByReview_ReviewId(reviewId);
+    }
+
 //@Transactional
 //public Optional<ReviewComment> createComment(Long reviewId, CommentCreateRequest req) {
 //    Optional<Review> reviewOpt = reviewRepository.findById(reviewId);

@@ -15,6 +15,7 @@ import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
 import lombok.*;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -33,13 +34,14 @@ public class ReviewController {
 
     // 리뷰 목록 조회 (다건)
     @GetMapping
-    public RsData<ReviewsResponse> getAllReviews() {
-        List<Review> reviews = reviewService.findAll();
+    public RsData<ReviewsResponse> getAllReviews(@RequestParam(defaultValue = "0") int page) {
+//        List<Review> reviews = reviewService.findAll();
+        Page<Review> reviewPage = reviewService.getReviews(page);
 
         return RsData.of(
                 "200",
                 "목록 조회 성공",
-                new ReviewsResponse(reviews)
+                new ReviewsResponse(reviewPage)
         );
     }
 

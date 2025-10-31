@@ -11,4 +11,5 @@ public class SiteUserUpdateRequest {
     private String password;
     private String email;
     private String mobilePhone;
+    private String nickName;
 }

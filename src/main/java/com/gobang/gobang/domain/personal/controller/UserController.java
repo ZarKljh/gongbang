@@ -32,12 +32,18 @@ public class UserController {
         }
     }
 
-    @PatchMapping("/update")
-    public RsData<SiteUserResponse> updateUser(@RequestBody SiteUserUpdateRequest request) {
+    @PatchMapping("/me/{id}")
+    public RsData<SiteUserResponse> updateUser(
+            @PathVariable Long id,
+            @RequestBody SiteUserUpdateRequest request) {
         try {
-            return RsData.of("200", "사용자 정보 수정 성공"/*, siteUserService.updateUserInfo(request)*/);
+            // 실제 업데이트 시, 현재 로그인한 사용자와 id 일치 확인 가능
+            SiteUserResponse updatedUser = siteUserService.updateUserInfo(request);
+            return RsData.of("200", "사용자 정보 수정 성공", updatedUser);
         } catch (IllegalStateException e) {
-            return RsData.of("400", e.getMessage(), null); // 인증 실패 등은 400으로 처리 가능
+            return RsData.of("400", e.getMessage(), null);
+        } catch (Exception e) {
+            return RsData.of("500", "서버 오류 발생", null);
         }
     }
 }

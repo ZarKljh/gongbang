@@ -6,6 +6,8 @@ import { ChevronRight } from "lucide-react";
 import "@/app/personal/page.css"
 
 export default function MyPage() {
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [activeTab, setActiveTab] = useState('orders')
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -16,7 +18,6 @@ export default function MyPage() {
 
     const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
-    /** 유저 정보 상태 */
     const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
     const [orders, setOrders] = useState<any[]>([])
@@ -30,7 +31,11 @@ export default function MyPage() {
         membershipLevel: 'Newbie',
     })
 
-    /** 서버에서 유저 정보 가져오기 */
+    // 모달
+    const [isAddressModal, setIsAddressModal] = useState(false)
+    const [isPaymentModal, setIsPaymentModal] = useState(false)
+    const [isOrdersModal, setIsOrdersModal] = useState(false)
+    // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
         const fetchUser = async () => {
             setLoading(true);
@@ -55,20 +60,6 @@ export default function MyPage() {
         fetchUser();
     }, []);
 
-    //프론트에서 /api/v1/mypage/mail/send 호출 시 Turbopack dev 서버가 Spring Boot로 요청 전달
-    /** @type {import('next').NextConfig} */
-    const nextConfig = {
-    async rewrites() {
-        return [
-        {
-            source: '/api/:path*',
-            destination: 'http://localhost:8090/api/:path*',
-        },
-        ]
-    },
-    }
-
-    /** userData 준비되면 모든 데이터 로드 */
     useEffect(() => {
         if (!userData?.id) return;
 
@@ -93,7 +84,7 @@ export default function MyPage() {
         loadAllData();
     }, [userData]);
 
-    /** --- API 요청 함수들 --- */
+    // ------------------- API 요청 함수 -------------------
     const fetchOrders = async (id: number) => {
         if (!id) return;
         try {
@@ -150,7 +141,6 @@ export default function MyPage() {
     };
 
     const fetchStatsData = async (id: number) => {
-      console.log("📊 userId sent to stats API:", id);
         if (!id) return;
         try {
             const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${id}`, { withCredentials: true });
@@ -160,113 +150,107 @@ export default function MyPage() {
         }
     }
 
-    /** 이메일 인증 관련 */
+    // ------------------- 이메일 인증 -------------------
     const handleSendEmail = async () => {
-        if (!userData?.id) {
-            alert('사용자 정보가 없습니다.');
-            return;
-        }
-
+        if (!userData?.email) return alert("사용자 이메일이 없습니다.");
         try {
-            const body = { 
-                userId: userData.id, 
+            await axios.post(`${API_BASE_URL}/mail/send`, {
                 email: userData.email,
-                username: userData.username
-            };
-
-            await axios.post(`${API_BASE_URL}/mail/send`, body, {
-                withCredentials: true
-            });
-
-            alert('인증 메일이 발송되었습니다. 메일을 확인해주세요.');
+                userId: userData.id,
+                userName: userData.userName
+            }, { headers: { "Content-Type": "application/json" } });
+            alert("인증 메일이 발송되었습니다. 메일을 확인해주세요.");
         } catch (error: any) {
-            // 안전하게 에러 메시지 추출
-            let errMsg = '알 수 없는 에러';
-            if (axios.isAxiosError(error)) {
-                errMsg = error.response?.data?.message || error.response?.data || error.message;
-            } else if (error instanceof Error) {
-                errMsg = error.message;
-            } else {
-                errMsg = JSON.stringify(error);
-            }
-
-            console.error('메일 발송 실패:', errMsg);
-            alert('메일 발송에 실패했습니다. 콘솔을 확인해주세요.');
+            console.error("메일 발송 실패:", error);
+            alert("메일 발송에 실패했습니다.");
         }
     };
 
     const handleVerifyToken = async () => {
-        if (!tokenInput) {
-            alert('인증번호를 입력해주세요.');
-            return;
-        }
-
+        if (!tokenInput) return alert("인증번호를 입력해주세요.");
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/mail/verify?token=${tokenInput}`,
-                { withCredentials: true });
-
-            if (data.status === 'success') {
+            const { data } = await axios.post(`${API_BASE_URL}/mail/verify`, {
+                email: userData.email,
+                token: tokenInput,
+            });
+            if (data.status === "success") {
                 setIsAuthenticated(true);
-                setAuthTimeLeft(18000); // 5시간
-                alert('이메일 인증이 완료되었습니다.');
-            } else if (data.status === 'expired') {
-                alert('토큰이 만료되었습니다. 다시 인증해주세요.');
+                alert("이메일 인증이 완료되었습니다.");
+            } else if (data.status === "expired") {
+                alert("인증번호가 만료되었습니다. 다시 발송해주세요.");
             } else {
-                alert('인증에 실패했습니다.');
+                alert("인증번호가 올바르지 않습니다.");
             }
         } catch (error) {
-            console.error('인증 실패:', error);
-            alert('인증 중 오류가 발생했습니다.');
+            console.error("인증 실패:", error);
+            alert("인증 중 오류가 발생했습니다.");
         }
     };
 
-    /** 이메일 인증 타이머 */
     useEffect(() => {
         if (isAuthenticated && authTimeLeft > 0) {
             const timer = setInterval(() => {
-                setAuthTimeLeft((prev) => {
+                setAuthTimeLeft(prev => {
                     if (prev <= 1) {
-                        setIsAuthenticated(false)
-                        return 0
+                        setIsAuthenticated(false);
+                        return 0;
                     }
-                    return prev - 1
-                })
-            }, 1000)
-            return () => clearInterval(timer)
+                    return prev - 1;
+                });
+            }, 1000);
+            return () => clearInterval(timer);
         }
-    }, [isAuthenticated, authTimeLeft])
+    }, [isAuthenticated, authTimeLeft]);
 
-    /** 편집 관련 함수 */
+    // ------------------- 회원 정보 수정 -------------------
     const handleEdit = (section: string) => {
-        if (!isAuthenticated) {
-            alert('정보 수정을 위해서는 이메일 인증이 필요합니다.')
-            return
-        }
-        setEditMode({ ...editMode, [section]: true })
-        setTempData({ ...userData })
-    }
+        if (!isAuthenticated) return alert('정보 수정을 위해 이메일 인증이 필요합니다.');
+        setEditMode({ ...editMode, [section]: true });
+        setTempData({ ...userData });
+    };
 
     const handleSave = async (section: string) => {
         if (!userData?.id) return;
+        if (newPassword && newPassword !== confirmPassword) 
+            return alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.');
+
         try {
-            const { data } = await axios.patch(`${API_BASE_URL}/users/${userData.id}`, tempData, { withCredentials: true })
-            setUserData(data)
-            setEditMode({ ...editMode, [section]: false })
-            alert('정보가 수정되었습니다.')
-        } catch (error) {
-            console.error('정보 수정 실패:', error)
-            alert('수정에 실패했습니다.')
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/me/${userData.id}`,
+                {
+                    nickName: tempData.nickName,
+                    email: tempData.email,
+                    mobilePhone: tempData.mobilePhone,
+                    ...(newPassword ? { password: newPassword } : {}),
+                },
+                { withCredentials: true }
+            );
+
+            if (data.resultCode === "200" && data.data) {
+                setUserData(data.data);
+                setEditMode({ ...editMode, [section]: false });
+                setNewPassword('');
+                setConfirmPassword('');
+                alert(data.msg || '정보가 수정되었습니다.');
+            } else {
+                console.error('정보 수정 실패:', data);
+                alert(`수정에 실패했습니다: ${data.msg || '오류가 발생했습니다.'}`);
+            }
+        } catch (error: any) {
+            console.error('정보 수정 실패:', error.response?.data || error.message);
+            alert('수정에 실패했습니다.');
         }
-    }
+    };
 
     const handleCancel = (section: string) => {
         setTempData({ ...userData })
         setEditMode({ ...editMode, [section]: false })
     }
 
-    /** ------------------- 로딩 및 로그인 체크 ------------------- */
+    // ------------------- 로딩 / 로그인 체크 -------------------
     if (loading) return <div>로딩중...</div>
-    if (!userData) return <div>로그인이 필요합니다. <button onClick={() => window.location.href='/auth/login'}>로그인하기</button></div>
+    if (!userData) return <div>로그인이 필요합니다. <button onClick={() => 
+        window.location.href='/auth/login'}>로그인하기</button></div>
 
     const formatTime = (seconds: number) => {
         const h = Math.floor(seconds / 3600)
@@ -277,9 +261,9 @@ export default function MyPage() {
 
     /** ------------------- 렌더링 ------------------- */
     return (
-        <div className="container">
+        <div className="mypage-container">
             {/* 왼쪽 사이드바 */}
-            <div className="sidebar">
+            <div className="mypage-sidebar">
                 <h1>{userData.userName}</h1>
 
                 <nav>
@@ -332,14 +316,14 @@ export default function MyPage() {
                     <button onClick={handleSendEmail}>인증 메일 발송</button>
                     <input 
                         type="text" 
-                        placeholder="인증 토큰 입력" 
+                        placeholder="인증번호 입력" 
                         value={tokenInput} 
                         onChange={(e) => setTokenInput(e.target.value)} 
                     />
                     <button onClick={handleVerifyToken}>인증 확인</button>
                     </div>
                 ) : (
-                    <div className="auth-banner success">인증 완료 - 남은 시간: {formatTime(authTimeLeft)}</div>
+                    <div className="auth-banner success">인증 완료 {/*- 남은 시간: {formatTime(authTimeLeft)}*/}</div>
                 )}
 
                 {/* 등급 및 포인트 정보 */}
@@ -367,8 +351,27 @@ export default function MyPage() {
                     <div className="tab-content">
                     <div className="section-header">
                         <h2>최근 주문</h2>
-                        <button>더보기 <ChevronRight size={16} /></button>
+                        <button className='btn-primary' onClick={() => setIsOrdersModal(true)}>더보기 <ChevronRight size={16} /></button>
                     </div>
+
+                    {isOrdersModal && (
+                        <div className='orders-modal'
+                            onClick={() => setIsOrdersModal(false)} // 바깥 클릭 시 닫힘
+                        >
+                            <div className='orders-modal-content'
+                            onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
+                            >
+                            <button className='orders-modal-close'
+                                onClick={() => setIsOrdersModal(false)}
+                            >
+                                &times;
+                            </button>
+
+                            <h2 style={{ marginBottom: '10px' }}>상세주문 확인</h2>
+                            <p>상세주문 폼</p>
+                            </div>
+                        </div>
+                    )}
 
                     {orders.length === 0 ? (
                         <div className="empty-state">주문 내역이 없습니다.</div>
@@ -421,99 +424,87 @@ export default function MyPage() {
 
                     <div>
                         <div className="form-group">
-                        <label>이름</label>
-                        {editMode.profile ? (
-                            <input
-                            type="text"
-                            value={tempData.userName}
-                            onChange={(e) => setTempData({ ...tempData, userName: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.userName}</p>
-                        )}
+                            <label>이름</label>
+                            <p>{userData.userName}</p> {/* 읽기 전용 */}
                         </div>
 
                         <div className="form-group">
-                        <label>닉네임</label>
-                        {editMode.profile ? (
-                            <input
-                            type="text"
-                            value={tempData.nickName}
-                            onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.nickName}</p>
-                        )}
+                            <label>닉네임</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="text"
+                                    value={tempData.nickName || ''}
+                                    onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>{userData.nickName}</p>
+                            )}
                         </div>
 
                         <div className="form-group">
-                        <label>비밀번호</label>
-                        {editMode.profile ? (
-                            <input type="password" placeholder="새 비밀번호 입력" />
-                        ) : (
-                            <p>********</p>
-                        )}
+                            <label>비밀번호</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="password"
+                                    placeholder="새 비밀번호 입력"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>********</p>
+                            )}
                         </div>
 
                         {editMode.profile && (
-                        <div className="form-group">
-                            <label>비밀번호 확인</label>
-                            <input type="password" placeholder="비밀번호 재입력" />
-                        </div>
+                            <div className="form-group">
+                                <label>비밀번호 확인</label>
+                                <input
+                                    type="password"
+                                    placeholder="비밀번호 재입력"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+                            </div>
                         )}
 
                         <div className="form-group">
-                        <label>이메일</label>
-                        {editMode.profile ? (
-                            <input
-                            type="email"
-                            value={tempData.email}
-                            onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.email}</p>
-                        )}
+                            <label>이메일</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="email"
+                                    value={tempData.email || ''}
+                                    onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>{userData.email}</p>
+                            )}
                         </div>
 
                         <div className="form-group">
-                        <label>휴대폰</label>
-                        {editMode.profile ? (
-                            <input
-                            type="tel"
-                            value={tempData.mobilePhone}
-                            onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
-                            />
-                        ) : (
-                            <p>{userData.mobilePhone}</p>
-                        )}
+                            <label>휴대폰</label>
+                            {editMode.profile ? (
+                                <input
+                                    type="tel"
+                                    value={tempData.mobilePhone || ''}
+                                    onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
+                                    className="editable"
+                                />
+                            ) : (
+                                <p>{userData.mobilePhone}</p>
+                            )}
                         </div>
 
                         <div className="form-group">
-                        <label>생년월일</label>
-                        {editMode.profile ? (
-                            <input
-                            type="date"
-                            value={tempData.birth}
-                            onChange={(e) => setTempData({ ...tempData, birth: e.target.value })}
-                            />
-                        ) : (
+                            <label>생년월일</label>
                             <p>{userData.birth}</p>
-                        )}
                         </div>
 
                         <div className="form-group">
-                        <label>성별</label>
-                        {editMode.profile ? (
-                            <select
-                            value={tempData.gender}
-                            onChange={(e) => setTempData({ ...tempData, gender: e.target.value })}
-                            >
-                            <option value="MALE">남성</option>
-                            <option value="FEMALE">여성</option>
-                            </select>
-                        ) : (
+                            <label>성별</label>
                             <p>{userData.gender === 'MALE' ? '남성' : '여성'}</p>
-                        )}
                         </div>
                     </div>
                     </div>
@@ -524,8 +515,26 @@ export default function MyPage() {
                     <div className="tab-content">
                     <div className="section-header">
                         <h2>배송지 관리</h2>
-                        <button className="btn-primary" onClick={() => alert('배송지 추가 모달을 열어주세요')}>+ 새 배송지 추가</button>
+                        <button className="btn-primary" onClick={() => setIsAddressModal(true)}>+ 새 배송지 추가</button>
                     </div>
+                    {isAddressModal && (
+                        <div className='address-modal'
+                            onClick={() => setIsAddressModal(false)} // 바깥 클릭 시 닫힘
+                        >
+                            <div className='address-modal-content'
+                            onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
+                            >
+                            <button className='address-modal-close'
+                                onClick={() => setIsAddressModal(false)}
+                            >
+                                &times;
+                            </button>
+
+                            <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
+                            <p>배송지 폼</p>
+                            </div>
+                        </div>
+                    )}
 
                     {addresses.length === 0 ? (
                         <div className="empty-state">등록된 배송지가 없습니다.</div>
@@ -560,8 +569,26 @@ export default function MyPage() {
                     <div className="tab-content">
                     <div className="section-header">
                         <h2>결제수단</h2>
-                        <button className="btn-primary" onClick={() => alert('결제수단 추가 모달을 열어주세요')}>+ 결제수단 추가</button>
+                        <button className="btn-primary" onClick={() => setIsPaymentModal(true)}>+ 결제수단 추가</button>
                     </div>
+                    {isPaymentModal && (
+                        <div className='payment-modal'
+                            onClick={() => setIsPaymentModal(false)} // 바깥 클릭 시 닫힘
+                        >
+                            <div className='payment-modal-content'
+                            onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
+                            >
+                            <button className='payment-modal-close'
+                                onClick={() => setIsPaymentModal(false)}
+                            >
+                                &times;
+                            </button>
+
+                            <h2 style={{ marginBottom: '10px' }}>새 결제수단 추가</h2>
+                            <p>결제수단 폼</p>
+                            </div>
+                        </div>
+                    )}
 
                     {paymentMethods.length === 0 ? (
                         <div className="empty-state">등록된 결제수단이 없습니다.</div>
