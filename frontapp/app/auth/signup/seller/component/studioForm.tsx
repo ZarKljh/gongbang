@@ -6,6 +6,7 @@ interface Props {
     studioInfo: StudioInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
+    setStudioInfo: React.Dispatch<React.SetStateAction<StudioInfo>>
 }
 
 declare global {
@@ -14,34 +15,42 @@ declare global {
     }
 }
 
-export default function StudioForm({ studioInfo, onChange, onSubmit }: Props) {
-    const simulateChangeEvent = (name: string, value: string) => {
-        const event = {
-            target: {
-                name,
-                value,
-            },
-        } as React.ChangeEvent<HTMLInputElement>
-        onChange(event)
-    }
+export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioInfo }: Props) {
     const handleAddressSearch = () => {
         if (typeof window === 'undefined' || !window.daum) {
             alert('주소 검색 기능을 사용할 수 없습니다. 페이지를 새로고침 해주세요.')
             return
         }
-
         new window.daum.Postcode({
             oncomplete: function (data: any) {
-                simulateChangeEvent('studioAddPostNumber', data.zonecode)
-                simulateChangeEvent('studioAddMain', data.roadAddress)
+                // ✅ [수정 2] onChange 대신 setStudioInfo 직접 호출
+                setStudioInfo((prev) => ({
+                    ...prev,
+                    studioAddPostNumber: data.zonecode,
+                    studioAddMain: data.roadAddress,
+                }))
                 /*
-                const { zonecode, roadAddress } = data            
-                onChange({
-                    target: { name: 'studioAddPostNumber', value: data.zonecode, type: 'text' },
-                } as React.ChangeEvent<HTMLInputElement>)
-                onChange({
-                    target: { name: 'studioAddMain', value: data.roadAddress, type: 'text' },
-                } as React.ChangeEvent<HTMLInputElement>)
+        new window.daum.Postcode({
+            oncomplete: function (data: any) {
+                // ✅ 수정된 부분: simulateChangeEvent 제거하고 직접 이벤트 객체 생성
+                const postEvent = {
+                    target: {
+                        name: 'studioAddPostNumber',
+                        value: data.zonecode,
+                        type: 'text',
+                    },
+                } as React.ChangeEvent<HTMLInputElement>
+
+                const addressEvent = {
+                    target: {
+                        name: 'studioAddMain',
+                        value: data.roadAddress,
+                        type: 'text',
+                    },
+                } as React.ChangeEvent<HTMLInputElement>
+
+                onChange(postEvent)
+                onChange(addressEvent)
                 */
             },
         }).open()
@@ -57,7 +66,7 @@ export default function StudioForm({ studioInfo, onChange, onSubmit }: Props) {
                         공방 카테고리를 선택해주세요
                     </option>
                     {CATEGORY_OPTIONS.map((option) => (
-                        <option key={option.id} value={option.code}>
+                        <option key={option.id} value={option.id}>
                             {option.label}
                         </option>
                     ))}

@@ -2,9 +2,11 @@
 import React, { useState } from 'react'
 import { UserForm, StudioForm } from './component/index'
 import { UserInfo, StudioInfo } from './types'
+import { useRouter } from 'next/navigation'
 
 export default function SellerSignupPage() {
     const [step, setStep] = useState(1)
+    const router = useRouter()
 
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: '',
@@ -54,20 +56,32 @@ export default function SellerSignupPage() {
             role: 'SELLER',
         }
 
-        const response = await fetch('http://localhost:8090/api/auth/signup/seller', {
+        const response = await fetch('http://localhost:8090/api/v1/auth/signup/seller', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         })
 
-        alert(response.ok ? '회원가입 완료!' : '회원가입 실패')
+        if (response.ok) {
+            alert('회원가입 완료! 로그인을 해주세요')
+            router.push('/') // ✅ 메인페이지로 이동
+        } else {
+            alert('회원가입 실패')
+        }
     }
 
     return (
         <section>
             <h3>셀러 회원가입페이지</h3>
             {step === 1 && <UserForm userInfo={userInfo} onChange={handleUserChange} onNext={handleNext} />}
-            {step === 2 && <StudioForm studioInfo={studioInfo} onChange={handleStudioChange} onSubmit={handleSubmit} />}
+            {step === 2 && (
+                <StudioForm
+                    studioInfo={studioInfo}
+                    onChange={handleStudioChange}
+                    onSubmit={handleSubmit}
+                    setStudioInfo={setStudioInfo}
+                />
+            )}
         </section>
     )
 }
