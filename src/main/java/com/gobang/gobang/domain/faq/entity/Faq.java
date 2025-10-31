@@ -23,12 +23,11 @@ public class Faq {
     @JoinColumn(name="category_id", nullable = false)
     private FaqCategory category;
 
-    @Lob
-    @Column(nullable = false)
+
+    @Column(columnDefinition = "text", nullable = false)
     private String question;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition ="text", nullable = false)
     private String answer;
 
     @Column(name="order_no", nullable = false)
