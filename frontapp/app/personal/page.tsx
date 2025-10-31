@@ -18,7 +18,6 @@ export default function MyPage() {
 
     const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
-    /** 유저 정보 상태 */
     const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
     const [orders, setOrders] = useState<any[]>([])
@@ -31,11 +30,8 @@ export default function MyPage() {
         totalReviews: 0,
         membershipLevel: 'Newbie',
     })
-    const [nickName, setNickName] = useState(userData?.nickName || '');
-    const [email, setEmail] = useState(userData?.email || '');
-    const [phone, setPhone] = useState(userData?.phone || '');
 
-    /** 서버에서 유저 정보 가져오기 */
+    // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
         const fetchUser = async () => {
             setLoading(true);
@@ -60,7 +56,6 @@ export default function MyPage() {
         fetchUser();
     }, []);
 
-    /** userData 준비되면 모든 데이터 로드 */
     useEffect(() => {
         if (!userData?.id) return;
 
@@ -85,7 +80,7 @@ export default function MyPage() {
         loadAllData();
     }, [userData]);
 
-    /** --- API 요청 함수들 --- */
+    // ------------------- API 요청 함수 -------------------
     const fetchOrders = async (id: number) => {
         if (!id) return;
         try {
@@ -142,7 +137,6 @@ export default function MyPage() {
     };
 
     const fetchStatsData = async (id: number) => {
-      console.log("userId sent to stats API:", id);
         if (!id) return;
         try {
             const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${id}`, { withCredentials: true });
@@ -152,36 +146,29 @@ export default function MyPage() {
         }
     }
 
-    /** 이메일 인증 관련 */
+    // ------------------- 이메일 인증 -------------------
     const handleSendEmail = async () => {
         if (!userData?.email) return alert("사용자 이메일이 없습니다.");
-
         try {
-            await axios.post(
-                `${API_BASE_URL}/mail/send`,
-                {
-                    email: userData.email,
-                    userId: userData.id,
-                    userName: userData.userName
-                },
-                { headers: { "Content-Type": "application/json" } }
-            );
+            await axios.post(`${API_BASE_URL}/mail/send`, {
+                email: userData.email,
+                userId: userData.id,
+                userName: userData.userName
+            }, { headers: { "Content-Type": "application/json" } });
             alert("인증 메일이 발송되었습니다. 메일을 확인해주세요.");
         } catch (error: any) {
             console.error("메일 발송 실패:", error);
-            alert("메일 발송에 실패했습니다. 콘솔을 확인해주세요.");
+            alert("메일 발송에 실패했습니다.");
         }
     };
 
     const handleVerifyToken = async () => {
         if (!tokenInput) return alert("인증번호를 입력해주세요.");
-
         try {
             const { data } = await axios.post(`${API_BASE_URL}/mail/verify`, {
                 email: userData.email,
                 token: tokenInput,
             });
-
             if (data.status === "success") {
                 setIsAuthenticated(true);
                 alert("이메일 인증이 완료되었습니다.");
@@ -196,39 +183,32 @@ export default function MyPage() {
         }
     };
 
-    /** 이메일 인증 타이머 */
     useEffect(() => {
         if (isAuthenticated && authTimeLeft > 0) {
             const timer = setInterval(() => {
-                setAuthTimeLeft((prev) => {
+                setAuthTimeLeft(prev => {
                     if (prev <= 1) {
-                        setIsAuthenticated(false)
-                        return 0
+                        setIsAuthenticated(false);
+                        return 0;
                     }
-                    return prev - 1
-                })
-            }, 1000)
-            return () => clearInterval(timer)
+                    return prev - 1;
+                });
+            }, 1000);
+            return () => clearInterval(timer);
         }
-    }, [isAuthenticated, authTimeLeft])
+    }, [isAuthenticated, authTimeLeft]);
 
-    /** 편집 관련 함수 */
+    // ------------------- 회원 정보 수정 -------------------
     const handleEdit = (section: string) => {
-        if (!isAuthenticated) {
-            alert('정보 수정을 위해서는 이메일 인증이 필요합니다.');
-            return;
-        }
+        if (!isAuthenticated) return alert('정보 수정을 위해 이메일 인증이 필요합니다.');
         setEditMode({ ...editMode, [section]: true });
-        setTempData({ ...userData }); // 현재 데이터 복사
+        setTempData({ ...userData });
     };
 
     const handleSave = async (section: string) => {
         if (!userData?.id) return;
-
-        if (newPassword && newPassword !== confirmPassword) {
-            alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.');
-            return;
-        }
+        if (newPassword && newPassword !== confirmPassword) 
+            return alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.');
 
         try {
             const { data } = await axios.patch(
@@ -242,15 +222,15 @@ export default function MyPage() {
                 { withCredentials: true }
             );
 
-            if (data.code === "200" && data.data) {
+            if (data.resultCode === "200" && data.data) {
                 setUserData(data.data);
                 setEditMode({ ...editMode, [section]: false });
                 setNewPassword('');
                 setConfirmPassword('');
-                alert('정보가 수정되었습니다.');
+                alert(data.msg || '정보가 수정되었습니다.');
             } else {
                 console.error('정보 수정 실패:', data);
-                alert(`수정에 실패했습니다: ${data.message}`);
+                alert(`수정에 실패했습니다: ${data.msg || '오류가 발생했습니다.'}`);
             }
         } catch (error: any) {
             console.error('정보 수정 실패:', error.response?.data || error.message);
@@ -263,9 +243,10 @@ export default function MyPage() {
         setEditMode({ ...editMode, [section]: false })
     }
 
-    /** ------------------- 로딩 및 로그인 체크 ------------------- */
+    // ------------------- 로딩 / 로그인 체크 -------------------
     if (loading) return <div>로딩중...</div>
-    if (!userData) return <div>로그인이 필요합니다. <button onClick={() => window.location.href='/auth/login'}>로그인하기</button></div>
+    if (!userData) return <div>로그인이 필요합니다. <button onClick={() => 
+        window.location.href='/auth/login'}>로그인하기</button></div>
 
     const formatTime = (seconds: number) => {
         const h = Math.floor(seconds / 3600)
