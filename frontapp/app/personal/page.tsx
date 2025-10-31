@@ -36,6 +36,14 @@ export default function MyPage() {
     const [isAddressModal, setIsAddressModal] = useState(false)
     const [isPaymentModal, setIsPaymentModal] = useState(false)
     const [isOrdersModal, setIsOrdersModal] = useState(false)
+    const [newAddress, setNewAddress] = useState({
+        recipientName: '',
+        zipcode: '',
+        baseAddress: '',
+        detailAddress: '',
+        extraAddress: '',
+        isDefault: false,
+    });
     // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
         const fetchUser = async () => {
@@ -85,7 +93,7 @@ export default function MyPage() {
         loadAllData();
     }, [userData]);
 
-    //모달이 열릴 때 스크립트를 로드
+    //모달이 열릴 때 스크립트를 로드 -->주소
     useEffect(() => {
         if (isAddressModal && !window.daum) {
             const script = document.createElement("script");
@@ -170,22 +178,23 @@ export default function MyPage() {
 
         new window.daum.Postcode({
             oncomplete: function(data) {
-            const addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
-            let extraAddr = '';
+                const addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+                let extraAddr = '';
 
-            if (data.userSelectedType === 'R') {
-                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
-                if (data.buildingName !== '' && data.apartment === 'Y')
-                extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                if (extraAddr !== '') extraAddr = ' (' + extraAddr + ')';
-                (document.getElementById('sample6_extraAddress') as HTMLInputElement).value = extraAddr;
-            } else {
-                (document.getElementById('sample6_extraAddress') as HTMLInputElement).value = '';
-            }
+                if (data.userSelectedType === 'R') {
+                    if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
+                    if (data.buildingName !== '' && data.apartment === 'Y')
+                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                    if (extraAddr !== '') extraAddr = ' (' + extraAddr + ')';
+                }
 
-            (document.getElementById('sample6_postcode') as HTMLInputElement).value = data.zonecode;
-            (document.getElementById('sample6_address') as HTMLInputElement).value = addr;
-            (document.getElementById('sample6_detailAddress') as HTMLInputElement).focus();
+                //React state로 업데이트
+                setNewAddress(prev => ({
+                    ...prev,
+                    zipcode: data.zonecode,
+                    baseAddress: addr,
+                    extraAddress: extraAddr,
+                }));
             },
         }).open();
     };
@@ -286,6 +295,33 @@ export default function MyPage() {
         setTempData({ ...userData })
         setEditMode({ ...editMode, [section]: false })
     }
+
+    // 저장 함수
+    const handleSaveAddress = async () => {
+        if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
+            return alert('이름과 주소를 모두 입력해주세요.');
+        }
+
+        try {
+            const { data } = await axios.post(
+            `${API_BASE_URL}/addresses`,
+            newAddress,
+            { withCredentials: true }
+            );
+
+            if (data.resultCode === '200') {
+                alert('배송지 등록 성공');
+                setAddresses([...addresses, data.data]); // 기존 목록에 추가
+                setIsAddressModal(false); // 모달 닫기
+                setNewAddress({ recipientName: '', zipcode: '', baseAddress: '', detailAddress: '', extraAddress: '', isDefault: false });
+            } else {
+                alert(`등록 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('배송지 등록 중 오류가 발생했습니다.');
+        }
+    };
 
     // ------------------- 로딩 / 로그인 체크 -------------------
     if (loading) return <div>로딩중...</div>
@@ -566,27 +602,52 @@ export default function MyPage() {
                             className="address-modal-content"
                             onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
                             >
-                            <button
-                                className="address-modal-close"
-                                onClick={() => setIsAddressModal(false)}
-                            >
-                                &times;
-                            </button>
+                                <button
+                                    className="address-modal-close"
+                                    onClick={() => setIsAddressModal(false)}
+                                >
+                                    &times;
+                                </button>
 
-                            <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
+                                <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
+                                <input
+                                    type="text" placeholder="수령인 이름"
+                                    value={newAddress.recipientName}
+                                    onChange={(e) => setNewAddress({ ...newAddress, recipientName: e.target.value })}
+                                /><br />
 
-                            <input type="text" id="sample6_postcode" placeholder="우편번호" />
+                                <input type="text" id="sample6_postcode" placeholder="우편번호" 
+                                    value={newAddress.zipcode}
+                                    readOnly
+                                />
 
-                            {/* 여기서 onClick을 React 방식으로 */}
-                            <input
-                                type="button"
-                                value="우편번호 찾기"
-                                onClick={sample6_execDaumPostcode}
-                            /><br />
+                                {/* 여기서 onClick을 React 방식으로 */}
+                                <input
+                                    type="button"
+                                    value="우편번호 찾기"
+                                    onClick={sample6_execDaumPostcode}
+                                    className="btn-primary"
+                                /><br />
 
-                            <input type="text" id="sample6_address" placeholder="주소" /><br />
-                            <input type="text" id="sample6_detailAddress" placeholder="상세주소" />
-                            <input type="text" id="sample6_extraAddress" placeholder="참고항목" />
+                                <input type="text" id="sample6_address" placeholder="주소"
+                                    value={newAddress.baseAddress}
+                                    readOnly
+                                />
+                                <input type="text" id="sample6_extraAddress" placeholder="참고항목" value={newAddress.extraAddress} readOnly />
+                                <input type="text" id="sample6_detailAddress" placeholder="상세주소"
+                                    value={newAddress.detailAddress}
+                                    onChange={(e) => setNewAddress({ ...newAddress, detailAddress: e.target.value })}
+                                /><br />
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={newAddress.isDefault}
+                                    onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
+                                    />
+                                    기본 배송지로 설정
+                                </label><br />
+
+                                <button className="btn-primary" onClick={handleSaveAddress}>저장</button>
                             </div>
                         </div>
                     )}
