@@ -239,14 +239,18 @@ export default function Review() {
                 padding: '0 20px',
             }}
         >
-            <div style={{
-                maxWidth: "1200px",
-                height: "700px",
-                border: '2px solid gray',
-                borderRadius: '8px',
-                marginBottom: '80px',
-            }}>배너들어갈 자리
-            <img src="https://kr.pinterest.com/pin/952581758702094370/" alt="임시 이미지" /></div>
+            <div
+                style={{
+                    maxWidth: '1200px',
+                    height: '700px',
+                    border: '2px solid gray',
+                    borderRadius: '8px',
+                    marginBottom: '80px',
+                }}
+            >
+                배너들어갈 자리
+                <img src="https://kr.pinterest.com/pin/952581758702094370/" alt="임시 이미지" />
+            </div>
             <>
                 {/* 제목 + 버튼 */}
                 <div
@@ -365,81 +369,86 @@ export default function Review() {
                                         <div>{review.content}</div>
                                     </div>
                                     {/* ✅ 댓글 표시 */}
-                                    <h4 style={{ margin: '5px' }}>💬 댓글</h4>
-                                    <div
-                                        style={{
-                                            marginTop: '8px',
-                                            width: '800px',
-                                            height: '30px',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '5px',
-                                            padding: '5px',
-                                            marginBottom: '8px',
-                                        }}
-                                    >
-                                        {' '}
-                                        {comments[review.reviewId]?.reviewComment
-                                            ? comments[review.reviewId].reviewComment
-                                            : '아직 등록된 댓글이 없습니다.(성공 후 db엔 저장됨)'}
-                                    </div>
-                                    {/* 댓글달기 버튼 */}
-                                    <button
-                                        style={{
-                                            backgroundColor: '#bfbfbf',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '6px',
-                                            padding: '4px 10px',
-                                            marginTop: '5px',
-                                            cursor: 'pointer',
-                                        }}
-                                        onClick={() => {
-                                            if (!isLoggedIn) {
-                                                if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
-                                                    window.location.href = '/auth/login'
-                                                }
-                                                return
-                                            }
-                                            setActiveCommentBox(
-                                                activeCommentBox === review.reviewId ? null : review.reviewId,
-                                            )
-                                        }}
-                                    >
-                                        💬 댓글 달기
-                                    </button>
-                                    {/* ✅ 로그인 상태에서만 댓글 입력창 표시 */}
-                                    {isLoggedIn && activeCommentBox === review.reviewId && (
-                                        <div style={{ marginTop: '10px' }}>
-                                            <textarea
-                                                placeholder="댓글을 입력하세요."
-                                                maxLength={200}
-                                                style={{
-                                                    width: '300px',
-                                                    height: '60px',
-                                                    border: '1px solid #ccc',
-                                                    borderRadius: '8px',
-                                                    padding: '5px',
-                                                    resize: 'none',
-                                                }}
-                                                value={reviewComment}
-                                                onChange={(e) => setReviewComment(e.target.value)}
-                                            />
-                                            <br />
+                                    {comments[review.reviewId]?.reviewComment ? (
+                                        // 댓글이 있을 때 → 댓글 내용 박스만 보여줌
+                                        <div
+                                            style={{
+                                                marginTop: '8px',
+                                                width: '800px',
+                                                height: '30px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '5px',
+                                                padding: '5px',
+                                                marginBottom: '8px',
+                                                backgroundColor: '#fafafa',
+                                            }}
+                                        >
+                                            {comments[review.reviewId].reviewComment}
+                                        </div>
+                                    ) : (
+                                        // 댓글이 없을 때 → 버튼 + 입력창
+                                        <>
+                                            {/* 💬 댓글 달기 버튼 */}
                                             <button
-                                                onClick={() => handleCommentSubmit(review.reviewId)}
                                                 style={{
-                                                    backgroundColor: '#AD9263',
+                                                    backgroundColor: '#bfbfbf',
                                                     color: 'white',
                                                     border: 'none',
-                                                    borderRadius: '8px',
-                                                    padding: '6px 14px',
+                                                    borderRadius: '6px',
+                                                    padding: '4px 10px',
                                                     marginTop: '5px',
                                                     cursor: 'pointer',
                                                 }}
+                                                onClick={() => {
+                                                    if (!isLoggedIn) {
+                                                        if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
+                                                            window.location.href = '/auth/login'
+                                                        }
+                                                        return
+                                                    }
+                                                    setActiveCommentBox(
+                                                        activeCommentBox === review.reviewId ? null : review.reviewId,
+                                                    )
+                                                }}
                                             >
-                                                댓글 등록
+                                                💬 댓글 달기
                                             </button>
-                                        </div>
+
+                                            {/* ✅ 로그인 상태에서만 댓글 입력창 표시 */}
+                                            {isLoggedIn && activeCommentBox === review.reviewId && (
+                                                <div style={{ marginTop: '10px' }}>
+                                                    <textarea
+                                                        placeholder="댓글을 입력하세요."
+                                                        maxLength={200}
+                                                        style={{
+                                                            width: '300px',
+                                                            height: '60px',
+                                                            border: '1px solid #ccc',
+                                                            borderRadius: '8px',
+                                                            padding: '5px',
+                                                            resize: 'none',
+                                                        }}
+                                                        value={reviewComment}
+                                                        onChange={(e) => setReviewComment(e.target.value)}
+                                                    />
+                                                    <br />
+                                                    <button
+                                                        onClick={() => handleCommentSubmit(review.reviewId)}
+                                                        style={{
+                                                            backgroundColor: '#AD9263',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            padding: '6px 14px',
+                                                            marginTop: '5px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        댓글 등록
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </li>
                             ))}
