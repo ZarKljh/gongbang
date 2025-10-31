@@ -34,8 +34,7 @@ public class ProductController {
 //        System.out.printf("✅ RADIOGroup : %s%n", RADIOGroup);
 //        System.out.printf("✅ CHECKBOXGroup : %s%n", CHECKBOXGroup);
 
-        List<String> colors = params.get("COLOR"); // 여러 값 → List<String>
-
+//        List<String> colors = params.get("COLOR"); // 여러 값 → List<String>
 
         System.out.println("===== 📦 받은 필터 파라미터 =====");
         params.forEach((key, values) -> {
@@ -44,9 +43,12 @@ public class ProductController {
         System.out.println("================================");
 
 
-        List<ProductDto> productFilterList = productService.getProductFilterList(subCategoryId, size, colors);
+        List<ProductDto> productFilterList = productService.getProductFilterList(subCategoryId, size, params);
         return RsData.of("200", "상품 다건 조회 성공", new FilterProductResponse(productFilterList));
     }
+
+
+
 
 
 }

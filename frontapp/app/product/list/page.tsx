@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { useRef } from 'react'
 import { useEffect, useState } from 'react'
 import api from '@/app/utils/api'
@@ -56,37 +57,53 @@ export default function Product() {
     // code별로 선택된 값 집합 관리 (예: COLOR → {베이지, 화이트})
     const [selectedBtn, setSelectedBtn] = useState<Record<string, string | null>>({})
     const didMount = useRef(false)
-    const onClickCategory = (id: number) => {
-        setSelectedCatId(id) // 클릭한 카테고리의 id를 상태에 저장
-    }
-    const onClickSubCategory = (id: number) => {
-        setSelectedSubCatId(id) // 클릭한 서브카테고리의 id를 상태에 저장
-        setSelectedBtn({}) // ✅ 선택 초기화 (선택)
+
+    const onClickSubCategory = (catId: number, subId: number) => {
+        setSelectedCatId(catId) // 클릭한 카테고리의 id를 상태에 저장
+        setSelectedSubCatId(subId) // 클릭한 서브카테고리의 id를 상태에 저장
+        // 2️⃣ 이전 필터·선택 상태·결과 초기화
+        setSelectedBtn({}) // 선택된 필터버튼 초기화
+        setFilterGroups([]) // 기존 필터 그룹 제거
+        setFilterOptions({}) // 기존 필터 옵션 제거
+        //setItems([]) // 필터 검색 결과 초기화
+        //setProducts([]) // 서브카테고리별 기본 상품목록 초기화
+
+        // 3️⃣ 폼 DOM 초기화 (FormData 잔여 제거)
+        const form = document.getElementById('filterForm') as HTMLFormElement | null
+        form?.reset()
+
+        // 4️⃣ 새 카테고리의 공통 필터 로딩
+        loadFilters(catId)
     }
     //
 
-    const handleImmediateSubmit = () => {
-        // 입력 반영 직후 FormData가 맞게 잡히도록 다음 프레임에 실행
-        requestAnimationFrame(() => submitFilter())
-    }
+    // const handleImmediateSubmit = async () => {
+    //     requestAnimationFrame(() => submitFilter())
+    // }
     const handleFilterClick = (code: string, label: string) => {
-        setSelectedBtn((prev) => {
-            const nextValue = prev[code] === label ? null : label
-            return { ...prev, [code]: nextValue }
-        })
+        setSelectedBtn((prev) => ({
+            ...prev,
+            [code]: prev[code] === label ? null : label, // SINGLE 모드
+        }))
     }
-
-    /** 선택 상태 -> extra(flat) 변환 (싱글이므로 string 또는 미포함) */
+    // 선택 상태를 평탄화
     const buildExtra = (state: Record<string, string | null>) => {
         const extra: Record<string, string> = {}
-        for (const [k, v] of Object.entries(state)) {
-            if (v != null) extra[k] = v
-        }
+        for (const [k, v] of Object.entries(state)) if (v != null) extra[k] = v
         return extra
     }
+    /** 선택 상태 -> extra(flat) 변환 (싱글이므로 string 또는 미포함) */
+    // const buildExtra = (state: Record<string, string | null>) => {
+    //     const extra: Record<string, string> = {}
+    //     for (const [k, v] of Object.entries(state)) {
+    //         if (v != null) extra[k] = v
+    //     }
+    //     return extra
+    // }
     // const [selectedMin, setSelectedMin] = useState<number | null>(null)
     // const [selectedMax, setSelectedMax] = useState<number | null>(null)
 
+    //카테고리, 서브카테고리 초기 조회
     useEffect(() => {
         fetchAll()
     }, [])
@@ -113,92 +130,114 @@ export default function Product() {
         const subMap: Record<number, SubCategory[]> = Object.fromEntries(results)
         setSubCategoriesByCat(subMap)
     }
-    useEffect(() => {
-        if (selectedCategoryId == null) return
-        ;(async () => {
-            try {
-                // 백엔드: GET /api/v1/filter/{id}/Group
-                const { data } = await api.get(`filter/${selectedCategoryId}/group`)
-                const groupsData = data.data.filterGroupList
 
-                // 2️⃣ 각 그룹별 옵션 요청을 병렬 처리
-                const optionPromises = groupsData.map((g) => api.get(`filter/${g.id}/option`))
+    const loadFilters = async (categoryId: number) => {
+        try {
+            const { data } = await api.get(`filter/${categoryId}/group`)
+            const groups: FilterGroupDto[] = data.data.filterGroupList ?? []
 
-                const results = await Promise.all(optionPromises)
+            const optionPromises = groups.map((g) => api.get(`filter/${g.id}/option`))
+            const results = await Promise.all(optionPromises)
 
-                // 3️⃣ 그룹별 ID를 키로 한 맵 형태로 변환
-                const optionMap: Record<number, FilterOptionDto[]> = {}
-                results.forEach((res, idx) => {
-                    const groupId = groupsData[idx].id
-                    const options: FilterOptionDto[] = res.data.data.filterOptionList ?? []
-                    optionMap[groupId] = options
-                })
-                setFilterGroups(groupsData)
-                setFilterOptions(optionMap)
-            } catch (error) {
-                console.error('필터그룹 조회 실패:', error)
-            }
-        })()
-    }, [selectedCategoryId])
+            const optionMap: Record<number, FilterOptionDto[]> = {}
+            results.forEach((res, idx) => {
+                const gid = groups[idx].id
+                optionMap[gid] = res.data.data.filterOptionList ?? []
+            })
 
-    useEffect(() => {
-        if (selectedSubCategoryId == null) return
-        ;(async () => {
-            try {
-                // 백엔드: GET /api/v1/product/{id}
-                const { data } = await api.get(`product/${selectedSubCategoryId}`)
-                const productList = data.data.productList
-
-                setProducts(productList)
-            } catch (error) {
-                console.error('상품목록 조회 실패:', error)
-            }
-        })()
-    }, [selectedSubCategoryId])
-
-    const submitFilter = (extra?: Record<string, string>) => {
-        if (selectedSubCategoryId == null) return
-        const form = document.getElementById('filterForm') as HTMLFormElement | null
-        if (!form) return
-        // 폼의 현재 값 수집
-
-        const fd = new FormData(form)
-
-        // 색선택 버튼에서 온 추가 pair 병합
-        if (extra) {
-            for (const [k, v] of Object.entries(extra)) fd.append(k, v)
+            setFilterGroups(groups)
+            setFilterOptions(optionMap)
+        } catch (e) {
+            console.error('필터그룹 조회 실패:', e)
         }
-
-        // checkbox/radio의 다중값까지 포함하려면 getAll 사용
-        const payload: Record<string, string | string[]> = {}
-        for (const [k] of fd.entries()) {
-            const all = fd.getAll(k).map(String)
-            payload[k] = all.length > 1 ? all : all[0] // 단일/다중 자동 처리
-        }
-
-        api.get(`product/${selectedCategoryId}/search`, { params: payload }).then((res) => {
-            if (!res.data?.data?.productFilterList) {
-                console.warn('응답 데이터 구조 이상')
-                console.log(res.data.data.productFilterList)
-                return
-            }
-            console.log(res.data.data.productFilterList)
-            setItems(res.data.data.productFilterList)
-        })
-        // .catch((err) => {
-        //     console.error('상품 검색 실패:', err.response?.data ?? err.message)
-        //     alert('검색 요청에 실패했습니다. 잠시 후 다시 시도해주세요.')
-        // })
     }
+    const submitFilter = useCallback(
+        (extra?: Record<string, string>) => {
+            if (selectedCategoryId == null || selectedSubCategoryId == null) return
+
+            const form = document.getElementById('filterForm') as HTMLFormElement | null
+            if (!form) return
+
+            // 1) 폼값 읽기
+            const fd = new FormData(form)
+
+            // 2) extra는 교체 모드로 병합 (기존 동일 키는 삭제)
+            if (extra) {
+                for (const [k, v] of Object.entries(extra)) {
+                    fd.delete(k) // ✅ 기존 값 제거
+                    if (v != null) fd.append(k, v)
+                }
+            }
+
+            // 3) FormData -> payload (키 정규화 + 배열 dedup)
+            const keys = new Set<string>()
+            for (const [k] of fd.entries()) keys.add(k)
+
+            const payload: Record<string, string | string[]> = {}
+
+            keys.forEach((rawKey) => {
+                // [] 접미사 제거해 서버가 기대하는 키로 통일
+                const key = rawKey.endsWith('[]') ? rawKey.slice(0, -2) : rawKey
+
+                const all = fd.getAll(rawKey).map(String)
+                // 중복 제거
+                const unique = Array.from(new Set(all))
+
+                // 값이 여러 개인 경우만 배열, 아니면 단일 문자열
+                payload[key] = unique.length > 1 ? unique : unique[0]
+            })
+
+            // 4) 항상 범위 파라미터 포함
+            payload.categoryId = String(selectedCategoryId)
+            payload.subCategoryId = String(selectedSubCategoryId)
+
+            // 5) (선택) Axios 배열 직렬화가 서버 기대와 다르면 직접 직렬화
+            //    예: MATERIAL=A&MATERIAL=B 형태가 필요하면 아래처럼:
+            // const params = new URLSearchParams();
+            // Object.entries(payload).forEach(([k, v]) => {
+            //   if (Array.isArray(v)) v.forEach(val => params.append(k, val));
+            //   else params.append(k, v);
+            // });
+
+            // 6) 엔드포인트 확인: 카테고리 기준이면 categoryId를 path로 쓰세요.
+            //    api.get(`product/${selectedCategoryId}/search`, { params: payload })
+            api.get(`product/${selectedSubCategoryId}/search`, { params: payload })
+                .then((res) => {
+                    const productFilterList = res.data.data.productFilterList
+                    console.log(productFilterList)
+                    setProducts(productFilterList)
+                })
+                .catch((err) => console.error('상품 검색 실패:', err))
+        },
+        [selectedCategoryId, selectedSubCategoryId],
+    )
 
     useEffect(() => {
         if (!didMount.current) {
             didMount.current = true
             return
         }
+        if (selectedCategoryId == null || selectedSubCategoryId == null) return
+
         const extra = buildExtra(selectedBtn)
         submitFilter(extra)
-    }, [selectedBtn, selectedSubCategoryId])
+    }, [selectedBtn, selectedCategoryId, selectedSubCategoryId, submitFilter])
+
+    // 선택한 selectedSubCategoryId변경 될 때 상품목록 조회하기
+    // useEffect(() => {
+    //     if (selectedSubCategoryId == null) return
+    //     ;(async () => {
+    //         try {
+    //             // 백엔드: GET /api/v1/product/{id}
+    //             const { data } = await api.get(`product/${selectedSubCategoryId}/search`, { params: payload })
+    //             const productFilterList = data.data.productFilterList
+
+    //             setProducts(productFilterList)
+    //         } catch (error) {
+    //             console.error('상품목록 조회 실패:', error)
+    //         }
+    //     })()
+    // }, [selectedSubCategoryId])
 
     return (
         <>
@@ -214,9 +253,9 @@ export default function Product() {
                                 {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
                                     <li key={sub.id}>
                                         <a
-                                            onClick={() => {
-                                                onClickCategory(cat.id)
-                                                onClickSubCategory(sub.id)
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                onClickSubCategory(cat.id, sub.id)
                                             }}
                                         >
                                             {sub.name}
@@ -312,10 +351,21 @@ export default function Product() {
                                                         <>
                                                             <input
                                                                 form="filterForm"
-                                                                onChange={handleImmediateSubmit} // ✅ 변경 즉시 submit
-                                                                type={o.inputType}
-                                                                name={o.filterCode}
-                                                                value={o.label}
+                                                                type="radio"
+                                                                name={o.filterCode} // ex) "COLOR"
+                                                                value={o.label ?? ''} // label 말고 code 권장
+                                                                checked={
+                                                                    (selectedBtn[o.filterCode] ?? '') ===
+                                                                    (o.label ?? '')
+                                                                } // ✅ 항상 boolean
+                                                                onChange={() => {
+                                                                    setSelectedBtn((prev) => ({
+                                                                        ...prev,
+                                                                        [o.filterCode]: o.label!,
+                                                                    })) // 단일 선택 저장
+                                                                    // 필요 시 즉시 검색
+                                                                    // handleImmediateSubmit();
+                                                                }}
                                                             />
                                                         </>
                                                     )}
@@ -345,32 +395,6 @@ export default function Product() {
                                         <figure className={styles.cardMedia}>
                                             <img alt="카드 1 대표 이미지" loading="lazy" />
                                         </figure>
-                                        <h3 className={styles.cardTitle}>{p.name}</h3>
-                                        <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
-                                    </a>
-                                    <footer className={styles.cardActions}>
-                                        <a href="#" className={styles.btnRead}>
-                                            자세히
-                                        </a>
-                                    </footer>
-                                </article>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
-
-            <section aria-labelledby="cards-title">
-                <h2 id="cards-title">카드섹션2</h2>
-                {items.length == 0 ? (
-                    <p className="text-sm text-gray-500">표시할 상품목록이 없습니다.</p>
-                ) : (
-                    <ul className={styles.cardGrid} role="list">
-                        {items.map((p) => (
-                            <li className={styles.card} key={p.id}>
-                                <article>
-                                    <a href="#" className={styles.cardLink} aria-label="카드 1 자세히 보기">
-                                        <figure className={styles.cardMedia}></figure>
                                         <h3 className={styles.cardTitle}>{p.name}</h3>
                                         <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
                                     </a>

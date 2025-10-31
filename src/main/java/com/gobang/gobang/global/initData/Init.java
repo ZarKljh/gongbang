@@ -110,6 +110,7 @@ public class Init {
 // ☕ 스몰굿즈 (Mini)
             filterService.initOption("Mini", "COLOR", "화이트", "WHITE", 1, "submit", "MULTI");
             filterService.initOption("Mini", "COLOR", "베이지", "BEIGE", 2, "submit", "MULTI");
+            filterService.initOption("Mini", "COLOR", "네이비", "NAVY", 2, "submit", "MULTI");
 
             filterService.initOption("Mini", "DESIGN", "캐릭터", "CHARACTER", 1, "CHECKBOX", "MULTI");
             filterService.initOption("Mini", "DESIGN", "심플", "SIMPLE", 2, "CHECKBOX", "MULTI");
@@ -124,7 +125,8 @@ public class Init {
 
             filterService.initOption("Fabric", "COLOR", "아이보리", "IVORY", 1, "submit", "MULTI");
             filterService.initOption("Fabric", "COLOR", "그레이", "GRAY", 2, "submit", "MULTI");
-
+            filterService.initOption("Fabric", "COLOR", "네이비", "NAVY", 2, "submit", "MULTI");
+            
             filterService.initOption("Fabric", "PRICE", "", "UNDER_20000", 1, "CHIP", "SINGLE");
             //filterService.initOption("Fabric", "PRICE", "", "RANGE_2_4", 2, "CHIP", "SINGLE");
 
@@ -157,6 +159,7 @@ public class Init {
 
             filterService.initOption("Rest", "COLOR", "베이지", "BEIGE", 1, "submit", "MULTI");
             filterService.initOption("Rest", "COLOR", "네이비", "NAVY", 2, "submit", "MULTI");
+            filterService.initOption("Rest", "COLOR", "아이보리", "IVORY", 1, "submit", "MULTI");
 
             filterService.initOption("Rest", "PRICE", "", "UNDER_30000", 1, "CHIP", "SINGLE");
             //filterService.initOption("Rest", "PRICE", "", "OVER_30000", 2, "CHIP", "SINGLE");
