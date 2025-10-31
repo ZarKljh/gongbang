@@ -119,7 +119,7 @@ public class PaymentMethodService {
     private PaymentMethodResponse convertToResponse(PaymentMethod paymentMethod) {
         return PaymentMethodResponse.builder()
                 .paymentId(paymentMethod.getPaymentId())
-                .siteUser(paymentMethod.getSiteUser())
+                .userId(paymentMethod.getSiteUser().getId())
                 .type(paymentMethod.getType())
                 .bankName(paymentMethod.getBankName())
                 .accountNumber(paymentMethod.getAccountNumber())
