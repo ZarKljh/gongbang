@@ -6,6 +6,7 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
@@ -189,22 +190,6 @@ public class SiteUserService {
         return RsData.of("200-1", "로그인 성공", new AuthAndMakeTokensResponseBody(siteUser, accessToken, refreshToken));
     }
 
-//    public SiteUserResponse getCurrentUserInfo() {
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String username;
-//
-//        if (principal instanceof UserDetails userDetails) {
-//            username = userDetails.getUsername();
-//        } else {
-//            username = principal.toString();
-//        }
-//
-//        SiteUser siteUser = siteUserRepository.findByUserName(username)
-//                .orElseThrow(() -> new IllegalStateException("로그인된 사용자를 찾을 수 없습니다."));
-//
-//        return new SiteUserResponse(siteUser);
-//    }
-
     // 현재 로그인된 사용자 조회
     public SiteUser getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -234,6 +219,34 @@ public class SiteUserService {
     public SiteUserResponse getCurrentUserDetail() {
         SiteUser user = getCurrentUser();
         // 필요하다면 SiteUserResponse를 상세정보용으로 확장 가능
+        return new SiteUserResponse(user);
+    }
+
+    // 사용자 정보 업데이트
+    public SiteUserResponse updateUserInfo(SiteUserUpdateRequest request) {
+        SiteUser user = getCurrentUser();
+
+        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getMobilePhone() != null && !request.getMobilePhone().isEmpty()) {
+            user.setMobilePhone(request.getMobilePhone());
+        }
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        // nickName 필드가 존재하는지 체크 후 업데이트
+        if (request.getNickName() != null && !request.getNickName().isEmpty()) {
+            if (user.getNickName() != null) { // 필드가 존재하면
+                user.setNickName(request.getNickName());
+            } else {
+                // 엔티티에 필드가 없으면 아예 생성하거나 무시
+                // 예: user.setNickName(request.getNickName()); // 필드 생성 필요
+            }
+        }
+
+        siteUserRepository.save(user);
+
         return new SiteUserResponse(user);
     }
 }
