@@ -36,7 +36,7 @@ public class Inquiry {
 
 
     @Column(nullable = false)
-    private boolean answered = false;
+    private boolean answered;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

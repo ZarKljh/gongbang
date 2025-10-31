@@ -65,3 +65,12 @@ export const AdminAPI = {
 };
 
 export default api;
+
+export const MetricsAPI = {
+  async monthlyVisitors(year: number) {
+    const { data } = await api.get("/api/admin/v1/metrics/visitors/monthly", {
+      params: { year },
+    });
+    return data as Array<{ month: string; visitors: number }>;
+  },
+};

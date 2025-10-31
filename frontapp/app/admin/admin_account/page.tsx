@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AdminAPI, type AdminMe, type InquiryType } from "@/app/utils/api";
+import MonthlyVisitorsSection from "@/app/components/MonthlyVisitorsSection";
+import Link from "next/link";
 
 export default function AdminPage() {
   // ── 공통: 관리자 정보 ──────────────────────────────────────────────
@@ -148,6 +150,7 @@ export default function AdminPage() {
 
           <div className="ml-auto flex items-center gap-2">
             {/* 검색 */}
+
             <form action="" className="hidden sm:flex items-center gap-2">
               <input
                 name="q"
@@ -158,6 +161,12 @@ export default function AdminPage() {
                 검색
               </button>
             </form>
+            <Link
+              href="/admin/admin_account/faq"
+              className="h-9 rounded-lg border px-3 inline-flex items-center hover:bg-slate-50"
+            >
+              FAQ 관리하기
+            </Link>
 
             {/* 통합 벨(문의+신고) */}
             <div ref={bellWrapRef} className="relative">
@@ -275,6 +284,8 @@ export default function AdminPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 grid gap-6 md:grid-cols-3">
         {/* 프로필 */}
+
+        <MonthlyVisitorsSection initialYear={new Date().getFullYear()} />
         <section className="md:col-span-2 rounded-2xl border bg-white">
           <div className="p-5 border-b">
             <div className="text-base font-semibold">프로필</div>

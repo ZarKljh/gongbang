@@ -38,6 +38,13 @@ export default function RootLayout({
           <Link href="/member/login">로그인</Link>
           <Link href="/member/logout">로그아웃</Link>
           <ClientNav />
+          <Link
+            href="/support/faq"
+            className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
+            prefetch
+          >
+            F&Q
+          </Link>
         </nav>
 
         {children}

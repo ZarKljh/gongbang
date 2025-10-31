@@ -55,19 +55,4 @@ public class InquiryV1Controller {
         service.markAllAnswered();
         return Map.of("ok", true);
     }
-
-    // 타입별 ACK, 일반 유저의 신고와 사업자의 신고의 유형을 나누기 위함
-    @PostMapping("/ack/by-type")
-    public Map<String, Boolean> ackByType(@RequestParam InquiryType type) {
-        service.markAllAnsweredByType(type);
-        return Map.of("ok", true);
-    }
-
-    // (선택) 한 번에 합산 내려주기 → 프런트 폴링 1회로 해결
-    @GetMapping("/count-all")
-    public Map<String, Long> countAllBuckets() {
-        long user = service.countUnreadByType(InquiryType.USER);
-        long business = service.countUnreadByType(InquiryType.BUSINESS);
-        return Map.of("total", user + business, "user", user, "business", business);
-    }
 }
