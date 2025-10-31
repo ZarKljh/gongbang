@@ -1,0 +1,31 @@
+
+----------셀러사용자 등록--------
+INSERT INTO public.site_user
+(id, birth, created_date, deleted_date, email, gender, mobile_phone, nick_name, "password", profile_img, refresh_token, "role", status, updated_date, user_name)
+VALUES(1, '2002-01-01 00:00:00.000', '2025-10-30 22:57:23.258', NULL, 'seller5', 'F', '01066658889', 'nauen', '$2a$10$S8WN/IHLooiqulupAJkqM.BcBAHrXS8TH8FsVkM75EuXPu7VmBIW2', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiU0VMTEVSXCIsXCJpZFwiOm51bGwsXCJ1c2VyTmFtZVwiOlwi7J2064KY7J2AXCJ9IiwiZXhwIjoxNzkzMzY4NjQzfQ.STfKfwRF62ex9aAokuOSfjdPK5VhTAm4eCdiRq0qQU_knKBFF_rWVJUvi67J1r19qWN4h4C81KeWcps_C6g5AA', 'SELLER', 'ACTIVE', NULL, '이나은');
+
+----------셀러사용자 공방 등록--------
+
+INSERT INTO public.studio
+(studio_id, category_id, created_date, studio_add_detail, studio_add_main, studio_add_post_number, studio_business_number, studio_description, studio_email, studio_fax, studio_img, studio_mobile, studio_name, studio_office_tell, updated_date, site_user_id)
+VALUES
+(2, 1, NULL, NULL, NULL, NULL, '1124458890', '나은나은한 향초를 만드는 공방입니다 2호점입니다', 'nauen2@test.com', '04244458882', NULL, '01044457772', '나은공방 2호점', '04244454482', NULL, 1),
+(3, 1, NULL, NULL, NULL, NULL, '1124458891', '나은나은한 향초를 만드는 공방입니다 3호점입니다', 'nauen3@test.com', '04244458883', NULL, '01044457773', '나은공방 3호점', '04244454483', NULL, 1),
+(4, 1, NULL, NULL, NULL, NULL, '1124458892', '나은나은한 향초를 만드는 공방입니다 4호점입니다', 'nauen4@test.com', '04244458884', NULL, '01044457774', '나은공방 4호점', '04244454484', NULL, 1),
+(5, 1, NULL, NULL, NULL, NULL, '1124458893', '나은나은한 향초를 만드는 공방입니다 5호점입니다', 'nauen5@test.com', '04244458885', NULL, '01044457775', '나은공방 5호점', '04244454485', NULL, 1),
+(6, 1, NULL, NULL, NULL, NULL, '1124458894', '나은나은한 향초를 만드는 공방입니다 6호점입니다', 'nauen6@test.com', '04244458886', NULL, '01044457776', '나은공방 6호점', '04244454486', NULL, 1),
+(7, 1, NULL, NULL, NULL, NULL, '1124458895', '나은나은한 향초를 만드는 공방입니다 7호점입니다', 'nauen7@test.com', '04244458887', NULL, '01044457777', '나은공방 7호점', '04244454487', NULL, 1),
+(8, 1, NULL, NULL, NULL, NULL, '1124458896', '나은나은한 향초를 만드는 공방입니다 8호점입니다', 'nauen8@test.com', '04244458888', NULL, '01044457778', '나은공방 8호점', '04244454488', NULL, 1),
+(9, 1, NULL, NULL, NULL, NULL, '1124458897', '나은나은한 향초를 만드는 공방입니다 9호점입니다', 'nauen9@test.com', '04244458889', NULL, '01044457779', '나은공방 9호점', '04244454489', NULL, 1),
+(10, 1, NULL, NULL, NULL, NULL, '1124458898', '나은나은한 향초를 만드는 공방입니다 10호점입니다', 'nauen10@test.com', '04244458890', NULL, '01044457780', '나은공방 10호점', '04244454490', NULL, 1);
+
+
+
+----------유저사용자 등록 --------------
+INSERT INTO public.site_user
+(id, birth, created_date, deleted_date, email, gender, mobile_phone, nick_name, "password", profile_img, refresh_token, "role", status, updated_date, user_name)
+VALUES(2, '2000-01-01 00:00:00.000', '2025-10-30 22:57:33.712', NULL, 'user2@test.com', 'F', '01055524448', 'sliverjung', '$2a$10$OcwDWik2Zq1Do9EjnhhuYeqokkf4dCfmw/vGoMD09Msrg0QcwLRJG', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcIuq5gOydgOyglVwifSIsImV4cCI6MTc5MzM2ODY1M30.UrB9JIEWGMK2qHguWBVZeR9pphZGgff5xiT7BbKvXiVnJS-ZWAnJT0YLhaGWpqn8-JWVpMVjtNKpuvOsRaU99A', 'USER', 'ACTIVE', NULL, '김은정');
+
+INSERT INTO public.studio
+(studio_id, category_id, created_date, studio_add_detail, studio_add_main, studio_add_post_number, studio_business_number, studio_description, studio_email, studio_fax, studio_img, studio_mobile, studio_name, studio_office_tell, updated_date, site_user_id)
+VALUES(1, 1, NULL, NULL, NULL, NULL, '1124457777', '나은나은한 향초를 만드는 공방입니다 1호점 입니다', 'nauen@test.com', '04244458888', NULL, '01044457778', '나은공방 1호점', '04244458889', NULL, 1);

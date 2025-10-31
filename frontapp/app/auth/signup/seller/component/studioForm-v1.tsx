@@ -6,56 +6,9 @@ interface Props {
     studioInfo: StudioInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
-    setStudioInfo: React.Dispatch<React.SetStateAction<StudioInfo>>
 }
 
-declare global {
-    interface Window {
-        daum: any
-    }
-}
-
-export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioInfo }: Props) {
-    const handleAddressSearch = () => {
-        if (typeof window === 'undefined' || !window.daum) {
-            alert('주소 검색 기능을 사용할 수 없습니다. 페이지를 새로고침 해주세요.')
-            return
-        }
-        new window.daum.Postcode({
-            oncomplete: function (data: any) {
-                // ✅ [수정 2] onChange 대신 setStudioInfo 직접 호출
-                setStudioInfo((prev) => ({
-                    ...prev,
-                    studioAddPostNumber: data.zonecode,
-                    studioAddMain: data.roadAddress,
-                }))
-                /*
-        new window.daum.Postcode({
-            oncomplete: function (data: any) {
-                // ✅ 수정된 부분: simulateChangeEvent 제거하고 직접 이벤트 객체 생성
-                const postEvent = {
-                    target: {
-                        name: 'studioAddPostNumber',
-                        value: data.zonecode,
-                        type: 'text',
-                    },
-                } as React.ChangeEvent<HTMLInputElement>
-
-                const addressEvent = {
-                    target: {
-                        name: 'studioAddMain',
-                        value: data.roadAddress,
-                        type: 'text',
-                    },
-                } as React.ChangeEvent<HTMLInputElement>
-
-                onChange(postEvent)
-                onChange(addressEvent)
-                */
-            },
-        }).open()
-    }
-
+export default function StudioForm({ studioInfo, onChange, onSubmit }: Props) {
     return (
         <div>
             <h4>매장 정보 입력</h4>
@@ -66,7 +19,7 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                         공방 카테고리를 선택해주세요
                     </option>
                     {CATEGORY_OPTIONS.map((option) => (
-                        <option key={option.id} value={option.id}>
+                        <option key={option.id} value={option.code}>
                             {option.label}
                         </option>
                     ))}
@@ -142,14 +95,6 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                     placeholder="공방의 대표 이메일을 적어주세요"
                 />
             </div>
-
-            <div>
-                <label>주소 검색</label>
-                <button type="button" onClick={handleAddressSearch}>
-                    주소 찾기
-                </button>
-            </div>
-
             <div>
                 <label>우편번호</label>
                 <input
@@ -157,10 +102,9 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                     name="studioAddPostNumber"
                     value={studioInfo.studioAddPostNumber}
                     onChange={onChange}
-                    placeholder="우편번호를 검색해주세요"
+                    placeholder="공방소재지의 우편번호를 적어주세요"
                 />
             </div>
-
             <div>
                 <label>기본주소</label>
                 <input

@@ -4,6 +4,7 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
 import com.gobang.gobang.domain.seller.dto.StudioResponse;
 import com.gobang.gobang.domain.seller.dto.StudioSimpleDto;
@@ -12,6 +13,10 @@ import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.rq.Rq;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -47,6 +52,22 @@ public class StudioController {
 
         return  RsData.of("s-1", "해당공방의 정보와 seller 의 정보를 가져왔습니다", responseMap);
     }
+    @GetMapping("/{id}/products")
+    public RsData<Page<ProductDto>> getProductList(
+            @PathVariable("id") Long studioId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ){
+        //List<ProductDto> productList = studioService.getProductList(subCategoryId, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<ProductDto> productPage = studioService.getProductListByStudioId(studioId, pageable);
+
+
+        return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
+    }
+
+
+
     @PostMapping("/add")
     public RsData<Map<String, Object>> studioAdd(@Valid @RequestBody StudioAddRequest studioAddRequest){
 
@@ -71,5 +92,6 @@ public class StudioController {
 
         return  RsData.of("s-1", "신규공방이 등록되었습니다", responseMap);
     }
+
 
 }
