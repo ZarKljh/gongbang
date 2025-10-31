@@ -14,7 +14,7 @@ export default function LoginUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch(`http://localhost:8090/api/auth/login/user`, {
+    const response = await fetch(`http://localhost:8090/api/v1/auth/login/user`, {
       method: "POST",
       credentials: "include", //인증정보를 함께 보내는 경우, 쿠키와 같은 것들포함
       //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
@@ -34,7 +34,7 @@ export default function LoginUser() {
 
   //로그아웃을 위한 메소드
   const handleLogout = async () => {
-    const response = await fetch("http://localhost:8090/api/auth/logout", {
+    const response = await fetch("http://localhost:8090/api/v1/auth/logout", {
       method: "POST",
       credentials: "include",
     });

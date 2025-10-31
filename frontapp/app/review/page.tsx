@@ -45,7 +45,7 @@ export default function Review() {
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
         try {
-            const res = await fetch('http://localhost:8090/api/auth/me', {
+            const res = await fetch('http://localhost:8090/api/v1/auth/me', {
                 method: 'GET',
                 credentials: 'include',
             })
