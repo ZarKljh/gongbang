@@ -4,10 +4,7 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.dto.request.CommentCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.CommentModifyRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
-import com.gobang.gobang.domain.review.dto.response.CommentCreateResponse;
-import com.gobang.gobang.domain.review.dto.response.CommentModifyResponse;
-import com.gobang.gobang.domain.review.dto.response.CommentResponse;
-import com.gobang.gobang.domain.review.dto.response.ReviewModifyResponse;
+import com.gobang.gobang.domain.review.dto.response.*;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.entity.ReviewComment;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
@@ -86,13 +83,19 @@ public class ReviewCommentController {
                 new CommentModifyResponse(modifyRs.getData())
         );
     }
+
+    // 댓글 삭제
+//    @DeleteMapping("/{id}")
+//    public RsData<CommentDeleteResponse> deleteComment(@PathVariable Long commentId) {
+//        Optional<ReviewComment> opReview = reviewCommentService.findById(commentId);
 //
-//    // ✅ 댓글 삭제
-//    @DeleteMapping("/{commentId}")
-//    public RsData<?> deleteComment(@PathVariable Long commentId) {
-//        boolean deleted = reviewCommentService.deleteComment(commentId);
-//        return deleted
-//                ? RsData.of("200", "댓글 삭제 성공")
-//                : RsData.of("404", "댓글을 찾을 수 없습니다.");
+//        if (opReview.isEmpty()) return RsData.of(
+//                "400",
+//                "%d번 리뷰가 존재하지 않습니다."
+//                        .formatted(commentId));
+//
+//        RsData<Review> deleteRs = reviewCommentService.deleteComment(commentId);
+//
+//        return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg(), new CommentDeleteResponse(deleteRs.getData()));
 //    }
 }
