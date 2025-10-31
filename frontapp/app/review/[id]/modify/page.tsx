@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { FaStar } from 'react-icons/fa'
 import api from '@/app/utils/api'
 
 export default function ReviewModify() {
@@ -12,7 +13,6 @@ export default function ReviewModify() {
         rating: 0,
         content: '',
     })
-
 
     useEffect(() => {
         if (!params?.id) return // id 없으면 fetch 안 함
@@ -60,18 +60,20 @@ export default function ReviewModify() {
     return (
         <div>
             <h2>리뷰 수정</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} style={{ marginTop: '10px' }}>
                 {[1, 2, 3, 4, 5].map((num) => (
-                    <label key={num}>
-                        <input
-                            type="radio"
-                            name="rating"
-                            value={num}
-                            checked={review.rating === num}
-                            onChange={handleChange}
-                        />
-                        {num}점
-                    </label>
+                    <FaStar
+                        key={num}
+                        size={30}
+                        style={{ cursor: 'pointer', transition: 'color 0.2s ease' }}
+                        color={num <= review.rating ? '#FFD700' : '#E0E0E0'} // 선택 시 노란색, 미선택 회색
+                        onClick={() =>
+                            setReview((prev) => ({
+                                ...prev,
+                                rating: num,
+                            }))
+                        }
+                    />
                 ))}
                 <br />
                 <div className="review-content">

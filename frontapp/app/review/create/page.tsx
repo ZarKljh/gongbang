@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect} from "react";
+import { FaStar } from "react-icons/fa";
 import api from "@/app/utils/api";
 
 export default function ReviewCreate({fetchReviews}) {
@@ -71,16 +72,18 @@ export default function ReviewCreate({fetchReviews}) {
       <h2>리뷰 작성</h2>
       <form onSubmit={handleSubmit}>
         {[1, 2, 3, 4, 5].map((num) => (
-          <label key={num}>
-            <input
-              type="radio"
-              name="rating"
-              value={num}
-              checked={review.rating === num}
-              onChange={handleChange}
-            />
-            {num}점
-          </label>
+<FaStar
+                        key={num}
+                        size={30}
+                        style={{ cursor: 'pointer', transition: 'color 0.2s ease' }}
+                        color={num <= review.rating ? '#FFD700' : '#E0E0E0'} // 선택 시 노란색, 미선택 회색
+                        onClick={() =>
+                            setReview((prev) => ({
+                                ...prev,
+                                rating: num,
+                            }))
+                        }
+                    />
         ))}
         <br />
         <label>
