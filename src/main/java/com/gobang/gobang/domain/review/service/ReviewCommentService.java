@@ -9,11 +9,15 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.review.entity.ReviewComment;
 import com.gobang.gobang.domain.review.repository.ReviewCommentRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
+import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.rq.Rq;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,14 +96,27 @@ public class ReviewCommentService {
 
 
     // 댓글 수정
-//    @Transactional
-//    public Optional<ReviewComment> updateComment(Long commentId, String newContent) {
-//        return reviewCommentRepository.findById(commentId)
-//                .map(comment -> {
-//                    comment.setContent(newContent);
-//                    return reviewCommentRepository.save(comment);
-//                });
-//    }
+    public Optional<ReviewComment> findByCommentId(Long commentId) {
+        return reviewCommentRepository.findById(commentId);
+    }
+
+    @Transactional
+    public RsData<ReviewComment> modifyComment(
+            ReviewComment comment,
+            @NotBlank(message = "수정할 댓글 내용을 입력해주세요.") String newContent
+    ) {
+        // 댓글 내용 수정
+        comment.setReviewComment(newContent);
+        comment.setModifiedDate(LocalDateTime.now());
+
+        reviewCommentRepository.save(comment);
+
+        return RsData.of(
+                "200",
+                "%d번 댓글이 수정되었습니다.".formatted(comment.getCommentId()),
+                comment
+        );
+    }
 //
 //    // 댓글 삭제
 //    @Transactional

@@ -1,16 +1,24 @@
 package com.gobang.gobang.domain.review.controller;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.dto.request.CommentCreateRequest;
+import com.gobang.gobang.domain.review.dto.request.CommentModifyRequest;
+import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
 import com.gobang.gobang.domain.review.dto.response.CommentCreateResponse;
+import com.gobang.gobang.domain.review.dto.response.CommentModifyResponse;
 import com.gobang.gobang.domain.review.dto.response.CommentResponse;
+import com.gobang.gobang.domain.review.dto.response.ReviewModifyResponse;
+import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.entity.ReviewComment;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.rq.Rq;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,6 +26,7 @@ import java.util.List;
 public class ReviewCommentController {
 
     private final ReviewCommentService reviewCommentService;
+    private final Rq rq;
 
     // ✅ 댓글 등록
     @PostMapping("/{reviewId}/comments")
@@ -49,15 +58,34 @@ public class ReviewCommentController {
     }
 
     // ✅ 댓글 수정
-//    @PatchMapping("/{commentId}")
-//    public RsData<ReviewCommentDto.Response> updateComment(
-//            @PathVariable Long commentId,
-//            @Valid @RequestBody ReviewCommentDto.UpdateRequest updateRequest
-//    ) {
-//        return reviewCommentService.updateComment(commentId, updateRequest.getContent())
-//                .map(comment -> RsData.of("200", "댓글 수정 성공", new ReviewCommentDto.Response(comment)))
-//                .orElseGet(() -> RsData.of("404", "댓글을 찾을 수 없습니다."));
-//    }
+    @PatchMapping("/{reviewId}/comments/{commentId}")
+    public RsData<CommentModifyResponse> modifyComment(
+            @PathVariable Long reviewId,
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentModifyRequest req
+    ) {
+        Optional<ReviewComment> optComment = reviewCommentService.findByCommentId(commentId);
+
+        if (optComment.isEmpty()) {
+            return RsData.of("404", "%d번 댓글이 존재하지 않습니다.".formatted(commentId));
+        }
+
+        // ✅ 수정 권한 체크 (작성자 본인만 수정 가능)
+        SiteUser currentUser = rq.getSiteUser();
+        ReviewComment comment = optComment.get();
+        if (currentUser == null || !comment.getCreatedBy().equals(currentUser.getUserName())) {
+            return RsData.of("403", "수정 권한이 없습니다.");
+        }
+
+        // ✅ 실제 수정 처리
+        RsData<ReviewComment> modifyRs = reviewCommentService.modifyComment(comment, req.getReviewComment());
+
+        return RsData.of(
+                modifyRs.getResultCode(),
+                modifyRs.getMsg(),
+                new CommentModifyResponse(modifyRs.getData())
+        );
+    }
 //
 //    // ✅ 댓글 삭제
 //    @DeleteMapping("/{commentId}")

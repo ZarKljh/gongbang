@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import api from '@/app/utils/api'
+import { FaRegThumbsUp } from "react-icons/fa";
 
 export default function Review() {
     const [reviews, setReviews] = useState([])
@@ -211,6 +212,40 @@ export default function Review() {
         }
     }
 
+    // 댓글 수정
+    // ✅ 댓글 수정
+    const handleCommentEdit = async (reviewId, commentId) => {
+        if (!reviewComment.trim()) {
+            alert('수정할 내용을 입력해주세요.')
+            return
+        }
+
+        try {
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    review_comment: reviewComment,
+                }),
+            })
+
+            if (res.ok) {
+                alert('댓글이 수정되었습니다.')
+                setReviewComment('')
+                setActiveCommentBox(null)
+                fetchComment(reviewId) // 수정 후 다시 불러오기
+            } else if (res.status === 401) {
+                alert('로그인이 필요합니다.')
+                window.location.href = '/auth/login'
+            } else {
+                alert('댓글 수정 실패')
+            }
+        } catch (err) {
+            console.error('댓글 수정 에러:', err)
+        }
+    }
+
     // 로그인 했을 때 userId와 맞는 리뷰에만 나타나게 수정해야함.
     const handleDeleteClick = async (reviewId) => {
         const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
@@ -242,13 +277,16 @@ export default function Review() {
             <div
                 style={{
                     maxWidth: '1200px',
-                    height: '700px',
+                    height: '200px',
                     border: '2px solid gray',
                     borderRadius: '8px',
                     marginBottom: '80px',
                 }}
             >
-                배너들어갈 자리
+                배너들어갈 자리, 현재는 200px로 줄여놓음 - 900px 늘리기.
+                <br />
+                리뷰와 관련된 이미지와 리뷰 작성을 장려?하는 텍스트 삽입.
+                <br />
                 <img src="https://kr.pinterest.com/pin/952581758702094370/" alt="임시 이미지" />
             </div>
             <>
@@ -337,7 +375,8 @@ export default function Review() {
                                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d66464ff')}
                                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF8080')}
                                     >
-                                        ♡ {likeCounts[review.reviewId] ?? review.reviewLike}
+                                            <FaRegThumbsUp/>
+                                        {likeCounts[review.reviewId] ?? review.reviewLike}
                                     </button>{' '}
                                     /<button onClick={() => handleDeleteClick(review.reviewId)}>삭제</button>
                                     <br />
@@ -369,26 +408,84 @@ export default function Review() {
                                         <div>{review.content}</div>
                                     </div>
                                     {/* ✅ 댓글 표시 */}
+                                    {/* ✅ 댓글 표시 / 수정 기능 */}
                                     {comments[review.reviewId]?.reviewComment ? (
-                                        // 댓글이 있을 때 → 댓글 내용 박스만 보여줌
-                                        <div
-                                            style={{
-                                                marginTop: '8px',
-                                                width: '800px',
-                                                height: '30px',
-                                                border: '1px solid #ccc',
-                                                borderRadius: '5px',
-                                                padding: '5px',
-                                                marginBottom: '8px',
-                                                backgroundColor: '#fafafa',
-                                            }}
-                                        >
-                                            {comments[review.reviewId].reviewComment}
-                                        </div>
-                                    ) : (
-                                        // 댓글이 없을 때 → 버튼 + 입력창
                                         <>
-                                            {/* 💬 댓글 달기 버튼 */}
+                                            {/* 댓글 내용 */}
+                                            <div
+                                                style={{
+                                                    marginTop: '8px',
+                                                    width: '800px',
+                                                    minHeight: '30px',
+                                                    border: '1px solid #ccc',
+                                                    borderRadius: '5px',
+                                                    padding: '8px',
+                                                    backgroundColor: '#fafafa',
+                                                    whiteSpace: 'pre-wrap',
+                                                }}
+                                            >
+                                                {comments[review.reviewId].reviewComment}
+                                            </div>
+
+                                            {/* ✏️ 댓글 수정 버튼 (작성자만 가능) */}
+                                            <button
+                                                style={{
+                                                    backgroundColor: '#AD9263',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    padding: '4px 10px',
+                                                    marginTop: '5px',
+                                                    cursor: 'pointer',
+                                                }}
+                                                onClick={() =>
+                                                    setActiveCommentBox(
+                                                        activeCommentBox === `edit-${review.reviewId}`
+                                                            ? null
+                                                            : `edit-${review.reviewId}`,
+                                                    )
+                                                }
+                                            >
+                                                ✏️ 댓글 수정
+                                            </button>
+
+                                            {/* 수정창 */}
+                                            {isLoggedIn && activeCommentBox === `edit-${review.reviewId}` && (
+                                                <div style={{ marginTop: '10px' }}>
+                                                    <textarea
+                                                        placeholder="수정할 댓글 내용을 입력하세요."
+                                                        style={{
+                                                            width: '300px',
+                                                            height: '60px',
+                                                            border: '1px solid #ccc',
+                                                            borderRadius: '8px',
+                                                            padding: '5px',
+                                                            resize: 'none',
+                                                        }}
+                                                        value={reviewComment}
+                                                        onChange={(e) => setReviewComment(e.target.value)}
+                                                    />
+                                                    <br />
+                                                    <button
+                                                        onClick={() => handleCommentEdit(review.reviewId, comments[review.reviewId])}
+                                                        style={{
+                                                            backgroundColor: '#AD9263',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            padding: '6px 14px',
+                                                            marginTop: '5px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        저장
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* 댓글이 없을 때만 “댓글 달기” 버튼 */}
                                             <button
                                                 style={{
                                                     backgroundColor: '#bfbfbf',
@@ -414,7 +511,6 @@ export default function Review() {
                                                 💬 댓글 달기
                                             </button>
 
-                                            {/* ✅ 로그인 상태에서만 댓글 입력창 표시 */}
                                             {isLoggedIn && activeCommentBox === review.reviewId && (
                                                 <div style={{ marginTop: '10px' }}>
                                                     <textarea
