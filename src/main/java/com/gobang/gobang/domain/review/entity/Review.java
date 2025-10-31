@@ -1,6 +1,8 @@
 package com.gobang.gobang.domain.review.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,6 +26,7 @@ import java.util.List;
 public class Review {
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<ReviewComment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)

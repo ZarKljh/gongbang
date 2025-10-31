@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.review.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gobang.gobang.global.jpa.BaseEntity;

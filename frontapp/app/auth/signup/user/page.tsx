@@ -33,7 +33,7 @@ export default function SignupUser() {
       birth: birthDateTime,
     };
     */
-    const response = await fetch(`http://localhost:8090/api/auth/signup/user`, {
+    const response = await fetch(`http://localhost:8090/api/v1/auth/signup/user`, {
       method: "POST",
       //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
       headers: {
