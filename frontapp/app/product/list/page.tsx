@@ -61,6 +61,7 @@ export default function Product() {
     }
     const onClickSubCategory = (id: number) => {
         setSelectedSubCatId(id) // 클릭한 서브카테고리의 id를 상태에 저장
+        setSelectedBtn({}) // ✅ 선택 초기화 (선택)
     }
     //
 
@@ -156,6 +157,7 @@ export default function Product() {
     }, [selectedSubCategoryId])
 
     const submitFilter = (extra?: Record<string, string>) => {
+        if (selectedSubCategoryId == null) return
         const form = document.getElementById('filterForm') as HTMLFormElement | null
         if (!form) return
         // 폼의 현재 값 수집
@@ -175,12 +177,13 @@ export default function Product() {
         }
 
         api.get(`product/${selectedCategoryId}/search`, { params: payload }).then((res) => {
-            if (!res.data?.data?.items) {
+            if (!res.data?.data?.productFilterList) {
                 console.warn('응답 데이터 구조 이상')
+                console.log(res.data.data.productFilterList)
                 return
             }
-            console.log(res.data.data.items)
-            setItems(res.data.data.items)
+            console.log(res.data.data.productFilterList)
+            setItems(res.data.data.productFilterList)
         })
         // .catch((err) => {
         //     console.error('상품 검색 실패:', err.response?.data ?? err.message)
@@ -195,7 +198,7 @@ export default function Product() {
         }
         const extra = buildExtra(selectedBtn)
         submitFilter(extra)
-    }, [selectedBtn])
+    }, [selectedBtn, selectedSubCategoryId])
 
     return (
         <>
@@ -340,12 +343,34 @@ export default function Product() {
                                 <article>
                                     <a href="#" className={styles.cardLink} aria-label="카드 1 자세히 보기">
                                         <figure className={styles.cardMedia}>
-                                            <img
-                                                src="/images/placeholder.png"
-                                                alt="카드 1 대표 이미지"
-                                                loading="lazy"
-                                            />
+                                            <img alt="카드 1 대표 이미지" loading="lazy" />
                                         </figure>
+                                        <h3 className={styles.cardTitle}>{p.name}</h3>
+                                        <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
+                                    </a>
+                                    <footer className={styles.cardActions}>
+                                        <a href="#" className={styles.btnRead}>
+                                            자세히
+                                        </a>
+                                    </footer>
+                                </article>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
+
+            <section aria-labelledby="cards-title">
+                <h2 id="cards-title">카드섹션2</h2>
+                {items.length == 0 ? (
+                    <p className="text-sm text-gray-500">표시할 상품목록이 없습니다.</p>
+                ) : (
+                    <ul className={styles.cardGrid} role="list">
+                        {items.map((p) => (
+                            <li className={styles.card} key={p.id}>
+                                <article>
+                                    <a href="#" className={styles.cardLink} aria-label="카드 1 자세히 보기">
+                                        <figure className={styles.cardMedia}></figure>
                                         <h3 className={styles.cardTitle}>{p.name}</h3>
                                         <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
                                     </a>

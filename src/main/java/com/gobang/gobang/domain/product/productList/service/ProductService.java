@@ -16,10 +16,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public List<ProductDto> getProductList(Long subCategoryId, int size)  {
+    public List<ProductDto> getProductList(Long subCategoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
 
-        List<Product> ProductList = productRepository.findBySubcategoryIdAndStatus(subCategoryId, PageRequest.of(0, limit), ProductStatus.PUBLISHED);
+        List<Product> ProductList = productRepository.findBySubcategoryIdAndStatusOrderByBasePriceAscIdAsc(subCategoryId, PageRequest.of(0, limit), ProductStatus.PUBLISHED);
         if (ProductList.isEmpty()) {
             throw new RuntimeException("상품 목록이 비어있습니다.");
         }
@@ -43,5 +43,35 @@ public class ProductService {
                         .build()
                 )
                 .toList();
+    }
+
+    public List<ProductDto> getProductFilterList(Long subCategoryId, int size, List<String> colors) {
+        int limit = Math.max(1, Math.min(size, 50));
+        boolean useColor = colors != null && !colors.isEmpty();
+        List<Product> ProductFilterList =  productRepository.getProductFilterList(subCategoryId, PageRequest.of(0, limit), useColor, colors);
+        if (ProductFilterList.isEmpty()) {
+            throw new RuntimeException("상품 목록이 비어있습니다.");
+        }
+        return ProductFilterList.stream()
+                .map(t -> ProductDto.builder()
+                        .id(t.getId())
+                        .name(t.getName())
+                        .subtitle(t.getSubtitle())
+                        .summary(t.getSummary())
+                        .description(t.getDescription())
+                        .basePrice(t.getBasePrice())
+                        .stockQuantity(t.getStockQuantity())
+                        .slug(t.getSlug())
+                        .status(t.getStatus())
+                        .active(t.getActive())
+                        .categoryId(t.getCategoryId())
+                        .themeId(t.getThemeId())
+                        .subcategoryId(t.getSubcategory() != null ? t.getSubcategory().getId() : null)
+                        .seoTitle(t.getSeoTitle())
+                        .seoDescription(t.getSeoDescription())
+                        .build()
+                )
+                .toList();
+
     }
 }
