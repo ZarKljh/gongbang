@@ -66,55 +66,9 @@ public class ApiV1AdminController {
         ));
     }
 
-    // 신고 목록
-    @GetMapping("/reports")
-    public ResponseEntity<Map<String, Object>> listReports(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String status
-    ) {
-        // 체크용 더미 데이터
-        var content = List.of(
-                Map.of(
-                        "id", 30231,
-                        "type", "SPAM",
-                        "status", status == null ? "PENDING" : status,
-                        "target", Map.of("type", "comment", "id", 112, "summary", "90% 할인 링크 반복"),
-                        "createdAt", Instant.now().minusSeconds(1200).toString()
-                )
-        );
-        return ResponseEntity.ok(Map.of(
-                "content", content,
-                "page", page,
-                "size", size,
-                "total", 1
-        ));
-    }
 
-    // 신고 결정
-    @PostMapping("/reports/{id}/decision")
-    public ResponseEntity<Map<String, Object>> decideReport(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> body,
-            @RequestHeader(value = "Idempotency-Key", required = false) String idemKey
-    ) {
-        String decision = String.valueOf(body.getOrDefault("decision", "APPROVE"));
-        // 체크용 더미 데이터, 아이디 상태 변경
-        String newStatus = switch (decision) {
-            case "APPROVE" -> "RESOLVED";
-            case "HOLD"    -> "IN_PROGRESS";
-            case "REJECT"  -> "REJECTED";
-            default        -> "PENDING";
-        };
-        return ResponseEntity.ok(Map.of(
-                "reportId", id,
-                "status", newStatus,
-                "decision", decision,
-                "auditId", 55501,
-                "notificationId", 99001,
-                "idemKey", idemKey
-        ));
-    }
+
+
 
     // 입점 신청 목록
     @GetMapping("/applications")

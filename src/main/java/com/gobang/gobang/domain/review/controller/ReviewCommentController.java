@@ -3,22 +3,26 @@ package com.gobang.gobang.domain.review.controller;
 import com.gobang.gobang.domain.review.dto.request.CommentCreateRequest;
 import com.gobang.gobang.domain.review.dto.response.CommentCreateResponse;
 import com.gobang.gobang.domain.review.dto.response.CommentResponse;
+import com.gobang.gobang.domain.review.entity.ReviewComment;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/reviews/comments")
+@RequestMapping("/api/v1/reviews")
 public class ReviewCommentController {
 
     private final ReviewCommentService reviewCommentService;
 
     // ✅ 댓글 등록
-    @PostMapping("")
+    @PostMapping("/{reviewId}/comments")
     public RsData<CommentCreateResponse> createComment(
+            @PathVariable Long reviewId,
             @Valid @RequestBody CommentCreateRequest createRequest
     ) {
         return reviewCommentService.createComment(createRequest)
@@ -27,11 +31,22 @@ public class ReviewCommentController {
     }
 
 //    @GetMapping("/{reviewId}/comments")
-//    public RsData<CommentResponse> getComment(@PathVariable Long reviewId) {
-//        return reviewCommentService.getCommentByReviewId(reviewId)
-//                .map(comment -> RsData.of("200", "댓글 조회 성공", new CommentResponse(comment)))
-//                .orElseGet(() -> RsData.of("404", "댓글이 존재하지 않습니다."));
+//    public RsData<?> getComments(@PathVariable Long reviewId) {
+//        List<ReviewComment> comments = reviewCommentService.findByReviewId(reviewId);
+//
+//        List<CommentResponse> result = comments.stream()
+//                .map(c -> new CommentResponse(c.getCommentId(), c.getContent(), c.getCreatedBy()))
+//                .toList();
+//
+//        return RsData.of("200", "성공", result);
 //    }
+
+    @GetMapping("/{reviewId}/comments")
+    public RsData<CommentResponse> getComments(@PathVariable Long reviewId) {
+        return reviewCommentService.getCommentByReviewId(reviewId)
+                .map(comment -> RsData.of("200", "댓글 조회 성공", new CommentResponse(comment)))
+                .orElseGet(() -> RsData.of("404", "댓글이 존재하지 않습니다."));
+    }
 
     // ✅ 댓글 수정
 //    @PatchMapping("/{commentId}")

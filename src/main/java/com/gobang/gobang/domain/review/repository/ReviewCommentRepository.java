@@ -13,6 +13,8 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
 
 //    Optional<Object> findByReviewId(@NotNull(message = "리뷰 ID는 필수입니다.") Long reviewId);
     Optional<ReviewComment> findByReview(Review review);
+
+    Optional<ReviewComment> findFirstByReview_ReviewId(Long reviewId);
 //    Optional<ReviewComment> findByReview_ReviewId(Long reviewId);
 
 }

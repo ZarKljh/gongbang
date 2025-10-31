@@ -3,6 +3,8 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import ProductList from '../components/productListOfStudio'
+import ProductListScroll from '../components/productListScrollOfStudio'
 
 export default function viewStudioInfo() {
     const params = useParams()
@@ -27,6 +29,7 @@ export default function viewStudioInfo() {
         studioAddDetail: '',
     })
     const [studioList, setStudioList] = useState([])
+    const [productList, setProductList] = useState([])
 
     useEffect(() => {
         if (!studioId) {
@@ -73,7 +76,24 @@ export default function viewStudioInfo() {
                 router.back()
             }
         }
+        /*
+        const fetchProductList = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}/products`, {
+                    method: 'GET',
+                    credentials: 'include',
+                })
+                const result = await response.json()
+                console.log('productList 정보를 셋팅하였습니다')
+                setProductList(result.data.content)
+                console.log('productList 정보를 셋팅하였습니다')
+            } catch (error) {
+                console.error('상품 리스트 로딩 실패:', error)
+            }
+        }
+        */
         fetchStudioById()
+        //fetchProductList()
     }, [studioId])
 
     return (
@@ -117,6 +137,10 @@ export default function viewStudioInfo() {
                     ))}
                 </ul>
             </section>
+            {/* ✅ 상품 리스트 컴포넌트 삽입 */}
+            {/*<ProductList products={productList} />*/}
+            {/* ✅ 상품 리스트with 무한스크롤 컴포넌트 삽입 */}
+            <ProductListScroll studioId={studioId} />
         </>
     )
 }
