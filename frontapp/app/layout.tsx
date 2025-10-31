@@ -1,9 +1,11 @@
-
+// app/layout.tsx (또는 app/layout.jsx)
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
+import ClientNav from "./components/ClientNav";
 import ReactQueryProviders from '@/app/utils/ReactQueryProviders'
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,24 +24,48 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="ko">
+      <body>
+        {/* 1) Chatling 설정: embed.js보다 먼저 실행되어야 함 */}
+        <Script
+          id="chatling-config"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window.chtlConfig = { chatbotId: "9369741529" };`,
+          }}
+        />
 
-    return (
-        <html lang="ko">
-            <body>
-                <nav>
-                    <Link href="/">홈 </Link>
+        {/* 2) Chatling 로더 */}
+        <Script
+          id="chatling-embed"
+          strategy="afterInteractive"
+          src="https://chatling.ai/js/embed.js"
+          data-id="9369741529"
+          async
+        />
+
+        <nav>
+         <Link href="/">홈 </Link>
                     <Link href="/product/list">상품 </Link>
                     <Link href="/theme">테마목록 </Link>
                     <Link href="/review">리뷰</Link>
                     <Link href="/personal">마이페이지</Link>
                     <Link href="/auth/login">로그인</Link>
                     <Link href="/auth/signup">회원가입</Link>
+                    <ClientNav />
+                    <Link
+                      href="/support/faq"
+                      className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
+                      prefetch
+                    >
+                    F&Q
+                    </Link>
                 </nav>
                 <ReactQueryProviders>{children}</ReactQueryProviders>
-            </body>
-        </html>
-    )
+      </body>
+    </html>
+  );
+
 }
