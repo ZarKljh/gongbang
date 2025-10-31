@@ -1,9 +1,21 @@
 // app/layout.tsx (또는 app/layout.jsx)
-import type { Metadata } from "next";
-import "./globals.css";
-import Link from "next/link";
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import Link from 'next/link'
 import ClientNav from "./components/ClientNav";
+import ReactQueryProviders from '@/app/utils/ReactQueryProviders'
 import Script from "next/script";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -35,20 +47,25 @@ export default function RootLayout({
         />
 
         <nav>
-          <Link href="/member/login">로그인</Link>
-          <Link href="/member/logout">로그아웃</Link>
-          <ClientNav />
-          <Link
-            href="/support/faq"
-            className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
-            prefetch
-          >
-            F&Q
-          </Link>
-        </nav>
-
-        {children}
+         <Link href="/">홈 </Link>
+                    <Link href="/product/list">상품 </Link>
+                    <Link href="/theme">테마목록 </Link>
+                    <Link href="/review">리뷰</Link>
+                    <Link href="/personal">마이페이지</Link>
+                    <Link href="/auth/login">로그인</Link>
+                    <Link href="/auth/signup">회원가입</Link>
+                    <ClientNav />
+                    <Link
+                      href="/support/faq"
+                      className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
+                      prefetch
+                    >
+                    F&Q
+                    </Link>
+                </nav>
+                <ReactQueryProviders>{children}</ReactQueryProviders>
       </body>
     </html>
   );
+
 }
