@@ -8,45 +8,7 @@ interface Props {
     onSubmit: () => void
 }
 
-declare global {
-    interface Window {
-        daum: any
-    }
-}
-
 export default function StudioForm({ studioInfo, onChange, onSubmit }: Props) {
-    const simulateChangeEvent = (name: string, value: string) => {
-        const event = {
-            target: {
-                name,
-                value,
-            },
-        } as React.ChangeEvent<HTMLInputElement>
-        onChange(event)
-    }
-    const handleAddressSearch = () => {
-        if (typeof window === 'undefined' || !window.daum) {
-            alert('주소 검색 기능을 사용할 수 없습니다. 페이지를 새로고침 해주세요.')
-            return
-        }
-
-        new window.daum.Postcode({
-            oncomplete: function (data: any) {
-                simulateChangeEvent('studioAddPostNumber', data.zonecode)
-                simulateChangeEvent('studioAddMain', data.roadAddress)
-                /*
-                const { zonecode, roadAddress } = data            
-                onChange({
-                    target: { name: 'studioAddPostNumber', value: data.zonecode, type: 'text' },
-                } as React.ChangeEvent<HTMLInputElement>)
-                onChange({
-                    target: { name: 'studioAddMain', value: data.roadAddress, type: 'text' },
-                } as React.ChangeEvent<HTMLInputElement>)
-                */
-            },
-        }).open()
-    }
-
     return (
         <div>
             <h4>매장 정보 입력</h4>
@@ -133,14 +95,6 @@ export default function StudioForm({ studioInfo, onChange, onSubmit }: Props) {
                     placeholder="공방의 대표 이메일을 적어주세요"
                 />
             </div>
-
-            <div>
-                <label>주소 검색</label>
-                <button type="button" onClick={handleAddressSearch}>
-                    주소 찾기
-                </button>
-            </div>
-
             <div>
                 <label>우편번호</label>
                 <input
@@ -148,10 +102,9 @@ export default function StudioForm({ studioInfo, onChange, onSubmit }: Props) {
                     name="studioAddPostNumber"
                     value={studioInfo.studioAddPostNumber}
                     onChange={onChange}
-                    placeholder="우편번호를 검색해주세요"
+                    placeholder="공방소재지의 우편번호를 적어주세요"
                 />
             </div>
-
             <div>
                 <label>기본주소</label>
                 <input

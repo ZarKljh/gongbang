@@ -152,6 +152,9 @@ public class SiteUserService {
                 .studioFax(signupSellerRequest.getStudioFax())
                 .studioEmail(signupSellerRequest.getStudioEmail())
                 .studioBusinessNumber(signupSellerRequest.getStudioBusinessNumber())
+                .studioAddPostNumber(signupSellerRequest.getStudioAddPostNumber())
+                .studioAddMain(signupSellerRequest.getStudioAddMain())
+                .studioAddDetail(signupSellerRequest.getStudioAddDetail())
                 .build();
 
 
