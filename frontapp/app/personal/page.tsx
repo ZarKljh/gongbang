@@ -45,6 +45,8 @@ export default function MyPage() {
     })
     const [editAddressModal, setEditAddressModal] = useState(false)
     const [editAddressData, setEditAddressData] = useState<any>(null)
+    const [editPaymentModal, setEditPaymentModal] = useState(false)
+    const [editPaymentData, setEditPaymentData] = useState<any>(null)
     // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
         const fetchUser = async () => {
@@ -335,6 +337,36 @@ export default function MyPage() {
         } catch (error) {
             console.error(error)
             alert('배송지 수정 중 오류가 발생했습니다.')
+        }
+    }
+
+    // ------------------- 결제수단 -------------------
+    const handleSavePayment = async () => {
+        if (!newPayment.recipientName || !newPayment.basePayment || !newPayment.detailPayment) {
+            return alert('모두 입력해주세요.')
+        }
+
+        try {
+            const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, newPayment, { withCredentials: true })
+
+            if (data.resultCode === '200') {
+                alert('결제수단 등록 성공')
+                await fetchPayment(userData.id)
+                setIsPaymentModal(false) // 모달 닫기
+                setNewPayment({
+                    recipientName: '',
+                    zipcode: '',
+                    baseAddress: '',
+                    detailAddress: '',
+                    extraAddress: '',
+                    isDefault: false,
+                })
+            } else {
+                alert(`등록 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error(error)
+            alert('결제수단 등록 중 오류가 발생했습니다.')
         }
     }
 
