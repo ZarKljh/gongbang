@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useState, useEffect } from 'react'
 import { ChevronRight } from "lucide-react";
 import "@/app/personal/page.css"
+import Head from "next/head";
 
 export default function MyPage() {
     const [newPassword, setNewPassword] = useState('')
@@ -84,6 +85,16 @@ export default function MyPage() {
         loadAllData();
     }, [userData]);
 
+    //모달이 열릴 때 스크립트를 로드
+    useEffect(() => {
+        if (isAddressModal && !window.daum) {
+            const script = document.createElement("script");
+            script.src = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    }, [isAddressModal]);
+
     // ------------------- API 요청 함수 -------------------
     const fetchOrders = async (id: number) => {
         if (!id) return;
@@ -149,6 +160,35 @@ export default function MyPage() {
             console.error('통계 조회 실패:', error);
         }
     }
+
+    // 카카오 주소 AIP
+    const sample6_execDaumPostcode = () => {
+        if (!window.daum || !window.daum.Postcode) {
+            alert("카카오 우편번호 API가 아직 로드되지 않았습니다.");
+            return;
+        }
+
+        new window.daum.Postcode({
+            oncomplete: function(data) {
+            const addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+            let extraAddr = '';
+
+            if (data.userSelectedType === 'R') {
+                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
+                if (data.buildingName !== '' && data.apartment === 'Y')
+                extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                if (extraAddr !== '') extraAddr = ' (' + extraAddr + ')';
+                (document.getElementById('sample6_extraAddress') as HTMLInputElement).value = extraAddr;
+            } else {
+                (document.getElementById('sample6_extraAddress') as HTMLInputElement).value = '';
+            }
+
+            (document.getElementById('sample6_postcode') as HTMLInputElement).value = data.zonecode;
+            (document.getElementById('sample6_address') as HTMLInputElement).value = addr;
+            (document.getElementById('sample6_detailAddress') as HTMLInputElement).focus();
+            },
+        }).open();
+    };
 
     // ------------------- 이메일 인증 -------------------
     const handleSendEmail = async () => {
@@ -258,7 +298,7 @@ export default function MyPage() {
         const s = seconds % 60
         return `${h}시간 ${m}분 ${s}초`
     }
-
+    
     /** ------------------- 렌더링 ------------------- */
     return (
         <div className="mypage-container">
@@ -518,20 +558,35 @@ export default function MyPage() {
                         <button className="btn-primary" onClick={() => setIsAddressModal(true)}>+ 새 배송지 추가</button>
                     </div>
                     {isAddressModal && (
-                        <div className='address-modal'
+                        <div
+                            className="address-modal"
                             onClick={() => setIsAddressModal(false)} // 바깥 클릭 시 닫힘
                         >
-                            <div className='address-modal-content'
+                            <div
+                            className="address-modal-content"
                             onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
                             >
-                            <button className='address-modal-close'
+                            <button
+                                className="address-modal-close"
                                 onClick={() => setIsAddressModal(false)}
                             >
                                 &times;
                             </button>
 
                             <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
-                            <p>배송지 폼</p>
+
+                            <input type="text" id="sample6_postcode" placeholder="우편번호" />
+
+                            {/* 여기서 onClick을 React 방식으로 */}
+                            <input
+                                type="button"
+                                value="우편번호 찾기"
+                                onClick={sample6_execDaumPostcode}
+                            /><br />
+
+                            <input type="text" id="sample6_address" placeholder="주소" /><br />
+                            <input type="text" id="sample6_detailAddress" placeholder="상세주소" />
+                            <input type="text" id="sample6_extraAddress" placeholder="참고항목" />
                             </div>
                         </div>
                     )}
@@ -686,5 +741,6 @@ export default function MyPage() {
                 </div>
             </div>
         </div>
+        
     )
 }
