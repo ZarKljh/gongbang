@@ -58,8 +58,8 @@ public class ReviewCommentService {
         ReviewComment comment = ReviewComment.builder()
                 .review(reviewOpt.get())
                 .reviewComment(req.getReviewComment())
-//                .createdBy(seller.getUserName()) //BaseEntity의 createdBy에 저장
                 .createdBy(user.getUserName())
+                .createdDate(LocalDateTime.now())
                 .build();
 
         System.out.println("📥 받은 DTO: " + req);
@@ -103,10 +103,15 @@ public class ReviewCommentService {
     @Transactional
     public RsData<ReviewComment> modifyComment(
             ReviewComment comment,
-            @NotBlank(message = "수정할 댓글 내용을 입력해주세요.") String newContent
+            @NotBlank(message = "수정할 댓글 내용을 입력해주세요.") String newComment
     ) {
+
+        if (newComment == null || newComment.trim().isEmpty()) {
+            return RsData.of("400", "수정할 댓글 내용을 입력해주세요.");
+        }
+
         // 댓글 내용 수정
-        comment.setReviewComment(newContent);
+        comment.setReviewComment(newComment);
         comment.setModifiedDate(LocalDateTime.now());
 
         reviewCommentRepository.save(comment);

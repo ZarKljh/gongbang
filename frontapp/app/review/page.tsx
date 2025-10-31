@@ -212,7 +212,6 @@ export default function Review() {
         }
     }
 
-    // 댓글 수정
     // ✅ 댓글 수정
     const handleCommentEdit = async (reviewId, commentId) => {
         if (!reviewComment.trim()) {
@@ -482,7 +481,7 @@ export default function Review() {
                                                     />
                                                     <br />
                                                     <button
-                                                        onClick={() => handleCommentEdit(review.reviewId, comments[review.reviewId])}
+                                                        onClick={() => handleCommentEdit(review.reviewId, comments[review.reviewId]?.commentId)}
                                                         style={{
                                                             backgroundColor: '#AD9263',
                                                             color: 'white',
