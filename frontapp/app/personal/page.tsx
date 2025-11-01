@@ -21,8 +21,6 @@ export default function MyPage() {
     const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
     const [orders, setOrders] = useState<any[]>([])
-    const [addresses, setAddresses] = useState<any[]>([])
-    const [paymentMethods, setPaymentMethods] = useState<any[]>([])
     const [wishList, setWishList] = useState<any[]>([])
     const [followList, setFollowList] = useState<any[]>([])
     const [stats, setStats] = useState<any>({
@@ -30,11 +28,10 @@ export default function MyPage() {
         totalReviews: 0,
         membershipLevel: 'Newbie',
     })
-
-    // 모달
+    
+    // ------------------- 배송지 -------------------
+    const [addresses, setAddresses] = useState<any[]>([])
     const [isAddressModal, setIsAddressModal] = useState(false)
-    const [isPaymentModal, setIsPaymentModal] = useState(false)
-    const [isOrdersModal, setIsOrdersModal] = useState(false)
     const [newAddress, setNewAddress] = useState({
         recipientName: '',
         zipcode: '',
@@ -45,8 +42,20 @@ export default function MyPage() {
     })
     const [editAddressModal, setEditAddressModal] = useState(false)
     const [editAddressData, setEditAddressData] = useState<any>(null)
-    const [editPaymentModal, setEditPaymentModal] = useState(false)
-    const [editPaymentData, setEditPaymentData] = useState<any>(null)
+    
+    // ------------------- 결제수단 -------------------
+    const [paymentMethods, setPaymentMethods] = useState([])
+    const [isPaymentModal, setIsPaymentModal] = useState(false)
+    const [paymentType, setPaymentType] = useState('BANK')
+    const [bankName, setBankName] = useState('')
+    const [accountNumber, setAccountNumber] = useState('')
+    const [cardCompany, setCardCompany] = useState('')
+    const [cardNumber, setCardNumber] = useState('')
+    const [defaultPayment, setDefaultPayment] = useState(false)
+
+    // ------------------- 주문 -------------------
+    const [isOrdersModal, setIsOrdersModal] = useState(false)
+    
     // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
         const fetchUser = async () => {
@@ -106,6 +115,10 @@ export default function MyPage() {
         }
     }, [isAddressModal])
 
+    useEffect(() => {
+        fetchPaymentMethods();
+    }, []);
+
     // ------------------- API 요청 함수 -------------------
     const fetchOrders = async (id: number) => {
         if (!id) return
@@ -146,14 +159,20 @@ export default function MyPage() {
         }
     }
 
-    const fetchPaymentMethods = async (id: number) => {
-        if (!id) return
+    const fetchPaymentMethods = async () => {
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/payment-methods?userId=${id}`, { withCredentials: true })
-            setPaymentMethods(Array.isArray(data) ? data : [])
+            const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
+                withCredentials: true,
+            })
+
+            if (data.resultCode === '200') {
+                setPaymentMethods(data.data)
+            } else {
+                alert(`결제수단 조회 실패: ${data.msg}`)
+            }
         } catch (error) {
-            console.error('결제수단 조회 실패:', error)
-            setPaymentMethods([])
+            console.error(error)
+            alert('결제수단 조회 중 오류가 발생했습니다.')
         }
     }
 
@@ -341,32 +360,83 @@ export default function MyPage() {
     }
 
     // ------------------- 결제수단 -------------------
+    const resetPaymentForm = () => {
+        setPaymentType('BANK')
+        setBankName('')
+        setAccountNumber('')
+        setCardCompany('')
+        setCardNumber('')
+        setDefaultPayment(false)
+    }
+
     const handleSavePayment = async () => {
-        if (!newPayment.recipientName || !newPayment.basePayment || !newPayment.detailPayment) {
-            return alert('모두 입력해주세요.')
+        if (paymentType === 'BANK' && (!bankName || !accountNumber)) {
+        return alert('은행명과 계좌번호를 입력해주세요.')
+        }
+        if (paymentType === 'CARD' && (!cardCompany || !cardNumber)) {
+        return alert('카드사와 카드번호를 입력해주세요.')
+        }
+
+        const newPayment = {
+        type: paymentType,
+        bankName,
+        accountNumber,
+        cardCompany,
+        cardNumber,
+        defaultPayment,
         }
 
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, newPayment, { withCredentials: true })
+        const { data } = await axios.post(
+            `${API_BASE_URL}/payment-methods`,
+            newPayment,
+            { withCredentials: true }
+        )
 
-            if (data.resultCode === '200') {
-                alert('결제수단 등록 성공')
-                await fetchPayment(userData.id)
-                setIsPaymentModal(false) // 모달 닫기
-                setNewPayment({
-                    recipientName: '',
-                    zipcode: '',
-                    baseAddress: '',
-                    detailAddress: '',
-                    extraAddress: '',
-                    isDefault: false,
-                })
-            } else {
-                alert(`등록 실패: ${data.msg}`)
-            }
+        if (data.resultCode === '200') {
+            alert('결제수단 등록 성공')
+            await fetchPaymentMethods()
+            setIsPaymentModal(false)
+            resetPaymentForm()
+        } else {
+            alert(`등록 실패: ${data.msg}`)
+        }
         } catch (error) {
-            console.error(error)
-            alert('결제수단 등록 중 오류가 발생했습니다.')
+        console.error(error)
+        alert('결제수단 등록 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleDeletePayment = async (paymentId) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return
+
+        try {
+        await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
+            withCredentials: true,
+        })
+        alert('삭제 성공')
+        fetchPaymentMethods()
+        } catch (error) {
+        console.error(error)
+        alert('삭제 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleSetDefault = async (paymentId) => {
+        try {
+        const { data } = await axios.patch(
+            `${API_BASE_URL}/payment-methods/${paymentId}/default`,
+            {},
+            { withCredentials: true }
+        )
+        if (data.resultCode === '200') {
+            fetchPaymentMethods()
+        } else {
+            alert(`실패: ${data.msg}`)
+        }
+        } catch (error) {
+        console.error(error)
+        alert('기본 결제수단 설정 중 오류가 발생했습니다.')
         }
     }
 
@@ -925,14 +995,16 @@ export default function MyPage() {
                                     + 결제수단 추가
                                 </button>
                             </div>
+
+                            {/* 결제수단 추가 모달 */}
                             {isPaymentModal && (
                                 <div
                                     className="payment-modal"
-                                    onClick={() => setIsPaymentModal(false)} // 바깥 클릭 시 닫힘
+                                    onClick={() => setIsPaymentModal(false)}
                                 >
                                     <div
                                         className="payment-modal-content"
-                                        onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
+                                        onClick={(e) => e.stopPropagation()}
                                     >
                                         <button
                                             className="payment-modal-close"
@@ -941,12 +1013,105 @@ export default function MyPage() {
                                             &times;
                                         </button>
 
-                                        <h2 style={{ marginBottom: '10px' }}>새 결제수단 추가</h2>
-                                        <p>결제수단 폼</p>
+                                        <h2>새 결제수단 추가</h2>
+
+                                        {/* 폼 */}
+                                        <form
+                                            onSubmit={async (e) => {
+                                                e.preventDefault();
+                                                await handleSavePayment();
+                                            }}
+                                            className="space-y-4"
+                                        >
+                                            {/* 결제 타입 */}
+                                            <div>
+                                                <label>결제수단 종류</label>
+                                                <select
+                                                    value={paymentType}
+                                                    onChange={(e) => setPaymentType(e.target.value)}
+                                                >
+                                                    <option value="BANK">은행 계좌</option>
+                                                    <option value="CARD">신용/체크카드</option>
+                                                </select>
+                                            </div>
+
+                                            {/* 은행 계좌 */}
+                                            {paymentType === 'BANK' && (
+                                                <>
+                                                    <div>
+                                                        <label>은행명</label>
+                                                        <input
+                                                            type="text"
+                                                            value={bankName}
+                                                            onChange={(e) => setBankName(e.target.value)}
+                                                            placeholder="예: 신한은행"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label>계좌번호</label>
+                                                        <input
+                                                            type="text"
+                                                            value={accountNumber}
+                                                            onChange={(e) => setAccountNumber(e.target.value)}
+                                                            placeholder="123-4567-8901-23"
+                                                        />
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* 카드 */}
+                                            {paymentType === 'CARD' && (
+                                                <>
+                                                    <div>
+                                                        <label>카드사</label>
+                                                        <input
+                                                            type="text"
+                                                            value={cardCompany}
+                                                            onChange={(e) => setCardCompany(e.target.value)}
+                                                            placeholder="예: 현대카드"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label>카드번호</label>
+                                                        <input
+                                                            type="text"
+                                                            value={cardNumber}
+                                                            onChange={(e) => setCardNumber(e.target.value)}
+                                                            placeholder="1234-5678-9012-3456"
+                                                        />
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* 기본 결제수단 */}
+                                            <div>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={defaultPayment}
+                                                    onChange={(e) => setDefaultPayment(e.target.checked)}
+                                                />
+                                                <span>기본 결제수단으로 설정</span>
+                                            </div>
+
+                                            {/* 버튼 */}
+                                            <div className="modal-buttons">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsPaymentModal(false)}
+                                                    className="btn-secondary"
+                                                >
+                                                    취소
+                                                </button>
+                                                <button type="submit" className="btn-primary">
+                                                    등록
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             )}
 
+                            {/* 결제수단 목록 */}
                             {paymentMethods.length === 0 ? (
                                 <div className="empty-state">등록된 결제수단이 없습니다.</div>
                             ) : (
@@ -966,7 +1131,21 @@ export default function MyPage() {
                                                         <p>{method.cardNumber || method.accountNumber}</p>
                                                     </div>
                                                 </div>
-                                                <button className="link-btn">수정</button>
+
+                                                <div className="card-actions">
+                                                    <button
+                                                        className="link-btn"
+                                                        onClick={() => handleSetDefault(method.paymentId)}
+                                                    >
+                                                        기본설정
+                                                    </button>
+                                                    <button
+                                                        className="link-btn delete"
+                                                        onClick={() => handleDeletePayment(method.paymentId)}
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
