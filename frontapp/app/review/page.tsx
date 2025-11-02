@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import api from '@/app/utils/api'
-import { FaRegThumbsUp, FaStar } from "react-icons/fa";
+import { FaRegThumbsUp, FaStar } from 'react-icons/fa'
 
 export default function Review() {
     const [reviews, setReviews] = useState([])
@@ -15,28 +15,8 @@ export default function Review() {
     const [totalPages, setTotalpages] = useState(0)
     const [currentPage, setCurrentPage] = useState(0)
     const reviewTopRef = useRef<HTMLDivElement>(null)
+    const [roleType, setRoleType] = useState(null)
 
-    ///// ======== font 페이징 관련 ========
-    // const [currentPage, setCurrentPage] = useState(1)
-    // const itemsPerPage = 10
-    // // 배열 10개씩 잘라 보여주기
-    // const indexOfLastItem = currentPage * itemsPerPage
-    // const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    // const currentReviews = reviews.slice(indexOfFirstItem, indexOfLastItem)
-
-    // const totalPages = Math.ceil(reviews.length / itemsPerPage)
-
-    // const handlePageChange = (pageNumber) => {
-    //     if (pageNumber < 1 || pageNumber > totalPages) return
-    //     setCurrentPage(pageNumber)
-    // }
-    ///// 페이징 관련 =======================
-
-    // 페이지 많아졌을 시 현재 5페이지면 “3 4 5 6 7”만 표시 (나중에 사용)
-    //     const visiblePages = [...Array(totalPages)].slice(
-    //   Math.max(0, currentPage - 2),
-    //   Math.min(totalPages, currentPage + 3)
-    // );
 
     useEffect(() => {
         checkLoginStatus()
@@ -50,13 +30,22 @@ export default function Review() {
                 method: 'GET',
                 credentials: 'include',
             })
+
             if (res.ok) {
+                const data = await res.json()
+                console.log('✅ 로그인된 사용자:', data.data)
+                console.log('✅ 역할:', data?.data?.role)
+
                 setIsLoggedIn(true)
+                setRoleType(data?.data?.role || null)
             } else {
                 setIsLoggedIn(false)
+                setRoleType(null)
             }
-        } catch {
+        } catch (err) {
+            console.error('로그인 상태 확인 실패', err)
             setIsLoggedIn(false)
+            setRoleType(null)
         }
     }
 
@@ -212,7 +201,7 @@ export default function Review() {
         }
     }
 
-    // ✅ 댓글 수정
+    // 댓글 수정
     const handleCommentEdit = async (reviewId, commentId) => {
         if (!reviewComment.trim()) {
             alert('수정할 내용을 입력해주세요.')
@@ -245,6 +234,28 @@ export default function Review() {
         }
     }
 
+    // 댓글 삭제
+    const handleCommentDelete = async (reviewId, commentId) => {
+        if (!confirm('정말 댓글을 삭제하시겠습니까?')) return
+
+        try {
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            })
+
+            const data = await res.json()
+            if (res.ok) {
+                alert('댓글이 삭제되었습니다.')
+                fetchComment(reviewId)
+            } else {
+                alert(data.msg || '댓글 삭제 실패')
+            }
+        } catch (err) {
+            console.error('댓글 삭제 에러:', err)
+        }
+    }
+
     // 로그인 했을 때 userId와 맞는 리뷰에만 나타나게 수정해야함.
     const handleDeleteClick = async (reviewId) => {
         const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
@@ -265,364 +276,386 @@ export default function Review() {
         // }
     }
 
-    return (
-        <div
-            style={{
-                maxWidth: '1200px',
-                margin: '0 auto',
-                padding: '0 20px',
-            }}
-        >
-            <div
+return (
+  <div
+    style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '0 20px',
+    }}
+  >
+    {/* 🎨 상단 배너 */}
+    <div
+      style={{
+        maxWidth: '1200px',
+        height: '200px',
+        border: '2px solid gray',
+        borderRadius: '8px',
+        marginBottom: '80px',
+      }}
+    >
+      배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정
+      <br />
+      리뷰 이미지를 추가하고 리뷰 작성 유도 문구 삽입
+    </div>
+
+    {/* 제목 + 버튼 */}
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      <h2>리뷰 목록</h2>
+      <button
+        onClick={handleCreateClick}
+        style={{
+          backgroundColor: '#bfbfbf',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '8px 16px',
+          cursor: 'pointer',
+        }}
+      >
+        리뷰 작성하기
+      </button>
+    </div>
+
+    <hr />
+
+    {/* 📸 포토 리뷰 */}
+    <div className="photoReview">
+      <h3>포토 리뷰</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        {[1, 2, 3, 4, 5].map((num) => (
+          <Link key={num} href="#">
+            포토리뷰{num}
+          </Link>
+        ))}
+      </div>
+      <hr style={{ marginTop: '100px' }} />
+    </div>
+
+    {/* 📜 리뷰 목록 */}
+    <div>
+      <h3>리뷰</h3>
+    </div>
+
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <h4>번호 / 작성일 / 별점 / 작성자 / 좋아요 / 삭제</h4>
+
+      {reviews.length === 0 ? (
+        <p>현재 작성된 리뷰가 없습니다.</p>
+      ) : (
+        <ul>
+          {reviews.map((review) => (
+            <li key={review.reviewId} style={{ marginBottom: '30px' }}>
+              {/* 🧾 리뷰 기본정보 */}
+              {review.reviewId} / {review.createdDate} / {review.rating} / {review.userId}(
+              {review.createdBy}) /
+
+              {/* 👍 좋아요 */}
+              <button
+                onClick={() => handleLikeClick(review.reviewId)}
                 style={{
-                    maxWidth: '1200px',
-                    height: '200px',
-                    border: '2px solid gray',
-                    borderRadius: '8px',
-                    marginBottom: '80px',
+                  backgroundColor: '#FF8080',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '6px 14px',
+                  marginTop: '5px',
+                  cursor: 'pointer',
+                  transition: '0.2s',
                 }}
-            >
-                배너들어갈 자리, 현재는 200px로 줄여놓음 - 900px 늘리기.
-                <br />
-                리뷰와 관련된 이미지와 리뷰 작성을 장려?하는 텍스트 삽입.
-                <br />
-                <img src="https://kr.pinterest.com/pin/952581758702094370/" alt="임시 이미지" />
-            </div>
-            <>
-                {/* 제목 + 버튼 */}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d66464')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF8080')}
+              >
+                <FaRegThumbsUp /> {likeCounts[review.reviewId] ?? review.reviewLike}
+              </button>{' '}
+              /
+              <button onClick={() => handleDeleteClick(review.reviewId)}>삭제</button>
+
+              {/* 📃 리뷰 내용 */}
+              <h4 style={{ margin: '5px' }}>📃 리뷰 내용</h4>
+              <div
+                onClick={() => (window.location.href = `/review/${review.reviewId}`)}
+                style={{
+                  display: '-webkit-box',
+                  width: '800px',
+                  height: '80px',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  padding: '5px',
+                  overflow: 'hidden',
+                  WebkitLineClamp: '4',
+                  WebkitBoxOrient: 'vertical',
+                  cursor: 'pointer',
+                  transition: '.3s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+              >
+                <div>{review.content}</div>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <FaStar
+                      key={num}
+                      size={24}
+                      color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
+                      style={{ marginRight: '4px' }}
+                    />
+                  ))}
+                  <small style={{ marginLeft: '6px', color: '#555' }}>{review.rating} / 5</small>
+                </div>
+              </div>
+
+              {/* 💬 댓글 표시 (누구에게나 보여짐) */}
+              {comments[review.reviewId]?.reviewComment ? (
                 <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                    }}
+                  style={{
+                    marginTop: '8px',
+                    width: '800px',
+                    minHeight: '30px',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    padding: '8px',
+                    backgroundColor: '#fafafa',
+                    whiteSpace: 'pre-wrap',
+                  }}
                 >
-                    <h2>리뷰 목록</h2>
-                    <button
-                        onClick={handleCreateClick}
-                        style={{
-                            backgroundColor: '#bfbfbf',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 16px',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        리뷰 작성하기
-                    </button>
+                  {comments[review.reviewId].reviewComment}
                 </div>
-
-                <hr />
-                <div className="photoReview">
-                    <h3>포토 리뷰</h3>
-                    <div
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                        }}
-                    >
-                        <div>
-                            <Link href="#">포토리뷰1</Link>
-                        </div>
-                        <div>
-                            <Link href="#">포토리뷰2</Link>
-                        </div>
-                        <div>
-                            <Link href="#">포토리뷰3</Link>
-                        </div>
-                        <div>
-                            <Link href="#">포토리뷰4</Link>
-                        </div>
-                        <div>
-                            <Link href="#">포토리뷰5</Link>
-                        </div>
-                    </div>
-                    <hr style={{ marginTop: '100px' }} />
-                </div>
-                <div ref={reviewTopRef} aria-hidden>
-                    <h3>리뷰</h3>
-                </div>
+              ) : (
                 <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                    }}
+                  style={{
+                    marginTop: '8px',
+                    width: '800px',
+                    border: '1px solid #ddd',
+                    borderRadius: '5px',
+                    padding: '8px',
+                    color: '#999',
+                    fontStyle: 'italic',
+                  }}
                 >
-                    <h4>번호 / 작성일 / 별점 / userId(이름)/ 좋아요버튼 / 삭제버튼</h4>
-                    {reviews.length === 0 ? (
-                        <p>현재 작성된 리뷰가 없습니다.</p>
-                    ) : (
-                        <ul>
-                            {/* {currentReviews.map((review) => ( */}
-                            {reviews.map((review) => (
-                                <li key={review.reviewId} style={{ marginBottom: '20px' }}>
-                                    {review.reviewId} / {review.createdDate} /{review.rating} /{review.userId}(
-                                    {review.createdBy}) /
-                                    <button
-                                        onClick={() => handleLikeClick(review.reviewId)}
-                                        style={{
-                                            backgroundColor: '#FF8080',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            padding: '6px 14px',
-                                            marginTop: '5px',
-                                            cursor: 'pointer',
-                                        }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d66464ff')}
-                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF8080')}
-                                    >
-                                            <FaRegThumbsUp/>
-                                        {likeCounts[review.reviewId] ?? review.reviewLike}
-                                    </button>{' '}
-                                    /<button onClick={() => handleDeleteClick(review.reviewId)}>삭제</button>
-                                    <br />
-                                    <h4 style={{ margin: '5px' }}>📃 리뷰 내용 </h4>
-                                    <div
-                                        onClick={() => (window.location.href = `/review/${review.reviewId}`)}
-                                        style={{
-                                            display: '-webkit-box',
-                                            width: '800px',
-                                            height: '80px',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '8px',
-                                            padding: '5px',
-                                            resize: 'none',
-                                            overflow: 'hidden',
-                                            whiteSpace: 'normal',
-                                            wordBreak: 'keep-all',
-                                            WebkitLineClamp: '4',
-                                            WebkitBoxOrient: 'vertical',
-                                            textOverflow: 'ellipsis',
-                                            textDecoration: 'none',
-                                            cursor: 'pointer',
-                                            transition: '.3s',
-                                        }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
-                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
-                                    >
-                                        {/* <div><Link href={`/review/${review.reviewId}`}></Link>{' '}</div> */}
-                                        <div>{review.content}</div>
-                                                    {/* ⭐ 별점 표시 */}
-                                                    <small style={{ display: 'flex', alignItems: 'center', marginTop: '10px', 
-                                                    }}>
-                                                        {[1, 2, 3, 4, 5].map((num) => (
-                                                            <FaStar
-                                                                key={num}
-                                                                size={24}
-                                                                color={num <= review.rating ? '#FFD700' : '#E0E0E0'} // 채워진 별/빈 별 구분
-                                                                style={{
-                                                                    marginRight: '4px', 
-                                                                }}
-                                                            />
-                                                        ))}
-                                                        <small style={{ marginLeft: '6px', color: '#555' }}>{review.rating} / 5</small>
-                                                    </small>
-                                    </div>
-                                    {/* ✅ 댓글 표시 */}
-                                    {/* ✅ 댓글 표시 / 수정 기능 */}
-                                    {comments[review.reviewId]?.reviewComment ? (
-                                        <>
-                                            {/* 댓글 내용 */}
-                                            <div
-                                                style={{
-                                                    marginTop: '8px',
-                                                    width: '800px',
-                                                    minHeight: '30px',
-                                                    border: '1px solid #ccc',
-                                                    borderRadius: '5px',
-                                                    padding: '8px',
-                                                    backgroundColor: '#fafafa',
-                                                    whiteSpace: 'pre-wrap',
-                                                }}
-                                            >
-                                                {comments[review.reviewId].reviewComment}
-                                            </div>
-
-                                            {/* ✏️ 댓글 수정 버튼 (작성자만 가능) */}
-                                            <button
-                                                style={{
-                                                    backgroundColor: '#AD9263',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    padding: '4px 10px',
-                                                    marginTop: '5px',
-                                                    cursor: 'pointer',
-                                                }}
-                                                onClick={() =>
-                                                    setActiveCommentBox(
-                                                        activeCommentBox === `edit-${review.reviewId}`
-                                                            ? null
-                                                            : `edit-${review.reviewId}`,
-                                                    )
-                                                }
-                                            >
-                                                ✏️ 댓글 수정
-                                            </button>
-
-                                            {/* 수정창 */}
-                                            {isLoggedIn && activeCommentBox === `edit-${review.reviewId}` && (
-                                                <div style={{ marginTop: '10px' }}>
-                                                    <textarea
-                                                        placeholder="수정할 댓글 내용을 입력하세요."
-                                                        style={{
-                                                            width: '300px',
-                                                            height: '60px',
-                                                            border: '1px solid #ccc',
-                                                            borderRadius: '8px',
-                                                            padding: '5px',
-                                                            resize: 'none',
-                                                        }}
-                                                        value={reviewComment}
-                                                        onChange={(e) => setReviewComment(e.target.value)}
-                                                    />
-                                                    <br />
-                                                    <button
-                                                        onClick={() => handleCommentEdit(review.reviewId, comments[review.reviewId]?.commentId)}
-                                                        style={{
-                                                            backgroundColor: '#AD9263',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '8px',
-                                                            padding: '6px 14px',
-                                                            marginTop: '5px',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                    >
-                                                        저장
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {/* 댓글이 없을 때만 “댓글 달기” 버튼 */}
-                                            <button
-                                                style={{
-                                                    backgroundColor: '#bfbfbf',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    padding: '4px 10px',
-                                                    marginTop: '5px',
-                                                    cursor: 'pointer',
-                                                }}
-                                                onClick={() => {
-                                                    if (!isLoggedIn) {
-                                                        if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
-                                                            window.location.href = '/auth/login'
-                                                        }
-                                                        return
-                                                    }
-                                                    setActiveCommentBox(
-                                                        activeCommentBox === review.reviewId ? null : review.reviewId,
-                                                    )
-                                                }}
-                                            >
-                                                💬 댓글 달기
-                                            </button>
-
-                                            {isLoggedIn && activeCommentBox === review.reviewId && (
-                                                <div style={{ marginTop: '10px' }}>
-                                                    <textarea
-                                                        placeholder="댓글을 입력하세요."
-                                                        maxLength={200}
-                                                        style={{
-                                                            width: '300px',
-                                                            height: '60px',
-                                                            border: '1px solid #ccc',
-                                                            borderRadius: '8px',
-                                                            padding: '5px',
-                                                            resize: 'none',
-                                                        }}
-                                                        value={reviewComment}
-                                                        onChange={(e) => setReviewComment(e.target.value)}
-                                                    />
-                                                    <br />
-                                                    <button
-                                                        onClick={() => handleCommentSubmit(review.reviewId)}
-                                                        style={{
-                                                            backgroundColor: '#AD9263',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '8px',
-                                                            padding: '6px 14px',
-                                                            marginTop: '5px',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                    >
-                                                        댓글 등록
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                  아직 등록된 댓글이 없습니다.
                 </div>
-                {/* 페이지네이션 */}
-                <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                    <button
-                        onClick={() => {
-                            if (currentPage > 0) fetchReviews(currentPage - 1)
-                            scrollToTop
-                        }}
-                        disabled={currentPage === 0}
+              )}
+
+              {/* 💼 SELLER만 댓글 조작 가능 */}
+              {roleType === 'SELLER' ? (
+                <>
+                  {/* 이미 댓글 있음 → 수정/삭제 */}
+                  {comments[review.reviewId]?.reviewComment ? (
+                    <>
+                      <button
                         style={{
-                            marginRight: '10px',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            border: '1px solid #ccc',
-                            cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
+                          backgroundColor: '#AD9263',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          marginTop: '5px',
+                          cursor: 'pointer',
                         }}
-                    >
-                        ◀ 이전
-                    </button>
-                    {[...Array(totalPages)].map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => {
-                                fetchReviews(index)
-                                scrollToTop()
-                            }}
+                        onClick={() =>
+                          setActiveCommentBox(
+                            activeCommentBox === `edit-${review.reviewId}`
+                              ? null
+                              : `edit-${review.reviewId}`
+                          )
+                        }
+                      >
+                        ✏️ 댓글 수정
+                      </button>
+
+                      <button
+                        style={{
+                          backgroundColor: '#b33a3a',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          marginTop: '5px',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() =>
+                          handleCommentDelete(review.reviewId, comments[review.reviewId]?.commentId)
+                        }
+                      >
+                        🗑 댓글 삭제
+                      </button>
+
+                      {/* 수정창 */}
+                      {isLoggedIn && activeCommentBox === `edit-${review.reviewId}` && (
+                        <div style={{ marginTop: '10px' }}>
+                          <textarea
+                            placeholder="수정할 댓글 내용을 입력하세요."
                             style={{
-                                margin: '0 4px',
-                                padding: '6px 10px',
-                                borderRadius: '6px',
-                                border: '1px solid #ccc',
-                                backgroundColor: currentPage === index ? '#AD9263' : 'white',
-                                color: currentPage === index ? 'white' : 'black',
-                                cursor: currentPage === index ? 'default' : 'pointer',
-                                fontWeight: currentPage === index ? 'bold' : 'normal',
+                              width: '300px',
+                              height: '60px',
+                              border: '1px solid #ccc',
+                              borderRadius: '8px',
+                              padding: '5px',
                             }}
-                        >
-                            {index + 1}
-                        </button>
-                    ))}
-
-                    <button
-                        onClick={() => {
-                            if (currentPage + 1 < totalPages) fetchReviews(currentPage + 1)
-                            scrollToTop()
-                        }}
-                        disabled={currentPage + 1 >= totalPages}
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                          />
+                          <br />
+                          <button
+                            onClick={() =>
+                              handleCommentEdit(
+                                review.reviewId,
+                                comments[review.reviewId]?.commentId
+                              )
+                            }
+                            style={{
+                              backgroundColor: '#AD9263',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '6px 14px',
+                              marginTop: '5px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            저장
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* 댓글 없음 → 등록 가능 */}
+                      <button
                         style={{
-                            marginLeft: '10px',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            border: '1px solid #ccc',
-                            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                          backgroundColor: '#bfbfbf',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          marginTop: '5px',
+                          cursor: 'pointer',
                         }}
-                    >
-                        다음 ▶
-                    </button>
+                        onClick={() =>
+                          setActiveCommentBox(
+                            activeCommentBox === review.reviewId ? null : review.reviewId
+                          )
+                        }
+                      >
+                        💬 댓글 달기
+                      </button>
+
+                      {isLoggedIn && activeCommentBox === review.reviewId && (
+                        <div style={{ marginTop: '10px' }}>
+                          <textarea
+                            placeholder="댓글을 입력하세요."
+                            maxLength={200}
+                            style={{
+                              width: '300px',
+                              height: '60px',
+                              border: '1px solid #ccc',
+                              borderRadius: '8px',
+                              padding: '5px',
+                            }}
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                          />
+                          <br />
+                          <button
+                            onClick={() => handleCommentSubmit(review.reviewId)}
+                            style={{
+                              backgroundColor: '#AD9263',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '6px 14px',
+                              marginTop: '5px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            댓글 등록
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <div style={{ color: '#999', marginTop: '5px' }}>
+                  * 댓글 작성은 사업자 회원만 가능합니다.
                 </div>
-            </>
-        </div>
-    )
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+    {/* 페이지네이션 */}
+    <div style={{ marginTop: '20px', textAlign: 'center' }}>
+      <button
+        onClick={() => {
+          if (currentPage > 0) fetchReviews(currentPage - 1);
+          scrollToTop();
+        }}
+        disabled={currentPage === 0}
+        style={{
+          marginRight: '10px',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          border: '1px solid #ccc',
+          cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
+        }}
+      >
+        ◀ 이전
+      </button>
+
+      {[...Array(totalPages)].map((_, index) => (
+        <button
+          key={index}
+          onClick={() => {
+            fetchReviews(index);
+            scrollToTop();
+          }}
+          style={{
+            margin: '0 4px',
+            padding: '6px 10px',
+            borderRadius: '6px',
+            border: '1px solid #ccc',
+            backgroundColor: currentPage === index ? '#AD9263' : 'white',
+            color: currentPage === index ? 'white' : 'black',
+            fontWeight: currentPage === index ? 'bold' : 'normal',
+          }}
+        >
+          {index + 1}
+        </button>
+      ))}
+
+      <button
+        onClick={() => {
+          if (currentPage + 1 < totalPages) fetchReviews(currentPage + 1);
+          scrollToTop();
+        }}
+        disabled={currentPage + 1 >= totalPages}
+        style={{
+          marginLeft: '10px',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          border: '1px solid #ccc',
+          cursor: currentPage + 1 >= totalPages ? 'not-allowed' : 'pointer',
+        }}
+      >
+        다음 ▶
+      </button>
+    </div>
+  </div>
+)
 }

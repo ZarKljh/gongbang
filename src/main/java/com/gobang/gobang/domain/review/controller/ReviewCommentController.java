@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.review.controller;
 
+import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.dto.request.CommentCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.CommentModifyRequest;
@@ -85,17 +86,22 @@ public class ReviewCommentController {
     }
 
     // 댓글 삭제
-//    @DeleteMapping("/{id}")
-//    public RsData<CommentDeleteResponse> deleteComment(@PathVariable Long commentId) {
-//        Optional<ReviewComment> opReview = reviewCommentService.findById(commentId);
-//
-//        if (opReview.isEmpty()) return RsData.of(
-//                "400",
-//                "%d번 리뷰가 존재하지 않습니다."
-//                        .formatted(commentId));
-//
-//        RsData<Review> deleteRs = reviewCommentService.deleteComment(commentId);
-//
-//        return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg(), new CommentDeleteResponse(deleteRs.getData()));
-//    }
+    @DeleteMapping("/{reviewId}/comments/{commentId}")
+    public RsData<?> deleteComment(
+            @PathVariable Long reviewId,
+            @PathVariable Long commentId
+    ) {
+        SiteUser currentUser = rq.getSiteUser();
+        if (currentUser == null) {
+            return RsData.of("401", "로그인이 필요합니다.");
+        }
+
+        // ✅ 현재 사용자 역할이 SELLER인지 확인
+        if (currentUser.getRole() != RoleType.SELLER) {
+            return RsData.of("403", "댓글 삭제 권한이 없습니다. (SELLER만 가능)");
+        }
+
+        RsData<Void> deleteRs = reviewCommentService.deleteComment(reviewId, commentId);
+        return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
+    }
 }

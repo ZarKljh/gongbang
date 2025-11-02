@@ -2,6 +2,8 @@ package com.gobang.gobang.domain.review.service;
 
 import ch.qos.logback.classic.Logger;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.entity.Studio;
+import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.review.dto.ReviewCommentDto;
 import com.gobang.gobang.domain.review.dto.request.CommentCreateRequest;
 import com.gobang.gobang.domain.review.entity.Review;
@@ -27,45 +29,37 @@ import java.util.Optional;
 public class ReviewCommentService {
     private final ReviewRepository reviewRepository;
     private final ReviewCommentRepository reviewCommentRepository;
+    private final StudioRepository studioRepository;
     private final Rq rq;
 
-    // 판매자 댓글 작성 전용
     @Transactional
     public Optional<ReviewComment> createComment(CommentCreateRequest req) {
-        // 1리뷰 존재 여부 확인
         Optional<Review> reviewOpt = reviewRepository.findById(req.getReviewId());
         if (reviewOpt.isEmpty()) return Optional.empty();
 
+        // ✅ 현재 로그인한 유저 가져오기
+        SiteUser user = rq.getSiteUser();
+        if (user == null) return Optional.empty();
 
-        // 리뷰당 댓글 1개 제한
+        // ✅ 스튜디오(판매자) 찾기
+        Studio studio = studioRepository.findBySiteUser(user)
+                .orElseThrow(() -> new IllegalStateException("판매자 스튜디오가 존재하지 않습니다."));
+
+        // ✅ 리뷰당 댓글 1개 제한
         if (reviewCommentRepository.findByReview(reviewOpt.get()).isPresent()) {
             return Optional.empty();
         }
 
-        // 로그인 사용자 검증 (SELLER만 가능)
-        SiteUser seller = rq.getSiteUser();
-
-        // 테스트용으로 열어둠
-//        if (seller == null || seller.getRole() != RoleType.SELLER) return Optional.empty();
-
-        // 테스트용 user 허용. 로그인 된 사용자 모두
-        SiteUser user = rq.getSiteUser();
-        if (user == null || !(user.getRole().equals(RoleType.USER) || user.getRole().equals(RoleType.SELLER))) {
-            return Optional.empty();
-        }
-
-        // 댓글 생성
+        // ✅ 댓글 생성
         ReviewComment comment = ReviewComment.builder()
                 .review(reviewOpt.get())
+                .studio(studio)
                 .reviewComment(req.getReviewComment())
                 .createdBy(user.getUserName())
                 .createdDate(LocalDateTime.now())
                 .build();
 
-        System.out.println("📥 받은 DTO: " + req);
-        // 저장 후 반환
-        ReviewComment saved = reviewCommentRepository.save(comment);
-        return Optional.of(saved);
+        return Optional.of(reviewCommentRepository.save(comment));
     }
 
     public Optional<ReviewComment> getCommentByReviewId(Long reviewId) {
@@ -123,14 +117,30 @@ public class ReviewCommentService {
         );
     }
 
-//
-//    // 댓글 삭제
-//    @Transactional
-//    public boolean deleteComment(Long commentId) {
-//        if (reviewCommentRepository.existsById(commentId)) {
-//            reviewCommentRepository.deleteById(commentId);
-//            return true;
-//        }
-//        return false;
-//    }
+    // 댓글 삭제
+    @Transactional
+    public RsData<Void> deleteComment(Long reviewId, Long commentId) {
+        Optional<ReviewComment> optComment = reviewCommentRepository.findById(commentId);
+
+        if (optComment.isEmpty()) {
+            return RsData.of("404", "%d번 댓글이 존재하지 않습니다.".formatted(commentId));
+        }
+
+        ReviewComment comment = optComment.get();
+
+        // 리뷰 ID 불일치 시 방어
+        if (!comment.getReview().getReviewId().equals(reviewId)) {
+            return RsData.of("400", "리뷰 ID가 일치하지 않습니다.");
+        }
+
+        // studioId 비교 로직 나중에 추가
+        // SiteUser currentUser = rq.getSiteUser();
+        // if (!Objects.equals(currentUser.getId(), comment.getSeller().getId())) {
+        //     return RsData.of("403", "본인이 작성한 댓글만 삭제할 수 있습니다.");
+        // }
+
+        reviewCommentRepository.delete(comment);
+
+        return RsData.of("200", "%d번 댓글이 삭제되었습니다.".formatted(commentId));
+    }
 }
