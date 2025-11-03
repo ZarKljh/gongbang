@@ -56,6 +56,9 @@ export default function MyPage() {
     // ------------------- 주문 -------------------
     const [isOrdersModal, setIsOrdersModal] = useState(false)
     
+    // ------------------- 리뷰 -------------------
+    const [myReviews, setMyReviews] = useState([])
+
     // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
         const fetchUser = async () => {
@@ -119,6 +122,12 @@ export default function MyPage() {
         fetchPaymentMethods();
     }, []);
 
+    useEffect(() => {
+        if (activeTab === 'reviews') {
+            fetchMyReviews()
+        }
+    }, [activeTab])
+
     // ------------------- API 요청 함수 -------------------
     const fetchOrders = async (id: number) => {
         if (!id) return
@@ -160,6 +169,8 @@ export default function MyPage() {
     }
 
     const fetchPaymentMethods = async () => {
+        if (!userData?.id) return
+
         try {
             const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
                 withCredentials: true,
@@ -205,6 +216,23 @@ export default function MyPage() {
             setStats(data)
         } catch (error) {
             console.error('통계 조회 실패:', error)
+        }
+    }
+
+    const fetchMyReviews = async () => {
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/reviews`, {
+                withCredentials: true,
+            })
+
+            if (data.resultCode === '200') {
+                setMyReviews(data.data)
+            } else {
+                alert(`리뷰 조회 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error(error)
+            alert('리뷰 조회 중 오류가 발생했습니다.')
         }
     }
 
@@ -1238,7 +1266,31 @@ export default function MyPage() {
                             <div className="section-header">
                                 <h2>상품 리뷰</h2>
                             </div>
-                            <div className="empty-state">작성한 리뷰가 없습니다.</div>
+
+                            {myReviews.length === 0 ? (
+                                <div className="empty-state">작성한 리뷰가 없습니다.</div>
+                            ) : (
+                                <div className="my-review-list">
+                                    {myReviews.map((review) => (
+                                        <div key={review.reviewId} className="my-review-card">
+                                            <div className="my-review-header">
+                                                <span className="my-review-product-name">상품 ID: {review.productId}</span>
+                                                <span className="my-review-rating">⭐ {review.rating} / 5</span>
+                                            </div>
+
+                                            <div className="my-review-content">{review.content}</div>
+
+                                            <div className="my-review-footer">
+                                                <span>작성일: {review.createdDate}</span>
+                                                {review.modifiedDate && (
+                                                    <span> · 수정일: {review.modifiedDate}</span>
+                                                )}
+                                                <span className="my-review-like-count">👍 {review.reviewLike}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
