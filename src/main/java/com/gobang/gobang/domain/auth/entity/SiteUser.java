@@ -5,7 +5,6 @@ import com.gobang.gobang.domain.personal.entity.*;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,7 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 @SuperBuilder
 @ToString(callSuper = true)
-@RedisHash("SiteUser")
 public class SiteUser {
 
     @Id
