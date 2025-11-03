@@ -193,6 +193,7 @@ public class SiteUserService {
         return RsData.of("200-1", "로그인 성공", new AuthAndMakeTokensResponseBody(siteUser, accessToken, refreshToken));
     }
 
+
     // 현재 로그인된 사용자 조회
     public SiteUser getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -200,7 +201,7 @@ public class SiteUserService {
                 (auth.getPrincipal() instanceof String principal && principal.equals("anonymousUser"))) {
             throw new IllegalStateException("로그인된 사용자가 없습니다.");
         }
-
+        System.out.println("여기까지 실행되었습니다.");
         Object principal = auth.getPrincipal();
         String username;
         if (principal instanceof UserDetails userDetails) {
@@ -208,7 +209,7 @@ public class SiteUserService {
         } else {
             username = principal.toString();
         }
-
+        System.out.println("getCurrentUser에서 Repository에 접근하기 전입니다.");
         return siteUserRepository.findByUserName(username)
                 .orElseThrow(() -> new IllegalStateException("로그인된 사용자를 찾을 수 없습니다."));
     }
