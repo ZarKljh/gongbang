@@ -16,6 +16,7 @@ public class SignupSellerRequest {
     private String confirmPassword;
     @NotBlank
     private String userName;
+    private String fullName;
     private String gender;
     private LocalDate birth;
     private String nickName;
@@ -23,7 +24,7 @@ public class SignupSellerRequest {
     private String mobilePhone;
     private String status;
     @NotBlank
-    private Long categoryId;
+    private String categoryId;
     @NotBlank
     private String studioName;
     @NotBlank

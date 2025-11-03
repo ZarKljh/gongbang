@@ -1,8 +1,20 @@
 package com.gobang.gobang.domain.review.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "TBL_REVIEW")
@@ -10,13 +22,20 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Review {
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ReviewComment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> likes = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
-    private Long id;
+    private Long reviewId;
 
     // 주문 ID
     @Column(name = "order_id", nullable = false)
@@ -34,10 +53,13 @@ public class Review {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+//    @Column(name = "user_name", nullable = false)
+//    private String userName;
+
     @Column(nullable = false)
     private Integer rating; // 1~5 점수
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Column(name = "view_count", nullable = false)
@@ -49,20 +71,32 @@ public class Review {
     @Column(name = "review_like", nullable = false)
     private Integer reviewLike = 0;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
 
-    private Long createdBy;
-    private Long updatedBy;
+    @LastModifiedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime modifiedDate;
 
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    @CreatedBy
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+//    @PrePersist
+//    public void onCreate() {
+//        this.createdDate = LocalDateTime.now();
+//        this.modifiedDate = LocalDateTime.now();
+//    }
+//
+//    @PreUpdate
+//    public void onUpdate() {
+//        this.modifiedDate = LocalDateTime.now();
+//    }
 }

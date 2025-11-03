@@ -7,25 +7,57 @@ TRUNCATE TABLE tbl_review_comment RESTART IDENTITY CASCADE;
 select * from tbl_review;
 select * from tbl_review_report;
 select * from tbl_review_comment;
+select * from site_user;
+
+SELECT * FROM TBL_REVIEW WHERE id = 1;
+
+-- 댓글 권한 임시 허용
+ALTER TABLE tbl_review_comment
+ALTER COLUMN seller_id DROP NOT NULL;
+
+
+INSERT INTO site_user (id, email, password, user_name, mobile_phone, nick_name, role, created_date, status)
+VALUES
+(1, 'hy@example.com', '123', '조현영', '010-1111-2222', '현영이', 'USER', NOW(), 'ACTIVE'),
+(2, 'seller@example.com', '123', '조현영사업자', '010-1111-2222', '사업자', 'SELLER', NOW(), 'ACTIVE');
 
 
 -- test data에서 임의로 PK id값을 정해주는게 아닌 생성 순서대로 id값을 정해주기 위함
 SELECT setval(pg_get_serial_sequence('tbl_review', 'review_id'), COALESCE(MAX(review_id), 1), true) FROM tbl_review;
 
 -- 리뷰
-INSERT INTO tbl_review (order_id, order_item_id, product_id, user_id, rating, content, view_count, is_active, review_like, created_at)
+INSERT INTO tbl_review (order_id, order_item_id, product_id, user_id, rating, content, view_count, is_active, review_like, created_date, created_by)
 VALUES
-( 101, 501, 1001, 1, 5, '정말 예쁘고 향도 좋아요!', 12, TRUE, 3, NOW()),
-( 102, 502, 1002, 2, 4, '배송이 빠르고 만족합니다.', 5, TRUE, 2, NOW()),
-( 103, 503, 1003, 3, 5, '선물용으로 완전 추천!', 8, TRUE, 4, NOW()),
-( 104, 504, 1004, 4, 3, '디자인은 예쁜데 포장이 조금 아쉬워요.', 6, TRUE, 1, NOW()),
-( 105, 505, 1005, 5, 4, '가죽 퀄리티가 좋아요.', 10, TRUE, 3, NOW()),
-( 106, 506, 1006, 6, 5, '향이 진짜 좋아요.', 11, TRUE, 2, NOW()),
-( 107, 507, 1007, 7, 4, '디테일이 섬세하네요.', 7, TRUE, 1, NOW()),
-( 108, 508, 1008, 8, 5, '선물했는데 너무 좋아했어요.', 14, TRUE, 5, NOW()),
-( 109, 509, 1009, 9, 3, '색상이 화면이랑 달라요.', 4, TRUE, 0, NOW()),
-( 110, 510, 1010, 10, 5, '비누 향이 은은해서 좋아요.', 9, TRUE, 2, NOW());
-
+( 101, 501, 1001, 1, 5, '정말 예쁘고 향도 좋아요!', 12, TRUE, 3, NOW(), '현영1'),
+( 102, 502, 1002, 2, 4, '배송이 빠르고 만족합니다.', 5, TRUE, 2, NOW(), '현영2'),
+( 103, 503, 1003, 3, 5, '선물용으로 완전 추천!', 8, TRUE, 4, NOW(), '현영3'),
+( 104, 504, 1004, 4, 3, '디자인은 예쁜데 포장이 조금 아쉬워요.', 6, TRUE, 1, NOW(), '현영4'),
+( 105, 505, 1005, 5, 4, '테스트 리뷰 이건 장문 본 발전하다, 있습니다 수 않으면서 통신이나 만들어 협상보다, 기름을 아니다. 계급성부터 높인 걸어가다 정부의 섬세하여야 생기는 충족시키다. 있은 자녀가 더 보기 만들어서 사물의 더 활동으로, 합시다. 좋아 동일화에 고개로 모습을 먹다 우리에 않다, 제대로 철저하여야지. 위한 개방부터 모질던 않아서 있은 듭니다. 군사가 2024년 동시의 주요한 붙이다. 있으니 권한과 이거는 오늘은 본 우선적이든지 아버지를 기리다. 강물이요 문화적 행동이 모르리라 분해만 한편 어렵고, 이용된단다. 아니 의식이 기록하고 노래와 풀죽을 통통, 한 품종이요 보다 사람이 성장한가.', 10, TRUE, 3, NOW(), '현영5'),
+( 106, 506, 1006, 6, 5, '향이 진짜 좋아요.', 11, TRUE, 2, NOW(), '현영6'),
+( 107, 507, 1007, 7, 4, '디테일이 섬세하네요.', 7, TRUE, 1, NOW(), '현영7'),
+( 108, 508, 1008, 8, 5, '선물했는데 너무 좋아했어요.', 14, TRUE, 5, NOW(), '현영8'),
+( 109, 509, 1009, 9, 3, '색상이 화면이랑 달라요.', 4, TRUE, 0, NOW(), '현영9'),
+( 110, 510, 1010, 10, 5, '비누 향이 은은해서 좋아요.', 9, TRUE, 2, NOW(), '현영10'),
+( 111, 51, 101, 11, 5, '정말 예쁘고 향도 좋아요!', 12, TRUE, 3, NOW(), '현영11'),
+( 112, 52, 102, 12, 4, '배송이 빠르고 만족합니다.', 5, TRUE, 2, NOW(), '현영12'),
+( 113, 53, 103, 13, 5, '선물용으로 완전 추천!', 8, TRUE, 4, NOW(), '현영13'),
+( 114, 54, 104, 14, 3, '디자인은 예쁜데 포장이 조금 아쉬워요.', 6, TRUE, 1, NOW(), '현영14'),
+( 115, 55, 105, 15, 4, '가죽 퀄리티가 좋아요.', 10, TRUE, 3, NOW(), '현영15'),
+( 116, 56, 106, 16, 5, '향이 진짜 좋아요.', 11, TRUE, 2, NOW(), '현영16'),
+( 117, 57, 107, 17, 4, '디테일이 섬세하네요.', 7, TRUE, 1, NOW(), '현영17'),
+( 118, 58, 108, 18, 5, '선물했는데 너무 좋아했어요.', 14, TRUE, 5, NOW(), '현영18'),
+( 119, 59, 109, 19, 3, '색상이 화면이랑 달라요.', 4, TRUE, 0, NOW(), '현영19'),
+( 120, 60, 110, 20, 5, '정말 예쁘고 향도 좋아요!', 9, TRUE, 2, NOW(), '현영20'),
+( 121, 61, 111, 21, 4, '비누 향이 은은해서 좋아요.', 1, TRUE, 4, NOW(), '현영21'),
+( 122, 62, 112, 22, 3, '비누 향이 은은해서 좋아요.', 65, TRUE, 50, NOW(), '현영22'),
+( 123, 63, 113, 23, 2, '비누 향이 은은해서 좋아요.', 123, TRUE, 23, NOW(), '현영23'),
+( 124, 64, 114, 24, 5, '비누 향이 은은해서 좋아요.', 43, TRUE, 21, NOW(), '현영24'),
+( 125, 65, 115, 25, 3, '비누 향이 은은해서 좋아요.', 8, TRUE, 0, NOW(), '현영25'),
+( 126, 66, 116, 26, 4, '비누 향이 은은해서 좋아요.', 1, TRUE, 2, NOW(), '현영26'),
+( 127, 67, 117, 27, 1, '비누 향이 은은해서 좋아요.', 99, TRUE, 5, NOW(), '현영27'),
+( 128, 68, 118, 28, 4, '비누 향이 은은해서 좋아요.', 2, TRUE, 7, NOW(), '현영28'),
+( 129, 69, 119, 29, 6, '비누 향이 은은해서 좋아요.', 55, TRUE, 9, NOW(), '현영29'),
+( 130, 70, 120, 30, 5, '비누 향이 은은해서 좋아요.', 9, TRUE, 0, NOW(), '현영30');
 -- 리뷰 신고 내역
 INSERT INTO tbl_review_report (report_id, review_id, user_id, reason, resolved, created_at)
 VALUES
@@ -41,7 +73,7 @@ VALUES
 (10, 5, 6, '타인 비방 포함', FALSE, NOW());
 
 -- 리뷰 댓글 내역
-INSERT INTO tbl_review_comment (comment_id, review_id, seller_id, content, created_at)
+INSERT INTO tbl_review_comment (comment_id, review_id, seller_id, review_comment_content, created_at)
 VALUES
 (1, 1, 1, '좋은 후기 감사합니다 :)', NOW()),
 (2, 2, 2, '이용해주셔서 감사해요!', NOW()),
@@ -54,24 +86,8 @@ VALUES
 (9, 9, 9, '컬러 옵션 관련 안내드리겠습니다.', NOW()),
 (10, 10, 10, '비누 제작 영상도 참고해보세요 :)', NOW());
 
-
--- 권한 관련은 나중에 테스트해보기
-INSERT INTO site_user (user_id, email, password, user_name, phone, nickname, role, created_at, status)
-VALUES
-(1, 'alice@example.com', 'pw1234', '조현영', '010-1111-2222', 'honey', 'USER', NOW(), 'ACTIVE'),
-(2, 'bob@example.com', 'pw1234', '박보검', '010-3333-4444', 'bobby', 'USER', NOW(), 'ACTIVE'),
-(3, 'choco@example.com', 'pw1234', '최초코', '010-5555-6666', 'choco', 'USER', NOW(), 'ACTIVE'),
-(4, 'soo@example.com', 'pw1234', '김수아', '010-1111-3333', 'soo', 'USER', NOW(), 'ACTIVE'),
-(5, 'ryan@example.com', 'pw1234', '라이언', '010-4444-5555', 'lion', 'USER', NOW(), 'ACTIVE'),
-(6, 'nana@example.com', 'pw1234', '안나', '010-2222-9999', 'nana', 'USER', NOW(), 'ACTIVE'),
-(7, 'sunny@example.com', 'pw1234', '윤선영', '010-3434-9898', 'sunny', 'USER', NOW(), 'ACTIVE'),
-(8, 'mint@example.com', 'pw1234', '이민트', '010-2323-2323', 'minty', 'USER', NOW(), 'ACTIVE'),
-(9, 'soyeon@example.com', 'pw1234', '박소연', '010-4545-5656', 'soyo', 'USER', NOW(), 'ACTIVE'),
-(10, 'harry@example.com', 'pw1234', '김해리', '010-1010-5050', 'harry', 'USER', NOW(), 'ACTIVE');
-
-
 -- 사업자 정보
-INSERT INTO seller (seller_id, user_id, seller_num, seller_name, seller_email, seller_phone, seller_address, seller_category, created_at)
+INSERT INTO seller (saller_id, user_id, saller_num, saller_name, saller_email, saller_phone, saller_address, saller_category, created_at)
 VALUES
 (1, 1, '2024-0001', '현영공방', 'hy_workshop@example.com', '02-111-1111', '서울 강남구 역삼동', '캔들', NOW()),
 (2, 2, '2024-0002', '보검의목공소', 'bgwood@example.com', '02-222-2222', '서울 서초구 반포동', '목공', NOW()),
@@ -85,7 +101,6 @@ VALUES
 (10, 10, '2024-0010', '해리의비누방', 'harrysoap@example.com', '02-101-1010', '서울 노원구 공릉동', '비누', NOW());
 
 
-
 -- postman 리뷰 등록(생성) 테스트용(json)
 -- orderItemId는 uq이기 때문에 숫자 바꿔주기
 {
@@ -95,4 +110,10 @@ VALUES
   "userId": 3,
   "rating": 5,
   "content": "첫 번째 테스트 리뷰 생성"
+}
+
+comment test data
+{
+  "review_id": 1,
+  "review_comment_content": "이 상품은 향이 진하고 고객님께 잘 어울릴 것 같아요!"
 }

@@ -1,17 +1,26 @@
 package com.gobang.gobang.domain.review.service;
 
-import com.gobang.gobang.domain.review.dto.ReviewDto;
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
+import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +28,19 @@ import java.util.Optional;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final SiteUserRepository siteUserRepository;
 
     // 리뷰 다건 조회
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+//    public List<Review> findAll() {
+//        return reviewRepository.findAllByOrderByCreatedDateDesc();
+//    }
+
+    // 리뷰 다건 조회 페이지네이션
+    public Page<Review> getReviews(int page) {
+        Pageable pageable = PageRequest.of(page,10, Sort.by(Sort.Direction.DESC, "createdDate"));
+        return this.reviewRepository.getAllReviews(pageable);
     }
+
 
     // 리뷰 단건 조회
     public Optional<Review> getReviewById(Long id) {
@@ -32,7 +49,12 @@ public class ReviewService {
 
     // 리뷰 등록
     @Transactional
-    public RsData<Review> createReview(ReviewDto.ReviewCreateRequest dto) {
+    public RsData<Review> createReview(ReviewCreateRequest dto, String userName) {
+
+
+        SiteUser user = siteUserRepository.findByUserName(userName)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+
         Review review = Review.builder()
                 .orderId(dto.getOrderId())
                 .orderItemId(dto.getOrderItemId())
@@ -40,9 +62,13 @@ public class ReviewService {
                 .userId(dto.getUserId())
                 .rating(dto.getRating())
                 .content(dto.getContent())
+                .createdBy(userName)
+                .createdDate(LocalDateTime.now())
+                .modifiedDate(LocalDateTime.now())
                 .isActive(true)
                 .reviewLike(0)
                 .viewCount(0)
+//                .createdBy(dto.getUserName()) //
                 .build();
 
         reviewRepository.save(review);
@@ -50,34 +76,39 @@ public class ReviewService {
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
 
-    public Optional<Review> findById(Long id) {
+    public Optional<Review> findById(Long reviewId) {
 
-        return reviewRepository.findById(id);
+        return reviewRepository.findById(reviewId);
     }
 
     @Transactional
     public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
         review.setRating(rating);
         review.setContent(content);
+        review.setModifiedDate(LocalDateTime.now());
 
         reviewRepository.save(review);
 
         return RsData.of(
                 "200",
-                "%d번 리뷰가 수정되었습니다.".formatted(review.getId()),
+                "%d번 리뷰가 수정되었습니다.".formatted(review.getReviewId()),
                 review
         );
     }
-//
-//    // 리뷰 수정
-//    @Transactional
-//    public Optional<Review> updateReview(Long id, Review updatedReview) {
-//        return reviewRepository.findById(id).map(review -> {
-//            review.setContent(updatedReview.getContent());
-//            review.setRating(updatedReview.getRating());
-//            return reviewRepository.save(review);
-//        });
-//    }
+
+    @Transactional
+    public RsData<Review> delete(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+
+
+        reviewRepository.delete(review);
+        return RsData.of(
+                "200",
+                "%d번 리뷰가 삭제되었습니다."
+        );
+    }
+
 
 
 //    // 리뷰 삭제
@@ -89,4 +120,11 @@ public class ReviewService {
 //        }
 //        return false;
 //    }
+
+    public List<ReviewResponse> getReviewsByUserId(Long userId) {
+        return reviewRepository.findByUserId(userId)
+                .stream()
+                .map(ReviewResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

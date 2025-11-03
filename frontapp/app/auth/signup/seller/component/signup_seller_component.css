@@ -1,0 +1,78 @@
+/* sellerSignup.css */
+
+.form-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.form-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 0.25rem;
+}
+
+.form-input,
+.form-container select {
+    width: 100%;
+    height: 40px;
+    padding: 0 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-container select:focus {
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+.btn {
+    height: 40px;
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.75rem;
+    border: 1px solid #cbd5e1;
+    background-color: white;
+    color: #1e293b;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 1rem;
+}
+
+.btn:hover {
+    background-color: #f1f5f9;
+}
+
+.btn-primary {
+    background-color: #0f172a;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #1e293b;
+}

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class OrdersResponse {
 
     private Long orderId;
-    private SiteUser siteUser;
+    private Long userId;
     private String orderCord;
     private BigDecimal totalPrice;
     private LocalDateTime createdDate;
@@ -23,7 +23,7 @@ public class OrdersResponse {
     public static OrdersResponse from(Orders orders) {
         return OrdersResponse.builder()
                 .orderId(orders.getOrderId())
-                .siteUser(orders.getSiteUser())
+                .userId(orders.getSiteUser().getId())
                 .orderCord(orders.getOrderCord())
                 .totalPrice(orders.getTotalPrice())
                 .build();

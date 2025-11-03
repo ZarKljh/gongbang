@@ -6,6 +6,9 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
+import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.config.SecurityUser;
 import com.gobang.gobang.global.jwt.JwtProvider;
@@ -13,7 +16,11 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,7 +33,9 @@ import java.util.Optional;
 @Service
 public class SiteUserService {
     private final SiteUserRepository siteUserRepository;
+    private final StudioService studioService;
     private final JwtProvider jwtProvider;
+    private final PasswordEncoder passwordEncoder;
 
 
     public SiteUser signupUser(SignupUserRequest signupUserRequest){
@@ -39,9 +48,11 @@ public class SiteUserService {
         if (signupUserRequest.getStatus() == null) {
             signupUserRequest.setStatus("ACTIVE");
         }
+
         SiteUser newUser = SiteUser.builder()
                 .email(signupUserRequest.getEmail())
-                .password(signupUserRequest.getPassword())
+                //.password(signupUserRequest.getPassword())
+                .password(passwordEncoder.encode(signupUserRequest.getPassword()))
                 .userName(signupUserRequest.getUserName())
                 .mobilePhone(signupUserRequest.getMobilePhone())
                 .nickName(signupUserRequest.getNickName())
@@ -64,8 +75,8 @@ public class SiteUserService {
     public SiteUser getSiteUserByEmail(String email) {
         return siteUserRepository.findByEmail(email);
     }
-    public SiteUser getSiteUserByUserName(String userName) {
 
+    public SiteUser getSiteUserByUserName(String userName) {
         Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
 
         if ( os.isPresent() ) {
@@ -73,7 +84,20 @@ public class SiteUserService {
         } else {
             return null;
         }
+    }
 
+    public SiteUser getSiteUserByUserNamePassword(String userName, String password) {
+        String encodedPassword = passwordEncoder.encode(password);
+        Optional<SiteUser> os = siteUserRepository.findByUserName(userName);
+
+        if (os.isPresent()) {
+            SiteUser siteUser = os.get();
+            if (passwordEncoder.matches(password, siteUser.getPassword())) {
+                return siteUser;
+            }
+        }
+        System.out.println("siteuser를 찾아올 수 없습니다");
+        return null;
     }
     public boolean validateToken(String accessToken) {
         return jwtProvider.verify(accessToken);
@@ -89,10 +113,10 @@ public class SiteUserService {
         Map<String, Object> payloadBody = jwtProvider.getClaims(accessToken);
 
         long id = (int) payloadBody.get("id");
-        String username = (String) payloadBody.get("username");
+        String userName = (String) payloadBody.get("userName");
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        return new SecurityUser(id, username, "", authorities);
+        return new SecurityUser(id, userName, "", authorities);
 
     }
 
@@ -108,8 +132,9 @@ public class SiteUserService {
 
         SiteUser newUser = SiteUser.builder()
                 .email(signupSellerRequest.getEmail())
-                .password(signupSellerRequest.getPassword())
+                .password(passwordEncoder.encode(signupSellerRequest.getPassword()))
                 .userName(signupSellerRequest.getUserName())
+                .fullName(signupSellerRequest.getFullName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())
                 .role(RoleType.SELLER)
@@ -121,7 +146,7 @@ public class SiteUserService {
                 .build();
 
         Studio newStudio = Studio.builder()
-                .categoryId(signupSellerRequest.getCategoryId())
+                .categoryId(Long.parseLong(signupSellerRequest.getCategoryId()))
                 .studioName(signupSellerRequest.getStudioName())
                 .studioDescription(signupSellerRequest.getStudioDescription())
                 .studioMobile(signupSellerRequest.getStudioMobile())
@@ -129,17 +154,23 @@ public class SiteUserService {
                 .studioFax(signupSellerRequest.getStudioFax())
                 .studioEmail(signupSellerRequest.getStudioEmail())
                 .studioBusinessNumber(signupSellerRequest.getStudioBusinessNumber())
+                .studioAddPostNumber(signupSellerRequest.getStudioAddPostNumber())
+                .studioAddMain(signupSellerRequest.getStudioAddMain())
+                .studioAddDetail(signupSellerRequest.getStudioAddDetail())
                 .build();
 
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
-
+        newStudio.setSiteUser(newUser);
         siteUserRepository.save(newUser);
-
+        System.out.println("유저정보가 저장되었습니다");
+        studioService.createStudio(newStudio);
+        System.out.println("공방이 저장되었습니다");
         return newUser;
 
     }
+
 
 
     @AllArgsConstructor
@@ -158,8 +189,75 @@ public class SiteUserService {
         String accessToken = jwtProvider.genAccessToken(siteUser);
         String refreshToken = jwtProvider.genRefreshToken(siteUser);
 
-        System.out.println("accessToken : " + accessToken);
+        //System.out.println("accessToken : " + accessToken);
 
         return RsData.of("200-1", "로그인 성공", new AuthAndMakeTokensResponseBody(siteUser, accessToken, refreshToken));
+    }
+
+
+    // 현재 로그인된 사용자 조회
+    public SiteUser getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() ||
+                (auth.getPrincipal() instanceof String principal && principal.equals("anonymousUser"))) {
+            throw new IllegalStateException("로그인된 사용자가 없습니다.");
+        }
+        System.out.println("여기까지 실행되었습니다.");
+        Object principal = auth.getPrincipal();
+        String username;
+        if (principal instanceof UserDetails userDetails) {
+            username = userDetails.getUsername();
+        } else {
+            username = principal.toString();
+        }
+        System.out.println("getCurrentUser에서 Repository에 접근하기 전입니다.");
+        return siteUserRepository.findByUserName(username)
+                .orElseThrow(() -> new IllegalStateException("로그인된 사용자를 찾을 수 없습니다."));
+    }
+
+    // 현재 로그인된 사용자 정보 반환
+    public SiteUserResponse getCurrentUserInfo() {
+        return new SiteUserResponse(getCurrentUser());
+    }
+
+    // 현재 로그인된 사용자 상세 정보 반환
+    public SiteUserResponse getCurrentUserDetail() {
+        SiteUser user = getCurrentUser();
+        // 필요하다면 SiteUserResponse를 상세정보용으로 확장 가능
+        return new SiteUserResponse(user);
+    }
+
+    // 사용자 정보 업데이트
+    public SiteUserResponse updateUserInfo(SiteUserUpdateRequest request) {
+        SiteUser user = getCurrentUser();
+
+        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getMobilePhone() != null && !request.getMobilePhone().isEmpty()) {
+            user.setMobilePhone(request.getMobilePhone());
+        }
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        // nickName 필드가 존재하는지 체크 후 업데이트
+        if (request.getNickName() != null && !request.getNickName().isEmpty()) {
+            if (user.getNickName() != null) { // 필드가 존재하면
+                user.setNickName(request.getNickName());
+            } else {
+                // 엔티티에 필드가 없으면 아예 생성하거나 무시
+                // 예: user.setNickName(request.getNickName()); // 필드 생성 필요
+            }
+        }
+
+        siteUserRepository.save(user);
+
+        return new SiteUserResponse(user);
+    }
+
+    public boolean verifyPassword(Long userId, String password) {
+        SiteUser user = siteUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
+        return passwordEncoder.matches(password, user.getPassword());
     }
 }

@@ -15,17 +15,18 @@ import java.time.LocalDateTime;
 public class CartResponse {
 
     private Long cartId;
-    private SiteUser siteUser;
-    private Product product;
-    private String productName; // Product 엔티티에서 가져올 예정
+    private Long userId;
+    private Long productId;
+    private String productName;
     private Long quantity;
     private LocalDateTime createdAt;
 
     public static CartResponse from(Cart cart) {
         return CartResponse.builder()
                 .cartId(cart.getCartId())
-                .siteUser(cart.getSiteUser())
-                .product(cart.getProduct())
+                .userId(cart.getSiteUser().getId())
+                .productId(cart.getProduct().getId())
+                .productName(cart.getProduct().getName())
                 .quantity(cart.getQuantity())
                 .createdAt(cart.getCreatedAt())
                 .build();

@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtProvider {
@@ -44,9 +41,16 @@ public class JwtProvider {
         return genToken(siteUser, 60 * 60 * 24 * 365 * 1);
     }
 
-    // accessToken 만들기
+    // accessToken 만들기 hy 잠시 주석
+//    public String genAccessToken(SiteUser siteUser) {
+//        return genToken(siteUser, 60 * 10);
+//    }
+
+    // hy 테스트 위해 만료 시간 늘림
     public String genAccessToken(SiteUser siteUser) {
-        return genToken(siteUser, 60 * 10);
+
+        return genToken(siteUser, 60 * 60 * 5);
+
     }
 
 
@@ -56,7 +60,7 @@ public class JwtProvider {
 
         /*토큰안에 id와 username을 넣어서 body라는 키로 저장한다*/
         claims.put("id", siteUser.getId());
-        claims.put("username", siteUser.getUserName());
+        claims.put("userName", siteUser.getUserName());
         /* 토큰 안에 role을 넣는다*/
         claims.put("Role", siteUser.getRole().name());
 
@@ -98,5 +102,4 @@ public class JwtProvider {
         /* Map<String, Opject>형태로 반환한다*/
         return Util.toMap(body);
     }
-
 }

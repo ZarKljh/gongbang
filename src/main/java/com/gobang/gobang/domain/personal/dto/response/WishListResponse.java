@@ -15,16 +15,16 @@ import java.time.LocalDateTime;
 public class WishListResponse {
 
     private Long wishlistId;
-    private SiteUser siteUser;
-    private Product product;
+    private Long userId;
+    private Long productId;
     private String productName; // Product 엔티티에서 가져올 예정
     private LocalDateTime createdAt;
 
     public static WishListResponse from(WishList wishList) {
         return WishListResponse.builder()
                 .wishlistId(wishList.getWishlistId())
-                .siteUser(wishList.getSiteUser())
-                .product(wishList.getProduct())
+                .userId(wishList.getSiteUser().getId())
+                .productId(wishList.getProduct().getId())
                 .createdAt(wishList.getCreatedAt())
                 .build();
     }

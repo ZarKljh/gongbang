@@ -6,6 +6,7 @@ import com.gobang.gobang.domain.personal.dto.response.WishListResponse;
 import com.gobang.gobang.domain.personal.entity.WishList;
 import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,9 @@ import java.util.stream.Collectors;
 public class WishListService {
 
     private final WishListRepository wishListRepository;
+    private final ProductRepository productRepository;
 
-    // 사용자별 찜목록 조회
+    // 사용자별 위시 목록 조회
     public List<WishListResponse> getWishListByUser(SiteUser siteUser) {
         List<WishList> wishLists = wishListRepository.findBySiteUser(siteUser);
 
@@ -30,10 +32,10 @@ public class WishListService {
                 .collect(Collectors.toList());
     }
 
-    // 찜 추가
+    // 위시 추가
     @Transactional
     public WishListResponse addWishList(WishListRequest request) {
-        // 이미 찜한 상품인지 확인
+        // 이미 위시한 상품인지 확인
         Optional<WishList> existing = wishListRepository.findBySiteUserAndProduct(
                 request.getSiteUser(), request.getProduct());
 
@@ -50,7 +52,7 @@ public class WishListService {
         return convertToResponse(saved);
     }
 
-    // 찜 삭제
+    // 위시 삭제
     @Transactional
     public void removeWishList(Long wishlistId) {
         WishList wishList = wishListRepository.findById(wishlistId)
@@ -59,26 +61,33 @@ public class WishListService {
         wishListRepository.delete(wishList);
     }
 
-    // 찜 삭제 (사용자 + 상품)
+    // 위시 삭제 (사용자 + 상품)
     @Transactional
-    public void removeWishListByUserAndProduct(SiteUser siteUser, Product product) {
+    public void removeWishListByUserAndProduct(SiteUser siteUser, Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+
         WishList wishList = wishListRepository.findBySiteUserAndProduct(siteUser, product)
                 .orElseThrow(() -> new IllegalArgumentException("찜 정보를 찾을 수 없습니다."));
 
         wishListRepository.delete(wishList);
     }
 
-    // 찜 여부 확인
-    public boolean isWished(SiteUser siteUser, Product product) {
+    // 위시 여부 확인
+    public boolean isWished(SiteUser siteUser, Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
         return wishListRepository.existsBySiteUserAndProduct(siteUser, product);
     }
 
-    // 상품의 찜 개수 조회
-    public long getWishCount(Product product) {
+    // 상품의 위시 개수 조회
+    public long getWishCount(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
         return wishListRepository.countByProduct(product);
     }
 
-    // 사용자의 찜 개수 조회
+    // 사용자의 위시 개수 조회
     public long getUserWishCount(SiteUser siteUser) {
         return wishListRepository.countBySiteUser(siteUser);
     }
@@ -87,8 +96,8 @@ public class WishListService {
     private WishListResponse convertToResponse(WishList wishList) {
         return WishListResponse.builder()
                 .wishlistId(wishList.getWishlistId())
-                .siteUser(wishList.getSiteUser())
-                .product(wishList.getProduct())
+                .userId(wishList.getSiteUser().getId())
+                .productId(wishList.getProduct().getId())
                 .productName("상품명") // TODO: Product 엔티티에서 가져오기
                 .createdAt(wishList.getCreatedAt())
                 .build();

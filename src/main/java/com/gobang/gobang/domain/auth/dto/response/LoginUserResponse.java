@@ -11,15 +11,18 @@ import java.time.LocalDateTime;
 public class LoginUserResponse {
     private String email;
     private String userName;
+    private String fullName;
     private String mobilePhone;
     private String nickName;
     private String status;
     private String gender;
+    private String role;
     private LocalDateTime birth;
     private LocalDateTime createdDate;
 
 
     public LoginUserResponse(SiteUser siteUser) {
+        this.fullName = siteUser.getFullName();
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
         this.mobilePhone = siteUser.getMobilePhone();
@@ -27,6 +30,7 @@ public class LoginUserResponse {
         this.status = siteUser.getStatus();
         this.gender = siteUser.getGender();
         this.birth = siteUser.getBirth();
+        this.role = siteUser.getRole().name();
         this.createdDate = siteUser.getCreatedDate();
     }
 }

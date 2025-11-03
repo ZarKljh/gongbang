@@ -29,6 +29,9 @@ public class SiteUser {
     @JsonIgnore
     private String password;
 
+    @Column(length=50)
+    private String fullName;
+
     @Column(unique = true, length = 100)
     private String email;
 
