@@ -87,8 +87,8 @@ public class FollowService {
     private FollowResponse convertToResponse(Follow follow) {
         return FollowResponse.builder()
                 .followId(follow.getFollowId())
-                .siteUser(follow.getSiteUser())
-                .studio(follow.getStudio())
+                .userId(follow.getSiteUser().getId())
+                .studioId(follow.getStudio().getStudioId())
                 .sellerName("판매자명") // TODO: Seller 엔티티에서 가져오기
                 .createdAt(follow.getCreatedAt())
                 .build();

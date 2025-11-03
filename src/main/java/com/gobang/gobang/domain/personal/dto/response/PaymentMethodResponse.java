@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class PaymentMethodResponse {
 
     private Long paymentId;
-    private SiteUser siteUser;
+    private Long userId;
     private String type;
     private String bankName;
     private String accountNumber;
@@ -27,7 +27,7 @@ public class PaymentMethodResponse {
     public static PaymentMethodResponse from(PaymentMethod paymentMethod) {
         return PaymentMethodResponse.builder()
                 .paymentId(paymentMethod.getPaymentId())
-                .siteUser(paymentMethod.getSiteUser())
+                .userId(paymentMethod.getSiteUser().getId())
                 .type(paymentMethod.getType())
                 .bankName(paymentMethod.getBankName())
                 .accountNumber(paymentMethod.getAccountNumber())

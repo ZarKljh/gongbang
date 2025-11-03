@@ -91,8 +91,8 @@ public class CartService {
     private CartResponse convertToResponse(Cart cart) {
         return CartResponse.builder()
                 .cartId(cart.getCartId())
-                .siteUser(cart.getSiteUser())
-                .product(cart.getProduct())
+                .userId(cart.getSiteUser().getId())
+                .productId(cart.getProduct().getId())
                 .productName(cart.getProduct() != null ? cart.getProduct().getName() : null)
                 .quantity(cart.getQuantity())
                 .createdAt(cart.getCreatedAt())

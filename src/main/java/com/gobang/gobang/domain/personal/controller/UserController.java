@@ -7,6 +7,8 @@ import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/mypage")
 @RequiredArgsConstructor
@@ -44,6 +46,23 @@ public class UserController {
             return RsData.of("400", e.getMessage(), null);
         } catch (Exception e) {
             return RsData.of("500", "서버 오류 발생", null);
+        }
+    }
+
+    @PostMapping("/me/verify-password")
+    public RsData<Boolean> verifyPassword(@RequestBody Map<String, String> payload) {
+        try {
+            Long userId = Long.valueOf(payload.get("userId"));
+            String password = payload.get("password");
+
+            boolean ok = siteUserService.verifyPassword(userId, password);
+            if (ok) {
+                return RsData.of("200", "비밀번호 인증 성공", true);
+            } else {
+                return RsData.of("400", "비밀번호가 일치하지 않습니다", false);
+            }
+        } catch (Exception e) {
+            return RsData.of("500", "서버 오류 발생", false);
         }
     }
 }

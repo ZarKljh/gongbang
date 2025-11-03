@@ -134,6 +134,7 @@ public class SiteUserService {
                 .email(signupSellerRequest.getEmail())
                 .password(passwordEncoder.encode(signupSellerRequest.getPassword()))
                 .userName(signupSellerRequest.getUserName())
+                .fullName(signupSellerRequest.getFullName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())
                 .role(RoleType.SELLER)
@@ -252,5 +253,11 @@ public class SiteUserService {
         siteUserRepository.save(user);
 
         return new SiteUserResponse(user);
+    }
+
+    public boolean verifyPassword(Long userId, String password) {
+        SiteUser user = siteUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
+        return passwordEncoder.matches(password, user.getPassword());
     }
 }

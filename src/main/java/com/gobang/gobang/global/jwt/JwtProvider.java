@@ -102,28 +102,4 @@ public class JwtProvider {
         /* Map<String, Opject>형태로 반환한다*/
         return Util.toMap(body);
     }
-    /*
-    @Value("${mail.auth-code-expiration-millis}")
-    private int jwtEmailExpirationMs;
-
-    public String getUsernameFromEmailJwt(String token) {
-        Map<String, Object> claims = getClaims(token);
-        return (String) claims.get("username");
-    }
-
-    public String generateEmailValidToken(String username) { //토큰을 JWT로 생성
-        long now = new Date().getTime();
-        Date validity = new Date(now + jwtEmailExpirationMs); // 만료 시간 적용
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("username", username);
-
-        return Jwts.builder()
-                .claim("body", Util.json.toStr(claims))
-                .setExpiration(validity)
-                .signWith(getSecretKey(), SignatureAlgorithm.HS512)
-                .compact();
-    }
-
-     */
 }
