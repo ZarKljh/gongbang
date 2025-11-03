@@ -61,7 +61,7 @@ export default function ReviewModify() {
     return (
                 <div
             style={{
-                maxWidth: '1200px',
+                maxWidth: '1280px',
                 margin: '0 auto',
                 padding: '40px 20px',
                 display: 'flex',
