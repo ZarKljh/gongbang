@@ -98,7 +98,7 @@ public class UserAddressService {
     private UserAddressResponse convertToResponse(UserAddress address) {
         return UserAddressResponse.builder()
                 .userAddressId(address.getUserAddressId())
-                .siteUser(address.getSiteUser())
+                .userId(address.getSiteUser().getId())
                 .recipientName(address.getRecipientName())
                 .baseAddress(address.getBaseAddress())
                 .detailAddress(address.getDetailAddress())

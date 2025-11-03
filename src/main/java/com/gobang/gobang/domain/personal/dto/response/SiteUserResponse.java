@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 public class SiteUserResponse {
     private Long id;
     private String userName;
-    private String password;
     private String email;
     private String mobilePhone;
     private String nickName;
@@ -25,7 +24,6 @@ public class SiteUserResponse {
     public SiteUserResponse(SiteUser siteUser) {
         this.id = siteUser.getId();
         this.userName = siteUser.getUserName();
-        this.password = siteUser.getPassword();
         this.email = siteUser.getEmail();
         this.mobilePhone = siteUser.getMobilePhone();
         this.nickName = siteUser.getNickName();

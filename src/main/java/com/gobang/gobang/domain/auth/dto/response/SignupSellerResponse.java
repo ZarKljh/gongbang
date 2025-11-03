@@ -14,6 +14,7 @@ public class SignupSellerResponse {
     private String userName;
     private String gender;
     private LocalDateTime birth;
+    private String fullName;
     private String nickName;
     private String mobilePhone;
     private Long categoryId;
@@ -31,6 +32,7 @@ public class SignupSellerResponse {
     public SignupSellerResponse(SiteUser siteUser, Studio studio){
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
+        this.fullName = siteUser.getFullName();
         this.gender = siteUser.getGender();
         this.birth = siteUser.getBirth();
         this.nickName = siteUser.getNickName();
