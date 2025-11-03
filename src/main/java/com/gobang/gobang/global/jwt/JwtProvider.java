@@ -102,7 +102,7 @@ public class JwtProvider {
         /* Map<String, Opject>형태로 반환한다*/
         return Util.toMap(body);
     }
-
+    /*
     @Value("${mail.auth-code-expiration-millis}")
     private int jwtEmailExpirationMs;
 
@@ -124,4 +124,5 @@ public class JwtProvider {
                 .signWith(getSecretKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
+     */
 }
