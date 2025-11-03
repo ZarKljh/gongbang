@@ -17,3 +17,37 @@
     text-align: center;
     margin-bottom: 1.5rem;
 }
+
+.signup-group {
+    margin-bottom: 1rem;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+.signup-group > div.signup-box {
+    border: 1px solid black;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.signup-group > div.signup-box > a {
+    padding: 10px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.signup-group > div.signup-box:hover {
+    padding: 10px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    background-color: #e2e8f0;
+}
