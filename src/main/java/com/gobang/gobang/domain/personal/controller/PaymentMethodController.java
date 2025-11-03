@@ -48,4 +48,13 @@ public class PaymentMethodController {
         paymentMethodService.setDefaultPaymentMethod(paymentId, siteUser);
         return RsData.of("200", "기본 결제수단 설정 성공");
     }
+
+    @DeleteMapping("/{paymentId}")
+    @ResponseBody
+    @Operation(summary = "결제수단 삭제")
+    public RsData<Void> deletePaymentMethod(@PathVariable Long paymentId) {
+        SiteUser siteUser = siteUserService.getCurrentUser();
+        paymentMethodService.deletePaymentMethod(paymentId, siteUser);
+        return RsData.of("200", "결제수단 삭제 성공");
+    }
 }

@@ -253,4 +253,10 @@ public class SiteUserService {
 
         return new SiteUserResponse(user);
     }
+
+    public boolean verifyPassword(Long userId, String password) {
+        SiteUser user = siteUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
+        return passwordEncoder.matches(password, user.getPassword());
+    }
 }
