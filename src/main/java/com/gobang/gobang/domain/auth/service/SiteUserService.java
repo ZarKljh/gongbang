@@ -134,6 +134,7 @@ public class SiteUserService {
                 .email(signupSellerRequest.getEmail())
                 .password(passwordEncoder.encode(signupSellerRequest.getPassword()))
                 .userName(signupSellerRequest.getUserName())
+                .fullName(signupSellerRequest.getFullName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())
                 .role(RoleType.SELLER)
