@@ -13,6 +13,7 @@ export default function SellerSignupPage() {
         password: '',
         confirmPassword: '',
         userName: '',
+        fullName: '',
         gender: '',
         birth: '',
         nickName: '',
@@ -56,13 +57,11 @@ export default function SellerSignupPage() {
             role: 'SELLER',
         }
 
-
         const response = await fetch('http://localhost:8090/api/v1/auth/signup/seller', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         })
-
 
         if (response.ok) {
             alert('회원가입 완료! 로그인을 해주세요')
@@ -73,8 +72,8 @@ export default function SellerSignupPage() {
     }
 
     return (
-        <section>
-            <h3>셀러 회원가입페이지</h3>
+        <section className="signup-container">
+            <h3 className="signup-title">셀러 회원가입페이지</h3>
             {step === 1 && <UserForm userInfo={userInfo} onChange={handleUserChange} onNext={handleNext} />}
             {step === 2 && (
                 <StudioForm
