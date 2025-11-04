@@ -22,4 +22,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     long countByUserId(Long userId);
 
     List<Review> findByUserId(Long userId);
+
+    Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
 }

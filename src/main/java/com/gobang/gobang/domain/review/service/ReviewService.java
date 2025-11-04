@@ -38,6 +38,8 @@ public class ReviewService {
     // 리뷰 다건 조회 페이지네이션
     public Page<Review> getReviews(int page) {
         Pageable pageable = PageRequest.of(page,10, Sort.by(Sort.Direction.DESC, "createdDate"));
+
+
         return this.reviewRepository.getAllReviews(pageable);
     }
 
@@ -126,5 +128,9 @@ public class ReviewService {
                 .stream()
                 .map(ReviewResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    public Page<Review> searchReviews(String keyword, Pageable pageable) {
+        return reviewRepository.findByContentContainingIgnoreCase(keyword, pageable);
     }
 }

@@ -23,11 +23,13 @@ export default function Review() {
     const [roleType, setRoleType] = useState(null)
     const prevRef = useRef<HTMLDivElement | null>(null)
     const nextRef = useRef<HTMLDivElement | null>(null)
+    const [sortType, setSortType] = useState('date_desc')
+    const [keyword, setKeyword] = useState('')
 
     useEffect(() => {
         checkLoginStatus()
         fetchReviews()
-    }, [])
+    }, [sortType])
 
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
@@ -74,7 +76,7 @@ export default function Review() {
     // 리뷰 목록 조회
     const fetchReviews = async (page = 0) => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews?page=${page}`, {
+            const res = await fetch(`http://localhost:8090/api/v1/reviews?page=${page}&sort=${sortType}&keyword=${encodeURIComponent(keyword)}`, {
                 method: 'GET',
                 credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
             })
@@ -102,7 +104,6 @@ export default function Review() {
         }
     }
 
-
     // ✅ 임시 평점 통계 데이터 (추후 연동)
     const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
     const avgRating = 4.5
@@ -114,6 +115,19 @@ export default function Review() {
         title: `포토리뷰${i + 1}`,
         img: `/images/review${i + 1}.jpg`,
     }))
+
+    // ✅ 정렬 요청
+    const handleSort = async (type) => {
+        if (type === '추천순') setSortType('like_desc')
+        else if (type === '별점순') setSortType('rating_desc')
+        else setSortType('date_desc')
+        fetchReviews(0)
+    }
+
+    // 검색 기능 나중에
+    const handleSearch = async () => {
+        fetchReviews(0)
+    }
 
     // 댓글 조회
     const fetchComment = async (reviewId) => {
@@ -455,7 +469,6 @@ export default function Review() {
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                     marginBottom: '8px',
-                             
                                 }}
                             >
                                 <span style={{ width: '40px', fontSize: '14px', color: '#333' }}>{label}</span>
@@ -483,6 +496,85 @@ export default function Review() {
                             </div>
                         )
                     })}
+                </div>
+            </div>
+
+            {/* ⭐ 정렬 + 검색 바 */}
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderTop: '1px solid #000',
+                    borderBottom: '1px solid #000',
+                    padding: '10px 0',
+                    marginBottom: '20px',
+                }}
+            >
+                {/* 정렬 */}
+                <div style={{ display: 'flex', gap: '20px', fontSize: '16px' }}>
+                    {['추천순', '최신순', '별점순'].map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => handleSort(type)}
+                            style={{
+                                background:
+                                    (type === '추천순' && sortType === 'like_desc') ||
+                                    (type === '최신순' && sortType === 'date_desc') ||
+                                    (type === '별점순' && sortType === 'rating_desc')
+                                        ? '#AD9263'
+                                        : 'transparent',
+                                color:
+                                    (type === '추천순' && sortType === 'like_desc') ||
+                                    (type === '최신순' && sortType === 'date_desc') ||
+                                    (type === '별점순' && sortType === 'rating_desc')
+                                        ? 'white'
+                                        : 'black',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontWeight:
+                                    (type === '추천순' && sortType === 'like_desc') ||
+                                    (type === '최신순' && sortType === 'date_desc') ||
+                                    (type === '별점순' && sortType === 'rating_desc')
+                                        ? 'bold'
+                                        : 'normal',
+                                transition: '0.2s',
+                            }}
+                        >
+                            {type}
+                        </button>
+                    ))}
+                </div>
+
+                {/* 검색 */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="키워드 검색"
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        style={{
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            padding: '6px 10px',
+                            fontSize: '14px',
+                            width: '180px',
+                            marginRight: '6px',
+                        }}
+                    />
+                    <button
+                        onClick={handleSearch}
+                        style={{
+                            backgroundColor: '#AD9263',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        검색
+                    </button>
                 </div>
             </div>
 
