@@ -50,6 +50,17 @@
     box-shadow: 0 0 0 2px #cbd5e1;
 }
 
+/* ✅ [추가] 우편번호 input과 버튼을 나란히 배치하기 위한 flex 컨테이너 */
+.form-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ✅ [추가] 우편번호 input이 남은 공간을 채우도록 설정 */
+.form-row .form-input {
+    flex: 1;
+}
+
 .btn {
     height: 40px;
     padding: 0 1rem;
@@ -60,11 +71,25 @@
     color: #1e293b;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    margin-top: 1rem;
+    margin-top: 0;
 }
 
 .btn:hover {
     background-color: #f1f5f9;
+}
+
+/* ✅ [추가] 주소 찾기 버튼을 우편번호 input 옆에 배치할 때 스타일 */
+.address-btn {
+    white-space: nowrap;
+    padding: 0 1rem;
+    height: 40px;
+    font-size: 0.875rem;
+    border-radius: 0.75rem;
+    background-color: #0f172a;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .btn-primary {
