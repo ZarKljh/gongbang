@@ -4,6 +4,11 @@ import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import api from '@/app/utils/api'
 import { FaRegThumbsUp, FaStar } from 'react-icons/fa'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Pagination, Navigation } from 'swiper/modules'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import 'swiper/css/navigation'
+import './styles.css'
 
 export default function Review() {
     const [reviews, setReviews] = useState([])
@@ -16,6 +21,8 @@ export default function Review() {
     const [currentPage, setCurrentPage] = useState(0)
     const reviewTopRef = useRef<HTMLDivElement>(null)
     const [roleType, setRoleType] = useState(null)
+    const prevRef = useRef<HTMLDivElement | null>(null)
+    const nextRef = useRef<HTMLDivElement | null>(null)
 
     useEffect(() => {
         checkLoginStatus()
@@ -54,6 +61,16 @@ export default function Review() {
         reviewTopRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
 
+    const handlePageChange = (pageNumber) => {
+        // 페이지 변경
+        fetchReviews(pageNumber)
+
+        // 스크롤 이동 — DOM 업데이트 후 실행되도록 약간의 delay 추가
+        setTimeout(() => {
+            scrollToTop()
+        }, 100)
+    }
+
     // 리뷰 목록 조회
     const fetchReviews = async (page = 0) => {
         try {
@@ -84,6 +101,19 @@ export default function Review() {
             console.error('리뷰 목록 조회 실패:', err)
         }
     }
+
+
+    // ✅ 임시 평점 통계 데이터 (추후 연동)
+    const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
+    const avgRating = 4.5
+    const totalCount = 226
+
+    // 포토리뷰
+    const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
+        id: i + 1,
+        title: `포토리뷰${i + 1}`,
+        img: `/images/review${i + 1}.jpg`,
+    }))
 
     // 댓글 조회
     const fetchComment = async (reviewId) => {
@@ -286,14 +316,14 @@ export default function Review() {
             {/* 🎨 상단 배너 */}
             <div
                 style={{
-                    maxWidth: '1200px',
+                    maxWidth: '1280px',
                     height: '200px',
                     border: '2px solid gray',
                     borderRadius: '8px',
-                    marginBottom: '80px',
+                    marginBottom: '50px',
                 }}
             >
-                배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정
+                배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정(안 할수도)
                 <br />
                 리뷰 이미지를 추가하고 리뷰 작성 유도 문구 삽입
             </div>
@@ -307,60 +337,155 @@ export default function Review() {
                 }}
             >
                 <h2>리뷰 목록</h2>
-                <button
-                    onClick={handleCreateClick}
-                    style={{
-                        backgroundColor: '#bfbfbf',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '10px 20px',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                    }}
-                >
-                    리뷰 작성하기
-                </button>
+                {roleType === 'USER' && (
+                    <button
+                        onClick={handleCreateClick}
+                        style={{
+                            backgroundColor: '#bfbfbf',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            cursor: 'pointer',
+                            fontSize: '16px',
+                        }}
+                    >
+                        리뷰 작성하기
+                    </button>
+                )}
             </div>
 
             <hr />
+            <section className="photoReview-container">
+                <h3 className="photoReview-title">📸 포토 리뷰</h3>
 
-            {/* 📸 포토 리뷰 */}
-            <div className="photoReview">
-                <h3>포토 리뷰</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between'}}>
-                    <div>
-                        <Link href="#">포토리뷰1</Link>
-                    </div>
-                    <div>
-                        <Link href="#">포토리뷰2</Link>
-                    </div>
-                    <div>
-                        <Link href="#">포토리뷰3</Link>
-                    </div>
-                    <div>
-                        <Link href="#">포토리뷰4</Link>
-                    </div>
-                    <div>
-                        <Link href="#">포토리뷰5</Link>
+                <Swiper
+                    modules={[Navigation]}
+                    slidesPerView={5}
+                    slidesPerGroup={5}
+                    spaceBetween={20}
+                    loop={false}
+                    centeredSlides={false}
+                    // 버튼을 초기화 전에 수동 주입
+                    onBeforeInit={(swiper) => {
+                        swiper.params.navigation = {
+                            ...(swiper.params.navigation as object),
+                            prevEl: prevRef.current,
+                            nextEl: nextRef.current,
+                        }
+                    }}
+                    navigation={{
+                        prevEl: prevRef.current,
+                        nextEl: nextRef.current,
+                    }}
+                    className="photoReview-swiper"
+                    // 화면 폭에 따른 보장 (옵션)
+                    breakpoints={{
+                        1200: { slidesPerView: 5, slidesPerGroup: 5, spaceBetween: 20 },
+                        992: { slidesPerView: 4, slidesPerGroup: 4, spaceBetween: 16 },
+                        768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 12 },
+                        0: { slidesPerView: 2, slidesPerGroup: 2, spaceBetween: 10 },
+                    }}
+                >
+                    {photoReviews.map((r) => (
+                        <SwiperSlide key={r.id}>
+                            <div className="photoCard">
+                                <img src={r.img} alt={r.title} />
+                                <p>{r.title}</p>
+                            </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+
+                {/* 커스텀 네비게이션 */}
+                <div ref={prevRef} className="custom-prev">
+                    <ChevronLeft size={26} strokeWidth={2.5} />
+                </div>
+                <div ref={nextRef} className="custom-next">
+                    <ChevronRight size={26} strokeWidth={2.5} />
+                </div>
+            </section>
+            <hr />
+            {/* 📜 리뷰 목록 */}
+            <div ref={reviewTopRef} aria-hidden>
+                <h3>리뷰</h3>
+            </div>
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '60px',
+                    marginBottom: '80px',
+                }}
+            >
+                {/* 왼쪽 평균 */}
+                <div style={{ textAlign: 'center', width: '180px' }}>
+                    <h2 style={{ fontSize: '48px', margin: 0, color: '#333' }}>{avgRating}</h2>
+                    <div style={{ marginTop: '8px' }}>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                            <FaStar
+                                key={num}
+                                size={22}
+                                color={num <= Math.round(avgRating) ? '#FFD700' : '#E0E0E0'}
+                                style={{ marginRight: '3px' }}
+                            />
+                        ))}
+                        <small style={{ color: '#777' }}>({totalCount})</small>
                     </div>
                 </div>
-                {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        {[1, 2, 3, 4, 5].map((num) => (
-          <Link key={num} href="#">
-            포토리뷰{num}
-          </Link>
-        ))} */}
-                {/* </div> */}
-                <hr style={{ marginTop: '100px' }} />
-            </div>
 
-            {/* 📜 리뷰 목록 */}
-            <div>
-                <h3>리뷰</h3>
+                {/* 오른쪽 그래프 */}
+                <div
+                    style={{
+                        flex: 1,
+                        backgroundColor: '#e5e5e5',
+                        padding: '20px 40px',
+                        borderRadius: '6px',
+                    }}
+                >
+                    {['최고', '좋음', '보통', '별로', '나쁨'].map((label, i) => {
+                        const score = 5 - i
+                        const percent = ratingData[score] || 0
+                        return (
+                            <div
+                                key={label}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    marginBottom: '8px',
+                                }}
+                            >
+                                <span style={{ width: '40px', fontSize: '14px', color: '#333' }}>{label}</span>
+                                <div
+                                    style={{
+                                        flex: 1,
+                                        height: '8px',
+                                        backgroundColor: '#f0caca',
+                                        borderRadius: '4px',
+                                        margin: '0 10px',
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: `${percent}%`,
+                                            height: '100%',
+                                            backgroundColor: '#ff9c9c',
+                                            borderRadius: '4px',
+                                            transition: 'width 0.3s ease',
+                                        }}
+                                    />
+                                </div>
+                                <span style={{ width: '30px', fontSize: '12px', color: '#555' }}>{percent}%</span>
+                            </div>
+                        )
+                    })}
+                </div>
             </div>
 
             <div
+                className="review-list"
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -462,21 +587,7 @@ export default function Review() {
                                     >
                                         {comments[review.reviewId].reviewComment}
                                     </div>
-                                ) : (
-                                    <div
-                                        style={{
-                                            marginTop: '8px',
-                                            width: '800px',
-                                            border: '1px solid #ddd',
-                                            borderRadius: '5px',
-                                            padding: '8px',
-                                            color: '#999',
-                                            fontStyle: 'italic',
-                                        }}
-                                    >
-                                        아직 등록된 댓글이 없습니다.
-                                    </div>
-                                )}
+                                ) : null}
                                 {/* 💼 SELLER만 댓글 조작 가능 */}
                                 {roleType === 'SELLER' ? (
                                     <>
@@ -621,11 +732,7 @@ export default function Review() {
                                             </>
                                         )}
                                     </>
-                                ) : (
-                                    <div style={{ color: '#999', marginTop: '5px' }}>
-                                        * 댓글 작성은 사업자 회원만 가능합니다.
-                                    </div>
-                                )}
+                                ) : null}
                             </li>
                         ))}
                     </ul>
@@ -647,10 +754,7 @@ export default function Review() {
             {/* 페이지네이션 */}
             <div style={{ marginTop: '20px', textAlign: 'center' }}>
                 <button
-                    onClick={() => {
-                        if (currentPage > 0) fetchReviews(currentPage - 1)
-                        scrollToTop()
-                    }}
+                    onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 0}
                     style={{
                         marginRight: '10px',
@@ -678,6 +782,7 @@ export default function Review() {
                             backgroundColor: currentPage === index ? '#AD9263' : 'white',
                             color: currentPage === index ? 'white' : 'black',
                             fontWeight: currentPage === index ? 'bold' : 'normal',
+                            cursor: 'pointer',
                         }}
                     >
                         {index + 1}
@@ -685,10 +790,7 @@ export default function Review() {
                 ))}
 
                 <button
-                    onClick={() => {
-                        if (currentPage + 1 < totalPages) fetchReviews(currentPage + 1)
-                        scrollToTop()
-                    }}
+                    onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage + 1 >= totalPages}
                     style={{
                         marginLeft: '10px',
