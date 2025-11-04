@@ -52,8 +52,8 @@ public class ProductService {
         int limit = Math.max(1, Math.min(size, 50));
 //        boolean useColor = colors != null && !colors.isEmpty();
 
-        Integer priceMin   = null;
-        Integer priceMax   = null;
+        Integer priceMin = getIntParam(params, "PRICE_MIN");
+        Integer priceMax = getIntParam(params, "PRICE_MAX");
         String style = first(params, "STYLE");
         String pkg = first(params, "PACKAGE");
         String color = first(params, "COLOR");
@@ -97,4 +97,17 @@ public class ProductService {
         String v = p.getFirst(key);
         return (v == null || v.isBlank()) ? null : v.trim();
     }
+
+    private Integer getIntParam(MultiValueMap<String, String> params, String key) {
+        String value = params.getFirst(key);   // MultiValueMap에서 첫 번째 값 가져오기
+        if (value == null || value.isBlank()) return null;
+
+        try {
+            return Integer.parseInt(value.trim());  // 문자열 → Integer 변환
+        } catch (NumberFormatException e) {
+            System.out.printf("⚠️ 잘못된 숫자 파라미터: %s = %s%n", key, value);
+            return null;
+        }
+    }
+
 }

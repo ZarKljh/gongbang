@@ -58,6 +58,11 @@ export default function Product() {
     const [selectedBtn, setSelectedBtn] = useState<Record<string, string | null>>({})
     const didMount = useRef(false)
 
+    const MUTEX: Record<string, string[]> = {
+        PRICE_MIN: ['PRICE_MAX'],
+        PRICE_MAX: ['PRICE_MIN'],
+    }
+
     const onClickSubCategory = (catId: number, subId: number) => {
         setSelectedCatId(catId) // 클릭한 카테고리의 id를 상태에 저장
         setSelectedSubCatId(subId) // 클릭한 서브카테고리의 id를 상태에 저장
@@ -81,10 +86,12 @@ export default function Product() {
     //     requestAnimationFrame(() => submitFilter())
     // }
     const handleFilterClick = (code: string, label: string) => {
-        setSelectedBtn((prev) => ({
-            ...prev,
-            [code]: prev[code] === label ? null : label, // SINGLE 모드
-        }))
+        setSelectedBtn((prev) => {
+            const next = { ...prev }
+            ;(MUTEX[code] ?? []).forEach((k) => (next[k] = null)) // 상대 키 해제
+            next[code] = prev[code] === label ? null : label // 현재 키 토글
+            return next
+        })
     }
     // 선택 상태를 평탄화
     const buildExtra = (state: Record<string, string | null>) => {
@@ -244,7 +251,7 @@ export default function Product() {
             <nav className="category-tree" aria-label="카테고리 메뉴">
                 <h2>카테고리</h2>
                 {categories.map((cat) => (
-                    <ul className="category-list" key={cat.id}>
+                    <ul className="category-list mb-3" key={cat.id}>
                         <li className="category-item">
                             <button className="category-toggle" aria-expanded="false">
                                 {cat.name} <span className="icon">+</span>
@@ -278,20 +285,17 @@ export default function Product() {
                 {filterGroups.length == 0 ? (
                     <p className="text-sm text-gray-500">표시할 필터그룹이 없습니다.</p>
                 ) : (
-                    <ul className="space-y-2">
+                    <ul className="">
                         {filterGroups.map((g) => (
-                            <li key={g.id} className="rounded border px-3 py-2 flex items-center justify-between">
-                                <div className="font-medium truncate">{g.name}</div>
-                                <div className="min-w-0">
+                            <li key={g.id} className="">
+                                <div className="">{g.name}</div>
+                                <div className="">
                                     {/* 옵션 목록 */}
 
-                                    <ul className="flex flex-wrap gap-2">
+                                    <ul className="">
                                         {(filterOptions[g.id] ?? []).length > 0 ? (
                                             filterOptions[g.id].map((o) => (
-                                                <li
-                                                    key={o.id}
-                                                    className="px-3 py-1 text-sm border rounded hover:bg-gray-50 cursor-pointer"
-                                                >
+                                                <li key={o.id} className="">
                                                     {o.label && <label>{o.label}</label>}
                                                     {/* type을 submit이라고 썼지만 컬러값버튼임.. 수정해야함! */}
                                                     {o.inputType === 'submit' ? (
@@ -351,7 +355,7 @@ export default function Product() {
                                                         <>
                                                             <input
                                                                 form="filterForm"
-                                                                type="radio"
+                                                                type="CHECKBOX"
                                                                 name={o.filterCode} // ex) "COLOR"
                                                                 value={o.label ?? ''} // label 말고 code 권장
                                                                 checked={
@@ -361,7 +365,11 @@ export default function Product() {
                                                                 onChange={() => {
                                                                     setSelectedBtn((prev) => ({
                                                                         ...prev,
-                                                                        [o.filterCode]: o.label!,
+                                                                        // 같은 걸 다시 누르면 해제(null), 아니면 선택
+                                                                        [o.filterCode]:
+                                                                            prev[o.filterCode] === o.label
+                                                                                ? null
+                                                                                : o.label!,
                                                                     })) // 단일 선택 저장
                                                                     // 필요 시 즉시 검색
                                                                     // handleImmediateSubmit();
