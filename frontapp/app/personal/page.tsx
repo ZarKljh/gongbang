@@ -133,6 +133,10 @@ export default function MyPage() {
         }
     }, [activeTab])
 
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
     // ------------------- API 요청 함수 -------------------
     const fetchOrders = async (id: number) => {
         if (!id) return
@@ -317,7 +321,15 @@ export default function MyPage() {
     }
 
     // ------------------- 주문, 배송 -------------------
+    const handleStatusClick = (status: string) => {
+        setSelectedStatus(status)
+        setIsStatusModal(true)
+    }
 
+    const handleOrderClick = (order: string) => {
+        setSelectedOrder(order)
+        setIsOrderModal(true)
+    }
 
     //------------------- 배송지 -------------------
     const handleSaveAddress = async () => {
@@ -502,6 +514,59 @@ export default function MyPage() {
         } catch (error) {
         console.error(error)
         alert('기본 결제수단 설정 중 오류가 발생했습니다.')
+        }
+    }
+
+    // ------------------- 팔로우 -------------------
+    const handleFollow = async (studioId: number) => {
+        try {
+            const { data } = await axios.post(
+                `${API_BASE_URL}/follow`,
+                { studioId },
+                { withCredentials: true }
+            )
+
+            if (data.resultCode === '200') {
+                alert('팔로우 성공')
+                fetchFollowList(userData.id)
+            } else {
+                alert(`팔로우 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error('팔로우 실패:', error)
+            alert('팔로우 요청 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleUnfollow = async (studioId: number) => {
+        try {
+            const { data } = await axios.delete(`${API_BASE_URL}/follow`, {
+                params: { studioId },
+                withCredentials: true
+            })
+
+            if (data.resultCode === '200') {
+                alert('언팔로우 성공')
+                fetchFollowList(userData.id)
+            } else {
+                alert(`언팔로우 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error('언팔로우 실패:', error)
+            alert('언팔로우 중 오류가 발생했습니다.')
+        }
+    }
+
+    const checkFollowing = async (studioId: number) => {
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/follow/check`, {
+                params: { studioId },
+                withCredentials: true
+            })
+            return data.data // true or false
+        } catch (error) {
+            console.error('팔로우 여부 확인 실패:', error)
+            return false
         }
     }
 
@@ -708,7 +773,6 @@ export default function MyPage() {
                             </div>
 
                             <div className="recent-orders">
-                                <h3>최근 주문</h3>
                                 {orders.slice(0, 3).map((order) => (
                                 <div
                                     key={order.orderId}
@@ -1314,7 +1378,7 @@ export default function MyPage() {
                         </div>
                     )}
 
-                    {/* 나의 좋아요 */}
+                    {/* 나의 좋아요, 팔로우 */}
                     {activeTab === 'wishlist' && (
                         <div className="tab-content">
                             <div className="section-header">
@@ -1362,30 +1426,22 @@ export default function MyPage() {
                                 </div>
                             )}
 
-                            {activeSubTab === 'brand' && (
-                                <div className="subtab-content">
+                            {activeSubTab === 'follow' && (
+                                <div className="tab-content">
+                                    <h2>내가 팔로우한 작가</h2>
                                     {followList.length === 0 ? (
-                                        <div className="empty-state">팔로우한 브랜드가 없습니다.</div>
+                                        <p>팔로우한 작가가 없습니다.</p>
                                     ) : (
-                                        <div>
+                                        <ul className="follow-list">
                                             {followList.map((follow) => (
-                                                <div key={follow.followId} className="brand-item">
-                                                    <div className="brand-info">
-                                                        <div className="brand-logo"></div>
-                                                        <div>
-                                                            <p className="brand-name">{follow.studioName}</p>
-                                                            <p className="brand-date">{follow.createdAt}</p>
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        className="btn-secondary"
-                                                        onClick={() => handleUnfollow(follow.followId)}
-                                                    >
+                                                <li key={follow.studioId} className="follow-card">
+                                                    <p>{follow.studioName}</p>
+                                                    <button onClick={() => handleUnfollow(follow.studioId)}>
                                                         언팔로우
                                                     </button>
-                                                </div>
+                                                </li>
                                             ))}
-                                        </div>
+                                        </ul>
                                     )}
                                 </div>
                             )}

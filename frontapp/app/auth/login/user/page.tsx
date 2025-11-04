@@ -63,11 +63,7 @@ export default function LoginUser() {
                         <input type="text" name="userName" className="form-input" onChange={handleChange}></input>
                     </div>
                     <div className="form-group">
-<<<<<<< HEAD
                         <label className="form-label">
-=======
-                        <label className="form-label" form-label>
->>>>>>> b93d498c03d32c229610b9e9f421189c1009bd21
                             패스워드
                         </label>
                         <input type="password" name="password" className="form-input" onChange={handleChange}></input>
