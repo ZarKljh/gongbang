@@ -71,8 +71,8 @@ public class OrdersService {
 
         // 배송 정보 변환
         DeliveryResponse deliveryResponse = null;
-        if (order.getDelivery() != null) {
-            Delivery delivery = order.getDelivery();
+        if (order.getDeliveries() != null) {
+            Delivery delivery = order.getDeliveries().get(0);
 
             UserAddressResponse addressResponse = null;
             if (delivery.getAddress() != null) {
