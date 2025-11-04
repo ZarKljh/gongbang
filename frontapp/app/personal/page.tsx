@@ -66,57 +66,21 @@ export default function MyPage() {
     const [wishList, setWishList] = useState<any[]>([])
     const [followList, setFollowList] = useState<any[]>([])
 
-    // ------------------- 유저 정보 가져오기 -------------------
+    // ------------------- 실행 모음 -------------------
     useEffect(() => {
-        const fetchUser = async () => {
-            setLoading(true)
-            try {
-                const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
-
-                if (data.code === '401') {
-                    window.location.href = '/auth/login'
-                    return
-                }
-
-                setUserData(data?.data || null)
-            } catch (error: any) {
-                console.error('사용자 정보 조회 실패:', error)
-                alert('사용자 정보를 불러오는 중 문제가 발생했습니다. 다시 로그인 해주세요.')
-                setUserData(null)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchUser()
+        fetchUser(),
+        fetchPaymentMethods(),
+        fetchOrders(),
+        fetchStats(),
+        fetchMyReviews()
     }, [])
 
     useEffect(() => {
         if (!userData?.id) return
-
-        const loadAllData = async () => {
-            setLoading(true)
-            try {
-                await Promise.all([
-                    fetchOrders(userData.id),
-                    fetchAddresses(userData.id),
-                    fetchPaymentMethods(userData.id),
-                    fetchWishList(userData.id),
-                    fetchFollowList(userData.id),
-                    fetchStatsData(userData.id),
-                    fetchMyReviews(userData.id),
-                ])
-            } catch (error) {
-                console.error('데이터 로드 실패:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
         loadAllData()
     }, [userData])
 
-    //모달이 열릴 때 스크립트를 로드 -->주소
+    //모달
     useEffect(() => {
         if (isAddressModal && !window.daum) {
             const script = document.createElement('script')
@@ -126,41 +90,46 @@ export default function MyPage() {
         }
     }, [isAddressModal])
 
-    useEffect(() => {
-        fetchPaymentMethods();
-    }, []);
-
-    useEffect(() => {
-        if (activeTab === 'reviews') {
-            fetchMyReviews()
-        }
-    }, [activeTab])
-
-    useEffect(() => {
-        fetchOrders();
-    }, []);
-
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await axios.get(`${API_BASE_URL}/stats`, {
-                    withCredentials: true,
-                });
-                if (response.data.resultCode === "200") {
-                setStats({
-                    totalQna: response.data.data.totalQna,
-                    totalReviews: response.data.data.totalReviews,
-                })
-                }
-            } catch (error) {
-                console.error("Failed to load mypage stats:", error)
-            }
-        };
-
-        fetchStats()
-    }, [])
-
     // ------------------- API 요청 함수 -------------------
+    const loadAllData = async () => {
+        setLoading(true)
+        try {
+            await Promise.all([
+                fetchOrders(userData.id),
+                fetchAddresses(userData.id),
+                fetchPaymentMethods(userData.id),
+                fetchWishList(userData.id),
+                fetchFollowList(userData.id),
+                fetchStatsData(userData.id),
+                fetchMyReviews(userData.id),
+            ])
+        } catch (error) {
+            console.error('데이터 로드 실패:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchUser = async () => {
+        setLoading(true)
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
+
+            if (data.code === '401') {
+                window.location.href = '/auth/login'
+                return
+            }
+
+            setUserData(data?.data || null)
+        } catch (error: any) {
+            console.error('사용자 정보 조회 실패:', error)
+            alert('사용자 정보를 불러오는 중 문제가 발생했습니다. 다시 로그인 해주세요.')
+            setUserData(null)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const fetchOrders = async (id: number) => {
         if (!id) return
         try {
@@ -254,12 +223,25 @@ export default function MyPage() {
     const fetchMyReviews = async () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/reviews`, { withCredentials: true })
-            // 응답 구조에 따라 data.resultCode / data.code 등 확인
             const list = data.data || []
             setMyReviews(list)
             setStats(prev => ({ ...prev, totalReviews: Array.isArray(list) ? list.length : 0 }))
         } catch (e) {
             console.error(e)
+        }
+    }
+
+    const fetchStats = async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/stats`, { withCredentials: true })
+            if (response.data.resultCode === "200") {
+            setStats({
+                totalQna: response.data.data.totalQna,
+                totalReviews: response.data.data.totalReviews,
+            })
+            }
+        } catch (error) {
+            console.error("Failed to load mypage stats:", error)
         }
     }
 

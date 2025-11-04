@@ -37,8 +37,8 @@ public class StatsService {
     public Map<String, Long> getUserStats() {
         SiteUser currentUser = siteUserService.getCurrentUser();
 
-//        Long qnaCount = qnaRepository.countBySiteUser(currentUser);
-        Long reviewCount = reviewRepository.countBySiteUser(currentUser);
+//        Long qnaCount = qnaRepository.countByUserId(currentUser.getId());
+        Long reviewCount = reviewRepository.countByUserId(currentUser.getId());
 
         Map<String, Long> stats = new HashMap<>();
 //        stats.put("totalQna", qnaCount);
