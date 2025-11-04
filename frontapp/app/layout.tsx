@@ -55,17 +55,19 @@ export default function RootLayout({
                     <Link href="/auth/login">로그인</Link>
                     <Link href="/auth/signup">회원가입</Link>
                     <ClientNav />
-                    <Link
-                      href="/support/faq"
-                      className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
-                      prefetch
-                    >
-                    F&Q
-                    </Link>
-                </nav>
-                <ReactQueryProviders>{children}</ReactQueryProviders>
+
+          <ClientNav />
+          <Link
+            href="/admin/admin_account/faq"
+            className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
+            prefetch
+          >
+            F&Q
+          </Link>
+        </nav>
+
+        {children}
       </body>
     </html>
   );
-
 }

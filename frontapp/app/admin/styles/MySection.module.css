@@ -1,0 +1,174 @@
+/* === 전체 레이아웃 === */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css");
+
+body {
+  font-family: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+.dashboardLayout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background: #f8fafc;
+  width: 1280px;
+  margin: 0 auto;
+}
+
+/* === Sidebar === */
+.sidebar {
+  background: #1e293b;
+  color: white;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profileBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.profileName {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.profileRole {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.navMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.navItem {
+  text-decoration: none;
+  color: #e2e8f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.navItem:hover {
+  background: #334155;
+  color: #fff;
+}
+
+/* === 메인 === */
+.mainArea {
+  padding: 32 0 0 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* === 차트 섹션 === */
+
+.chartArea {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 72px;
+}
+
+.chartRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.kpiBox {
+  display: flex;
+  flex-direction: column;
+  gap: 27px;
+}
+
+.kpiItem {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 4px 4px 20px 0 rgba(0, 0, 0, 0.15);
+  width: 160px;
+  height: 124px;
+}
+
+.kpiItem span {
+  font-size: 16px;
+}
+
+.kpiItemDesign {
+  display: block;
+  width: 115px;
+  height: 2px;
+  background-color: #d9d9d9;
+  border-radius: 20px;
+}
+
+.kpiItem strong {
+  font-size: 12px;
+  display: block;
+  margin-top: 6px;
+  color: #0f172a;
+}
+.kpiItem.up strong {
+  color: #16a34a;
+}
+.kpiItem.down strong {
+  color: #dc2626;
+}
+
+/* === 하단 빠른 액세스 === */
+.bottomDashboard {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+.bottomTitle {
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1e293b;
+}
+.bottomGrid {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.circleCard {
+  flex: 1;
+  height: 120px;
+  border-radius: 50%;
+  font-weight: 600;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.circleCard:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+.cardShop {
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+}
+.cardReport {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+}
+.cardInquiry {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+}

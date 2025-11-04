@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import styles from "@/app/MySection.module.css";
 
 type ModalProps = {
   open: boolean;

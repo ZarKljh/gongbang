@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Modal from "@/app/components/Modal";
-import api from "../utils/api"; // axios 인스턴스 (baseURL 세팅돼 있다고 가정)
+import Modal from "@/app/admin/components/Modal";
+import api from "../../utils/api"; // axios 인스턴스 (baseURL 세팅돼 있다고 가정)
+import styles from "@/app/MySection.module.css";
 
 type Me = {
   id: number;

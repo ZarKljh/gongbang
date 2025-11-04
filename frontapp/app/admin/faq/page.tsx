@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import api from "@/app/utils/api"; // axios 인스턴스 (baseURL, withCredentials 설정)
+import styles from "@/app/MySection.module.css";
 
 type Id = string;
 
