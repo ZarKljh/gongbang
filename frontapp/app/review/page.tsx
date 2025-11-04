@@ -410,6 +410,7 @@ export default function Review() {
             <div ref={reviewTopRef} aria-hidden>
                 <h3>리뷰</h3>
             </div>
+            {/* 평균 별점 */}
             <div
                 style={{
                     display: 'flex',
@@ -439,7 +440,7 @@ export default function Review() {
                     style={{
                         flex: 1,
                         backgroundColor: '#e5e5e5',
-                        padding: '20px 40px',
+                        padding: '20px 120px',
                         borderRadius: '6px',
                     }}
                 >
@@ -454,6 +455,7 @@ export default function Review() {
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                     marginBottom: '8px',
+                             
                                 }}
                             >
                                 <span style={{ width: '40px', fontSize: '14px', color: '#333' }}>{label}</span>
