@@ -36,30 +36,46 @@ public class ReviewController {
 
 
     // 리뷰 목록 조회 (다건)
+//    @GetMapping
+//    public RsData<ReviewsResponse> getAllReviews(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(required = false, defaultValue = "date_desc") String sort,
+//            @RequestParam(required = false) String keyword
+//    ) {
+//        // ✅ 정렬 조건 처리
+//        Sort sortOption;
+//        switch (sort) {
+//            case "rating_desc" -> sortOption = Sort.by(Sort.Direction.DESC, "rating");
+//            case "like_desc" -> sortOption = Sort.by(Sort.Direction.DESC, "reviewLike");
+//            case "date_asc" -> sortOption = Sort.by(Sort.Direction.ASC, "createdDate");
+//            default -> sortOption = Sort.by(Sort.Direction.DESC, "createdDate"); // 최신순
+//        }
+//
+//        Pageable pageable = PageRequest.of(page, 10, sortOption);
+//        Page<Review> reviewPage;
+//
+//        // ✅ 검색 기능 추가 (keyword 있을 때만 검색)
+//        if (keyword != null && !keyword.trim().isEmpty()) {
+//            reviewPage = reviewService.searchReviews(keyword, pageable);
+//        } else {
+//            reviewPage = reviewService.getReviews(page);
+//        }
+//
+//        return RsData.of(
+//                "200",
+//                "목록 조회 성공",
+//                new ReviewsResponse(reviewPage)
+//        );
+//    }
+
     @GetMapping
     public RsData<ReviewsResponse> getAllReviews(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "date_desc") String sort,
-            @RequestParam(required = false) String keyword
+            @RequestParam(defaultValue = "date_desc") String sort
     ) {
-        // ✅ 정렬 조건 처리
-        Sort sortOption;
-        switch (sort) {
-            case "rating_desc" -> sortOption = Sort.by(Sort.Direction.DESC, "rating");
-            case "like_desc" -> sortOption = Sort.by(Sort.Direction.DESC, "reviewLike");
-            case "date_asc" -> sortOption = Sort.by(Sort.Direction.ASC, "createdDate");
-            default -> sortOption = Sort.by(Sort.Direction.DESC, "createdDate"); // 최신순
-        }
+        System.out.println("🔥 sort param = " + sort);
+        Page<Review> reviewPage = reviewService.getReviews(page, sort);
 
-        Pageable pageable = PageRequest.of(page, 10, sortOption);
-        Page<Review> reviewPage;
-
-        // ✅ 검색 기능 추가 (keyword 있을 때만 검색)
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            reviewPage = reviewService.searchReviews(keyword, pageable);
-        } else {
-            reviewPage = reviewService.getReviews(page);
-        }
 
         return RsData.of(
                 "200",

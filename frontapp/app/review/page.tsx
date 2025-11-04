@@ -26,10 +26,16 @@ export default function Review() {
     const [sortType, setSortType] = useState('date_desc')
     const [keyword, setKeyword] = useState('')
 
-    useEffect(() => {
-        checkLoginStatus()
-        fetchReviews()
-    }, [sortType])
+// ✅ 1회만 로그인 상태 확인
+useEffect(() => {
+  checkLoginStatus()
+}, []) // 의존성 배열 비워둠
+
+// ✅ 리뷰 목록 + 정렬 반영
+useEffect(() => {
+  fetchReviews(currentPage)
+}, [currentPage, sortType])
+
 
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
@@ -74,7 +80,7 @@ export default function Review() {
     }
 
     // 리뷰 목록 조회
-    const fetchReviews = async (page = 0) => {
+    const fetchReviews = async (page = 0, sort = sortType) => {
         try {
             const res = await fetch(`http://localhost:8090/api/v1/reviews?page=${page}&sort=${sortType}&keyword=${encodeURIComponent(keyword)}`, {
                 method: 'GET',
@@ -85,6 +91,7 @@ export default function Review() {
             setReviews(fetchedReviews)
             setCurrentPage(data.data.currentPage)
             setTotalpages(data.data.totalPages)
+            console.log("정렬 요청, sortType:", sortType, "page:", page)
 
             // if (reviewTopRef.current) {
             //     reviewTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -117,12 +124,16 @@ export default function Review() {
     }))
 
     // ✅ 정렬 요청
-    const handleSort = async (type) => {
-        if (type === '추천순') setSortType('like_desc')
-        else if (type === '별점순') setSortType('rating_desc')
-        else setSortType('date_desc')
-        fetchReviews(0)
-    }
+const handleSortChange = (type) => {
+  let newSort = 'date_desc' // 기본값
+
+  if (type === '추천순') newSort = 'like_desc'
+  else if (type === '최신순') newSort = 'date_desc'
+  else if (type === '별점순') newSort = 'rating_desc'
+
+  setSortType(newSort)
+  fetchReviews(0, newSort)
+}
 
     // 검색 기능 나중에
     const handleSearch = async () => {
@@ -516,7 +527,7 @@ export default function Review() {
                     {['추천순', '최신순', '별점순'].map((type) => (
                         <button
                             key={type}
-                            onClick={() => handleSort(type)}
+                            onClick={() => handleSortChange(type)}
                             style={{
                                 background:
                                     (type === '추천순' && sortType === 'like_desc') ||

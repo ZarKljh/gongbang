@@ -36,11 +36,27 @@ public class ReviewService {
 //    }
 
     // 리뷰 다건 조회 페이지네이션
-    public Page<Review> getReviews(int page) {
-        Pageable pageable = PageRequest.of(page,10, Sort.by(Sort.Direction.DESC, "createdDate"));
+//    public Page<Review> getReviews(int page) {
+//        Pageable pageable = PageRequest.of(page,10, Sort.by(Sort.Direction.DESC, "createdDate"));
+//
+//
+//        return this.reviewRepository.getAllReviews(pageable);
+//    }
+    public Page<Review> getReviews(int page, String sort) {
+        System.out.println("🔥🔥 들어온 sort = " + sort);
 
+        Sort sortOption = switch (sort) {
+            case "like_desc" -> Sort.by(Sort.Direction.DESC, "reviewLike");
+            case "like_asc" -> Sort.by(Sort.Direction.ASC, "reviewLike");
+            case "rating_desc" -> Sort.by(Sort.Order.desc("rating"), Sort.Order.desc("createdDate"));
+            case "rating_asc" -> Sort.by(Sort.Order.asc("rating"), Sort.Order.desc("createdDate"));
+            case "date_asc" -> Sort.by(Sort.Direction.ASC, "createdDate");
+            default -> Sort.by(Sort.Direction.DESC, "createdDate");
+        };
 
-        return this.reviewRepository.getAllReviews(pageable);
+        System.out.println("🧭 최종 sortOption = " + sortOption);
+        Pageable pageable = PageRequest.of(page, 10, sortOption);
+        return reviewRepository.findAll(pageable);
     }
 
 
