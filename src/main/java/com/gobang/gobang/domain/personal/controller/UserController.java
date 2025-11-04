@@ -68,9 +68,9 @@ public class UserController {
         }
     }
 
-    @GetMapping("/stats")
-    public RsData<Map<String, Long>> getUserStats() {
-        Map<String, Long> stats = statsService.getUserStats();
-        return RsData.of("200", "마이페이지 통계 조회 성공", stats);
-    }
+//    @GetMapping("/stats")
+//    public RsData<Map<String, Long>> getUserStats() {
+//        Map<String, Long> stats = statsService.getUserStats();
+//        return RsData.of("200", "마이페이지 통계 조회 성공", stats);
+//    }
 }

@@ -55,6 +55,7 @@ public class SiteUserService {
                 .password(passwordEncoder.encode(signupUserRequest.getPassword()))
                 .userName(signupUserRequest.getUserName())
                 .mobilePhone(signupUserRequest.getMobilePhone())
+                .fullName(signupUserRequest.getFullName())
                 .nickName(signupUserRequest.getNickName())
                 .fullName(signupUserRequest.getFullName())
                 .role(RoleType.USER)
