@@ -34,20 +34,6 @@ public class StatsService {
         return stats;
     }
 
-<<<<<<< HEAD
-    public Map<String, Long> getUserStats() {
-        SiteUser currentUser = siteUserService.getCurrentUser();
-
-//        Long qnaCount = qnaRepository.countByUserId(currentUser.getId());
-        Long reviewCount = reviewRepository.countByUserId(currentUser.getId());
-
-        Map<String, Long> stats = new HashMap<>();
-//        stats.put("totalQna", qnaCount);
-        stats.put("totalReviews", reviewCount);
-
-        return stats;
-    }
-=======
 //    public Map<String, Long> getUserStats() {
 //        SiteUser currentUser = siteUserService.getCurrentUser();
 //
@@ -60,5 +46,4 @@ public class StatsService {
 //
 //        return stats;
 //    }
->>>>>>> 2b0eced4d6f35ac9d337efc2500c564df2808f21
 }
