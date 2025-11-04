@@ -19,10 +19,12 @@ public class FilterOptionDto {
     private String colorHex;
     private String iconUrl;
     private String tooltip;
+    private String filterCode;
     private BigDecimal minValue; // null이면 하한 없음
     private BigDecimal maxValue; // null이면 상한 없음
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
+
 
 
     public FilterOptionDto(FilterOption filterOption) {
@@ -33,6 +35,7 @@ public class FilterOptionDto {
         this.colorHex=filterOption.getColorHex();
         this.iconUrl=filterOption.getIconUrl();
         this.tooltip=filterOption.getTooltip();
+        this.filterCode=filterOption.getFilterCode();
         this.minValue=filterOption.getMinValue();
         this.maxValue=filterOption.getMaxValue();
         this.createdDate = filterOption.getCreatedDate();
