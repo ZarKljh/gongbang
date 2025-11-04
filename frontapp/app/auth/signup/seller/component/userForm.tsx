@@ -68,16 +68,6 @@ export default function UserForm({ userInfo, onChange, onNext }: Props) {
                 />
             </div>
             <div className="form-group">
-                <label className="form-label">성별</label>
-                <select name="gender" value={userInfo.gender} onChange={onChange}>
-                    <option value="" disabled>
-                        성별을 선택해주세요
-                    </option>
-                    <option value="M">남성</option>
-                    <option value="F">여성</option>
-                </select>
-            </div>
-            <div className="form-group">
                 <label className="form-label">생년월일</label>
                 <input
                     type="date"

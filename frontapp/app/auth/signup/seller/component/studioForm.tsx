@@ -78,7 +78,7 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                 <input
                     type="text"
                     name="studioBusinessNumber"
-                    className="group-input"
+                    className="form-input"
                     value={studioInfo.studioBusinessNumber}
                     onChange={onChange}
                     placeholder="사업자번호를 적어주세요"
@@ -151,21 +151,20 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                 />
             </div>
             <div className="form-group">
-                <label className="form-label">주소 검색</label>
-                <button className="btn btn-primary" type="button" onClick={handleAddressSearch}>
-                    주소 찾기
-                </button>
-            </div>
-            <div className="form-group">
                 <label className="form-label">우편번호</label>
-                <input
-                    type="text"
-                    name="studioAddPostNumber"
-                    className="form-input"
-                    value={studioInfo.studioAddPostNumber}
-                    onChange={onChange}
-                    placeholder="우편번호를 검색해주세요"
-                />
+                <div className="form-row">
+                    <input
+                        type="text"
+                        name="studioAddPostNumber"
+                        className="form-input"
+                        value={studioInfo.studioAddPostNumber}
+                        onChange={onChange}
+                        placeholder="우편번호를 검색해주세요"
+                    />
+                    <button className="btn btn-primary address-btn" type="button" onClick={handleAddressSearch}>
+                        주소 찾기
+                    </button>
+                </div>
             </div>
             <div className="form-group">
                 <label className="form-label">기본주소</label>

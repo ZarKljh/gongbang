@@ -27,7 +27,7 @@ export default function LoginUser() {
         })
         if (response.ok) {
             alert('login success')
-            //router.push(`/article/${params.id}`);
+            router.push(`/`)
         } else {
             alert('login fail')
         }
@@ -41,7 +41,7 @@ export default function LoginUser() {
         })
         if (response.ok) {
             alert('logout success')
-            //router.push(`/article/${params.id}`);
+            router.push(`/`)
         } else {
             alert('logout fail')
         }
@@ -59,7 +59,7 @@ export default function LoginUser() {
                 <h2 className="login-title">로그인</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label className="form-label">성명</label>
+                        <label className="form-label">아이디</label>
                         <input type="text" name="userName" className="form-input" onChange={handleChange}></input>
                     </div>
                     <div className="form-group">
