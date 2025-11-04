@@ -1,0 +1,94 @@
+.photoReview-container {
+  width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  padding: 20px 0;
+  overflow: hidden;
+}
+
+.photoReview-title {
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.photoReview-swiper {
+  width: 100%;
+  padding: 15px 0 40px;
+}
+
+.swiper-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 🧩 리뷰 카드 */
+.photoCard {
+  width: 200px;
+  height: 250px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.photoCard:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.photoCard img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.photoCard p {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 8px 0;
+}
+
+/* 화살표 버튼 */
+.custom-prev,
+.custom-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #444;
+  background-color: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.custom-prev {
+  left: 10px;
+}
+
+.custom-next {
+  right: 10px;
+}
+
+.custom-prev:hover,
+.custom-next:hover {
+  background-color: #f1f1f1;
+  color: #000;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.photoReview-swiper .swiper-wrapper {
+  display: flex;
+  padding: 0 20px;
+}
