@@ -120,4 +120,22 @@ public class Product extends BaseEntity {
             )
     )
     private Set<Category> category = new LinkedHashSet<>();
+
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<ProductAttr> attrs = new LinkedHashSet<>();
+
+    /** 양방향 편의 메서드 */
+    public void addAttr(ProductAttr attr) {
+        attrs.add(attr);
+        attr.setProduct(this); // @MapsId 연동 위해 반드시 설정
+    }
+
+    public void removeAttr(ProductAttr attr) {
+        attrs.remove(attr);
+        attr.setProduct(null);
+    }
 }

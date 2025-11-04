@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import '../style/studio.css'
 
 interface Product {
     id: number
@@ -18,6 +19,7 @@ interface Product {
     themeId: number
     seoTitle: string
     seoDescription: string
+    imageUrl: string
 }
 
 interface ProductListInfiniteProps {
@@ -70,7 +72,7 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
     }, [page, hasNext, loading])
 
     return (
-        <section>
+        <div className="product-list">
             <h2>상품 리스트 (무한스크롤)</h2>
             {products.length === 0 ? (
                 <p>등록된 상품이 없습니다.</p>
@@ -78,14 +80,21 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
                 <ul>
                     {products.map((product) => (
                         <li key={product.id} style={{ marginBottom: '1rem' }}>
+                            <img
+                                src={product.imageUrl || '/default-product.png'} // 기본 이미지 설정 가능
+                                alt={product.name}
+                                style={{
+                                    width: '100%',
+                                    maxWidth: '280px',
+                                    height: 'auto',
+                                    borderRadius: '8px',
+                                    marginBottom: '0.5rem',
+                                    objectFit: 'cover',
+                                }}
+                            />
                             <h4>상품명 : {product.name}</h4>
-                            <p>카테고리 : {product.subtitle}</p>
-                            <p>상품설명 : {product.summary}</p>
                             <p>💰 가격: {product.basePrice.toLocaleString()}원</p>
                             <p>📦 재고: {product.stockQuantity}개</p>
-                            <p>📌 상태: {product.status}</p>
-                            <p>🔍 SEO 제목: {product.seoTitle}</p>
-                            <p>📝 SEO 설명: {product.seoDescription}</p>
                             <hr />
                         </li>
                     ))}
@@ -93,6 +102,17 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
             )}
             {loading && <p>로딩 중...</p>}
             {!hasNext && <p>모든 상품을 불러왔습니다.</p>}
-        </section>
+        </div>
     )
+
+    /*
+    <h4>상품명 : {product.name}</h4>
+                            <p>카테고리 : {product.subtitle}</p>
+                            <p>상품설명 : {product.summary}</p>
+                            <p>💰 가격: {product.basePrice.toLocaleString()}원</p>
+                            <p>📦 재고: {product.stockQuantity}개</p>
+                            <p>📌 상태: {product.status}</p>
+                            <p>🔍 SEO 제목: {product.seoTitle}</p>
+                            <p>📝 SEO 설명: {product.seoDescription}</p>
+    */
 }
