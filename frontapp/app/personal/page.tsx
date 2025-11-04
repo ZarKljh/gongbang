@@ -17,22 +17,23 @@ export default function MyPage() {
 
     const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
-    const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
-    const [orders, setOrders] = useState<any[]>([])
-    const [wishList, setWishList] = useState<any[]>([])
-    const [followList, setFollowList] = useState<any[]>([])
+    
+    // ------------------- 프로필 이미지 -------------------
+    const [userData, setUserData] = useState<any>(null)
+    const [profileImg, setProfileImg] = useState<any[]>([])
     const [stats, setStats] = useState<any>({
-        totalPoints: 0,
+        totalQna: 0,
         totalReviews: 0,
-        membershipLevel: 'Newbie',
     })
-
+    
     // ------------------- 주문, 배송 -------------------
+    const [orders, setOrders] = useState<any[]>([])
     const [selectedStatus, setSelectedStatus] = useState(null);
     const [isStatusModal, setIsStatusModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isOrderModal, setIsOrderModal] = useState(false);
+    const [isOrdersModal, setIsOrdersModal] = useState(false)
     
     // ------------------- 배송지 -------------------
     const [addresses, setAddresses] = useState<any[]>([])
@@ -57,12 +58,13 @@ export default function MyPage() {
     const [cardCompany, setCardCompany] = useState('')
     const [cardNumber, setCardNumber] = useState('')
     const [defaultPayment, setDefaultPayment] = useState(false)
-
-    // ------------------- 주문 -------------------
-    const [isOrdersModal, setIsOrdersModal] = useState(false)
     
     // ------------------- 리뷰 -------------------
     const [myReviews, setMyReviews] = useState([])
+    
+    // ------------------- 위시리스트, 팔로우 -------------------
+    const [wishList, setWishList] = useState<any[]>([])
+    const [followList, setFollowList] = useState<any[]>([])
 
     // ------------------- 유저 정보 가져오기 -------------------
     useEffect(() => {
@@ -102,6 +104,7 @@ export default function MyPage() {
                     fetchWishList(userData.id),
                     fetchFollowList(userData.id),
                     fetchStatsData(userData.id),
+                    fetchMyReviews(userData.id),
                 ])
             } catch (error) {
                 console.error('데이터 로드 실패:', error)
@@ -136,6 +139,26 @@ export default function MyPage() {
     useEffect(() => {
         fetchOrders();
     }, []);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/stats`, {
+                    withCredentials: true,
+                });
+                if (response.data.resultCode === "200") {
+                setStats({
+                    totalQna: response.data.data.totalQna,
+                    totalReviews: response.data.data.totalReviews,
+                })
+                }
+            } catch (error) {
+                console.error("Failed to load mypage stats:", error)
+            }
+        };
+
+        fetchStats()
+    }, [])
 
     // ------------------- API 요청 함수 -------------------
     const fetchOrders = async (id: number) => {
@@ -230,18 +253,13 @@ export default function MyPage() {
 
     const fetchMyReviews = async () => {
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/reviews`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                setMyReviews(data.data)
-            } else {
-                alert(`리뷰 조회 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error(error)
-            alert('리뷰 조회 중 오류가 발생했습니다.')
+            const { data } = await axios.get(`${API_BASE_URL}/reviews`, { withCredentials: true })
+            // 응답 구조에 따라 data.resultCode / data.code 등 확인
+            const list = data.data || []
+            setMyReviews(list)
+            setStats(prev => ({ ...prev, totalReviews: Array.isArray(list) ? list.length : 0 }))
+        } catch (e) {
+            console.error(e)
         }
     }
 
@@ -318,6 +336,49 @@ export default function MyPage() {
     const handleCancel = (section: string) => {
         setTempData({ ...userData })
         setEditMode({ ...editMode, [section]: false })
+    }
+
+    // ------------------- 프로필 이미지 -------------------
+    const handleSaveProfile = async () => {
+        if (!newProfile.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
+            return alert('이름과 주소를 모두 입력해주세요.')
+        }
+
+        try {
+            const { data } = await axios.post(`${API_BASE_URL}/addresses`, newAddress, { withCredentials: true })
+
+            if (data.resultCode === '200') {
+                const savedAddress = data.data
+                
+                if (newAddress.isDefault) {
+                    await axios.patch(`${API_BASE_URL}/addresses/${data.data.userAddressId}/default`, {}, { withCredentials: true })
+                }
+
+                setAddresses((prev) => {
+                    const updated = prev.map((addr) =>
+                        newAddress.isDefault ? { ...addr, isDefault: false } : addr
+                    )
+                    return [...updated, savedAddress]
+                })
+                
+                alert('배송지 등록 성공')
+                await fetchAddresses(userData.id)
+                setIsAddressModal(false) // 모달 닫기
+                setNewAddress({
+                    recipientName: '',
+                    zipcode: '',
+                    baseAddress: '',
+                    detailAddress: '',
+                    extraAddress: '',
+                    isDefault: false,
+                })
+            } else {
+                alert(`등록 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error(error)
+            alert('배송지 등록 중 오류가 발생했습니다.')
+        }
     }
 
     // ------------------- 주문, 배송 -------------------
@@ -612,7 +673,7 @@ export default function MyPage() {
         <div className="mypage-container">
             {/* 왼쪽 사이드바 */}
             <div className="mypage-sidebar">
-                <h1>{userData.userName}</h1>
+                <h1>{userData.nickName}</h1>
 
                 <nav>
                     <div className="nav-section">
@@ -702,8 +763,8 @@ export default function MyPage() {
                                     <td>
                                         <div className="profile-image"></div>
                                     </td>
-                                    <td>{stats.totalInquiries || 0}</td>
-                                    <td>{stats.totalReviews || 0}</td>
+                                    <td>{stats.totalQna}</td>
+                                    <td>{stats.totalReviews}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -911,7 +972,7 @@ export default function MyPage() {
                             <div>
                                 <div className="form-group">
                                     <label>이름</label>
-                                    <p>{userData.userName}</p> {/* 읽기 전용 */}
+                                    <p>{userData.fullName}</p> {/* 읽기 전용 */}
                                 </div>
 
                                 <div className="form-group">
@@ -1393,10 +1454,10 @@ export default function MyPage() {
                                     Product
                                 </button>
                                 <button
-                                    className={`subtab-btn ${activeSubTab === 'brand' ? 'active' : ''}`}
-                                    onClick={() => setActiveSubTab('brand')}
+                                    className={`subtab-btn ${activeSubTab === 'follow' ? 'active' : ''}`}
+                                    onClick={() => setActiveSubTab('follow')}
                                 >
-                                    Brand
+                                    Follow
                                 </button>
                             </div>
 

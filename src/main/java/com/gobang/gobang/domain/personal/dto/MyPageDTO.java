@@ -41,7 +41,7 @@ public class MyPageDTO {
     private final SiteUser orderUser;
     private final String orderCord;
     private final BigDecimal orderTotalPrice;
-    private final Delivery orderDelivery;
+//    private final Delivery orderDelivery;
 
     private final Long paymentMethodId;
     private final SiteUser paymentMethodUser;
@@ -100,7 +100,7 @@ public class MyPageDTO {
         this.orderUser = orders.getSiteUser();
         this.orderCord = orders.getOrderCord();
         this.orderTotalPrice = orders.getTotalPrice();
-        this.orderDelivery = orders.getDelivery();
+//        this.orderDelivery = orders.getDeliveries().get();
 
         this.paymentMethodId = paymentMethod.getPaymentId();
         this.paymentMethodUser = paymentMethod.getSiteUser();
