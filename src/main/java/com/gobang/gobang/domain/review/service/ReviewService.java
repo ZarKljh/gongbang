@@ -77,7 +77,7 @@ public class ReviewService {
                 .orderId(dto.getOrderId())
                 .orderItemId(dto.getOrderItemId())
                 .productId(dto.getProductId())
-                .userId(dto.getUserId())
+                .siteUser(user)
                 .rating(dto.getRating())
                 .content(dto.getContent())
                 .createdBy(userName)
@@ -93,6 +93,7 @@ public class ReviewService {
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
+
 
     public Optional<Review> findById(Long reviewId) {
 
@@ -140,7 +141,7 @@ public class ReviewService {
 //    }
 
     public List<ReviewResponse> getReviewsByUserId(Long userId) {
-        return reviewRepository.findByUserId(userId)
+        return reviewRepository.findBySiteUser_Id(userId)
                 .stream()
                 .map(ReviewResponse::fromEntity)
                 .collect(Collectors.toList());

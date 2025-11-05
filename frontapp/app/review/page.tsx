@@ -524,28 +524,28 @@ const handleSortChange = (type) => {
             >
                 {/* 정렬 */}
                 <div style={{ display: 'flex', gap: '20px', fontSize: '16px' }}>
-                    {['추천순', '최신순', '별점순'].map((type) => (
+                    {['최신순', '추천순', '별점순'].map((type) => (
                         <button
                             key={type}
                             onClick={() => handleSortChange(type)}
                             style={{
                                 background:
+                                (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '추천순' && sortType === 'like_desc') ||
-                                    (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '별점순' && sortType === 'rating_desc')
                                         ? '#AD9263'
                                         : 'transparent',
                                 color:
+                                (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '추천순' && sortType === 'like_desc') ||
-                                    (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '별점순' && sortType === 'rating_desc')
                                         ? 'white'
                                         : 'black',
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight:
+                                (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '추천순' && sortType === 'like_desc') ||
-                                    (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '별점순' && sortType === 'rating_desc')
                                         ? 'bold'
                                         : 'normal',

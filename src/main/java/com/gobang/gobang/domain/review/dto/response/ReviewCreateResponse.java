@@ -22,7 +22,8 @@ public class ReviewCreateResponse {
         this.reviewId = review.getReviewId();
         this.content = review.getContent();
         this.rating = review.getRating();
-        this.createdBy = review.getCreatedBy();
+//        this.createdBy = review.getCreatedBy();
+        this.createdBy = (review.getSiteUser().getNickName());
         this.createdDate = review.getCreatedDate();
         this.modifiedDate = review.getModifiedDate();
     }

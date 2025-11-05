@@ -30,9 +30,9 @@ public class ReviewCreateRequest {
     @Positive
     private Long productId;
 
-    @NotNull(message = "사용자 ID는 필수입니다.")
-    @Positive
-    private Long userId;
+//    @NotNull(message = "사용자 ID는 필수입니다.")
+//    @Positive
+//    private Long userId;
 
     private String createdBy;  // 인증된 사용자 정보로 자동 세팅 가능 (선택)
 

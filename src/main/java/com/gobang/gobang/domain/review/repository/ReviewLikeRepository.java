@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
-    boolean existsByReviewAndUserId(Review review, Long userId);
-    void deleteByReviewAndUserId(Review review, Long userId);
+    boolean existsByReviewAndSiteUser_Id(Review review, Long userId);
+    void deleteByReviewAndSiteUser_Id(Review review, Long userId);
     long countByReview(Review review);
 }

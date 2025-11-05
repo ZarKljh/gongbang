@@ -2,7 +2,9 @@ package com.gobang.gobang.domain.review.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -50,8 +52,14 @@ public class Review {
     private Long productId;
 
     // 작성자 (회원 ID)
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+//    @Column(name = "user_id", nullable = false)
+//    private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+//    @JsonIgnoreProperties({"reviews"})
+    @JsonIgnore
+    private SiteUser siteUser;
 
 //    @Column(name = "user_name", nullable = false)
 //    private String userName;
