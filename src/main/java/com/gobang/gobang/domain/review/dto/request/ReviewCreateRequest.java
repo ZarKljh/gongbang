@@ -12,6 +12,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -43,6 +44,7 @@ public class ReviewCreateRequest {
     @NotBlank(message = "리뷰 내용을 입력해주세요.")
     private String content;
 
+    private List<String> imageUrls;
 
     private LocalDateTime createdDate;
 

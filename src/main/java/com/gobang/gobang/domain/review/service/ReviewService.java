@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.review.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.entity.Review;
@@ -67,19 +68,19 @@ public class ReviewService {
 
     // 리뷰 등록
     @Transactional
-    public RsData<Review> createReview(ReviewCreateRequest dto, String userName) {
+    public RsData<Review> createReview(ReviewCreateRequest req, String userName) {
 
 
         SiteUser user = siteUserRepository.findByUserName(userName)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
 
         Review review = Review.builder()
-                .orderId(dto.getOrderId())
-                .orderItemId(dto.getOrderItemId())
-                .productId(dto.getProductId())
+                .orderId(req.getOrderId())
+                .orderItemId(req.getOrderItemId())
+                .productId(req.getProductId())
                 .siteUser(user)
-                .rating(dto.getRating())
-                .content(dto.getContent())
+                .rating(req.getRating())
+                .content(req.getContent())
                 .createdBy(userName)
                 .createdDate(LocalDateTime.now())
                 .modifiedDate(LocalDateTime.now())
@@ -90,6 +91,19 @@ public class ReviewService {
                 .build();
 
         reviewRepository.save(review);
+
+        // ✅ 이미지 저장
+//        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
+//            List<Image> images = req.getImageUrls().stream()
+//                    .map(url -> Image.builder()
+//                            .refType(Image.RefType.REVIEW)
+//                            .refId(review.getReviewId())
+//                            .imageUrl(url)
+//                            .sortOrder(0)
+//                            .build())
+//                    .toList();
+////            imageRepository.saveAll(images);
+//        }
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }

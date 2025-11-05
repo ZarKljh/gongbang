@@ -139,7 +139,7 @@ export default function Review() {
     // }, [])
 
     // 상세 만들어지기 전 임시 사용
-     useEffect(() => {
+    useEffect(() => {
         const fetchAverage = async () => {
             try {
                 const res = await fetch('http://localhost:8090/api/v1/reviews/stats/average')
@@ -153,7 +153,6 @@ export default function Review() {
         }
         fetchAverage()
     }, [])
-
 
     // 포토리뷰
     const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
@@ -484,20 +483,20 @@ export default function Review() {
                 }}
             >
                 {/* 왼쪽 평균 */}
-               <div style={{ textAlign: 'center', width: '180px' }}>
-                <h2 style={{ fontSize: '48px', margin: 0, color: '#333' }}>{avgRating}</h2>
-                <div style={{ marginTop: '8px' }}>
-                    {[1, 2, 3, 4, 5].map((num) => (
-                        <FaStar
-                            key={num}
-                            size={22}
-                            color={num <= Math.round(avgRating) ? '#FFD700' : '#E0E0E0'}
-                            style={{ marginRight: '3px' }}
-                        />
-                    ))}
-                    <small style={{ color: '#777' }}>({totalCount})</small>
+                <div style={{ textAlign: 'center', width: '180px' }}>
+                    <h2 style={{ fontSize: '48px', margin: 0, color: '#333' }}>{avgRating}</h2>
+                    <div style={{ marginTop: '8px' }}>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                            <FaStar
+                                key={num}
+                                size={22}
+                                color={num <= Math.round(avgRating) ? '#FFD700' : '#E0E0E0'}
+                                style={{ marginRight: '3px' }}
+                            />
+                        ))}
+                        <small style={{ color: '#777' }}>({totalCount})</small>
+                    </div>
                 </div>
-            </div>
 
                 {/* 오른쪽 그래프 */}
                 <div
@@ -636,52 +635,85 @@ export default function Review() {
                     alignItems: 'center',
                 }}
             >
-                <h4>번호 / 작성일 / 별점 / 작성자 / 좋아요 / 삭제</h4>
+                {/* <h4>번호 / 작성일 / 별점 / 작성자 / 좋아요 / 삭제</h4> */}
 
                 {reviews.length === 0 ? (
                     <p>현재 작성된 리뷰가 없습니다.</p>
                 ) : (
                     <ul>
                         {reviews.map((review) => (
-                            <li key={review.reviewId} style={{ marginBottom: '30px' }}>
-                                {/* 🧾 리뷰 기본정보 */}
-                                {review.reviewId} / {review.createdDate} / {review.rating} / {review.userId}(
-                                {review.createdBy}) /{/* 👍 좋아요 */}
-                                <button
-                                    onClick={() => handleLikeClick(review.reviewId)}
+                            <li key={review.reviewId} style={{ marginBottom: '40px', width: '800px' }}>
+                                {/* 🧾 작성일 */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: '#777', fontSize: '14px' }}>{review.createdDate}</span>
+                                </div>
+
+                                {/* ⭐ 별점 + 수정삭제 버튼 */}
+                                <div
                                     style={{
-                                        backgroundColor: '#FF8080',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        padding: '8px 16px',
-                                        marginTop: '5px',
-                                        cursor: 'pointer',
-                                        transition: '0.2s',
-                                        fontSize: '14px',
-                                    }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d66464')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FF8080')}
-                                >
-                                    <FaRegThumbsUp /> {likeCounts[review.reviewId] ?? review.reviewLike}
-                                </button>{' '}
-                                /
-                                <button
-                                    onClick={() => handleDeleteClick(review.reviewId)}
-                                    style={{
-                                        backgroundColor: '#1234',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        padding: '8px 16px',
-                                        marginTop: '5px',
-                                        cursor: 'pointer',
-                                        transition: '0.2s',
-                                        fontSize: '14px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        marginTop: '8px',
+                                        marginBottom: '8px',
                                     }}
                                 >
-                                    삭제
-                                </button>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        {[1, 2, 3, 4, 5].map((num) => (
+                                            <FaStar
+                                                key={num}
+                                                size={22}
+                                                color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
+                                                style={{ marginRight: '3px' }}
+                                            />
+                                        ))}
+                                        <strong style={{ marginLeft: '6px', fontSize: '15px' }}></strong>
+                                    </div>
+
+                                    {/* ✏️ 수정 / 삭제 버튼 */}
+                                    {roleType === 'USER' && (
+                                        <div>
+                                            <button
+                                                onClick={() => handleLikeClick(review.reviewId)}
+                                                style={{
+                                                    backgroundColor: '#FF8080',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '8px',
+                                                    padding: '8px 16px',
+                                                    marginTop: '5px',
+                                                    cursor: 'pointer',
+                                                    transition: '0.2s',
+                                                    fontSize: '14px',
+                                                }}
+                                                onMouseEnter={(e) =>
+                                                    (e.currentTarget.style.backgroundColor = '#d66464')
+                                                }
+                                                onMouseLeave={(e) =>
+                                                    (e.currentTarget.style.backgroundColor = '#FF8080')
+                                                }
+                                            >
+                                                <FaRegThumbsUp /> {likeCounts[review.reviewId] ?? review.reviewLike}
+                                            </button>{' '}
+                                            <button
+                                                onClick={() => handleDeleteClick(review.reviewId)}
+                                                style={{
+                                                    backgroundColor: '#1234',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '8px',
+                                                    padding: '8px 16px',
+                                                    marginTop: '5px',
+                                                    cursor: 'pointer',
+                                                    transition: '0.2s',
+                                                    fontSize: '14px',
+                                                }}
+                                            >
+                                                삭제
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                                 {/* 📃 리뷰 내용 */}
                                 <h4 style={{ margin: '5px' }}>📃 리뷰 내용</h4>
                                 <div
@@ -690,20 +722,25 @@ export default function Review() {
                                         display: '-webkit-box',
                                         width: '800px',
                                         height: '80px',
-                                        border: '1px solid #ccc',
+                                        border: '1px solid #ddd',
                                         borderRadius: '8px',
-                                        padding: '5px',
+                                        padding: '10px',
                                         overflow: 'hidden',
                                         WebkitLineClamp: '4',
                                         WebkitBoxOrient: 'vertical',
                                         cursor: 'pointer',
+                                        backgroundColor: '#fafafa',
                                         transition: '.3s',
+                                        // whiteSpace: 'pre-wrap',
+                                        // wordBreak: 'keep-all',
+                                        lineHeight: '1.6',
+                                        marginBottom: '10px',
                                     }}
                                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
                                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
                                 >
                                     <div>{review.content}</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                                    {/* <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
                                         {[1, 2, 3, 4, 5].map((num) => (
                                             <FaStar
                                                 key={num}
@@ -713,7 +750,26 @@ export default function Review() {
                                             />
                                         ))}
                                         <small style={{ marginLeft: '6px', color: '#555' }}>{review.rating} / 5</small>
-                                    </div>
+                                    </div> */}
+
+                                    {/* 🖼️ 이미지 (현재 비활성화) */}
+                                    {/* {review.imageUrls?.length > 0 && (
+                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                                            {review.imageUrls.map((url, idx) => (
+                                                <img
+                                                    key={idx}
+                                                    src={url}
+                                                    alt={`review-img-${idx}`}
+                                                    style={{
+                                                        width: '150px',
+                                                        height: '150px',
+                                                        borderRadius: '8px',
+                                                        objectFit: 'cover',
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    )} */}
                                 </div>
                                 {/* 💬 댓글 표시 (누구에게나 보여짐) */}
                                 {comments[review.reviewId]?.reviewComment ? (

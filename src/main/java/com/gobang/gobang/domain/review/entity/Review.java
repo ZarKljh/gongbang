@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -107,4 +109,9 @@ public class Review {
 //    public void onUpdate() {
 //        this.modifiedDate = LocalDateTime.now();
 //    }
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ref_id", referencedColumnName = "review_id", insertable = false, updatable = false)
+    @Where(clause = "ref_type = 'REVIEW'")
+    private List<Image> images = new ArrayList<>();
 }
