@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -50,5 +53,30 @@ public class ReviewLikeService {
             reviewRepository.save(review);
             return RsData.of("200", "좋아요 등록됨", review.getReviewLike());
         }
+    }
+
+//    상품 상세 만들어지면 사용.
+//    public Map<String, Object> getAverageRating(Long productId) {
+//        Object[] result = reviewLikeRepository.findAverageRatingAndCountByProductId(productId);
+//        Double avg = result[0] != null ? (Double) result[0] : 0.0;
+//        Long count = result[1] != null ? (Long) result[1] : 0L;
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("avgRating", Math.round(avg * 10) / 10.0); // 소수점 1자리
+//        response.put("totalCount", count);
+//        return response;
+//    }
+
+    // 만들어지기 전 임시 사용
+    public Map<String, Object> getAverageRatingAndCount() {
+        Map<String, Object> result = reviewLikeRepository.findAverageRatingAndCountAsMap();
+
+        double avg = ((Number) result.get("avgRating")).doubleValue();
+        long count = ((Number) result.get("totalCount")).longValue();
+
+        result.put("avgRating", Math.round(avg * 10) / 10.0);
+        result.put("totalCount", count);
+
+        return result;
     }
 }

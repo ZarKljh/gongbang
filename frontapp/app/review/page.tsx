@@ -17,6 +17,8 @@ export default function Review() {
     const [reviewComment, setReviewComment] = useState('') // ✅ null → ''
     const [comments, setComments] = useState({})
     const [likeCounts, setLikeCounts] = useState({})
+    const [avgRating, setAvgRating] = useState(0)
+    const [totalCount, setTotalCount] = useState(0)
     const [totalPages, setTotalpages] = useState(0)
     const [currentPage, setCurrentPage] = useState(0)
     const reviewTopRef = useRef<HTMLDivElement>(null)
@@ -26,16 +28,15 @@ export default function Review() {
     const [sortType, setSortType] = useState('date_desc')
     const [keyword, setKeyword] = useState('')
 
-// ✅ 1회만 로그인 상태 확인
-useEffect(() => {
-  checkLoginStatus()
-}, []) // 의존성 배열 비워둠
+    // ✅ 1회만 로그인 상태 확인
+    useEffect(() => {
+        checkLoginStatus()
+    }, []) // 의존성 배열 비워둠
 
-// ✅ 리뷰 목록 + 정렬 반영
-useEffect(() => {
-  fetchReviews(currentPage)
-}, [currentPage, sortType])
-
+    // ✅ 리뷰 목록 + 정렬 반영
+    useEffect(() => {
+        fetchReviews(currentPage)
+    }, [currentPage, sortType])
 
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
@@ -82,16 +83,21 @@ useEffect(() => {
     // 리뷰 목록 조회
     const fetchReviews = async (page = 0, sort = sortType) => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews?page=${page}&sort=${sortType}&keyword=${encodeURIComponent(keyword)}`, {
-                method: 'GET',
-                credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
-            })
+            const res = await fetch(
+                `http://localhost:8090/api/v1/reviews?page=${page}&sort=${sortType}&keyword=${encodeURIComponent(
+                    keyword,
+                )}`,
+                {
+                    method: 'GET',
+                    credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
+                },
+            )
             const data = await res.json()
             const fetchedReviews = data.data.reviews || []
             setReviews(fetchedReviews)
             setCurrentPage(data.data.currentPage)
             setTotalpages(data.data.totalPages)
-            console.log("정렬 요청, sortType:", sortType, "page:", page)
+            console.log('정렬 요청, sortType:', sortType, 'page:', page)
 
             // if (reviewTopRef.current) {
             //     reviewTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -113,8 +119,41 @@ useEffect(() => {
 
     // ✅ 임시 평점 통계 데이터 (추후 연동)
     const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
-    const avgRating = 4.5
-    const totalCount = 226
+    // const avgRating = 4.5
+    // const totalCount = 226
+
+    // 평균 별점 (물품 상세 만들어지면 사용)
+    // useEffect(() => {
+    //     const fetchAverage = async () => {
+    //         try {
+    //             // 상품상세 연결 후 reviewId -> productId로 변경
+    //             const res = await fetch(`http://localhost:8090/api/v1/reviews/average/${productId}`)
+    //             const data = await res.json()
+    //             setAvgRating(data?.data?.avgRating || 0)
+    //             setTotalCount(data?.data?.totalCount || 0)
+    //         } catch (err) {
+    //             console.error('평균 별점 불러오기 실패:', err)
+    //         }
+    //     }
+    //     fetchAverage()
+    // }, [])
+
+    // 상세 만들어지기 전 임시 사용
+     useEffect(() => {
+        const fetchAverage = async () => {
+            try {
+                const res = await fetch('http://localhost:8090/api/v1/reviews/stats/average')
+                const data = await res.json()
+                console.log('⭐ 평균별점 응답:', data)
+                setAvgRating(data?.data?.avgRating ?? 0)
+                setTotalCount(data?.data?.totalCount ?? 0)
+            } catch (err) {
+                console.error('평균 별점 불러오기 실패:', err)
+            }
+        }
+        fetchAverage()
+    }, [])
+
 
     // 포토리뷰
     const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
@@ -124,16 +163,16 @@ useEffect(() => {
     }))
 
     // ✅ 정렬 요청
-const handleSortChange = (type) => {
-  let newSort = 'date_desc' // 기본값
+    const handleSortChange = (type) => {
+        let newSort = 'date_desc' // 기본값
 
-  if (type === '추천순') newSort = 'like_desc'
-  else if (type === '최신순') newSort = 'date_desc'
-  else if (type === '별점순') newSort = 'rating_desc'
+        if (type === '추천순') newSort = 'like_desc'
+        else if (type === '최신순') newSort = 'date_desc'
+        else if (type === '별점순') newSort = 'rating_desc'
 
-  setSortType(newSort)
-  fetchReviews(0, newSort)
-}
+        setSortType(newSort)
+        fetchReviews(0, newSort)
+    }
 
     // 검색 기능 나중에
     const handleSearch = async () => {
@@ -445,20 +484,20 @@ const handleSortChange = (type) => {
                 }}
             >
                 {/* 왼쪽 평균 */}
-                <div style={{ textAlign: 'center', width: '180px' }}>
-                    <h2 style={{ fontSize: '48px', margin: 0, color: '#333' }}>{avgRating}</h2>
-                    <div style={{ marginTop: '8px' }}>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                            <FaStar
-                                key={num}
-                                size={22}
-                                color={num <= Math.round(avgRating) ? '#FFD700' : '#E0E0E0'}
-                                style={{ marginRight: '3px' }}
-                            />
-                        ))}
-                        <small style={{ color: '#777' }}>({totalCount})</small>
-                    </div>
+               <div style={{ textAlign: 'center', width: '180px' }}>
+                <h2 style={{ fontSize: '48px', margin: 0, color: '#333' }}>{avgRating}</h2>
+                <div style={{ marginTop: '8px' }}>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                        <FaStar
+                            key={num}
+                            size={22}
+                            color={num <= Math.round(avgRating) ? '#FFD700' : '#E0E0E0'}
+                            style={{ marginRight: '3px' }}
+                        />
+                    ))}
+                    <small style={{ color: '#777' }}>({totalCount})</small>
                 </div>
+            </div>
 
                 {/* 오른쪽 그래프 */}
                 <div
@@ -530,13 +569,13 @@ const handleSortChange = (type) => {
                             onClick={() => handleSortChange(type)}
                             style={{
                                 background:
-                                (type === '최신순' && sortType === 'date_desc') ||
+                                    (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '추천순' && sortType === 'like_desc') ||
                                     (type === '별점순' && sortType === 'rating_desc')
                                         ? '#AD9263'
                                         : 'transparent',
                                 color:
-                                (type === '최신순' && sortType === 'date_desc') ||
+                                    (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '추천순' && sortType === 'like_desc') ||
                                     (type === '별점순' && sortType === 'rating_desc')
                                         ? 'white'
@@ -544,7 +583,7 @@ const handleSortChange = (type) => {
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight:
-                                (type === '최신순' && sortType === 'date_desc') ||
+                                    (type === '최신순' && sortType === 'date_desc') ||
                                     (type === '추천순' && sortType === 'like_desc') ||
                                     (type === '별점순' && sortType === 'rating_desc')
                                         ? 'bold'
