@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +60,7 @@ public class OrdersService {
         List<OrderItem> orderItems = orderItemRepository.findByOrder_OrderId(order.getOrderId());
 
         List<OrderItemResponse> orderItemResponses = orderItems.stream()
+                .filter(Objects::nonNull)
                 .map(item -> OrderItemResponse.builder()
                         .orderItemId(item.getOrderItemId())
                         .orderId(item.getOrder().getOrderId())
@@ -71,8 +73,14 @@ public class OrdersService {
 
         // 배송 정보 변환
         DeliveryResponse deliveryResponse = null;
+        String deliveryStatus = "배송준비중";
+
         if (order.getDeliveries() != null) {
             Delivery delivery = order.getDeliveries().get(0);
+
+            if (delivery.getDeliveryStatus() != null) {
+                deliveryStatus = delivery.getDeliveryStatus();
+            }
 
             UserAddressResponse addressResponse = null;
             if (delivery.getAddress() != null) {
@@ -102,6 +110,11 @@ public class OrdersService {
                 .userId(order.getSiteUser().getId())
                 .orderCord(order.getOrderCord())
                 .totalPrice(order.getTotalPrice())
+                .deliveryStatus(
+                        order.getDeliveries() != null && !order.getDeliveries().isEmpty()
+                                ? order.getDeliveries().get(0).getDeliveryStatus()
+                                : null
+                )
                 .build();
     }
 }
