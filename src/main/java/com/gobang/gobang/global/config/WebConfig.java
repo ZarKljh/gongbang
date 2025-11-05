@@ -24,4 +24,12 @@ public class WebConfig implements WebMvcConfigurer {
         source.registerCorsConfiguration("/api/**", config);
         return source;
     }
+    /*공방이미지 저장을 위한 저장폴더 선언*/
+    /*
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**") // 요청 경로
+                .addResourceLocations("file:///C:/gongbangImg/"); // 실제 저장 경로
+    }
+    */
 }
