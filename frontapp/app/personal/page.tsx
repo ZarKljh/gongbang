@@ -491,10 +491,10 @@ export default function MyPage() {
 
     const handleSavePayment = async () => {
         if (paymentType === 'BANK' && (!bankName || !accountNumber)) {
-        return alert('은행명과 계좌번호를 입력해주세요.')
+            return alert('은행명과 계좌번호를 입력해주세요.')
         }
         if (paymentType === 'CARD' && (!cardCompany || !cardNumber)) {
-        return alert('카드사와 카드번호를 입력해주세요.')
+            return alert('카드사와 카드번호를 입력해주세요.')
         }
 
         const newPayment = {
@@ -507,23 +507,23 @@ export default function MyPage() {
         }
 
         try {
-        const { data } = await axios.post(
-            `${API_BASE_URL}/payment-methods`,
-            newPayment,
-            { withCredentials: true }
-        )
+            const { data } = await axios.post(
+                `${API_BASE_URL}/payment-methods`,
+                newPayment,
+                { withCredentials: true }
+            )
 
-        if (data.resultCode === '200') {
-            alert('결제수단 등록 성공')
-            await fetchPaymentMethods()
-            setIsPaymentModal(false)
-            resetPaymentForm()
-        } else {
-            alert(`등록 실패: ${data.msg}`)
-        }
+            if (data.resultCode === '200') {
+                alert('결제수단 등록 성공')
+                await fetchPaymentMethods()
+                setIsPaymentModal(false)
+                resetPaymentForm()
+            } else {
+                alert(`등록 실패: ${data.msg}`)
+            }
         } catch (error) {
-        console.error(error)
-        alert('결제수단 등록 중 오류가 발생했습니다.')
+            console.error(error)
+            alert('결제수단 등록 중 오류가 발생했습니다.')
         }
     }
 
