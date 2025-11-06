@@ -22,4 +22,5 @@ public class SignupUserRequest {
     private String status;
     private String gender;
     private LocalDate birth;
+    private String imageUrl;
 }
