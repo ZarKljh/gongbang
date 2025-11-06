@@ -62,8 +62,8 @@ public class OrdersService {
                 .map(item -> OrderItemResponse.builder()
                         .orderItemId(item.getOrderItemId())
                         .orderId(item.getOrder().getOrderId())
-                        .product(item.getProduct())
-                        .productName("상품명") // TODO: Product 엔티티에서 가져오기
+                        .productId(item.getProduct().getId())
+                        .productName(item.getProduct().getName())
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .build())
@@ -71,8 +71,8 @@ public class OrdersService {
 
         // 배송 정보 변환
         DeliveryResponse deliveryResponse = null;
-        if (order.getDelivery() != null) {
-            Delivery delivery = order.getDelivery();
+        if (order.getDeliveries() != null) {
+            Delivery delivery = order.getDeliveries().get(0);
 
             UserAddressResponse addressResponse = null;
             if (delivery.getAddress() != null) {
@@ -99,7 +99,7 @@ public class OrdersService {
 
         return OrdersResponse.builder()
                 .orderId(order.getOrderId())
-                .siteUser(order.getSiteUser())
+                .userId(order.getSiteUser().getId())
                 .orderCord(order.getOrderCord())
                 .totalPrice(order.getTotalPrice())
                 .build();

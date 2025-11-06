@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class StudioResponse {
     private String email;
     private String userName;
+    private String fullName;
     private String gender;
     private LocalDateTime birth;
     private String nickName;
@@ -32,6 +33,7 @@ public class StudioResponse {
     public StudioResponse(SiteUser siteUser, Studio studio){
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
+        this.gender = siteUser.getFullName();
         this.gender = siteUser.getGender();
         this.birth = siteUser.getBirth();
         this.nickName = siteUser.getNickName();

@@ -2,7 +2,7 @@ package com.gobang.gobang.domain.review.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
-import com.gobang.gobang.domain.review.dto.ReviewDto;
+import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -119,4 +120,11 @@ public class ReviewService {
 //        }
 //        return false;
 //    }
+
+    public List<ReviewResponse> getReviewsByUserId(Long userId) {
+        return reviewRepository.findByUserId(userId)
+                .stream()
+                .map(ReviewResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

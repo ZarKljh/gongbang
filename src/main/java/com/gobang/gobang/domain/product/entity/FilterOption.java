@@ -31,6 +31,8 @@ public class FilterOption extends BaseEntity {
     @Column(name = "input_type", length = 12, nullable = false)
     private String inputType;
 
+    @Column(name = "filter_code", length = 12, nullable = false)
+    private String filterCode;
 
     @Column(name = "select_type", length = 9, nullable = false)
     private String selectType;

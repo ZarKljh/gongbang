@@ -3,15 +3,19 @@ package com.gobang.gobang.domain.personal.controller;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.personal.service.StatsService;
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/mypage")
 @RequiredArgsConstructor
 public class UserController {
     private final SiteUserService siteUserService;
+    private final StatsService statsService;
 
     @GetMapping("/me")
     public RsData<SiteUserResponse> getMyInfo() {
@@ -46,4 +50,27 @@ public class UserController {
             return RsData.of("500", "서버 오류 발생", null);
         }
     }
+
+    @PostMapping("/me/verify-password")
+    public RsData<Boolean> verifyPassword(@RequestBody Map<String, String> payload) {
+        try {
+            Long userId = Long.valueOf(payload.get("userId"));
+            String password = payload.get("password");
+
+            boolean ok = siteUserService.verifyPassword(userId, password);
+            if (ok) {
+                return RsData.of("200", "비밀번호 인증 성공", true);
+            } else {
+                return RsData.of("400", "비밀번호가 일치하지 않습니다", false);
+            }
+        } catch (Exception e) {
+            return RsData.of("500", "서버 오류 발생", false);
+        }
+    }
+
+//    @GetMapping("/stats")
+//    public RsData<Map<String, Long>> getUserStats() {
+//        Map<String, Long> stats = statsService.getUserStats();
+//        return RsData.of("200", "마이페이지 통계 조회 성공", stats);
+//    }
 }

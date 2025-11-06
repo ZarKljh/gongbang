@@ -39,7 +39,7 @@ public class ApiSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/v1/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/v1/review/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/reviews/**").authenticated()
 
 
                                 .anyRequest().authenticated()

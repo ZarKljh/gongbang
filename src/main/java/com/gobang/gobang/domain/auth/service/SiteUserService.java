@@ -55,7 +55,9 @@ public class SiteUserService {
                 .password(passwordEncoder.encode(signupUserRequest.getPassword()))
                 .userName(signupUserRequest.getUserName())
                 .mobilePhone(signupUserRequest.getMobilePhone())
+                .fullName(signupUserRequest.getFullName())
                 .nickName(signupUserRequest.getNickName())
+                .fullName(signupUserRequest.getFullName())
                 .role(RoleType.USER)
                 .status(signupUserRequest.getStatus())
                 .gender(signupUserRequest.getGender())
@@ -134,6 +136,7 @@ public class SiteUserService {
                 .email(signupSellerRequest.getEmail())
                 .password(passwordEncoder.encode(signupSellerRequest.getPassword()))
                 .userName(signupSellerRequest.getUserName())
+                .fullName(signupSellerRequest.getFullName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())
                 .role(RoleType.SELLER)
@@ -153,6 +156,9 @@ public class SiteUserService {
                 .studioFax(signupSellerRequest.getStudioFax())
                 .studioEmail(signupSellerRequest.getStudioEmail())
                 .studioBusinessNumber(signupSellerRequest.getStudioBusinessNumber())
+                .studioAddPostNumber(signupSellerRequest.getStudioAddPostNumber())
+                .studioAddMain(signupSellerRequest.getStudioAddMain())
+                .studioAddDetail(signupSellerRequest.getStudioAddDetail())
                 .build();
 
 
@@ -190,6 +196,7 @@ public class SiteUserService {
         return RsData.of("200-1", "로그인 성공", new AuthAndMakeTokensResponseBody(siteUser, accessToken, refreshToken));
     }
 
+
     // 현재 로그인된 사용자 조회
     public SiteUser getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -197,7 +204,7 @@ public class SiteUserService {
                 (auth.getPrincipal() instanceof String principal && principal.equals("anonymousUser"))) {
             throw new IllegalStateException("로그인된 사용자가 없습니다.");
         }
-
+        System.out.println("여기까지 실행되었습니다.");
         Object principal = auth.getPrincipal();
         String username;
         if (principal instanceof UserDetails userDetails) {
@@ -205,7 +212,7 @@ public class SiteUserService {
         } else {
             username = principal.toString();
         }
-
+        System.out.println("getCurrentUser에서 Repository에 접근하기 전입니다.");
         return siteUserRepository.findByUserName(username)
                 .orElseThrow(() -> new IllegalStateException("로그인된 사용자를 찾을 수 없습니다."));
     }
@@ -248,5 +255,11 @@ public class SiteUserService {
         siteUserRepository.save(user);
 
         return new SiteUserResponse(user);
+    }
+
+    public boolean verifyPassword(Long userId, String password) {
+        SiteUser user = siteUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
+        return passwordEncoder.matches(password, user.getPassword());
     }
 }

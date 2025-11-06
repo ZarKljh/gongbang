@@ -85,9 +85,14 @@ public class PaymentMethodService {
 
     // 결제수단 삭제
     @Transactional
-    public void deletePaymentMethod(Long paymentId) {
+    public void deletePaymentMethod(Long paymentId, SiteUser siteUser) {
         PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("결제수단을 찾을 수 없습니다."));
+
+        // 본인 계정의 결제수단인지 확인 (보안)
+        if (!paymentMethod.getSiteUser().getId().equals(siteUser.getId())) {
+            throw new IllegalArgumentException("본인 결제수단만 삭제할 수 있습니다.");
+        }
 
         paymentMethodRepository.delete(paymentMethod);
     }
@@ -119,7 +124,7 @@ public class PaymentMethodService {
     private PaymentMethodResponse convertToResponse(PaymentMethod paymentMethod) {
         return PaymentMethodResponse.builder()
                 .paymentId(paymentMethod.getPaymentId())
-                .siteUser(paymentMethod.getSiteUser())
+                .userId(paymentMethod.getSiteUser().getId())
                 .type(paymentMethod.getType())
                 .bankName(paymentMethod.getBankName())
                 .accountNumber(paymentMethod.getAccountNumber())

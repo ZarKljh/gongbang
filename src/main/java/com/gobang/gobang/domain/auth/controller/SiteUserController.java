@@ -8,6 +8,7 @@ import com.gobang.gobang.domain.auth.dto.request.SignupUserRequest;
 import com.gobang.gobang.domain.auth.dto.response.LoginUserResponse;
 import com.gobang.gobang.domain.auth.dto.response.SignupSellerResponse;
 import com.gobang.gobang.domain.auth.dto.response.SignupUserResponse;
+import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
@@ -83,7 +84,7 @@ public class SiteUserController {
     }
     @PostMapping("/login/seller")
     public RsData<LoginResponseBody> loginSeller(@Valid @RequestBody LoginSellerRequest loginSellerRequest, HttpServletResponse res){
-        if(!"SELLER".equals(loginSellerRequest.getRole())){
+        if(!"SELLER".equals(loginSellerRequest.getRole()) && !"ADMIN".equals(loginSellerRequest.getRole())){
             throw new IllegalArgumentException("사업자전용 로그인 화면입니다.");
         }
 
@@ -91,6 +92,13 @@ public class SiteUserController {
         if(siteUser == null){
             throw new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다.");
         }
+
+        // 실제 사용자 role 확인
+        RoleType actualRole = siteUser.getRole();
+        if (actualRole != RoleType.SELLER && actualRole != RoleType.ADMIN) {
+            throw new IllegalArgumentException("해당 사용자는 사업자 또는 관리자 권한이 없습니다.");
+        }
+
         RsData<SiteUserService.AuthAndMakeTokensResponseBody> authAndMakeTokensRs = siteUserService.authAndMakeTokens(loginSellerRequest.getUserName(), loginSellerRequest.getPassword());
 
 

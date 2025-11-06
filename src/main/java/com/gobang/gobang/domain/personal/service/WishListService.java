@@ -96,8 +96,8 @@ public class WishListService {
     private WishListResponse convertToResponse(WishList wishList) {
         return WishListResponse.builder()
                 .wishlistId(wishList.getWishlistId())
-                .siteUser(wishList.getSiteUser())
-                .product(wishList.getProduct())
+                .userId(wishList.getSiteUser().getId())
+                .productId(wishList.getProduct().getId())
                 .productName("상품명") // TODO: Product 엔티티에서 가져오기
                 .createdAt(wishList.getCreatedAt())
                 .build();

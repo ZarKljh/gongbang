@@ -3,9 +3,14 @@ package com.gobang.gobang.domain.seller.service;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
+import com.gobang.gobang.domain.product.dto.ProductDto;
+import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.seller.repository.ProductOfStudioRepository;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,6 +20,12 @@ import java.util.Optional;
 public class StudioService {
 
     private final StudioRepository studioRepository;
+    private final ProductOfStudioRepository productRepository;
+
+    public Page<ProductDto> getProductListByStudioId(Long studioId, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);
+        return productPage.map(ProductDto::fromEntity);
+    }
 
     public void createStudio(Studio newStudio) {
         System.out.println("공방정보가 서비스로 넘어왔습니다");

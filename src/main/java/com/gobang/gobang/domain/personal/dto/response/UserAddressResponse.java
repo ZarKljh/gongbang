@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class UserAddressResponse {
 
     private Long userAddressId;
-    private SiteUser siteUser;
+    private Long userId;
     private String recipientName;
     private String baseAddress;
     private String detailAddress;
@@ -26,7 +26,7 @@ public class UserAddressResponse {
     public static UserAddressResponse from(UserAddress userAddress) {
         return UserAddressResponse.builder()
                 .userAddressId(userAddress.getUserAddressId())
-                .siteUser(userAddress.getSiteUser())
+                .userId(userAddress.getSiteUser().getId())
                 .recipientName(userAddress.getRecipientName())
                 .baseAddress(userAddress.getBaseAddress())
                 .detailAddress(userAddress.getDetailAddress())

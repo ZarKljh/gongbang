@@ -100,6 +100,7 @@ public class FilterService {
         option.setInputType(inputType);
         option.setSelectType(selectType);
         option.setColorHex(hexColor);
+        option.setFilterCode(groupCode);
 
         // 4) 저장
         filterOptionRepository.save(option);
@@ -141,6 +142,7 @@ public class FilterService {
                         .tooltip(t.getTooltip())
                         .minValue(t.getMinValue())
                         .maxValue(t.getMaxValue())
+                        .filterCode(t.getFilterCode())
                         .createdDate(t.getCreatedDate())
                         .modifiedDate(t.getModifiedDate())
                         .build())

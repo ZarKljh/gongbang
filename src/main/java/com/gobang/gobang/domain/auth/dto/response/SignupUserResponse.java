@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class SignupUserResponse {
     private String email;
     private String userName;
+    private String fullName;
     private String mobilePhone;
     private String nickName;
     private String status;
@@ -22,6 +23,7 @@ public class SignupUserResponse {
     public SignupUserResponse(SiteUser siteUser) {
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
+        this.fullName = siteUser.getFullName();
         this.mobilePhone = siteUser.getMobilePhone();
         this.nickName = siteUser.getNickName();
         this.status = siteUser.getStatus();
