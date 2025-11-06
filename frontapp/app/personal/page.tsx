@@ -842,12 +842,12 @@ export default function MyPage() {
 
                             <div className="section-header">
                                 <h2>최근 주문</h2>
-                                <button className="btn-primary" onClick={() => setIsOrdersModal(true)}>
+                                {/* <button className="btn-primary" onClick={() => setIsOrdersModal(true)}>
                                     더보기 <ChevronRight size={16} />
-                                </button>
+                                </button> */}
                             </div>
 
-                            <div className="recent-orders">
+                            {/* <div className="recent-orders">
                                 {orders.slice(0, 3).map((order) => (
                                     <div
                                         key={order.orderId}
@@ -859,7 +859,7 @@ export default function MyPage() {
                                         <p>총 {order.totalPrice}원</p>
                                     </div>
                                 ))}
-                            </div>
+                            </div> */}
 
                             {orders.length === 0 ? (
                                 <div className="empty-state">주문 내역이 없습니다.</div>
