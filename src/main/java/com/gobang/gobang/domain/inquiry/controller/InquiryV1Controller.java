@@ -18,11 +18,6 @@ public class InquiryV1Controller {
 
     private final InquiryService service;
 
-    // 문의 생성
-    @PostMapping
-    public InquiryResponse create(@RequestBody InquiryRequest req) {
-        return InquiryResponse.from(service.createInquiry(req));
-    }
 
     // 전체 조회, 필터링 미구현 상태 필요시 구현 예정
     @GetMapping

@@ -17,13 +17,19 @@ import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
 import com.gobang.gobang.global.rq.Rq;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/auth")
@@ -133,26 +139,11 @@ public class SiteUserController {
         );
     }
     */
-    /*
-    @GetMapping("/me")
-    public RsData<LoginUserResponse> me(HttpServletRequest req) {
-        Cookie[] cookies = req.getCookies();
-        String accessToken = "";
 
-        for (Cookie cookie : cookies) {
-            if ("accessToken".equals(cookie.getName())) {
-                accessToken = cookie.getValue();
-                //System.out.println("액세스토큰 : " + accessToken);
-            }
-        }
 
-        Map<String, Object> claims = jwtProvider.getClaims(accessToken);
-        String userName = (String) claims.get("userName");
-        SiteUser siteUser = this.siteUserService.getSiteUserByUserName(userName);
 
-        return RsData.of("200", "내 회원정보", new LoginUserResponse(siteUser));
-    }
-    */
+
+
     @GetMapping("/me")
     public RsData<LoginUserResponse> me() {
         //System.out.println("me 시작");

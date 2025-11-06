@@ -16,51 +16,56 @@ import java.util.Arrays;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
-    private final HttpServletRequest req;
-    private final SiteUserService siteUserService;
+
+    private final SiteUserService siteUserService; // ✅ HttpServletRequest 주입 제거
 
     @Override
     @SneakyThrows
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
-        if (request.getRequestURI().equals("/api/v1/auth/login/seller") || request.getRequestURI().equals("/api/v1/auth/login/user") || request.getRequestURI().equals("/api/v1/auth/logout") || request.getRequestURI().equals("/api/v1/auth/signup/user") || request.getRequestURI().equals("/api/v1/auth/signup/seller")) {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) {
+
+        String uri = request.getRequestURI();
+
+        // 인증 필터를 타지 않아도 되는 경로들 (로그인/회원가입/로그아웃)
+        if (uri.equals("/api/v1/auth/login/seller")
+                || uri.equals("/api/v1/auth/login/user")
+                || uri.equals("/api/v1/auth/logout")
+                || uri.equals("/api/v1/auth/signup/user")
+                || uri.equals("/api/v1/auth/signup/seller")) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        String accessToken = _getCookie("accessToken");
-        // accessToken 검증 or refreshToken 발급
-        /*
-        if (!accessToken.isBlank()) {
-            // 토큰 유효기간 검증
-            if (!siteUserService.validateToken(accessToken)) {
-                String refreshToken = _getCookie("refreshToken");
+        // ✅ 이 요청에서 쿠키 직접 읽기
+        String accessToken = getCookie(request, "accessToken");
 
-                RsData<String> rs = siteUserService.refreshAccessToken(refreshToken);
-                _addHeaderCookie("accessToken", rs.getData());
+        if (accessToken != null && !accessToken.isBlank()) {
+            try {
+                // 여기서 내부적으로 JWT 검증 + 유저/권한 세팅
+                // (만료/위조 등에서 예외가 나면 catch에서 처리)
+                SecurityUser securityUser = siteUserService.getUserFromAccessToken(accessToken);
+
+                // SecurityUser 안에서 권한이 "ADMIN" (또는 "ROLE_ADMIN")으로 설정되어 있어야 함
+                SecurityContextHolder.getContext().setAuthentication(securityUser.getAuthentication());
+
+            } catch (io.jsonwebtoken.ExpiredJwtException e) {
+                // 토큰 만료: 인증 없이 진행 (또는 401로 끊어도 됨)
+                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // return;
+            } catch (Exception e) {
+                // 그 외 JWT/인증 관련 에러: 인증 없이 진행
+                // (로그 찍고 싶으면 여기서 찍기)
+                // e.printStackTrace();
             }
-
-            // securityUser 가져오기
-            SecurityUser securityUser = siteUserService.getUserFromAccessToken(accessToken);
-            // 인가 처리
-            SecurityContextHolder.getContext().setAuthentication(securityUser.genAuthentication());
         }
-        */
-
-        // accessToken 검증 or refreshToken 발급
-        if (!accessToken.isBlank()) {
-            // SecurityUser 가져오기
-            SecurityUser securityUser = siteUserService.getUserFromAccessToken(accessToken);
-
-            // 인가 처리
-            SecurityContextHolder.getContext().setAuthentication(securityUser.getAuthentication());
-        }
-
 
         filterChain.doFilter(request, response);
     }
 
-    private String _getCookie(String name) {
-        Cookie[] cookies = req.getCookies();
+    private String getCookie(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies(); // ✅ 여기서 request 사용
         if (cookies == null) return "";
 
         return Arrays.stream(cookies)
@@ -69,17 +74,4 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 .map(Cookie::getValue)
                 .orElse("");
     }
-
-    
-
-//    private void _addHeaderCookie(String tokenName, String token) {
-//        ResponseCookie cookie = ResponseCookie.from(tokenName, token)
-//                .path("/")
-//                .sameSite("None")
-//                .secure(true)
-//                .httpOnly(true)
-//                .build();
-//
-//        resp.addHeader("Set-Cookie", cookie.toString());
-//    }
 }

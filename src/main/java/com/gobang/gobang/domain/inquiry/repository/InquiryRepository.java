@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     long countByAnsweredFalse();
@@ -24,4 +26,6 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     @Modifying @Transactional
     @Query("update Inquiry i set i.answered = true where i.answered = false and i.type = :type")
     int markAllAnsweredByType(@Param("type") InquiryType type);
+
+    List<Inquiry> findByWriterId(Long writerId);
 }
