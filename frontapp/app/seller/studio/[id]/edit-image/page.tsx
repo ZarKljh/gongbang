@@ -7,6 +7,8 @@ export default function EditStudioImage() {
     const { id: studioId } = useParams()
     const router = useRouter()
 
+    /* null>(null) 상태 초기값은 (null) 타입은 File 또는 null*/
+    /* <File | null > 파일이 있을 수도 있고 null일수도 있다는 의미 */
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
@@ -49,7 +51,7 @@ export default function EditStudioImage() {
         formData.append('image', imageFile)
 
         try {
-            const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}/image`, {
+            const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}/studio-main-image`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'include',
