@@ -13,9 +13,12 @@ export default function ReviewDetail() {
 
     useEffect(() => {
         checkLoginStatus()
+    }, [])
+
+    useEffect(() => {
+        checkLoginStatus()
         fetchReviewDetail()
     }, [params.id])
-
 
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
@@ -245,9 +248,7 @@ export default function ReviewDetail() {
                         리뷰 수정하기
                     </button>
                 ) : (
-                    <div style={{ color: '#999', fontSize: '14px', marginTop: '10px' }}>
-                        * 작성자만 리뷰 수정 가능
-                    </div>
+                    <div style={{ color: '#999', fontSize: '14px', marginTop: '10px' }}>* 작성자만 리뷰 수정 가능</div>
                 )}
 
                 <br />

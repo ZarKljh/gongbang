@@ -1,6 +1,7 @@
 TRUNCATE TABLE tbl_review RESTART IDENTITY CASCADE;
 TRUNCATE TABLE tbl_review_report RESTART IDENTITY CASCADE;
 TRUNCATE TABLE tbl_review_comment RESTART IDENTITY CASCADE;
+TRUNCATE TABLE site_user RESTART IDENTITY CASCADE;
 -- 모든 데이터를 삭제하고 시퀀스를 1부터 시작
 
 
@@ -9,17 +10,59 @@ select * from tbl_review_report;
 select * from tbl_review_comment;
 select * from site_user;
 
-SELECT * FROM TBL_REVIEW WHERE id = 1;
+ALTER TABLE filter_option ADD COLUMN filter_code varchar(50);
+
+SELECT r.review_id, r.user_id
+FROM TBL_REVIEW r
+LEFT JOIN site_user u ON u.id = r.user_id
+WHERE u.id IS NULL;
 
 -- 댓글 권한 임시 허용
 ALTER TABLE tbl_review_comment
 ALTER COLUMN seller_id DROP NOT NULL;
+
+SELECT * FROM TBL_REVIEW WHERE review_id = 1;
 
 
 INSERT INTO site_user (id, email, password, user_name, mobile_phone, nick_name, role, created_date, status)
 VALUES
 (1, 'hy@example.com', '123', '조현영', '010-1111-2222', '현영이', 'USER', NOW(), 'ACTIVE'),
 (2, 'seller@example.com', '123', '조현영사업자', '010-1111-2222', '사업자', 'SELLER', NOW(), 'ACTIVE');
+
+
+-- site_user 더미 유저 생성
+INSERT INTO site_user (id, email, password, user_name, mobile_phone, nick_name, role, created_date, status)
+VALUES
+(1, 'user1@example.com', '1234', '현영1', '010-0000-0001', 'hy1', 'USER', NOW(), 'ACTIVE'),
+(2, 'user2@example.com', '1234', '현영2', '010-0000-0002', 'hy2', 'USER', NOW(), 'ACTIVE'),
+(3, 'user3@example.com', '1234', '현영3', '010-0000-0003', 'hy3', 'USER', NOW(), 'ACTIVE'),
+(4, 'user4@example.com', '1234', '현영4', '010-0000-0004', 'hy4', 'USER', NOW(), 'ACTIVE'),
+(5, 'user5@example.com', '1234', '현영5', '010-0000-0005', 'hy5', 'USER', NOW(), 'ACTIVE'),
+(6, 'user6@example.com', '1234', '현영6', '010-0000-0006', 'hy6', 'USER', NOW(), 'ACTIVE'),
+(7, 'user7@example.com', '1234', '현영7', '010-0000-0007', 'hy7', 'USER', NOW(), 'ACTIVE'),
+(8, 'user8@example.com', '1234', '현영8', '010-0000-0008', 'hy8', 'USER', NOW(), 'ACTIVE'),
+(9, 'user9@example.com', '1234', '현영9', '010-0000-0009', 'hy9', 'USER', NOW(), 'ACTIVE'),
+(10, 'user10@example.com', '1234', '현영10', '010-0000-0010', 'hy10', 'USER', NOW(), 'ACTIVE'),
+(11, 'user11@example.com', '1234', '현영11', '010-0000-0011', 'hy11', 'USER', NOW(), 'ACTIVE'),
+(12, 'user12@example.com', '1234', '현영12', '010-0000-0012', 'hy12', 'USER', NOW(), 'ACTIVE'),
+(13, 'user13@example.com', '1234', '현영13', '010-0000-0013', 'hy13', 'USER', NOW(), 'ACTIVE'),
+(14, 'user14@example.com', '1234', '현영14', '010-0000-0014', 'hy14', 'USER', NOW(), 'ACTIVE'),
+(15, 'user15@example.com', '1234', '현영15', '010-0000-0015', 'hy15', 'USER', NOW(), 'ACTIVE'),
+(16, 'user16@example.com', '1234', '현영16', '010-0000-0016', 'hy16', 'USER', NOW(), 'ACTIVE'),
+(17, 'user17@example.com', '1234', '현영17', '010-0000-0017', 'hy17', 'USER', NOW(), 'ACTIVE'),
+(18, 'user18@example.com', '1234', '현영18', '010-0000-0018', 'hy18', 'USER', NOW(), 'ACTIVE'),
+(19, 'user19@example.com', '1234', '현영19', '010-0000-0019', 'hy19', 'USER', NOW(), 'ACTIVE'),
+(20, 'user20@example.com', '1234', '현영20', '010-0000-0020', 'hy20', 'USER', NOW(), 'ACTIVE'),
+(21, 'user21@example.com', '1234', '현영21', '010-0000-0021', 'hy21', 'USER', NOW(), 'ACTIVE'),
+(22, 'user22@example.com', '1234', '현영22', '010-0000-0022', 'hy22', 'USER', NOW(), 'ACTIVE'),
+(23, 'user23@example.com', '1234', '현영23', '010-0000-0023', 'hy23', 'USER', NOW(), 'ACTIVE'),
+(24, 'user24@example.com', '1234', '현영24', '010-0000-0024', 'hy24', 'USER', NOW(), 'ACTIVE'),
+(25, 'user25@example.com', '1234', '현영25', '010-0000-0025', 'hy25', 'USER', NOW(), 'ACTIVE'),
+(26, 'user26@example.com', '1234', '현영26', '010-0000-0026', 'hy26', 'USER', NOW(), 'ACTIVE'),
+(27, 'user27@example.com', '1234', '현영27', '010-0000-0027', 'hy27', 'USER', NOW(), 'ACTIVE'),
+(28, 'user28@example.com', '1234', '현영28', '010-0000-0028', 'hy28', 'USER', NOW(), 'ACTIVE'),
+(29, 'user29@example.com', '1234', '현영29', '010-0000-0029', 'hy29', 'USER', NOW(), 'ACTIVE'),
+(30, 'user30@example.com', '1234', '현영30', '010-0000-0030', 'hy30', 'USER', NOW(), 'ACTIVE');
 
 
 -- test data에서 임의로 PK id값을 정해주는게 아닌 생성 순서대로 id값을 정해주기 위함
@@ -58,6 +101,9 @@ VALUES
 ( 128, 68, 118, 28, 4, '비누 향이 은은해서 좋아요.', 2, TRUE, 7, NOW(), '현영28'),
 ( 129, 69, 119, 29, 6, '비누 향이 은은해서 좋아요.', 55, TRUE, 9, NOW(), '현영29'),
 ( 130, 70, 120, 30, 5, '비누 향이 은은해서 좋아요.', 9, TRUE, 0, NOW(), '현영30');
+;
+
+
 -- 리뷰 신고 내역
 INSERT INTO tbl_review_report (report_id, review_id, user_id, reason, resolved, created_at)
 VALUES
@@ -73,7 +119,7 @@ VALUES
 (10, 5, 6, '타인 비방 포함', FALSE, NOW());
 
 -- 리뷰 댓글 내역
-INSERT INTO tbl_review_comment (comment_id, review_id, seller_id, review_comment_content, created_at)
+INSERT INTO tbl_review_comment (comment_id, review_id, studio_id, review_comment_content, created_at)
 VALUES
 (1, 1, 1, '좋은 후기 감사합니다 :)', NOW()),
 (2, 2, 2, '이용해주셔서 감사해요!', NOW()),
@@ -99,7 +145,6 @@ VALUES
 (8, 8, '2024-0008', '민트아트샵', 'mintart@example.com', '02-888-8888', '서울 중구 신당동', '그림', NOW()),
 (9, 9, '2024-0009', '소연패브릭', 'so_fabric@example.com', '02-999-9999', '서울 구로구 구로동', '패브릭', NOW()),
 (10, 10, '2024-0010', '해리의비누방', 'harrysoap@example.com', '02-101-1010', '서울 노원구 공릉동', '비누', NOW());
-
 
 -- postman 리뷰 등록(생성) 테스트용(json)
 -- orderItemId는 uq이기 때문에 숫자 바꿔주기
