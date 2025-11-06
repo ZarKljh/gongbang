@@ -82,30 +82,37 @@ public class ReviewController {
         Page<Review> reviewPage = reviewService.getReviews(page, sort);
 
 
+        ReviewsResponse response = ReviewsResponse.fromPage(reviewPage);
+
         return RsData.of(
                 "200",
                 "목록 조회 성공",
-                new ReviewsResponse(reviewPage)
+               response
         );
     }
 
     @GetMapping("/{id}")
     public RsData<ReviewResponse> getReview(@PathVariable("id") Long id) {
-        return reviewService.getReviewById(id).map(review -> RsData.of(
-                "200",
-                "단건 조회 성공",
-                new ReviewResponse(review)
-        )).orElseGet(() -> RsData.of (
-                "400",
-                "%d번 리뷰는 존재하지 않습니다.".formatted(id),
-                null
-        ));
+
+        return reviewService.getReviewById(id)
+                .map(review -> {
+                    ReviewResponse response = ReviewResponse.fromEntity(review); // ✅ 안전하게 DTO 변환
+                    return RsData.of(
+                            "200",
+                            "단건 조회 성공",
+                            response
+                    );
+                })
+                .orElseGet(() -> RsData.of(
+                        "400",
+                        "%d번 리뷰는 존재하지 않습니다.".formatted(id),
+                        null
+                ));
     }
 
     // 리뷰 등록
     @PostMapping("")
-    public RsData<ReviewCreateResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest,
-                                                     Principal principal, Model model) {
+    public RsData<ReviewCreateResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest) {
 
 //        if(principal == null) {
 //            return RsData.of("401", "로그인 후 작성할 수 있습니다.");
@@ -140,16 +147,25 @@ public class ReviewController {
 
 
     @PatchMapping("/{id}")
-    public RsData modify(@Valid @RequestBody ReviewModifyRequest modifyRequest, @PathVariable("id") Long reviewId){
-        Optional<Review> opReview = reviewService.findById(reviewId);
+    public RsData modifyReview(@Valid @RequestBody ReviewModifyRequest modifyRequest, @PathVariable("id") Long reviewId){
 
-        if ( opReview.isEmpty() ) return RsData.of(
-                "400",
-                "%d번 리뷰가 존재하지 않습니다.".formatted(reviewId)
-        );
 
-        /// 회원 권한 canModify
-        RsData<Review> modifyRs = reviewService.modify(opReview.get(), modifyRequest.getRating(), modifyRequest.getContent());
+        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+
+        ///  기존 코드
+//        Optional<Review> opReview = reviewService.findById(reviewId);
+//        if ( opReview.isEmpty() ) return RsData.of(
+//                "400",
+//                "%d번 리뷰가 존재하지 않습니다.".formatted(reviewId)
+//        );
+//        /// 회원 권한 canModify
+//        RsData<Review> modifyRs = reviewService.modify(opReview.get(), modifyRequest.getRating(), modifyRequest.getContent());
+
+        RsData<Review> modifyRs = reviewService.modifyReview(reviewId, modifyRequest, currentUser.getId());
+
+        if (modifyRs.isFail()) {
+            return RsData.of(modifyRs.getResultCode(), modifyRs.getMsg());
+        }
 
         return RsData.of(
                 modifyRs.getResultCode(),
@@ -158,19 +174,36 @@ public class ReviewController {
         );
     }
 
-    // 리뷰 삭제
+    // 리뷰 삭제 기존
+//    @DeleteMapping("/{id}")
+//    public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
+//        Optional<Review> opReview = reviewService.findById(reviewId);
+//
+//        if(opReview.isEmpty()) return RsData.of(
+//                "400",
+//                "%d번 리뷰가 존재하지 않습니다."
+//                .formatted(reviewId));
+//
+//        RsData<Review> deleteRs = reviewService.delete(reviewId);
+//
+//        return RsData.of(deleteRs.getResultCode(),deleteRs.getMsg(),new ReviewDeleteResponse(deleteRs.getData()));
+//    }
+
     @DeleteMapping("/{id}")
     public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
-        Optional<Review> opReview = reviewService.findById(reviewId);
+        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
-        if(opReview.isEmpty()) return RsData.of(
-                "400",
-                "%d번 리뷰가 존재하지 않습니다."
-                .formatted(reviewId));
+        RsData<Review> deleteRs = reviewService.deleteReview(reviewId, currentUser.getId());
 
-        RsData<Review> deleteRs = reviewService.delete(reviewId);
+        if (deleteRs.isFail()) {
+            return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
+        }
 
-        return RsData.of(deleteRs.getResultCode(),deleteRs.getMsg(),new ReviewDeleteResponse(deleteRs.getData()));
+        return RsData.of(
+                deleteRs.getResultCode(),
+                deleteRs.getMsg(),
+                new ReviewDeleteResponse(deleteRs.getData())
+        );
     }
 
 }

@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
+import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
@@ -114,34 +115,67 @@ public class ReviewService {
         return reviewRepository.findById(reviewId);
     }
 
-    @Transactional
-    public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
-        review.setRating(rating);
-        review.setContent(content);
-        review.setModifiedDate(LocalDateTime.now());
+    ///  기존 수정 록직
+//    @Transactional
+//    public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
+//        review.setRating(rating);
+//        review.setContent(content);
+//        review.setModifiedDate(LocalDateTime.now());
+//
+//        reviewRepository.save(review);
+//
+//        return RsData.of(
+//                "200",
+//                "%d번 리뷰가 수정되었습니다.".formatted(review.getReviewId()),
+//                review
+//        );
+//    }
 
+    @Transactional
+    public RsData<Review> modifyReview(Long reviewId, ReviewModifyRequest request, Long currentUserId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+        // 🔒 작성자 검증
+        if (!review.getSiteUser().getId().equals(currentUserId)) {
+            return RsData.of("403", "본인만 리뷰를 수정할 수 있습니다.");
+        }
+
+        review.setRating(request.getRating());
+        review.setContent(request.getContent());
+        review.setModifiedDate(LocalDateTime.now());
         reviewRepository.save(review);
 
-        return RsData.of(
-                "200",
-                "%d번 리뷰가 수정되었습니다.".formatted(review.getReviewId()),
-                review
-        );
+        return RsData.of("200", "리뷰가 수정되었습니다.", review);
     }
+
+    ///  기존 삭제
+//    @Transactional
+//    public RsData<Review> delete(Long reviewId) {
+//        Review review = reviewRepository.findById(reviewId)
+//                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+//
+//
+//        reviewRepository.delete(review);
+//        return RsData.of(
+//                "200",
+//                "%d번 리뷰가 삭제되었습니다."
+//        );
+//    }
 
     @Transactional
-    public RsData<Review> delete(Long reviewId) {
+    public RsData<Review> deleteReview(Long reviewId, Long currentUserId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
 
+        // 🔒 작성자 검증
+        if (!review.getSiteUser().getId().equals(currentUserId)) {
+            return RsData.of("403", "본인만 리뷰를 삭제할 수 있습니다.");
+        }
 
         reviewRepository.delete(review);
-        return RsData.of(
-                "200",
-                "%d번 리뷰가 삭제되었습니다."
-        );
+        return RsData.of("200", "리뷰가 삭제되었습니다.", review);
     }
-
 
 
 //    // 리뷰 삭제
