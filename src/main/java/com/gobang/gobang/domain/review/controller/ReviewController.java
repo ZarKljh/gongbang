@@ -1,6 +1,8 @@
 package com.gobang.gobang.domain.review.controller;
 
 
+import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.review.dto.response.ReviewDeleteResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
@@ -13,12 +15,14 @@ import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.domain.review.service.ReviewReportService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.rq.Rq;
 import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -33,6 +37,7 @@ public class ReviewController {
     private final ReviewReportService reviewReportService;
     private final ReviewCommentService reviewCommentService;
     private final ReviewService reviewService;
+    private final SiteUserService siteUserService;
 
 
     // 리뷰 목록 조회 (다건)
@@ -99,17 +104,25 @@ public class ReviewController {
 
     // 리뷰 등록
     @PostMapping("")
-    public RsData<ReviewCreateResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest, Principal principal) {
+    public RsData<ReviewCreateResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest,
+                                                     Principal principal, Model model) {
 
-        String userName = principal.getName();
+//        if(principal == null) {
+//            return RsData.of("401", "로그인 후 작성할 수 있습니다.");
+//        }
 
-        if(principal == null) {
+        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+
+        if(currentUser == null) {
             return RsData.of("401", "로그인 후 작성할 수 있습니다.");
         }
 
-//        String userName = principal.getName();
 
-        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest, userName);
+//        String nickName = principal.getName();
+
+        String nickName = currentUser.getNickName();
+
+        RsData<Review> createRs = reviewService.createReview(reviewCreateRequest, nickName);
 
         if (createRs.isFail()) {
             return (RsData) createRs;

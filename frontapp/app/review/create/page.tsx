@@ -12,14 +12,14 @@ export default function ReviewCreate({ fetchReviews }) {
         orderId: 1,
         orderItemId: 1,
         productId: 1,
-        userId: 1,
+        // userId: 1,
     })
 
     const [review, setReview] = useState({
         orderId: 1,
         orderItemId: 1,
         productId: 1,
-        userId: 1,
+        // userId: 1,
         rating: 0,
         content: '',
     })
@@ -46,7 +46,7 @@ export default function ReviewCreate({ fetchReviews }) {
             orderId: idCounter.orderId + 1,
             orderItemId: idCounter.orderItemId + 1,
             productId: idCounter.productId + 1,
-            userId: idCounter.userId + 1,
+            // userId: idCounter.userId + 1,
         }
 
         const reviewToSend = {

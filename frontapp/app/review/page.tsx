@@ -645,7 +645,7 @@ export default function Review() {
                             <li key={review.reviewId} style={{ marginBottom: '40px', width: '800px' }}>
                                 {/* 🧾 작성일 */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ color: '#777', fontSize: '14px' }}>{review.createdDate}</span>
+                                    <span style={{ color: '#777', fontSize: '14px' }}>{review.createdDate} / {review.createdBy}</span>
                                 </div>
 
                                 {/* ⭐ 별점 + 수정삭제 버튼 */}

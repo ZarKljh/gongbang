@@ -68,10 +68,10 @@ public class ReviewService {
 
     // 리뷰 등록
     @Transactional
-    public RsData<Review> createReview(ReviewCreateRequest req, String userName) {
+    public RsData<Review> createReview(ReviewCreateRequest req, String nickName) {
 
 
-        SiteUser user = siteUserRepository.findByUserName(userName)
+        SiteUser user = siteUserRepository.findByNickName(nickName)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
 
         Review review = Review.builder()
@@ -81,7 +81,7 @@ public class ReviewService {
                 .siteUser(user)
                 .rating(req.getRating())
                 .content(req.getContent())
-                .createdBy(userName)
+                .createdBy(nickName)
                 .createdDate(LocalDateTime.now())
                 .modifiedDate(LocalDateTime.now())
                 .isActive(true)
