@@ -17,7 +17,7 @@ public class WishListResponse {
     private Long wishlistId;
     private Long userId;
     private Long productId;
-    private String productName; // Product 엔티티에서 가져올 예정
+    private String productName;
     private LocalDateTime createdAt;
 
     public static WishListResponse from(WishList wishList) {
@@ -25,6 +25,7 @@ public class WishListResponse {
                 .wishlistId(wishList.getWishlistId())
                 .userId(wishList.getSiteUser().getId())
                 .productId(wishList.getProduct().getId())
+                .productName(wishList.getProduct().getName())
                 .createdAt(wishList.getCreatedAt())
                 .build();
     }

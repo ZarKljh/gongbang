@@ -89,7 +89,7 @@ public class FollowService {
                 .followId(follow.getFollowId())
                 .userId(follow.getSiteUser().getId())
                 .studioId(follow.getStudio().getStudioId())
-                .sellerName("판매자명") // TODO: Seller 엔티티에서 가져오기
+                .studioName(follow.getStudio().getStudioName())
                 .createdAt(follow.getCreatedAt())
                 .build();
     }

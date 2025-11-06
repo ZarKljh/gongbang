@@ -17,7 +17,9 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
-    private final SiteUserService siteUserService; // ✅ HttpServletRequest 주입 제거
+    private final HttpServletRequest req;
+    private final SiteUserService siteUserService;
+
 
     @Override
     @SneakyThrows

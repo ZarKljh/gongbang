@@ -143,7 +143,8 @@ public class SiteUserService {
                 .fullName(signupSellerRequest.getFullName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())
-                .role(RoleType.SELLER)
+                //초기 사업자 회원가입시 user권한으로 가입, 추후 admin입점심사 후 seller 권한 변경
+                .role(RoleType.USER)
                 .status(signupSellerRequest.getStatus())
                 .gender(signupSellerRequest.getGender())
                 .birth(signupSellerRequest.getBirth().atStartOfDay())
@@ -177,6 +178,15 @@ public class SiteUserService {
 
     }
 
+    public SiteUser getSiteUserById(Long id) {
+        Optional<SiteUser> os = siteUserRepository.findById(id);
+
+        if ( os.isPresent() ) {
+            return os.get();
+        } else {
+            return null;
+        }
+    }
 
 
     @AllArgsConstructor

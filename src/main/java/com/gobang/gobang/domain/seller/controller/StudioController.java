@@ -68,6 +68,7 @@ public class StudioController {
 
 
 
+
     @PostMapping("/add")
     public RsData<Map<String, Object>> studioAdd(@Valid @RequestBody StudioAddRequest studioAddRequest){
 
@@ -92,6 +93,7 @@ public class StudioController {
 
         return  RsData.of("s-1", "신규공방이 등록되었습니다", responseMap);
     }
+
 
 
 }

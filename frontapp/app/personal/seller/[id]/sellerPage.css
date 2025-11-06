@@ -12,10 +12,7 @@ body {
 .mypage-container {
     display: flex;
     min-height: 100vh;
-    max-width: 1280px;
-    margin-left: auto;
-    margin-right: auto;
-
+    width: 1200px;
 }
 
 /* 사이드바 */
@@ -195,7 +192,6 @@ body {
     border: none;
     font-size: 14px;
     cursor: pointer;
-    border-radius: 8px;
 }
 
 .btn-primary:hover {
@@ -466,8 +462,7 @@ body {
 /* 모달 */
 .address-modal,
 .payment-modal,
-.orders-modal,
-.review-modal {
+.orders-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -482,8 +477,7 @@ body {
 
 .address-modal-content,
 .payment-modal-content,
-.orders-modal-content,
-.review-modal-content {
+.orders-modal-content {
     background: #fff;
     padding: 20px;
     border-radius: 8px;
@@ -493,8 +487,7 @@ body {
 
 .address-modal-close,
 .payment-modal-close,
-.orders-modal-close,
-.review-modal-close {
+.orders-modal-close {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -505,8 +498,6 @@ body {
 }
 
 .address-modal-close:hover,
-.payment-modal-close:hover,
-.orders-modal-close:hover,
-.review-modal-close:hover {
+.payment-modal-close:hover {
     color: #000;
 }
