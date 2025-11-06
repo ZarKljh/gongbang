@@ -164,7 +164,12 @@ export default function MyPage() {
         if (!id) return;
         try {
             const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
-            setCart(Array.isArray(data.data) ? data.data : [])
+            console.log('AXIOS RAW RESPONSE:', { data })        // 전체 응답 객체
+            console.log('res.data (body):', { data }.data)      // body
+            console.log('res.data.data (payload):', { data }.data?.data) // payload 배열(혹은 undefined)
+            console.log('payload[0]:', { data }.data.data[0])
+            console.log('payload[1]:', { data }.data.data[1])
+            setCart(Array.isArray(data.data) ? data.data : data)
         } catch (error) {
             console.error('장바구니 목록 조회 실패:', error)
             setCart([])
