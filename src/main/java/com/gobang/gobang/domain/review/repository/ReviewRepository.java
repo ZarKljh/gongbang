@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.review.repository;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
