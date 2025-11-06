@@ -1,8 +1,8 @@
 
 ----------셀러사용자 등록--------
 INSERT INTO public.site_user
-(id, birth, created_date, deleted_date, email, gender, mobile_phone, nick_name, "password", profile_img, refresh_token, "role", status, updated_date, user_name)
-VALUES(1, '2002-01-01 00:00:00.000', '2025-10-30 22:57:23.258', NULL, 'seller5', 'F', '01066658889', 'nauen', '$2a$10$S8WN/IHLooiqulupAJkqM.BcBAHrXS8TH8FsVkM75EuXPu7VmBIW2', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiU0VMTEVSXCIsXCJpZFwiOm51bGwsXCJ1c2VyTmFtZVwiOlwi7J2064KY7J2AXCJ9IiwiZXhwIjoxNzkzMzY4NjQzfQ.STfKfwRF62ex9aAokuOSfjdPK5VhTAm4eCdiRq0qQU_knKBFF_rWVJUvi67J1r19qWN4h4C81KeWcps_C6g5AA', 'SELLER', 'ACTIVE', NULL, '이나은');
+(id, birth, created_date, deleted_date, email, gender, mobile_phone, nick_name, "password", profile_img, refresh_token, "role", status, updated_date, user_name, full_name)
+VALUES(1, '2002-01-01 00:00:00.000', '2025-10-30 22:57:23.258', NULL, 'seller5@text.com', 'F', '01066658889', 'nauen', '$2a$10$S8WN/IHLooiqulupAJkqM.BcBAHrXS8TH8FsVkM75EuXPu7VmBIW2', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiU0VMTEVSXCIsXCJpZFwiOm51bGwsXCJ1c2VyTmFtZVwiOlwi7J2064KY7J2AXCJ9IiwiZXhwIjoxNzkzMzY4NjQzfQ.STfKfwRF62ex9aAokuOSfjdPK5VhTAm4eCdiRq0qQU_knKBFF_rWVJUvi67J1r19qWN4h4C81KeWcps_C6g5AA', 'SELLER', 'ACTIVE', NULL, 'seller5', '이나은');
 
 ----------셀러사용자 공방 등록--------
 

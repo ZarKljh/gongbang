@@ -57,6 +57,7 @@ public class SiteUserService {
                 .mobilePhone(signupUserRequest.getMobilePhone())
                 .fullName(signupUserRequest.getFullName())
                 .nickName(signupUserRequest.getNickName())
+                .fullName(signupUserRequest.getFullName())
                 .role(RoleType.USER)
                 .status(signupUserRequest.getStatus())
                 .gender(signupUserRequest.getGender())

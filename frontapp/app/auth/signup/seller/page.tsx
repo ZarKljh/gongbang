@@ -18,6 +18,7 @@ export default function SellerSignupPage() {
         birth: '',
         nickName: '',
         mobilePhone: '',
+        imageUrl: '',
     })
 
     const [studioInfo, setStudioInfo] = useState<StudioInfo>({

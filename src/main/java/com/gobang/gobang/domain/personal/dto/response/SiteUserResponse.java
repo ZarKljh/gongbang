@@ -14,6 +14,7 @@ public class SiteUserResponse {
     private Long id;
     private String userName;
     private String email;
+    private String fullName;
     private String mobilePhone;
     private String nickName;
     private String status;
@@ -25,6 +26,7 @@ public class SiteUserResponse {
         this.id = siteUser.getId();
         this.userName = siteUser.getUserName();
         this.email = siteUser.getEmail();
+        this.fullName = siteUser.getFullName();
         this.mobilePhone = siteUser.getMobilePhone();
         this.nickName = siteUser.getNickName();
         this.status = siteUser.getStatus();
