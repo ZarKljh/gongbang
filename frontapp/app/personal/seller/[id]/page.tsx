@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import SellerSidebar from './sellerPageLeftSide' // 경로는 실제 위치에 맞게 조정
+import SellerPageMainContent from './sellerPageMainContent'
 
 export default function SellerPage() {
     const params = useParams()
@@ -20,8 +21,16 @@ export default function SellerPage() {
     const [seller, setSeller] = useState({
         userName: '',
         nickName: '',
+        fullName: '',
+        email: '',
+        gender: '',
+        birth: '',
+        mobilePhone: '',
     })
+
+    const [studioList, setStudioList] = useState([])
     const [studio, setStudio] = useState({
+        studioId: '',
         studioName: '',
         studioDescription: '',
         studioMobile: '',
@@ -33,7 +42,6 @@ export default function SellerPage() {
         studioAddMain: '',
         studioAddDetail: '',
     })
-    const [studioList, setStudioList] = useState([])
     const [productList, setProductList] = useState([])
     // ✅ 대표 이미지 상태를 객체로 관리
 
@@ -41,8 +49,9 @@ export default function SellerPage() {
         mainImageFileName: '',
         mainImageUrl: '',
     })
-
+    //현재 선택되어진 탭
     const [activeTab, setActiveTab] = useState('seller-profile')
+    //현재 선택되어진 studio의 ID값
     const [selectedStudioId, setSelectedStudioId] = useState(null)
 
     useEffect(() => {
@@ -51,9 +60,9 @@ export default function SellerPage() {
             router.back()
             return // id 없으면 fetch 안 함
         }
-        const fetchStudioById = async () => {
+        const fetchSellerById = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/seller/${sellerId}`, {
+                const response = await fetch(`http://localhost:8090/api/v1/personal/seller/${sellerId}`, {
                     method: 'GET',
                     credentials: 'include',
                 })
@@ -61,87 +70,100 @@ export default function SellerPage() {
                     throw new Error('셀러 정보를 불러올 수 없습니다.')
                 }
                 const result = await response.json()
-                const { studio: studioData, studioList: studioListData } = result.data
+                const { seller: sellerData, studioList: studioListData } = result.data
 
                 console.log('요청을 보냈습니다')
                 //도메인별 변수세팅
                 setSeller({
-                    userName: studioData.userName,
-                    nickName: studioData.nickName,
+                    userName: sellerData.userName,
+                    nickName: sellerData.nickName,
+                    fullName: sellerData.fullName,
+                    email: sellerData.email,
+                    gender: sellerData.gender,
+                    birth: sellerData.birth,
+                    mobilePhone: sellerData.mobilePhone,
                 })
                 console.log('셀러 정보를 셋팅하였습니다')
-                setStudio({
-                    studioName: studioData.studioName,
-                    studioDescription: studioData.studioDescription,
-                    studioMobile: studioData.studioMobile,
-                    studioOfficeTell: studioData.studioOfficeTell,
-                    studioFax: studioData.studioFax,
-                    studioEmail: studioData.studioEmail,
-                    studioBusinessNumber: studioData.studioBusinessNumber,
-                    studioAddPostNumber: studioData.studioAddPostNumber,
-                    studioAddMain: studioData.studioAddMain,
-                    studioAddDetail: studioData.studioAddDetail,
-                })
-                console.log('studio 정보를 셋팅하였습니다')
+
                 setStudioList(studioListData)
                 console.log('studioList 정보를 셋팅하였습니다')
+
+                if (studioListData.length > 0) {
+                    const defaultStudio = studioListData[0]
+                    setSelectedStudioId(defaultStudio.studioId) // 선택된 ID 저장
+                    setStudio({
+                        studioId: defaultStudio.studioId,
+                        studioName: defaultStudio.studioName,
+                        studioDescription: defaultStudio.studioDescription,
+                        studioMobile: defaultStudio.studioMobile,
+                        studioOfficeTell: defaultStudio.studioOfficeTell,
+                        studioFax: defaultStudio.studioFax,
+                        studioEmail: defaultStudio.studioEmail,
+                        studioBusinessNumber: defaultStudio.studioBusinessNumber,
+                        studioAddPostNumber: defaultStudio.studioAddPostNumber,
+                        studioAddMain: defaultStudio.studioAddMain,
+                        studioAddDetail: defaultStudio.studioAddDetail,
+                    })
+                    console.log('studio 정보를 셋팅하였습니다')
+                }
             } catch (error) {
                 alert('오류가 발생했습니다')
                 router.back()
             }
         }
-        /*
-        const fetchMainImage = async () => {
-            try {
-                const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}/studio-main-image`, {
-                    method: 'GET',
-                    credentials: 'include',
-                })
-                if (!response.ok) throw new Error('대표 이미지 정보를 불러올 수 없습니다.')
-
-                const result = await response.json()
-                const { imageFileName, imageUrl } = result.data
-
-                setMainImage({
-                    mainImageFileName: imageFileName,
-                    mainImageUrl: `http://localhost:8090${imageUrl}`,
-                })
-            } catch (error) {
-                console.error('대표 이미지 로딩 실패:', error)
-            }
-        }
-        */
-        /*
-            const fetchProductList = async () => {
-                try {
-                    const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}/products`, {
-                        method: 'GET',
-                        credentials: 'include',
-                    })
-                    const result = await response.json()
-                    console.log('productList 정보를 셋팅하였습니다')
-                    setProductList(result.data.content)
-                    console.log('productList 정보를 셋팅하였습니다')
-                } catch (error) {
-                    console.error('상품 리스트 로딩 실패:', error)
-                }
-            }
-            */
-        fetchStudioById()
-        //fetchProductList()
+        fetchSellerById()
     }, [sellerId])
+    /*
+    const handleStudioSelect = (studioId) => {
+        if (!studioId && studioId !== 0) return //
+        //const selectedStudio = studioList.find((s) => s.studioId === studioId)
+        const selectedStudio = studioList.find((s) => Number(s.studioId) === Number(studioId))
+        if (selectedStudio) {
+            setSelectedStudioId(studioId)
+            setStudio({
+                studioName: selectedStudio.studioName,
+                studioDescription: selectedStudio.studioDescription,
+                studioMobile: selectedStudio.studioMobile,
+                studioOfficeTell: selectedStudio.studioOfficeTell,
+                studioFax: selectedStudio.studioFax,
+                studioEmail: selectedStudio.studioEmail,
+                studioBusinessNumber: selectedStudio.studioBusinessNumber,
+                studioAddPostNumber: selectedStudio.studioAddPostNumber,
+                studioAddMain: selectedStudio.studioAddMain,
+                studioAddDetail: selectedStudio.studioAddDetail,
+            })
+        }
+    }
+    */
+
+    // ✅ 공방 선택 핸들러
+    const handleStudioSelect = (studioId) => {
+        const selectedStudio = studioList.find((s) => Number(s.studioId) === Number(studioId))
+        if (selectedStudio) {
+            setSelectedStudioId(selectedStudio.studioId)
+            setStudio(selectedStudio)
+        }
+    }
+
+    // ------------------- 클릭 시 수정 취소 -------------------
+    const handleTabClick = (tabName: string) => {
+        setActiveTab(tabName)
+        setEditMode({})
+        setTempData({ ...userData })
+    }
 
     /** ------------------- 렌더링 ------------------- */
     return (
-        <>
+        <div className="seller-page-container">
             <SellerSidebar
                 seller={seller}
                 studioList={studioList}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 selectedStudioId={selectedStudioId}
-                setSelectedStudioId={setSelectedStudioId}
+                handleStudioSelect={handleStudioSelect}
             />
-        </>
+            <SellerPageMainContent />
+        </div>
     )
 }

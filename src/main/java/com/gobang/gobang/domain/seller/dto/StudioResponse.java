@@ -18,6 +18,7 @@ public class StudioResponse {
     private String nickName;
     private String mobilePhone;
     private Long categoryId;
+    private Long studioId;
     private String studioName;
     private String studioDescription;
     private String studioMobile;
@@ -33,12 +34,13 @@ public class StudioResponse {
     public StudioResponse(SiteUser siteUser, Studio studio){
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
-        this.gender = siteUser.getFullName();
+        this.fullName = siteUser.getFullName();
         this.gender = siteUser.getGender();
         this.birth = siteUser.getBirth();
         this.nickName = siteUser.getNickName();
         this.mobilePhone = siteUser.getMobilePhone();
         //this.studioList = siteUser.getStudioList();
+        this.studioId = studio.getStudioId();
         this.categoryId = studio.getCategoryId();
         this.studioName = studio.getStudioName();
         this.studioDescription = studio.getStudioDescription();
