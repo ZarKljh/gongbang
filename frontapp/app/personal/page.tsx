@@ -75,6 +75,9 @@ export default function MyPage() {
     const [wishList, setWishList] = useState<any[]>([])
     const [followList, setFollowList] = useState<any[]>([])
 
+    // 장바구니
+    const [cart, setCart] = useState<any[]>([])
+
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
@@ -112,6 +115,7 @@ export default function MyPage() {
                 fetchFollowList(userId),
                 fetchStatsData(userId),
                 fetchMyReviews(userId),
+                fetchCart(userId),
             ])
         } catch (error) {
             console.error('데이터 로드 실패:', error)
@@ -153,6 +157,17 @@ export default function MyPage() {
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
+        }
+    }
+
+    const fetchCart = async (id?: number) => {
+        if (!id) return;
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
+            setCart(Array.isArray(data.data) ? data.data : [])
+        } catch (error) {
+            console.error('장바구니 목록 조회 실패:', error)
+            setCart([])
         }
     }
 
@@ -199,7 +214,6 @@ export default function MyPage() {
             const { data } = await axios.get(`${API_BASE_URL}/wishlist?userId=${id}`, {
                 withCredentials: true,
             })
-            console.log('wishlist 응답:', data)
             setWishList(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('위시 목록 조회 실패:', error)
@@ -213,7 +227,6 @@ export default function MyPage() {
             const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
                 withCredentials: true,
             })
-            console.log('FollowList 응답:', data)
             setFollowList(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('팔로우 목록 조회 실패:', error)
@@ -334,7 +347,7 @@ export default function MyPage() {
         }).open()
     }
 
-    // =============== 핸들러 함수 - 회원정보 ===============
+    // =============== 회원정보 ===============
     const handleVerifyPassword = async () => {
         if (!passwordInput) {
             alert('비밀번호를 입력해주세요.')
@@ -412,7 +425,7 @@ export default function MyPage() {
         setEditMode({ ...editMode, [section]: false })
     }
 
-    // =============== 핸들러 함수 - 배송지 ===============
+    // =============== 배송지 ===============
     const handleSaveAddress = async () => {
         if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
             alert('이름과 주소를 모두 입력해주세요.')
@@ -497,7 +510,7 @@ export default function MyPage() {
         }
     }
 
-    // =============== 핸들러 함수 - 결제수단 ===============
+    // =============== 결제수단 ===============
     const handleSavePayment = async () => {
         if (paymentType === 'BANK' && (!bankName || !accountNumber)) {
             alert('은행명과 계좌번호를 입력해주세요.')
@@ -569,7 +582,7 @@ export default function MyPage() {
         }
     }
 
-    // =============== 핸들러 함수 - 리뷰 ===============
+    // =============== 리뷰 ===============
     const handleEditClick = (review: any) => {
         setEditReview(review)
         setEditReviewContent(review.content)
@@ -635,7 +648,7 @@ export default function MyPage() {
         }
     }
 
-    // =============== 핸들러 함수 - 팔로우 ===============
+    // =============== 팔로우 ===============
     const handleFollow = async (studioId: number) => {
         try {
             const { data } = await axios.post(`${API_BASE_URL}/follow`, { studioId }, { withCredentials: true })
@@ -689,7 +702,57 @@ export default function MyPage() {
         }
     }
 
-    // =============== 핸들러 함수 - UI ===============
+    // =============== 장바구니 ===============
+    const handleAddToCart = async (productId: number, quantity: number = 1) => {
+        try {
+            const request = { productId, quantity }
+            const { data } = await axios.post(`${API_BASE_URL}/cart`, request, {withCredentials: true,})
+            console.log('장바구니 담기 성공:', data);
+
+            setCart((prev) => [...prev, data.data]);
+
+            alert('장바구니에 담겼습니다!');
+        } catch (error) {
+            console.error('장바구니 담기 실패:', error);
+            alert('장바구니 담기에 실패했습니다.');
+        }
+    }
+
+    const handleUpdateCart = async (cartId: number, quantity: number) => {
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/cart/${cartId}?quantity=${quantity}`,
+                {},
+                { withCredentials: true }
+            )
+
+            console.log('수량 수정 성공:', data)
+
+            setCart((prev) =>
+                prev.map((item) =>
+                    item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item
+                )
+            )
+        } catch (error) {
+            console.error('장바구니 수량 수정 실패:', error)
+            alert('수량 수정에 실패했습니다.')
+        }
+    }
+
+    const handleDeleteCart = async (cartId: number) => {
+        try {
+            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
+
+            console.log('삭제 성공:', data)
+
+            setCart((prev) => prev.filter((item) => item.cartId !== cartId))
+        } catch (error) {
+            console.error('장바구니 삭제 실패:', error)
+            alert('삭제에 실패했습니다.')
+        }
+    }
+
+    // =============== UI ===============
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
         setEditMode({})
@@ -737,6 +800,14 @@ export default function MyPage() {
                                     onClick={() => handleTabClick('orders')}
                                 >
                                     주문배송조회
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    className={`nav-btn ${activeTab === 'cart' ? 'active' : ''}`}
+                                    onClick={() => handleTabClick('cart')}
+                                >
+                                    장바구니
                                 </button>
                             </li>
                             <li>
@@ -821,7 +892,6 @@ export default function MyPage() {
                             </tbody>
                         </table>
                     </div>
-
                     {/* 주문배송조회 */}
                     {activeTab === 'orders' && (
                         <div className="tab-content">
@@ -894,6 +964,48 @@ export default function MyPage() {
                             )}
                         </div>
                     )}
+
+                    {/* 장바구니 */}
+                    {activeTab === 'cart' && (
+                        <div className='tab-content'>
+                            <div className='section-header'>
+                                <h2>장바구니</h2>
+                            </div>
+
+                            {cart.length === 0 ? (
+                                    <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
+                            ) : (
+                                <div className="cart-list">
+                                    {cart.map((item) => (
+                                        <div key={item.cartId} className="cart-product">
+                                            <p>{item.productName}</p>
+                                            <p>{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                            
+                                            <div className="quantity-control">
+                                            <button
+                                                onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
+                                                disabled={item.quantity <= 1}
+                                            >
+                                                -
+                                            </button>
+                                            <span>{item.quantity}</span>
+                                            <button
+                                                onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
+                                            >
+                                                +
+                                            </button>
+                                            <button onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {/* 장바구니 담기 버튼 */}
+                    {/* <button onClick={() => handleAddToCart(item.productId, 1)}>
+                        장바구니 담기
+                    </button> */}
 
                     {/* 회원정보수정 */}
                     {activeTab === 'profile' && (
