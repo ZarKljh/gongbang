@@ -143,16 +143,12 @@ export default function MyPage() {
             const { data } = await axios.get(`${API_BASE_URL}/orders?userId=${userId}`, {
                 withCredentials: true,
             })
-            console.log("📦 전체 주문 응답:", data)
-
             // data가 배열인지 확인해서 추출
             const list =
                 Array.isArray(data) ? data :
                 Array.isArray(data?.data) ? data.data :
                 Array.isArray(data?.orders) ? data.orders :
                 []
-
-            console.log("📦 주문 데이터 deliveryStatus:", list.map(o => o.deliveryStatus))
             setOrders(list)
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
@@ -198,14 +194,13 @@ export default function MyPage() {
     }
 
     const fetchWishList = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-
+        if (!id) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlist?userId=${userId}`, {
+            const { data } = await axios.get(`${API_BASE_URL}/wishlist?userId=${id}`, {
                 withCredentials: true,
             })
-            setWishList(Array.isArray(data) ? data : [])
+            console.log('wishlist 응답:', data)
+            setWishList(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('위시 목록 조회 실패:', error)
             setWishList([])
@@ -213,14 +208,13 @@ export default function MyPage() {
     }
 
     const fetchFollowList = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-
+        if (!id) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${userId}`, {
+            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
                 withCredentials: true,
             })
-            setFollowList(Array.isArray(data) ? data : [])
+            console.log('FollowList 응답:', data)
+            setFollowList(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('팔로우 목록 조회 실패:', error)
             setFollowList([])
@@ -1177,7 +1171,7 @@ export default function MyPage() {
                             )}
 
                             {activeSubTab === 'follow' && (
-                                <div className="tab-content">
+                                <div className="subtab-content">
                                     {followList.length === 0 ? (
                                         <div className="empty-state">팔로우한 작가가 없습니다.</div>
                                     ) : (

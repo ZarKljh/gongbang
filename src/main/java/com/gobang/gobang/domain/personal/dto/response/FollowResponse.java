@@ -17,7 +17,7 @@ public class FollowResponse {
     private Long followId;
     private Long userId;
     private Long studioId;
-    private String sellerName; // Seller 엔티티에서 가져올 예정
+    private String studioName;
     private LocalDateTime createdAt;
 
     public static FollowResponse from(Follow follow) {
@@ -25,6 +25,7 @@ public class FollowResponse {
                 .followId(follow.getFollowId())
                 .userId(follow.getSiteUser().getId())
                 .studioId(follow.getStudio().getStudioId())
+                .studioName(follow.getStudio().getStudioName())
                 .createdAt(follow.getCreatedAt())
                 .build();
     }
