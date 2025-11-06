@@ -59,11 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                     <Link href="/auth/login">로그인</Link>
                     <Link href="/auth/signup">회원가입</Link>
                     <ClientNav />
-                    <Link
-                        href="/admin/faq"
-                        className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
-                        prefetch
-                    >
+                    <Link href="/admin/faq" prefetch>
                         F&Q
                     </Link>
                     <AdminNavButton /> {/* ✅ 관리자만 보이는 버튼 */}
