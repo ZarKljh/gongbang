@@ -23,4 +23,7 @@ export interface StudioInfo {
     studioAddPostNumber: string
     studioAddMain: string
     studioAddDetail: string
+    studioMainImageUrl?: string
+    studioLogoImageUrl?: string
+    studioGalleryImageUrls?: string[]
 }

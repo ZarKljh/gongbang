@@ -58,13 +58,15 @@ export default function EditStudioImage() {
             })
 
             if (!response.ok) {
-                throw new Error('이미지 업로드 실패')
+                const errorText = await response.text()
+                throw new Error('이미지 업로드 실패 : ' + errorText)
             }
 
             alert('대표 이미지가 변경되었습니다.')
             router.push(`/seller/studio/${studioId}`)
         } catch (error) {
             alert('오류가 발생했습니다.')
+            alert(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')
         }
     }
 

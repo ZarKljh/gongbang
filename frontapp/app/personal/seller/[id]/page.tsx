@@ -16,7 +16,6 @@ export default function SellerPage() {
 
     //현재 로그인 사용자 정보
     //const currentUser = useCurrentUser()
-
     //도메인별 변수세팅
     const [seller, setSeller] = useState({
         userName: '',
