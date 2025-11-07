@@ -104,10 +104,17 @@ body {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
     margin-bottom: 24px;
     font-size: 14px;
+    gap: 10px;
+}
+
+.auth-banner-input {
+    display: flex;
+    justify-content: space-between;
 }
 
 .auth-banner.success {

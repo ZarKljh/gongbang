@@ -981,19 +981,19 @@ export default function MyPage() {
                                             <p>{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
                                             
                                             <div className="quantity-control">
-                                            <button
+                                            <button className="btn-primary"
                                                 onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
                                                 disabled={item.quantity <= 1}
                                             >
                                                 -
                                             </button>
-                                            <span>{item.quantity}</span>
-                                            <button
+                                            <span>{item.quantity}개</span>
+                                            <button className="btn-primary"
                                                 onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
                                             >
                                                 +
                                             </button>
-                                            <button onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
+                                            <button className="btn-primary" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
                                             </div>
                                         </div>
                                     ))}
@@ -1012,13 +1012,16 @@ export default function MyPage() {
                             {!isAuthenticated ? (
                                 <div className="auth-banner">
                                     <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
-                                    <input
-                                        type="password"
-                                        placeholder="현재 비밀번호 입력"
-                                        value={passwordInput}
-                                        onChange={(e) => setPasswordInput(e.target.value)}
-                                    />
-                                    <button onClick={handleVerifyPassword}>인증 확인</button>
+                                    <div className='auth-banner-input'>
+                                        <input
+                                            type="password"
+                                            placeholder="현재 비밀번호 입력"
+                                            value={passwordInput}
+                                            onChange={(e) => setPasswordInput(e.target.value)}
+                                        />
+                                        <button onClick={handleVerifyPassword}>인증 확인</button>
+                                    </div>
+                                    
                                 </div>
                             ) : (
                                 <div className="auth-banner success">인증 완료</div>
