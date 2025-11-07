@@ -389,7 +389,7 @@ export default function Review() {
 
             if (res.ok && data.resultCode === '200') {
                 alert('리뷰가 삭제되었습니다.')
-                 setReviews(prev => prev.filter(r => r.reviewId !== reviewId)) // ✅ 즉시 반영
+                setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId)) // ✅ 즉시 반영
                 // fetchReviews()
                 return
             } else if (data.resultCode === '403') {
@@ -448,6 +448,7 @@ export default function Review() {
                             padding: '10px 20px',
                             cursor: 'pointer',
                             fontSize: '16px',
+                            marginBottom: '20px'
                         }}
                     >
                         리뷰 작성하기
@@ -520,9 +521,32 @@ export default function Review() {
                 }}
             >
                 {/* 왼쪽 평균 */}
-                <div style={{ textAlign: 'center', width: '180px' }}>
-                    <h2 style={{ fontSize: '48px', margin: 0, color: '#333' }}>{avgRating}</h2>
-                    <div style={{ marginTop: '8px' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        width: '180px',
+                    }}
+                >
+                    <h2
+                        style={{
+                            fontSize: '48px',
+                            margin: 0,
+                            color: '#333',
+                        }}
+                    >
+                        {avgRating}
+                    </h2>
+                    <div
+                        style={{
+                            marginTop: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
                         {[1, 2, 3, 4, 5].map((num) => (
                             <FaStar
                                 key={num}
@@ -732,6 +756,9 @@ export default function Review() {
                                                         cursor: 'pointer',
                                                         transition: '0.2s',
                                                         fontSize: '14px',
+                                                        display: 'flex', 
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
                                                     }}
                                                     onMouseEnter={(e) =>
                                                         (e.currentTarget.style.backgroundColor = '#d66464')

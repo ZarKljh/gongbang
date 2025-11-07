@@ -7,6 +7,7 @@ import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
 import com.gobang.gobang.domain.review.entity.Review;
+import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.constraints.NotBlank;
@@ -31,6 +32,7 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final SiteUserRepository siteUserRepository;
+    private final ReviewImageService reviewImageService ;
 
     // 리뷰 다건 조회
 //    public List<Review> findAll() {
@@ -88,23 +90,14 @@ public class ReviewService {
                 .isActive(true)
                 .reviewLike(0)
                 .viewCount(0)
-//                .createdBy(dto.getUserName()) //
                 .build();
 
         reviewRepository.save(review);
 
-        // ✅ 이미지 저장
-//        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
-//            List<Image> images = req.getImageUrls().stream()
-//                    .map(url -> Image.builder()
-//                            .refType(Image.RefType.REVIEW)
-//                            .refId(review.getReviewId())
-//                            .imageUrl(url)
-//                            .sortOrder(0)
-//                            .build())
-//                    .toList();
-////            imageRepository.saveAll(images);
-//        }
+        // ✅ 이미지가 존재하면 함께 저장
+        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
+            reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
+        }
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
@@ -172,6 +165,9 @@ public class ReviewService {
         if (!review.getSiteUser().getId().equals(currentUserId)) {
             return RsData.of("403", "본인만 리뷰를 삭제할 수 있습니다.");
         }
+
+        // 이미지 삭제
+        reviewImageService.deleteImagesByReviewId(reviewId);
 
         reviewRepository.delete(review);
         return RsData.of("200", "리뷰가 삭제되었습니다.", review);

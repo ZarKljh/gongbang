@@ -40,25 +40,7 @@ public class ReviewController {
     private final SiteUserService siteUserService;
 
 
-    // 리뷰 목록 조회 (다건)
-//    @GetMapping
-//    public RsData<ReviewsResponse> getAllReviews(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(required = false, defaultValue = "date_desc") String sort,
-//            @RequestParam(required = false) String keyword
-//    ) {
-//        // ✅ 정렬 조건 처리
-//        Sort sortOption;
-//        switch (sort) {
-//            case "rating_desc" -> sortOption = Sort.by(Sort.Direction.DESC, "rating");
-//            case "like_desc" -> sortOption = Sort.by(Sort.Direction.DESC, "reviewLike");
-//            case "date_asc" -> sortOption = Sort.by(Sort.Direction.ASC, "createdDate");
-//            default -> sortOption = Sort.by(Sort.Direction.DESC, "createdDate"); // 최신순
-//        }
-//
-//        Pageable pageable = PageRequest.of(page, 10, sortOption);
-//        Page<Review> reviewPage;
-//
+
 //        // ✅ 검색 기능 추가 (keyword 있을 때만 검색)
 //        if (keyword != null && !keyword.trim().isEmpty()) {
 //            reviewPage = reviewService.searchReviews(keyword, pageable);
@@ -71,7 +53,7 @@ public class ReviewController {
 //                "목록 조회 성공",
 //                new ReviewsResponse(reviewPage)
 //        );
-//    }
+
 
     @GetMapping
     public RsData<ReviewsResponse> getAllReviews(
@@ -114,18 +96,12 @@ public class ReviewController {
     @PostMapping("")
     public RsData<ReviewCreateResponse> createReview(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest) {
 
-//        if(principal == null) {
-//            return RsData.of("401", "로그인 후 작성할 수 있습니다.");
-//        }
-
         SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
         if(currentUser == null) {
             return RsData.of("401", "로그인 후 작성할 수 있습니다.");
         }
 
-
-//        String nickName = principal.getName();
 
         String nickName = currentUser.getNickName();
 
@@ -143,23 +119,11 @@ public class ReviewController {
     }
 
     // 리뷰 수정
-
-
-
     @PatchMapping("/{id}")
     public RsData modifyReview(@Valid @RequestBody ReviewModifyRequest modifyRequest, @PathVariable("id") Long reviewId){
 
 
         SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
-
-        ///  기존 코드
-//        Optional<Review> opReview = reviewService.findById(reviewId);
-//        if ( opReview.isEmpty() ) return RsData.of(
-//                "400",
-//                "%d번 리뷰가 존재하지 않습니다.".formatted(reviewId)
-//        );
-//        /// 회원 권한 canModify
-//        RsData<Review> modifyRs = reviewService.modify(opReview.get(), modifyRequest.getRating(), modifyRequest.getContent());
 
         RsData<Review> modifyRs = reviewService.modifyReview(reviewId, modifyRequest, currentUser.getId());
 
@@ -174,21 +138,6 @@ public class ReviewController {
         );
     }
 
-    // 리뷰 삭제 기존
-//    @DeleteMapping("/{id}")
-//    public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
-//        Optional<Review> opReview = reviewService.findById(reviewId);
-//
-//        if(opReview.isEmpty()) return RsData.of(
-//                "400",
-//                "%d번 리뷰가 존재하지 않습니다."
-//                .formatted(reviewId));
-//
-//        RsData<Review> deleteRs = reviewService.delete(reviewId);
-//
-//        return RsData.of(deleteRs.getResultCode(),deleteRs.getMsg(),new ReviewDeleteResponse(deleteRs.getData()));
-//    }
-
     @DeleteMapping("/{id}")
     public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
         SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
@@ -199,11 +148,6 @@ public class ReviewController {
             return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
         }
 
-//        return RsData.of(
-//                deleteRs.getResultCode(),
-//                deleteRs.getMsg(),
-//                new ReviewDeleteResponse(deleteRs.getData())
-//        );
         return RsData.of("200", "리뷰가 성공적으로 삭제되었습니다.");
     }
 
