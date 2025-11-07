@@ -56,37 +56,34 @@ export default function SellerSignupPage() {
 
             if (name === 'studioGalleryImages') {
                 const fileArray = Array.from(files).slice(0, 5)
-                const uploadPromises = fileArray.map((file) => uploadImageAndGetUrl(file))
+                const localUrls = fileArray.map((file) => URL.createObjectURL(file))
 
-                Promise.all(uploadPromises).then((urls) => {
-                    const validUrls = urls.filter((url) => url !== undefined && url !== null)
-                    setStudioInfo((prev) => ({
-                        ...prev,
-                        studioGalleryImageUrls: validUrls,
-                    }))
-                    setPreviewGalleryImages(fileArray.map((file) => URL.createObjectURL(file)))
-                })
+                setStudioInfo((prev) => ({
+                    ...prev,
+                    studioGalleryImageUrls: localUrls,
+                }))
+                setPreviewGalleryImages(localUrls)
             } else {
                 const file = files[0]
-                uploadImageAndGetUrl(file).then((imageUrl) => {
-                    if (name === 'studioMainImage') {
-                        setStudioInfo((prev) => ({
-                            ...prev,
-                            studioMainImageUrl: imageUrl,
-                        }))
-                        setPreviewMainImage(URL.createObjectURL(file))
-                    } else if (name === 'studioLogoImage') {
-                        setStudioInfo((prev) => ({
-                            ...prev,
-                            studioLogoImageUrl: imageUrl,
-                        }))
-                        setPreviewLogoImage(URL.createObjectURL(file))
-                    }
-                })
+                const localUrl = URL.createObjectURL(file)
+
+                if (name === 'studioMainImage') {
+                    setStudioInfo((prev) => ({
+                        ...prev,
+                        studioMainImageUrl: localUrl,
+                    }))
+                    setPreviewMainImage(localUrl)
+                } else if (name === 'studioLogoImage') {
+                    setStudioInfo((prev) => ({
+                        ...prev,
+                        studioLogoImageUrl: localUrl,
+                    }))
+                    setPreviewLogoImage(localUrl)
+                }
             }
             return
         }
-        setStudioInfo({ ...studioInfo, [name]: value })
+        setStudioInfo((prev) => ({ ...prev, [name]: value }))
         //setStudioInfo((prev) => ({ ...prev, [name]: value }));
     }
 
@@ -94,39 +91,9 @@ export default function SellerSignupPage() {
         setStep(2)
     }
 
-    const uploadImageAndGetUrl = async (file: File): Promise<string | undefined> => {
-        const formData = new FormData()
-        formData.append('file', file)
-
-        try {
-            const res = await fetch('http://localhost:8090/api/v1/image/upload', {
-                method: 'POST',
-                body: formData,
-            })
-
-            if (!res.ok) {
-                console.error('이미지 업로드 실패:', await res.text())
-                return undefined
-            }
-
-            const data = await res.json()
-            return data.imageUrl // ✅ 서버가 반환한 이미지 URL
-        } catch (error) {
-            console.error('이미지 업로드 중 오류 발생:', error)
-            return undefined
-        }
-    }
-
     const handleSubmit = async () => {
         const { studioMainImageUrl, studioLogoImageUrl, studioGalleryImageUrls } = studioInfo
-
-        if (
-            !studioMainImageUrl ||
-            !studioLogoImageUrl ||
-            !studioGalleryImageUrls ||
-            studioGalleryImageUrls.length === 0 ||
-            studioGalleryImageUrls.some((url) => !url)
-        ) {
+        if (!studioMainImageUrl || !studioLogoImageUrl || studioGalleryImageUrls.length === 0) {
             alert('이미지 업로드가 완료되지 않았습니다. 잠시 후 다시 시도해주세요.')
             return
         }
