@@ -23,7 +23,7 @@ export default function ReviewModify() {
     const fetchReview = () => {
         fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
             .then((result) => result.json())
-            .then((result) => setReview(result.data.review))
+            .then((result) => setReview(result.data))
             .catch((err) => console.error(err))
     }
 

@@ -10,6 +10,7 @@ export default function ReviewDetail() {
     const [review, setReview] = useState({})
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [roleType, setRoleType] = useState(null)
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
     useEffect(() => {
         checkLoginStatus()
@@ -21,7 +22,7 @@ export default function ReviewDetail() {
     }, [params.id])
 
     // 로그인 여부 확인
-    const checkLoginStatus = async () => {
+        const checkLoginStatus = async () => {
         try {
             const res = await fetch('http://localhost:8090/api/v1/auth/me', {
                 method: 'GET',
@@ -30,10 +31,13 @@ export default function ReviewDetail() {
 
             if (res.ok) {
                 const data = await res.json()
+                console.log('🧭 currentUserId:', currentUserId)
                 console.log('✅ 로그인된 사용자:', data.data)
                 console.log('✅ 역할:', data?.data?.role)
+                console.log('📡 로그인 응답 전체:', data)
 
                 setIsLoggedIn(true)
+                setCurrentUserId(data.data.id)
                 setRoleType(data?.data?.role || null)
             } else {
                 setIsLoggedIn(false)
@@ -43,6 +47,7 @@ export default function ReviewDetail() {
             console.error('로그인 상태 확인 실패', err)
             setIsLoggedIn(false)
             setRoleType(null)
+            setCurrentUserId(null)
         }
     }
 
@@ -52,7 +57,7 @@ export default function ReviewDetail() {
             const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
             const data = await res.json()
             console.log('📦 리뷰 단건 조회 결과:', data)
-            setReview(data.data.review)
+             setReview(data.data)
         } catch (err) {
             console.error('❌ 리뷰 상세 조회 실패:', err)
         }
@@ -188,7 +193,7 @@ export default function ReviewDetail() {
                             {/* <span style={{ fontSize: '16px' }}>이미지 업로드 보기 & 수정하기</span> */}
                         </Link>
                     </div>
-                    <p>
+                    <p>   
                         <strong>작성일:</strong> {review.createdDate}
                         <strong> / 수정일:</strong> {review.modifiedDate}
                     </p>
@@ -232,9 +237,9 @@ export default function ReviewDetail() {
                 </div>
 
                 {/* 수정 버튼 (USER만 표시) */}
-                {roleType === 'USER' ? (
+                 {Number(currentUserId) === Number(review.userId) && (
                     <button
-                        onClick={handleModifyClick}
+                        onClick={() => handleModifyClick(review.reviewId)}
                         style={{
                             backgroundColor: '#AD9263',
                             color: 'white',
@@ -247,8 +252,8 @@ export default function ReviewDetail() {
                     >
                         리뷰 수정하기
                     </button>
-                ) : (
-                    <div style={{ color: '#999', fontSize: '14px', marginTop: '10px' }}>* 작성자만 리뷰 수정 가능</div>
+
+                    
                 )}
 
                 <br />
