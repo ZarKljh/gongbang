@@ -4,13 +4,15 @@ TRUNCATE TABLE tbl_review_comment RESTART IDENTITY CASCADE;
 TRUNCATE TABLE site_user RESTART IDENTITY CASCADE;
 -- 모든 데이터를 삭제하고 시퀀스를 1부터 시작
 
-
 select * from tbl_review;
 select * from tbl_review_report;
 select * from tbl_review_comment;
 select * from site_user;
+select * from image;
 
 ALTER TABLE filter_option ADD COLUMN filter_code varchar(50);
+ALTER TABLE image ALTER COLUMN image_url TYPE VARCHAR(255);
+ALTER TABLE image ALTER COLUMN image_url TYPE TEXT;
 
 SELECT r.review_id, r.user_id
 FROM TBL_REVIEW r
@@ -63,6 +65,10 @@ VALUES
 (28, 'user28@example.com', '1234', '현영28', '010-0000-0028', 'hy28', 'USER', NOW(), 'ACTIVE'),
 (29, 'user29@example.com', '1234', '현영29', '010-0000-0029', 'hy29', 'USER', NOW(), 'ACTIVE'),
 (30, 'user30@example.com', '1234', '현영30', '010-0000-0030', 'hy30', 'USER', NOW(), 'ACTIVE');
+
+
+-- id 31번 부터 생성
+ALTER SEQUENCE site_user_id_seq RESTART WITH 31;
 
 
 -- test data에서 임의로 PK id값을 정해주는게 아닌 생성 순서대로 id값을 정해주기 위함

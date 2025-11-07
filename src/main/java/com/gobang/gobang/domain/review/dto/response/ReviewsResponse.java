@@ -19,6 +19,7 @@ public class ReviewsResponse {
     private final int totalPages;
     private final long totalElements;
 
+
     public static ReviewsResponse fromPage(Page<Review> page) {
         List<ReviewResponse> reviewResponses = page.getContent()
                 .stream()

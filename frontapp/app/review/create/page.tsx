@@ -12,16 +12,15 @@ export default function ReviewCreate({ fetchReviews }) {
         orderId: 1,
         orderItemId: 1,
         productId: 1,
-        // userId: 1,
     })
 
     const [review, setReview] = useState({
         orderId: 1,
         orderItemId: 1,
         productId: 1,
-        // userId: 1,
         rating: 0,
         content: '',
+        imageUrls: [],
     })
 
     const handleChange = (e) => {
@@ -62,6 +61,17 @@ export default function ReviewCreate({ fetchReviews }) {
             }
         } catch (err) {
             alert('리뷰 등록 실패')
+        }
+    }
+
+    // ✅ 이미지 업로드 임시 기능
+    const handleImageUpload = () => {
+        const url = prompt('이미지 URL을 입력해주세요 (예: https://example.com/img.jpg)')
+        if (url) {
+            setReview((prev) => ({
+                ...prev,
+                imageUrls: [...prev.imageUrls, url],
+            }))
         }
     }
 
@@ -135,61 +145,85 @@ export default function ReviewCreate({ fetchReviews }) {
                         />
                     </div>
 
-                    {/* 이미지 업로드 + 등록 버튼 */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            borderTop: '1px solid #ccc',
-                            paddingTop: '20px',
-                        }}
-                    >
-                        <Link
-                            href="#"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                textDecoration: 'none',
-                                color: 'black',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    border: '2px solid #bfbfbf',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    fontSize: '24px',
-                                    borderRadius: '6px',
-                                    marginRight: '10px',
-                                    color: '#666',
-                                }}
-                            >
-                                <FaPlus />
-                            </div>
-                            <span style={{ fontSize: '16px' }}>이미지 업로드하기</span>
-                        </Link>
-
-                        <input
-                            type="submit"
-                            value="리뷰 등록하기"
-                            style={{
-                                backgroundColor: '#AD9263',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '10px 20px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                marginRight: '10px'
-                            }}
-                        />
-                    </div>
-                </form>
+                     {/* 이미지 업로드 + 등록 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderTop: '1px solid #ccc',
+              paddingTop: '20px',
+            }}
+          >
+            <div
+              onClick={handleImageUpload}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                textDecoration: 'none',
+                color: 'black',
+                cursor: 'pointer',
+              }}
+            >
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  border: '2px solid #bfbfbf',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  fontSize: '24px',
+                  borderRadius: '6px',
+                  marginRight: '10px',
+                  color: '#666',
+                }}
+              >
+                <FaPlus />
+              </div>
+              <span style={{ fontSize: '16px' }}>이미지 업로드하기</span>
             </div>
+
+            <input
+              type="submit"
+              value="리뷰 등록하기"
+              style={{
+                backgroundColor: '#AD9263',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px 20px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                marginRight: '10px',
+              }}
+            />
+          </div>
+
+          {/* ✅ 현재 추가된 이미지 미리보기 */}
+          {review.imageUrls.length > 0 && (
+            <div style={{ marginTop: '20px' }}>
+              <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>첨부된 이미지</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {review.imageUrls.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`review-img-${i}`}
+                    style={{
+                      width: '100px',
+                      height: '100px',
+                      objectFit: 'cover',
+                      borderRadius: '6px',
+                      border: '1px solid #ccc',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </form>
+      </div>
 
             {/* 오른쪽: 안내 섹션 */}
             <div

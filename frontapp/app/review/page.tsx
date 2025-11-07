@@ -58,7 +58,6 @@ export default function Review() {
                 console.log('🧭 currentUserId:', currentUserId)
                 console.log('✅ 로그인된 사용자:', data.data)
                 console.log('✅ 역할:', data?.data?.role)
-                console.log('📡 로그인 응답 전체:', data)
 
                 setIsLoggedIn(true)
                 setCurrentUserId(data.data.id)

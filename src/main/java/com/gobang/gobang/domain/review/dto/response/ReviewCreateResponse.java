@@ -6,7 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @AllArgsConstructor
@@ -27,7 +29,8 @@ public class ReviewCreateResponse {
         this.createdBy = (review.getSiteUser().getNickName());
         this.createdDate = review.getCreatedDate();
         this.modifiedDate = review.getModifiedDate();
-        this.imageUrls = review.getImages()
+        this.imageUrls = Optional.ofNullable(review.getImages())
+                .orElse(Collections.emptyList())
                 .stream()
                 .map(Image::getImageUrl)
                 .toList();
