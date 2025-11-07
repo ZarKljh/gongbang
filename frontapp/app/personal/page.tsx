@@ -2,7 +2,6 @@
 
 import axios from 'axios'
 import { useState, useEffect } from 'react'
-import { ChevronRight } from 'lucide-react'
 import '@/app/personal/page.css'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
@@ -78,6 +77,9 @@ export default function MyPage() {
     // 장바구니
     const [cart, setCart] = useState<any[]>([])
 
+    //문의
+    const [qna, setQna] = useState<any[]>([])
+
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
@@ -140,20 +142,11 @@ export default function MyPage() {
     }
 
     const fetchOrders = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
+        if (!id) return
 
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders?userId=${userId}`, {
-                withCredentials: true,
-            })
-            // data가 배열인지 확인해서 추출
-            const list =
-                Array.isArray(data) ? data :
-                Array.isArray(data?.data) ? data.data :
-                Array.isArray(data?.orders) ? data.orders :
-                []
-            setOrders(list)
+            const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
+            setOrders(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
@@ -161,7 +154,7 @@ export default function MyPage() {
     }
 
     const fetchCart = async (id?: number) => {
-        if (!id) return;
+        if (!id) return
         try {
             const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
             setCart(Array.isArray(data.data) ? data.data : data)
@@ -229,6 +222,19 @@ export default function MyPage() {
         } catch (error) {
             console.error('팔로우 목록 조회 실패:', error)
             setFollowList([])
+        }
+    }
+
+    const fetchQna = async (id?: number) => {
+        if (!id) return;
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
+                withCredentials: true,
+            })
+            setQna(Array.isArray(data.data) ? data.data : [])
+        } catch (error) {
+            console.error('문의 목록 조회 실패:', error)
+            setQna([])
         }
     }
 
@@ -860,7 +866,14 @@ export default function MyPage() {
                     <div className="nav-section">
                         <h2>고객센터</h2>
                         <ul>
-                            <li>상품 문의 내역</li>
+                            <li>
+                                <button
+                                    className={`nav-btn ${activeTab === 'qna' ? 'active' : ''}`}
+                                    onClick={() => handleTabClick('qna')}
+                                >
+                                    문의 내역
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </nav>
@@ -905,24 +918,7 @@ export default function MyPage() {
 
                             <div className="section-header">
                                 <h2>최근 주문</h2>
-                                {/* <button className="btn-primary" onClick={() => setIsOrdersModal(true)}>
-                                    더보기 <ChevronRight size={16} />
-                                </button> */}
                             </div>
-
-                            {/* <div className="recent-orders">
-                                {orders.slice(0, 3).map((order) => (
-                                    <div
-                                        key={order.orderId}
-                                        className="order-card"
-                                        onClick={() => handleOrderClick(order)}
-                                    >
-                                        <p>{order.createdDate}</p>
-                                        <p>주문번호: {order.orderCord}</p>
-                                        <p>총 {order.totalPrice}원</p>
-                                    </div>
-                                ))}
-                            </div> */}
 
                             {orders.length === 0 ? (
                                 <div className="empty-state">주문 내역이 없습니다.</div>
@@ -993,7 +989,7 @@ export default function MyPage() {
                                             >
                                                 +
                                             </button>
-                                            <button className="btn-primary" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
+                                            <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
                                             </div>
                                         </div>
                                     ))}
@@ -1333,19 +1329,99 @@ export default function MyPage() {
                                                 <span className="my-review-like-count">👍 {review.reviewLike}</span>
                                                 <button
                                                     onClick={() => handleEditClick(review)}
-                                                    className="btn-primary"
+                                                    className="link-btn"
                                                 >
                                                     수정
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteClick(review)}
-                                                    className="btn-primary"
+                                                    className="link-btn delete"
                                                 >
                                                     삭제
                                                 </button>
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 문의 내역 */}
+                    {activeTab === 'qna' && (
+                        <div className="tab-content">
+                            <div className="section-header">
+                                <h2>문의 내역</h2>
+                            </div>
+
+                            <div className="tab-nav">
+                                <button
+                                    className={`subtab-btn ${activeSubTab === 'product-qna' ? 'active' : ''}`}
+                                    onClick={() => setActiveSubTab('product-qna')}
+                                >
+                                    상품 문의
+                                </button>
+                                <button
+                                    className={`subtab-btn ${activeSubTab === 'qna' ? 'active' : ''}`}
+                                    onClick={() => setActiveSubTab('qna')}
+                                >
+                                    관리자 문의
+                                </button>
+                            </div>
+
+                            {activeSubTab === 'product-qna' && (
+                                <div className="subtab-content">
+                                    {qna.length === 0 ? (
+                                        <div className="empty-state">문의한 상품 내역이 없습니다.</div>
+                                    ) : (
+                                        <div className="wishlist-grid">
+                                            {/* {wishList.map((item) => (
+                                                <div key={item.wishlistId} className="wishlist-item">
+                                                    <div className="wishlist-image"></div>
+                                                    <div className="wishlist-info">
+                                                        <p>{item.productName}</p>
+                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                                        <button
+                                                            className="link-btn delete"
+                                                            onClick={() => handleRemoveWish(item.wishlistId)}
+                                                        >
+                                                            삭제
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))} */}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            
+                            {activeSubTab === 'qna' && (
+                                <div className="subtab-content">
+                                    {qna.length === 0 ? (
+                                        <div className="empty-state">관리자에게 문의한 내역이 없습니다.</div>
+                                    ) : (
+                                        <div className="qna-grid">
+                                            {qna.map((item) => (
+                                                <div key={item.qnaId} className="qna-box">
+                                                    <div className="qna-title">
+                                                        <p>문의 제목</p>
+                                                        <span className="order-status">답변상태</span>
+                                                    </div>
+                                                    <div className="qna-content">
+                                                        <p>문의 내용</p>
+                                                        <p>문의 일시</p>
+                                                        <p>문의 답변일시</p>
+                                                        <button
+                                                            className="link-btn delete"
+                                                            onClick={() => handleRemoveWish(item.qnaId)}
+                                                        >
+                                                            삭제
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
