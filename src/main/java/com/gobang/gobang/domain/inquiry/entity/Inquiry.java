@@ -46,6 +46,12 @@ public class Inquiry {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Lob
+    @Column
+    private String answerContent;
+
+    private LocalDateTime answeredAt;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();

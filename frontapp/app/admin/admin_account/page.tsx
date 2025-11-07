@@ -6,6 +6,7 @@ import MonthlyVisitorsSection from '@/app/admin/components/MonthlyVisitorsSectio
 import { getMonthlyVisitors, calcKPI, type MonthlyVisitorPoint } from '@/app/utils/metrics'
 import { fetchPendingCounts, type PendingCounts } from '@/app/utils/adminQuickAccess'
 import styles from '@/app/admin/styles/MySection.module.css'
+import { api } from '@/app/utils/api'
 
 export default function AdminDashboard() {
     const [data, setData] = useState<MonthlyVisitorPoint[]>([])

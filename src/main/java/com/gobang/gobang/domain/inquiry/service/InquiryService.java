@@ -9,6 +9,8 @@ import com.gobang.gobang.domain.inquiry.dto.InquiryRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -63,4 +65,16 @@ public class InquiryService {
 
     @Transactional
     public void markAllAnsweredByType(InquiryType type) { inquiryRepository.markAllAnsweredByType(type); }
+
+    @Transactional
+    public void answerInquiry(Long id, String answerContent) {
+        Inquiry inq = getById(id);
+        inq.setAnswerContent(answerContent);
+        inq.setAnswered(true);
+        inq.setAnsweredAt(LocalDateTime.now());
+    }
+
+
+
+
 }

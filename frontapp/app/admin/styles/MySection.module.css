@@ -457,3 +457,48 @@ body {
     padding: 16px 20px;
     overflow-y: auto;
 }
+
+/* 네비게이션 영역 안에서 버튼 감싸는 래퍼 (필요하면 여백 조절용) */
+.inquiryNavWrapper {
+    display: inline-block;
+}
+
+/* 이미 만들어둔 버튼: 필요 시 약간 다듬어도 됨 */
+.inquiryButton {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.inquiryButton:hover {
+    background-color: #f9fafb;
+    border-color: #cbd5f5;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+/* ✅ 화면 하단에 잠깐 떠 있는 토스트 메시지 */
+.inquiryToast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 1100;
+    max-width: 90vw;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background-color: #0f172a;
+    color: #f9fafb;
+    font-size: 13px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
+    text-align: center;
+}
+
+.reportButton {
+    all: unset;
+    cursor: pointer;
+}

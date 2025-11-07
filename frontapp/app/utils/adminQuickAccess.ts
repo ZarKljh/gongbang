@@ -1,5 +1,4 @@
-// src/app/utils/adminQuickAccess.ts
-import { api } from '@/app/utils/api' // 네가 쓰는 axios 인스턴스 기준
+import { api } from '@/app/utils/api'
 
 export type PendingCounts = {
     shop: number // 입점 신청
@@ -10,10 +9,10 @@ export type PendingCounts = {
 export async function fetchPendingCounts(): Promise<PendingCounts> {
     const [reportRes, inquiryRes] = await Promise.all([
         // 신고 미처리
-        api.get('/api/admin/v1/reports/count/pending'),
+        api.get('/admin/reports/count/pending'),
 
         // 입점 신청 관련 문의 (사업자/셀러 문의 타입)
-        api.get('/api/admin/v1/inquiries/count'),
+        api.get('/admin/inquiries/count'),
     ])
 
     const extractCount = (res: any): number => {

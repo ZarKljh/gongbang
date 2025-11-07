@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/v1/inquiries")
+@RequestMapping("/api/v1/admin/inquiries")
 @RequiredArgsConstructor
 public class InquiryV1Controller {
 
@@ -50,4 +50,16 @@ public class InquiryV1Controller {
         service.markAllAnswered();
         return Map.of("ok", true);
     }
+
+
+    @PostMapping("/{id}/answer")
+    public Map<String, Boolean> answerOne(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        String answer = body.get("answer");
+        service.answerInquiry(id, answer);
+        return Map.of("ok", true);
+    }
+
 }

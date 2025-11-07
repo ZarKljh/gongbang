@@ -2,27 +2,29 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { api } from '@/app/utils/api'
 
 export default function AdminNavButton() {
     const [isAdmin, setIsAdmin] = useState(false)
     const [checked, setChecked] = useState(false)
+    const pathname = usePathname() // ✅ 현재 경로
 
     useEffect(() => {
         let cancelled = false
 
         async function checkRole() {
             try {
-                const res = await fetch('/api/v1/auth/me', {
-                    method: 'GET',
-                    credentials: 'include', // ✅ 쿠키 필수
+                setChecked(false)
+
+                const res = await api.get('/auth/me', {
+                    withCredentials: true,
+                    headers: {
+                        'Cache-Control': 'no-store', // 혹시 모를 캐시 방지
+                    },
                 })
 
-                if (!res.ok) {
-                    if (!cancelled) setChecked(true)
-                    return
-                }
-
-                const data = await res.json()
+                const data = res.data
                 const role = data?.data?.role || data?.data?.siteUser?.role || data?.data?.siteUserDto?.role
 
                 if (!cancelled) {
@@ -31,22 +33,23 @@ export default function AdminNavButton() {
                 }
             } catch (err) {
                 console.error('관리자 권한 체크 실패:', err)
-                if (!cancelled) setChecked(true)
+                if (!cancelled) {
+                    setIsAdmin(false)
+                    setChecked(true)
+                }
             }
         }
 
         checkRole()
+
         return () => {
             cancelled = true
         }
-    }, [])
+        // 경로가 바뀔 때마다 다시 체크
+    }, [pathname])
 
-    if (!checked) return null // 로딩 전에는 아무것도 안 보여줌
-    if (!isAdmin) return null // 일반 유저는 표시 안 함
+    if (!checked) return null
+    if (!isAdmin) return null
 
-    return (
-        <Link href="/admin/admin_account" className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50">
-            관리자 페이지
-        </Link>
-    )
+    return <Link href="/admin/admin_account">관리자 페이지</Link>
 }

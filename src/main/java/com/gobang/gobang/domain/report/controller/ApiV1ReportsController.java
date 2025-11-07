@@ -18,7 +18,7 @@ import java.util.Map;
 
 // 관리자 전용 컨트롤러 입니다 인증/권한을 강화하기 위해 나눴습니다.
 @RestController
-@RequestMapping("/api/admin/v1/reports")
+@RequestMapping("/api/v1/admin/reports")
 @RequiredArgsConstructor
 public class ApiV1ReportsController {
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/v1/metrics")
+@RequestMapping("/api/v1/admin/metrics")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class MetricsController {

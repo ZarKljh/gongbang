@@ -17,9 +17,11 @@ type Me = {
 export default function ClientNav() {
     const [open, setOpen] = useState(false)
 
+    // 로그인 사용자 정보
     const [me, setMe] = useState<Me | null>(null)
     const [meError, setMeError] = useState<string | null>(null)
 
+    // 폼 상태
     const [form, setForm] = useState({
         type: 'OTHER' as 'ACCOUNT' | 'PAYMENT' | 'CONTENT' | 'BUG' | 'FEATURE' | 'PARTNERSHIP' | 'OTHER',
         title: '',
@@ -27,18 +29,27 @@ export default function ClientNav() {
     })
 
     const [submitting, setSubmitting] = useState(false)
+
+    // ✅ 모달 밖에서 보여줄 메시지 (성공 or 실패)
     const [doneMsg, setDoneMsg] = useState<string | null>(null)
+
+    // 5초 후 자동 숨김
+    useEffect(() => {
+        if (!doneMsg) return
+        const t = setTimeout(() => setDoneMsg(null), 5000)
+        return () => clearTimeout(t)
+    }, [doneMsg])
 
     const disabled = submitting || !me?.email || !form.title.trim() || !form.content.trim()
 
-    // 모달 열릴 때 한 번만 me 가져오기
+    // 모달 열릴 때 me 없으면 한번만 로드
     useEffect(() => {
         if (!open || me) return
         ;(async () => {
             try {
                 setMeError(null)
 
-                const r = await api.get('/api/v1/auth/me', {
+                const r = await api.get('/auth/me', {
                     headers: { 'Cache-Control': 'no-store' },
                 })
 
@@ -52,7 +63,9 @@ export default function ClientNav() {
 
                 setMe(user)
             } catch (e: any) {
-                setMeError(e?.message ?? '사용자 정보를 불러오지 못했습니다.')
+                let msg = '사용자 정보를 불러오지 못했습니다.'
+                if (typeof e?.message === 'string') msg = e.message
+                setMeError(msg)
             }
         })()
     }, [open, me])
@@ -67,7 +80,7 @@ export default function ClientNav() {
         if (disabled || !me?.email) return
 
         setSubmitting(true)
-        setDoneMsg(null)
+        // 모달 안 메시지는 안 쓰니까 여기선 굳이 초기화 안 해도 됨
 
         try {
             const payload = {
@@ -77,20 +90,42 @@ export default function ClientNav() {
                 type: form.type,
             }
 
-            // ✅ 유저용 문의 API
-            await api.post('/api/v1/inquiries', payload, {
+            await api.post('/inquiries', payload, {
                 headers: { 'Content-Type': 'application/json' },
             })
 
-            setDoneMsg('문의가 접수되었습니다. 빠르게 답변드릴게요!')
-            setOpen(false)
+            // ✅ 성공: 모달 닫고, 폼 초기화 + 바깥에 메시지 띄우기
             setForm({ type: 'OTHER', title: '', content: '' })
+            setOpen(false)
+            setDoneMsg('문의가 접수되었습니다. 빠르게 답변드릴게요!')
         } catch (err: any) {
-            const msg =
-                err?.response?.data?.message ||
-                err?.response?.data?.error ||
-                err?.message ||
-                '문의 접수 중 오류가 발생했습니다.'
+            // ✅ 항상 문자열로 msg 만들기 (객체가 children으로 들어가지 않게)
+            const raw = err?.response?.data
+            let msg: string | null = null
+
+            if (raw) {
+                if (typeof raw === 'string') {
+                    msg = raw
+                } else if (typeof raw.message === 'string') {
+                    msg = raw.message
+                } else if (raw.error) {
+                    if (typeof raw.error === 'string') {
+                        msg = raw.error
+                    } else if (typeof raw.error?.message === 'string') {
+                        msg = raw.error.message
+                    }
+                }
+            }
+
+            if (!msg && typeof err?.message === 'string') {
+                msg = err.message
+            }
+
+            if (!msg) {
+                msg = '문의 접수 중 오류가 발생했습니다.'
+            }
+
+            // 모달은 그대로 두고, 화면 아래에 에러 메시지 표시
             setDoneMsg(msg)
         } finally {
             setSubmitting(false)
@@ -101,9 +136,15 @@ export default function ClientNav() {
 
     return (
         <>
-            <button type="button" onClick={() => setOpen(true)} className={styles.inquiryButton}>
-                1:1 문의하기
-            </button>
+            {/* 상단 네비게이션에 들어가는 버튼 */}
+            <div className={styles.inquiryNavWrapper}>
+                <button type="button" onClick={() => setOpen(true)} className={styles.inquiryButton}>
+                    1:1 문의하기
+                </button>
+            </div>
+
+            {/* ✅ 모달 밖, 화면 하단/상단 쪽에 토스트 메시지 */}
+            {typeof doneMsg === 'string' && doneMsg && <div className={styles.inquiryToast}>{doneMsg}</div>}
 
             <Modal open={open} onClose={() => setOpen(false)} title="1:1 문의하기" size="md">
                 <form onSubmit={onSubmit} className={styles.inquiryForm} noValidate>
@@ -173,8 +214,6 @@ export default function ClientNav() {
                             placeholder="문의 내용을 적어주세요."
                         />
                     </div>
-
-                    {doneMsg && <div className={styles.infoBox}>{doneMsg}</div>}
 
                     <div className={styles.actions}>
                         <button

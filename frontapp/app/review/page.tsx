@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import ReportButton from '@/components/ReportButton'
 import { useEffect, useState, useRef } from 'react'
 import api from '@/app/utils/api'
 import { FaRegThumbsUp, FaStar } from 'react-icons/fa'
@@ -101,7 +102,6 @@ export default function Review() {
             console.error('리뷰 목록 조회 실패:', err)
         }
     }
-
 
     // ✅ 임시 평점 통계 데이터 (추후 연동)
     const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
@@ -337,7 +337,7 @@ export default function Review() {
                 }}
             >
                 <h2>리뷰 목록</h2>
-                {roleType === 'USER' && (
+                {(roleType === 'USER' || roleType === 'ADMIN') && (
                     <button
                         onClick={handleCreateClick}
                         style={{
@@ -455,7 +455,6 @@ export default function Review() {
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                     marginBottom: '8px',
-                             
                                 }}
                             >
                                 <span style={{ width: '40px', fontSize: '14px', color: '#333' }}>{label}</span>
@@ -540,6 +539,10 @@ export default function Review() {
                                 >
                                     삭제
                                 </button>
+                                <ReportButton
+                                    targetType="POST" // 또는 'POST' (정책에 맞게 골라)
+                                    targetId={review.reviewId}
+                                />
                                 {/* 📃 리뷰 내용 */}
                                 <h4 style={{ margin: '5px' }}>📃 리뷰 내용</h4>
                                 <div
