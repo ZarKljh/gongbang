@@ -164,11 +164,6 @@ export default function MyPage() {
         if (!id) return;
         try {
             const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
-            console.log('AXIOS RAW RESPONSE:', { data })        // 전체 응답 객체
-            console.log('res.data (body):', { data }.data)      // body
-            console.log('res.data.data (payload):', { data }.data?.data) // payload 배열(혹은 undefined)
-            console.log('payload[0]:', { data }.data.data[0])
-            console.log('payload[1]:', { data }.data.data[1])
             setCart(Array.isArray(data.data) ? data.data : data)
         } catch (error) {
             console.error('장바구니 목록 조회 실패:', error)
@@ -216,10 +211,8 @@ export default function MyPage() {
     const fetchWishList = async (id?: number) => {
         if (!id) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlist?userId=${id}`, {
-                withCredentials: true,
-            })
-            setWishList(Array.isArray(data.data) ? data.data : [])
+            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true, })
+            setWishList(Array.isArray(data.data) ? data.data : data)
         } catch (error) {
             console.error('위시 목록 조회 실패:', error)
             setWishList([])
@@ -897,6 +890,7 @@ export default function MyPage() {
                             </tbody>
                         </table>
                     </div>
+
                     {/* 주문배송조회 */}
                     {activeTab === 'orders' && (
                         <div className="tab-content">
@@ -1272,7 +1266,7 @@ export default function MyPage() {
                                                     <div className="wishlist-image"></div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
-                                                        <p className="price">{item.price?.toLocaleString()}원</p>
+                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
                                                         <button
                                                             className="link-btn delete"
                                                             onClick={() => handleRemoveWish(item.wishlistId)}

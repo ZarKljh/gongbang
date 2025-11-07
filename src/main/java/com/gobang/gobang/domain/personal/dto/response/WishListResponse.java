@@ -18,6 +18,7 @@ public class WishListResponse {
     private Long userId;
     private Long productId;
     private String productName;
+    private Integer price;
     private LocalDateTime createdAt;
 
     public static WishListResponse from(WishList wishList) {
@@ -26,6 +27,7 @@ public class WishListResponse {
                 .userId(wishList.getSiteUser().getId())
                 .productId(wishList.getProduct().getId())
                 .productName(wishList.getProduct().getName())
+                .price(wishList.getProduct().getBasePrice())
                 .createdAt(wishList.getCreatedAt())
                 .build();
     }
