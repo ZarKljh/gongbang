@@ -45,8 +45,6 @@ export default function Review() {
     //     }
     // }, [currentUserId])
 
-    
-    
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
         try {
@@ -54,15 +52,14 @@ export default function Review() {
                 method: 'GET',
                 credentials: 'include',
             })
-            
+
             if (res.ok) {
                 const data = await res.json()
                 console.log('🧭 currentUserId:', currentUserId)
                 console.log('✅ 로그인된 사용자:', data.data)
                 console.log('✅ 역할:', data?.data?.role)
                 console.log('📡 로그인 응답 전체:', data)
-            
-                
+
                 setIsLoggedIn(true)
                 setCurrentUserId(data.data.id)
                 setRoleType(data?.data?.role || null)
@@ -77,7 +74,7 @@ export default function Review() {
             setCurrentUserId(null)
         }
     }
-    
+
     // ✅ 로그인 + 리뷰 로드 통합
     useEffect(() => {
         const init = async () => {
@@ -374,38 +371,38 @@ export default function Review() {
 
     // 로그인 했을 때 userId와 맞는 리뷰에만 나타나게 수정해야함.
     const handleDeleteClick = async (reviewId: number) => {
-        const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
-            method: 'DELETE',
-            credentials: 'include',
-        })
-        const data = await res.json()
-
-        if (!isLoggedIn) {
-            if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
-                window.location.href = '/auth/login'
+        try {
+            if (!isLoggedIn) {
+                if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
+                    window.location.href = '/auth/login'
+                }
+                return
             }
-        }
-        if (res.ok) {
-            alert('리뷰가 삭제되었습니다.')
-            fetchReviews()
-        }
-        if (data.resultCode === '200') {
-            alert('리뷰가 삭제되었습니다.')
-            fetchReviews()
-        } else if (data.resultCode === '403') {
-            alert('본인만 리뷰를 삭제할 수 있습니다.')
-        } else if (data.resultCode === '400') {
-            alert('리뷰가 존재하지 않습니다.')
-        } else {
-            alert('삭제 실패. 다시 시도해주세요.')
-        }
-        if (err) {
-            console.error(err)
+
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            })
+
+            const data = await res.json()
+            console.log('🗑️ 삭제 응답:', data)
+
+            if (res.ok && data.resultCode === '200') {
+                alert('리뷰가 삭제되었습니다.')
+                 setReviews(prev => prev.filter(r => r.reviewId !== reviewId)) // ✅ 즉시 반영
+                // fetchReviews()
+                return
+            } else if (data.resultCode === '403') {
+                alert('본인만 리뷰를 삭제할 수 있습니다.')
+            } else if (data.resultCode === '400') {
+                alert('리뷰가 존재하지 않습니다.')
+            } else {
+                alert('삭제 실패. 다시 시도해주세요.')
+            }
+        } catch (err) {
+            console.error('❌ 서버 오류:', err)
             alert('서버 오류로 삭제 실패')
         }
-        // else {
-        //     alert('리뷰 삭제에 실패했습니다.')
-        // }
     }
 
     return (
@@ -690,7 +687,7 @@ export default function Review() {
                                     </span>
                                 </div>
 
-                                {/* ⭐ 별점 + 수정삭제 버튼 */}
+                                {/* ⭐ 별점 */}
                                 <div
                                     style={{
                                         display: 'flex',
@@ -713,16 +710,16 @@ export default function Review() {
                                     </div>
 
                                     {/* ✏️ 좋아요 / 삭제 버튼 */}
-                                    {roleType === 'USER' && (
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'row',
-                                                gap: '10px',
-                                                marginTop: '10px',
-                                            }}
-                                        >
-                                            {/* 👍 좋아요 버튼 영역 */}
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            gap: '10px',
+                                            marginTop: '10px',
+                                        }}
+                                    >
+                                        {/* 👍 좋아요 버튼 영역 */}
+                                        {(roleType === 'USER' || roleType === 'SELLER') && (
                                             <div>
                                                 <button
                                                     onClick={() => handleLikeClick(review.reviewId)}
@@ -743,38 +740,39 @@ export default function Review() {
                                                         (e.currentTarget.style.backgroundColor = '#FF8080')
                                                     }
                                                 >
-                                                    <FaRegThumbsUp /> {likeCounts[review.reviewId] ?? review.reviewLike}
+                                                    <FaRegThumbsUp />
+                                                    도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
                                             </div>
+                                        )}
 
-                                            {/* 🗑️ 삭제 버튼 영역 */}
-                                            {Number(currentUserId) === Number(review.userId) && (
-                                                <div>
-                                                    <button
-                                                        onClick={() => handleDeleteClick(review.reviewId)}
-                                                        style={{
-                                                            backgroundColor: '#555555',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '8px',
-                                                            padding: '8px 16px',
-                                                            cursor: 'pointer',
-                                                            transition: '0.2s',
-                                                            fontSize: '14px',
-                                                        }}
-                                                        onMouseEnter={(e) =>
-                                                            (e.currentTarget.style.backgroundColor = '#333333')
-                                                        }
-                                                        onMouseLeave={(e) =>
-                                                            (e.currentTarget.style.backgroundColor = '#555555')
-                                                        }
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                        {/* 🗑️ 삭제 버튼 영역 */}
+                                        {Number(currentUserId) === Number(review.userId) && (
+                                            <div>
+                                                <button
+                                                    onClick={() => handleDeleteClick(review.reviewId)}
+                                                    style={{
+                                                        backgroundColor: '#555555',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        padding: '8px 16px',
+                                                        cursor: 'pointer',
+                                                        transition: '0.2s',
+                                                        fontSize: '14px',
+                                                    }}
+                                                    onMouseEnter={(e) =>
+                                                        (e.currentTarget.style.backgroundColor = '#333333')
+                                                    }
+                                                    onMouseLeave={(e) =>
+                                                        (e.currentTarget.style.backgroundColor = '#555555')
+                                                    }
+                                                >
+                                                    삭제
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 {/* 📃 리뷰 내용 */}
                                 <h4 style={{ margin: '5px' }}>📃 리뷰 내용</h4>

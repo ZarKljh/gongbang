@@ -199,11 +199,12 @@ public class ReviewController {
             return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
         }
 
-        return RsData.of(
-                deleteRs.getResultCode(),
-                deleteRs.getMsg(),
-                new ReviewDeleteResponse(deleteRs.getData())
-        );
+//        return RsData.of(
+//                deleteRs.getResultCode(),
+//                deleteRs.getMsg(),
+//                new ReviewDeleteResponse(deleteRs.getData())
+//        );
+        return RsData.of("200", "리뷰가 성공적으로 삭제되었습니다.");
     }
 
 }
