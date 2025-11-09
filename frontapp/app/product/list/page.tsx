@@ -213,17 +213,17 @@ export default function Product() {
 
         // subId가 0이면 API에서 최소값 조회
         if (subId === 0) {
-            api.get(`/subcategory/${catId}/min`)
+            api.get(`category/${catId}/min`)
                 .then((res) => {
-                    const minSubId = Number(res.data?.data)
+                    const minSubId = res.data?.data
                     console.log('📦 서버에서 받은 minSubId:', minSubId)
-                    onClickSubCategory(catId, Number.isFinite(minSubId) && minSubId > 0 ? minSubId : 1)
+                    onClickSubCategory(catId, minSubId)
                 })
                 .catch((err) => {
                     console.error(' sub-min 값 검색 실패:', err)
-                    onClickSubCategory(catId, 1)
                 })
         }
+
         // subId가 0이 아니면 그대로 사용
         else {
             onClickSubCategory(catId, subId)
