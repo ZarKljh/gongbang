@@ -67,9 +67,6 @@ export default function Product() {
     }
 
     const onClickSubCategory = (catId: number, subId: number) => {
-        setSelectedSubCatId(subId) // 클릭한 서브카테고리의 id를 상태에 저장
-        setSelectedCatId(catId) // 클릭한 카테고리의 id를 상태에 저장
-
         // 2️⃣ 이전 필터·선택 상태·결과 초기화
         setSelectedBtn({}) // 선택된 필터버튼 초기화
         setFilterGroups([]) // 기존 필터 그룹 제거
@@ -83,6 +80,9 @@ export default function Product() {
 
         // 4️⃣ 새 카테고리의 공통 필터 로딩
         loadFilters(catId)
+
+        setSelectedSubCatId(subId) // 클릭한 서브카테고리의 id를 상태에 저장
+        setSelectedCatId(catId) // 클릭한 카테고리의 id를 상태에 저장
     }
     //
 
@@ -203,17 +203,32 @@ export default function Product() {
     // ✅ 파라미터에서 categoryId, subId 받아서 상태로 설정
     useEffect(() => {
         const catIdStr = searchParams.get('categoryId')
-        const subIdStr = searchParams.get('subId') ?? '1' // 기본값 1
+        const subIdStr = searchParams.get('subId') ?? '0'
+        if (!catIdStr) return
 
-        // 숫자 변환 & 유효성 체크
         const catId = Number(catIdStr)
         const subId = Number(subIdStr)
-        if (Number.isFinite(catId) && catId > 0) {
-            onClickSubCategory(catId, Number.isFinite(subId) ? subId : 1)
-            setSelectedCatId(catId)
-            setSelectedSubCatId(subId)
+
+        if (!Number.isFinite(catId) || catId <= 0) return
+
+        // subId가 0이면 API에서 최소값 조회
+        if (subId === 0) {
+            api.get(`/subcategory/${catId}/min`)
+                .then((res) => {
+                    const minSubId = Number(res.data?.data)
+                    console.log('📦 서버에서 받은 minSubId:', minSubId)
+                    onClickSubCategory(catId, Number.isFinite(minSubId) && minSubId > 0 ? minSubId : 1)
+                })
+                .catch((err) => {
+                    console.error(' sub-min 값 검색 실패:', err)
+                    onClickSubCategory(catId, 1)
+                })
         }
-    }, [searchParams]) // 쿼리 변경될 때마다 실행
+        // subId가 0이 아니면 그대로 사용
+        else {
+            onClickSubCategory(catId, subId)
+        }
+    }, [searchParams])
 
     useEffect(() => {
         if (!didMount.current) {

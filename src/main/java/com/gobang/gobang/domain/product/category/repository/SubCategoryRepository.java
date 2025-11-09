@@ -14,4 +14,6 @@ public interface SubCategoryRepository extends JpaRepository<Subcategory, Long> 
     List<Subcategory> findAllByActiveTrueOrderByDisplayOrderAscIdAsc(PageRequest of);
 
     Optional<Subcategory> findByCode(String subCode);
+
+    Optional<Subcategory> findTopByCategoryIdOrderByIdAsc(Long categoryId);
 }

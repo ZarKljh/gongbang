@@ -78,7 +78,7 @@ export default function Main() {
                                     className={styles.categoryBtn}
                                     href={{
                                         pathname: '/product/list',
-                                        query: { categoryId: String(cat.id), subId: '1' },
+                                        query: { categoryId: String(cat.id), subId: '0' },
                                     }}
                                     prefetch={false}
                                 >
@@ -126,7 +126,17 @@ export default function Main() {
                             <ul className={styles.subcategoryList}>
                                 {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
                                     <li key={sub.id}>
-                                        <a href="#">{sub.name}</a>
+                                        {/* <a href="#">{sub.name}</a> */}
+
+                                        <Link
+                                            href={{
+                                                pathname: '/product/list',
+                                                query: { categoryId: String(cat.id), subId: String(sub.id) },
+                                            }}
+                                            prefetch={false}
+                                        >
+                                            {sub.name}
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>
