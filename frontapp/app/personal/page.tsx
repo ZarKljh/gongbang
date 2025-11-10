@@ -119,6 +119,7 @@ export default function MyPage() {
                 fetchStatsData(userId),
                 fetchMyReviews(userId),
                 fetchCart(userId),
+                fetchQna(userId),
             ])
         } catch (error) {
             console.error('데이터 로드 실패:', error)
@@ -229,7 +230,7 @@ export default function MyPage() {
     const fetchQna = async (id?: number) => {
         if (!id) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
+            const { data } = await axios.get(`${API_BASE_URL}/qna?userId=${id}`, {
                 withCredentials: true,
             })
             setQna(Array.isArray(data.data) ? data.data : [])
@@ -1356,74 +1357,29 @@ export default function MyPage() {
                                 <h2>문의 내역</h2>
                             </div>
 
-                            <div className="tab-nav">
-                                <button
-                                    className={`subtab-btn ${activeSubTab === 'product-qna' ? 'active' : ''}`}
-                                    onClick={() => setActiveSubTab('product-qna')}
-                                >
-                                    상품 문의
-                                </button>
-                                <button
-                                    className={`subtab-btn ${activeSubTab === 'qna' ? 'active' : ''}`}
-                                    onClick={() => setActiveSubTab('qna')}
-                                >
-                                    관리자 문의
-                                </button>
-                            </div>
+                            {qna.length === 0 ? (
+                                <div className="empty-state">작성한 문의가 없습니다.</div>
+                            ) : (
+                                <div className="qna-list">
+                                    {qna.map((qna) => (
+                                        <div key={qna.qnaId} className="qna-card">
+                                            <div className="qna-header">
+                                                <div className="qna-title">{qna.title}</div>
+                                            </div>
 
-                            {activeSubTab === 'product-qna' && (
-                                <div className="subtab-content">
-                                    {qna.length === 0 ? (
-                                        <div className="empty-state">문의한 상품 내역이 없습니다.</div>
-                                    ) : (
-                                        <div className="wishlist-grid">
-                                            {/* {wishList.map((item) => (
-                                                <div key={item.wishlistId} className="wishlist-item">
-                                                    <div className="wishlist-image"></div>
-                                                    <div className="wishlist-info">
-                                                        <p>{item.productName}</p>
-                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
-                                                        <button
-                                                            className="link-btn delete"
-                                                            onClick={() => handleRemoveWish(item.wishlistId)}
-                                                        >
-                                                            삭제
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))} */}
+                                            <div className="qna-content">{qna.content}</div>
+
+                                            <div className="qna-footer">
+                                                <span>작성일: {qna.createdDate}</span>
+                                                <button
+                                                    onClick={() => handleDeleteClick(qna)}
+                                                    className="link-btn delete"
+                                                >
+                                                    삭제
+                                                </button>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            )}
-                            
-                            {activeSubTab === 'qna' && (
-                                <div className="subtab-content">
-                                    {qna.length === 0 ? (
-                                        <div className="empty-state">관리자에게 문의한 내역이 없습니다.</div>
-                                    ) : (
-                                        <div className="qna-grid">
-                                            {qna.map((item) => (
-                                                <div key={item.qnaId} className="qna-box">
-                                                    <div className="qna-title">
-                                                        <p>문의 제목</p>
-                                                        <span className="order-status">답변상태</span>
-                                                    </div>
-                                                    <div className="qna-content">
-                                                        <p>문의 내용</p>
-                                                        <p>문의 일시</p>
-                                                        <p>문의 답변일시</p>
-                                                        <button
-                                                            className="link-btn delete"
-                                                            onClick={() => handleRemoveWish(item.qnaId)}
-                                                        >
-                                                            삭제
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                    ))}
                                 </div>
                             )}
                         </div>
