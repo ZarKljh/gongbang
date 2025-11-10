@@ -447,7 +447,7 @@ export default function Review() {
                             padding: '10px 20px',
                             cursor: 'pointer',
                             fontSize: '16px',
-                            marginBottom: '20px'
+                            marginBottom: '20px',
                         }}
                     >
                         리뷰 작성하기
@@ -755,7 +755,7 @@ export default function Review() {
                                                         cursor: 'pointer',
                                                         transition: '0.2s',
                                                         fontSize: '14px',
-                                                        display: 'flex', 
+                                                        display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
                                                     }}
@@ -825,37 +825,35 @@ export default function Review() {
                                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
                                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
                                 >
-                                    <div>{review.content}</div>
-                                    {/* <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
-                                        {[1, 2, 3, 4, 5].map((num) => (
-                                            <FaStar
-                                                key={num}
-                                                size={24}
-                                                color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
-                                                style={{ marginRight: '4px' }}
-                                            />
-                                        ))}
-                                        <small style={{ marginLeft: '6px', color: '#555' }}>{review.rating} / 5</small>
-                                    </div> */}
+                                    {review.imageUrls && review.imageUrls.length > 0 && (
+                                        <img
+                                            src={review.imageUrls[0]} // 첫 번째 이미지
+                                            alt="리뷰 이미지"
+                                            style={{
+                                                width: '80px',
+                                                height: '80px',
+                                                objectFit: 'cover',
+                                                borderRadius: '8px',
+                                                marginRight: '15px',
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                    )}
 
-                                    {/* 🖼️ 이미지 (현재 비활성화) */}
-                                    {/* {review.imageUrls?.length > 0 && (
-                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                                            {review.imageUrls.map((url, idx) => (
-                                                <img
-                                                    key={idx}
-                                                    src={url}
-                                                    alt={`review-img-${idx}`}
-                                                    style={{
-                                                        width: '150px',
-                                                        height: '150px',
-                                                        borderRadius: '8px',
-                                                        objectFit: 'cover',
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    )} */}
+                                    {/* 리뷰 내용 텍스트 */}
+                                    <p
+                                        style={{
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: '4',
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                            lineHeight: '1.6',
+                                            margin: 0,
+                                            flex: 1,
+                                        }}
+                                    >
+                                        {review.content}
+                                    </p>
                                 </div>
                                 {/* 💬 댓글 표시 (누구에게나 보여짐) */}
                                 {comments[review.reviewId]?.reviewComment ? (

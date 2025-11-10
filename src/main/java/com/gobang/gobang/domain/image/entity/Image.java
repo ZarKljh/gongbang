@@ -25,12 +25,12 @@ public class Image extends BaseEntity {
     private Long refId;
 
     /** 이미지 경로 또는 절대 URL */
-//    @Column(name = "image_url", length = 255, nullable = false)
-//    private String imageUrl;
+    @Column(name = "image_url", length = 255, nullable = false)
+    private String imageUrl;
 
             //테스트용 임시 hy
-    @Column(name = "image_url", columnDefinition = "TEXT", nullable = false)
-    private String imageUrl;  // ✅ TEXT 타입으로 변경
+//    @Column(name = "image_url", columnDefinition = "TEXT", nullable = false)
+//    private String imageUrl;  // ✅ TEXT 타입으로 변경
 
     /** 정렬 순서(대표=0 권장) */
     @Column(name = "sort_order", nullable = false)
