@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
@@ -25,11 +26,9 @@ public class WebConfig implements WebMvcConfigurer {
         return source;
     }
     /*공방이미지 저장을 위한 저장폴더 선언*/
-    /*
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/images/**") // 요청 경로
                 .addResourceLocations("file:///C:/gongbangImg/"); // 실제 저장 경로
     }
-    */
 }
