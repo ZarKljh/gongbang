@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import SellerSidebar from './sellerPageLeftSide' // 경로는 실제 위치에 맞게 조정
 import SellerPageMainContent from './sellerPageMainContent'
+import '@/app/personal/seller/[id]/sellerPage.css'
 
 export default function SellerPage() {
     const params = useParams()

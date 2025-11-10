@@ -9,20 +9,20 @@ body {
     background: white;
 }
 
-.mypage-container {
+.seller-page-container {
     display: flex;
     min-height: 100vh;
     width: 1200px;
 }
 
 /* 사이드바 */
-.mypage-sidebar {
+.seller-sidebar {
     width: 256px;
     border-right: 1px solid #e5e7eb;
     padding: 32px;
 }
 
-.mypage-sidebar h1 {
+.seller-sidebar h1 {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 32px;
