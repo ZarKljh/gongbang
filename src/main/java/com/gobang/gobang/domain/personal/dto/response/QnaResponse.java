@@ -20,9 +20,9 @@ public class QnaResponse {
     private boolean answered; //답변여부
     private LocalDateTime createdAt;
 
-    public static QnaResponse from(Inquiry inquiry, SiteUser siteUser) {
+    public static QnaResponse from(Inquiry inquiry) {
         return QnaResponse.builder()
-                .userId(siteUser.getId())
+                .userId(inquiry.getUser().getId())
                 .title(inquiry.getTitle())
                 .content(inquiry.getContent())
                 .type(inquiry.getType())

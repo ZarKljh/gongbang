@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.inquiry.entity;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.inquiry.model.InquiryType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,4 +46,9 @@ public class Inquiry {
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
     }
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private SiteUser user;
 }
