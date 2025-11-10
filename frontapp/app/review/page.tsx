@@ -805,9 +805,9 @@ export default function Review() {
                                 <div
                                     onClick={() => (window.location.href = `/review/${review.reviewId}`)}
                                     style={{
-                                        display: '-webkit-box',
+                                        display: 'flex',
                                         width: '800px',
-                                        height: '80px',
+                                        height: '200px',
                                         border: '1px solid #ddd',
                                         borderRadius: '8px',
                                         padding: '10px',
@@ -825,21 +825,6 @@ export default function Review() {
                                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
                                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
                                 >
-                                    {review.imageUrls && review.imageUrls.length > 0 && (
-                                        <img
-                                            src={review.imageUrls[0]} // 첫 번째 이미지
-                                            alt="리뷰 이미지"
-                                            style={{
-                                                width: '80px',
-                                                height: '80px',
-                                                objectFit: 'cover',
-                                                borderRadius: '8px',
-                                                marginRight: '15px',
-                                                flexShrink: 0,
-                                            }}
-                                        />
-                                    )}
-
                                     {/* 리뷰 내용 텍스트 */}
                                     <p
                                         style={{
@@ -854,6 +839,23 @@ export default function Review() {
                                     >
                                         {review.content}
                                     </p>
+                                    {review.imageUrls && review.imageUrls.length > 0 && (
+                                        <img
+                                            src={`http://localhost:8090${review.imageUrls[0]}`} // 첫 번째 이미지
+                                            alt="리뷰 이미지"
+                                            style={{
+                                                width: '200px',
+                                                height: '200px',
+                                                objectFit: 'cover',
+                                                borderRadius: '8px',
+                                                marginRight: '15px',
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                                <div>
+                                    <hr style={{ width: '820px' }} />
                                 </div>
                                 {/* 💬 댓글 표시 (누구에게나 보여짐) */}
                                 {comments[review.reviewId]?.reviewComment ? (

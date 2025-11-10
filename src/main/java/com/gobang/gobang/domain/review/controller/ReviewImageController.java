@@ -10,12 +10,12 @@ import java.nio.file.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/reviews")
+@RequestMapping("/api/v1/images")
 public class ReviewImageController {
 
     private final String uploadDir = System.getProperty("user.dir") + "/uploads/";
 
-    @PostMapping("images/upload")
+    @PostMapping("/upload")
     public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
         // 폴더 없으면 생성
         File directory = new File(uploadDir);

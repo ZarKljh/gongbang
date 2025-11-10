@@ -77,16 +77,44 @@ export default function ReviewCreate({ fetchReviews }) {
     //     }
     // }
 
-    // ✅ 파일 선택 시 base64 변환 + 미리보기 반영
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files)
-        const base64List = await Promise.all(files.map((file) => toBase64(file)))
+        const token = localStorage.getItem('accessToken')
+
+        const previews = []
+        const uploadedUrls = []
+
+        for (const file of files) {
+            // 1️⃣ 미리보기용 base64
+            const base64 = await toBase64(file)
+            previews.push(base64)
+
+            // 2️⃣ 서버 업로드
+            const formData = new FormData()
+            formData.append('file', file)
+
+            try {
+                const res = await fetch('http://localhost:8090/api/v1/images/upload', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                })
+                const url = await res.text()
+                uploadedUrls.push(url)
+            } catch (err) {
+                console.error('❌ 업로드 실패:', err)
+            }
+        }
+
+        // 3️⃣ base64 → 즉시 미리보기, url은 나중에 서버 저장용
         setReview((prev) => ({
             ...prev,
-            imageUrls: [...prev.imageUrls, ...base64List],
+            imagePreviews: [...(prev.imagePreviews || []), ...previews],
+            imageUrls: [...prev.imageUrls, ...uploadedUrls],
         }))
     }
 
+    // base64 변환 유틸
     const toBase64 = (file) =>
         new Promise((resolve, reject) => {
             const reader = new FileReader()
@@ -227,11 +255,11 @@ export default function ReviewCreate({ fetchReviews }) {
                     </div>
 
                     {/* ✅ 현재 추가된 이미지 미리보기 */}
-                    {review.imageUrls.length > 0 && (
+                    {review.imagePreviews && review.imagePreviews.length > 0 && (
                         <div style={{ marginTop: '20px' }}>
                             <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>첨부된 이미지</p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                {review.imageUrls.map((url, i) => (
+                                {review.imagePreviews.map((url, i) => (
                                     <img
                                         key={i}
                                         src={url}

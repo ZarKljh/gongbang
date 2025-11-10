@@ -22,7 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +36,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final SiteUserRepository siteUserRepository;
     private final ReviewImageService reviewImageService ;
+    private final ReviewImageRepository reviewImageRepository;
 
     // 리뷰 다건 조회
 //    public List<Review> findAll() {
@@ -137,24 +141,65 @@ public class ReviewService {
         review.setRating(request.getRating());
         review.setContent(request.getContent());
         review.setModifiedDate(LocalDateTime.now());
+
+        // 최종 이미지 URL 리스트(프론트에서 순서대로 보냄)
+        List<String> targetUrls = Optional.ofNullable(request.getImageUrls()).orElseGet(List::of)
+                .stream()
+                .distinct()                // 중복 제거
+                .limit(5)                  // 최대 5장
+                .toList();
+
+        // 현재 저장된 이미지 목록
+        List<Image> current = reviewImageRepository.findByRefTypeAndRefId(Image.RefType.REVIEW, reviewId);
+
+        // 삭제 대상: 현재 - 타겟
+        List<Image> toDelete = current.stream()
+                .filter(img -> !targetUrls.contains(img.getImageUrl()))
+                .toList();
+
+        // 추가 대상: 타겟 - 현재
+        Set<String> currentUrlSet = current.stream().map(Image::getImageUrl).collect(Collectors.toSet());
+        List<String> toAdd = targetUrls.stream()
+                .filter(url -> !currentUrlSet.contains(url))
+                .toList();
+
+        // 삭제 실행
+        toDelete.forEach(reviewImageRepository::delete);
+
+        // 추가 실행 (정렬 순서는 아래에서 일괄 세팅할거라 임시로 0)
+        for (String url : toAdd) {
+            if (url.length() > 255) {
+                throw new IllegalArgumentException("이미지 URL 길이가 255를 초과합니다: " + url);
+            }
+            Image image = Image.builder()
+                    .refType(Image.RefType.REVIEW)
+                    .refId(reviewId)
+                    .imageUrl(url)
+                    .sortOrder(0)
+                    .build();
+            reviewImageRepository.save(image);
+        }
+
+        // 최종 순서대로 sortOrder 재정렬
+        // (DB에서 다시 읽어와서 매칭)
+        List<Image> refreshed = reviewImageRepository.findByRefTypeAndRefId(Image.RefType.REVIEW, reviewId);
+        Map<String, Image> byUrl = refreshed.stream()
+                .collect(Collectors.toMap(Image::getImageUrl, Function.identity(), (a, b)->a));
+
+        int order = 0;
+        for (String url : targetUrls) {
+            Image img = byUrl.get(url);
+            if (img != null) {
+                img.setSortOrder(order++);
+                // JPA 변경감지로 update
+            }
+        }
+
         reviewRepository.save(review);
 
         return RsData.of("200", "리뷰가 수정되었습니다.", review);
     }
 
-    ///  기존 삭제
-//    @Transactional
-//    public RsData<Review> delete(Long reviewId) {
-//        Review review = reviewRepository.findById(reviewId)
-//                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-//
-//
-//        reviewRepository.delete(review);
-//        return RsData.of(
-//                "200",
-//                "%d번 리뷰가 삭제되었습니다."
-//        );
-//    }
 
     @Transactional
     public RsData<Review> deleteReview(Long reviewId, Long currentUserId) {
@@ -172,17 +217,6 @@ public class ReviewService {
         reviewRepository.delete(review);
         return RsData.of("200", "리뷰가 삭제되었습니다.", review);
     }
-
-
-//    // 리뷰 삭제
-//    @Transactional
-//    public boolean deleteReview(Long id) {
-//        if (reviewRepository.existsById(id)) {
-//            reviewRepository.deleteById(id);
-//            return true;
-//        }
-//        return false;
-//    }
 
     public List<ReviewResponse> getReviewsByUserId(Long userId) {
         return reviewRepository.findBySiteUser_Id(userId)

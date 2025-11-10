@@ -51,6 +51,7 @@ public class ReviewResponse {
                 .createdBy(review.getCreatedBy())
                 .userNickName(review.getSiteUser().getNickName())
                 .userId(review.getSiteUser().getId())
+                .imageUrls(imageUrls)
                 .build();
     }
 }
