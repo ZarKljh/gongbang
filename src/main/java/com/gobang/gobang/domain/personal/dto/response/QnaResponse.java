@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.inquiry.entity.Inquiry;
 import com.gobang.gobang.domain.inquiry.model.InquiryType;
 import lombok.AllArgsConstructor;
