@@ -82,4 +82,26 @@ public class StudioService {
         return newStudio;
         //return RsData.of("S-2", "신규공방이 등록되었습니다", newStudio);
     }
+
+    public Image getMainImage(Long studioId) {
+        Optional<Image> osmi = imageRepository.findByRefIdAndRefType(studioId, Image.RefType.STUDIO_MAIN);
+        if (osmi.isPresent()) {
+            return osmi.get();
+        } else {
+            return null;
+        }
+    }
+
+    public Image getLogoImage(Long studioId) {
+        Optional<Image> osli = imageRepository.findByRefIdAndRefType(studioId, Image.RefType.STUDIO_LOGO);
+        if (osli.isPresent()) {
+            return osli.get();
+        } else {
+            return null;
+        }
+    }
+
+    public List<Image> getStudioImages(Long studioId) {
+        return imageRepository.findALLByRefIdAndRefType(studioId, Image.RefType.STUDIO);
+    }
 }

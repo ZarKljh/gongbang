@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.seller.controller;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.seller.dto.SellerSimpleResponse;
 import com.gobang.gobang.domain.seller.dto.StudioResponse;
 import com.gobang.gobang.domain.seller.service.SellerService;
@@ -35,13 +36,17 @@ public class SellerController {
     ){
         SiteUser seller = sellerService.getSiteUserById(id);
 
+        Image studioMainImage = new Image();
+        Image studioLogoImage = new Image();
+        List<Image> studioImages = new ArrayList<>();
+
         List<StudioResponse> studioList = new ArrayList<>();
         for (Studio s : seller.getStudioList()) {
-            studioList.add(new StudioResponse(seller, s));
-            System.out.println("공방ID : " + s.getStudioId());
-            System.out.println("공방이름 : " + s.getStudioName());
+            studioMainImage = studioService.getMainImage(s.getStudioId());
+            studioLogoImage = studioService.getLogoImage(s.getStudioId());
+            studioImages = studioService.getStudioImages(s.getStudioId());
+            studioList.add(new StudioResponse(seller, s, studioMainImage, studioLogoImage, studioImages));
         }
-
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("seller", new SellerSimpleResponse(seller));
         responseMap.put("studioList", studioList);
