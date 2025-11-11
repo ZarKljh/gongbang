@@ -33,7 +33,7 @@ public class Delivery {
 
     @Builder.Default
     @Column(name = "delivery_status", nullable = false, length = 30)
-    private String deliveryStatus = "배송중";
+    private String deliveryStatus = "배송준비중";
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

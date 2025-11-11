@@ -2,42 +2,47 @@
 
 import axios from 'axios'
 import { useState, useEffect } from 'react'
-import { ChevronRight } from 'lucide-react'
 import '@/app/personal/page.css'
+import Link from 'next/link'
+
+const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
-    const [newPassword, setNewPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [passwordInput, setPasswordInput] = useState('')
-    const [activeTab, setActiveTab] = useState('orders')
-    const [activeSubTab, setActiveSubTab] = useState('product')
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [editMode, setEditMode] = useState({})
-    const [loading, setLoading] = useState(true)
-
-    const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
-
-    const [tempData, setTempData] = useState<any>(null)
-    
-    // ------------------- 프로필 이미지 -------------------
+    // =============== State 관리 ===============
+    // 사용자 정보
     const [userData, setUserData] = useState<any>(null)
+    const [tempData, setTempData] = useState<any>(null)
     const [profileImg, setProfileImg] = useState<any[]>([])
     const [stats, setStats] = useState<any>({
         totalQna: 0,
         totalReviews: 0,
     })
-    
-    // ------------------- 주문, 배송 -------------------
+
+    // UI 상태
+    const [loading, setLoading] = useState(true)
+    const [activeTab, setActiveTab] = useState('orders')
+    const [activeSubTab, setActiveSubTab] = useState('product')
+    const [editMode, setEditMode] = useState({})
+
+    // 인증
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [passwordInput, setPasswordInput] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+
+    // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
-    const [selectedStatus, setSelectedStatus] = useState(null);
-    const [isStatusModal, setIsStatusModal] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState(null);
-    const [isOrderModal, setIsOrderModal] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState(null)
+    const [selectedOrder, setSelectedOrder] = useState(null)
+    const [isStatusModal, setIsStatusModal] = useState(false)
+    const [isOrderModal, setIsOrderModal] = useState(false)
     const [isOrdersModal, setIsOrdersModal] = useState(false)
-    
-    // ------------------- 배송지 -------------------
+
+    // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
     const [isAddressModal, setIsAddressModal] = useState(false)
+    const [editAddressModal, setEditAddressModal] = useState(false)
+    const [editAddressData, setEditAddressData] = useState<any>(null)
     const [newAddress, setNewAddress] = useState({
         recipientName: '',
         zipcode: '',
@@ -46,10 +51,8 @@ export default function MyPage() {
         extraAddress: '',
         isDefault: false,
     })
-    const [editAddressModal, setEditAddressModal] = useState(false)
-    const [editAddressData, setEditAddressData] = useState<any>(null)
-    
-    // ------------------- 결제수단 -------------------
+
+    // 결제수단
     const [paymentMethods, setPaymentMethods] = useState([])
     const [isPaymentModal, setIsPaymentModal] = useState(false)
     const [paymentType, setPaymentType] = useState('BANK')
@@ -58,65 +61,42 @@ export default function MyPage() {
     const [cardCompany, setCardCompany] = useState('')
     const [cardNumber, setCardNumber] = useState('')
     const [defaultPayment, setDefaultPayment] = useState(false)
-    
-    // ------------------- 리뷰 -------------------
-    const [myReviews, setMyReviews] = useState([])
-    
-    // ------------------- 위시리스트, 팔로우 -------------------
+
+    // 리뷰
+    const [myReviews, setMyReviews] = useState<any[]>([])
+    const [isEditReviewModal, setIsEditReviewModal] = useState(false)
+    const [isDeleteReviewModal, setIsDeleteReviewModal] = useState(false)
+    const [editReview, setEditReview] = useState<any>(null)
+    const [reviewToDelete, setReviewToDelete] = useState<any>(null)
+    const [editReviewContent, setEditReviewContent] = useState('')
+    const [editReviewRating, setEditReviewRating] = useState(0)
+
+    // 위시리스트/팔로우
     const [wishList, setWishList] = useState<any[]>([])
     const [followList, setFollowList] = useState<any[]>([])
 
-    // ------------------- 유저 정보 가져오기 -------------------
+    // 장바구니
+    const [cart, setCart] = useState<any[]>([])
+
+    //문의
+    const [qna, setQna] = useState<any[]>([])
+
+    // =============== Effects ===============
     useEffect(() => {
-        const fetchUser = async () => {
-            setLoading(true)
+        const init = async () => {
             try {
-                const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
+                const user = await fetchUser()
+                if (!user || !user.id) return
 
-                if (data.code === '401') {
-                    window.location.href = '/auth/login'
-                    return
-                }
-
-                setUserData(data?.data || null)
-            } catch (error: any) {
-                console.error('사용자 정보 조회 실패:', error)
-                alert('사용자 정보를 불러오는 중 문제가 발생했습니다. 다시 로그인 해주세요.')
-                setUserData(null)
-            } finally {
-                setLoading(false)
+                await loadAllData(user.id)
+            } catch (error) {
+                console.error('초기 데이터 로딩 실패:', error)
             }
         }
 
-        fetchUser()
+        init()
     }, [])
 
-    useEffect(() => {
-        if (!userData?.id) return
-
-        const loadAllData = async () => {
-            setLoading(true)
-            try {
-                await Promise.all([
-                    fetchOrders(userData.id),
-                    fetchAddresses(userData.id),
-                    fetchPaymentMethods(userData.id),
-                    fetchWishList(userData.id),
-                    fetchFollowList(userData.id),
-                    fetchStatsData(userData.id),
-                    fetchMyReviews(userData.id),
-                ])
-            } catch (error) {
-                console.error('데이터 로드 실패:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        loadAllData()
-    }, [userData])
-
-    //모달이 열릴 때 스크립트를 로드 -->주소
     useEffect(() => {
         if (isAddressModal && !window.daum) {
             const script = document.createElement('script')
@@ -126,52 +106,186 @@ export default function MyPage() {
         }
     }, [isAddressModal])
 
-    useEffect(() => {
-        fetchPaymentMethods();
-    }, []);
-
-    useEffect(() => {
-        if (activeTab === 'reviews') {
-            fetchMyReviews()
-        }
-    }, [activeTab])
-
-    useEffect(() => {
-        fetchOrders();
-    }, []);
-
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await axios.get(`${API_BASE_URL}/stats`, {
-                    withCredentials: true,
-                });
-                if (response.data.resultCode === "200") {
-                setStats({
-                    totalQna: response.data.data.totalQna,
-                    totalReviews: response.data.data.totalReviews,
-                })
-                }
-            } catch (error) {
-                console.error("Failed to load mypage stats:", error)
-            }
-        };
-
-        fetchStats()
-    }, [])
-
-    // ------------------- API 요청 함수 -------------------
-    const fetchOrders = async (id: number) => {
-        if (!id) return
+    // =============== API 호출 함수 ===============
+    const loadAllData = async (userId: number) => {
+        setLoading(true)
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders?userId=${id}`, { withCredentials: true })
-            setOrders(Array.isArray(data) ? data : [])
+            await Promise.all([
+                fetchOrders(userId),
+                fetchAddresses(userId),
+                fetchPaymentMethods(userId),
+                fetchWishList(userId),
+                fetchFollowList(userId),
+                fetchStatsData(userId),
+                fetchMyReviews(userId),
+                fetchCart(userId),
+                fetchQna(userId),
+            ])
+        } catch (error) {
+            console.error('데이터 로드 실패:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchUser = async () => {
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
+            if (data.code === '401') {
+                window.location.href = '/auth/login'
+                return null
+            }
+            setUserData(data.data)
+            return data.data
+        } catch (error) {
+            console.error('사용자 정보 조회 실패:', error)
+            return null
+        }
+    }
+
+    const fetchOrders = async (id?: number) => {
+        if (!id) return
+
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
+            setOrders(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
         }
     }
 
+    const fetchCart = async (id?: number) => {
+        if (!id) return
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
+            setCart(Array.isArray(data.data) ? data.data : data)
+        } catch (error) {
+            console.error('장바구니 목록 조회 실패:', error)
+            setCart([])
+        }
+    }
+
+    const fetchAddresses = async (id?: number) => {
+        const userId = id || userData?.id
+        if (!userId) return
+
+        try {
+            const response = await axios.get(`${API_BASE_URL}/addresses?userId=${userId}`, {
+                withCredentials: true,
+            })
+            const addressesData = response.data?.data || []
+            const cleaned = flattenAddresses(addressesData)
+            setAddresses(cleaned)
+        } catch (error) {
+            console.error('배송지 조회 실패:', error)
+            setAddresses([])
+        }
+    }
+
+    const fetchPaymentMethods = async (id?: number) => {
+        const userId = id || userData?.id
+        if (!userId) return
+
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
+                withCredentials: true,
+            })
+
+            if (data.resultCode === '200') {
+                setPaymentMethods(data.data)
+            } else {
+                alert(`결제수단 조회 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error('결제수단 조회 실패:', error)
+            alert('결제수단 조회 중 오류가 발생했습니다.')
+        }
+    }
+
+    const fetchWishList = async (id?: number) => {
+        if (!id) return;
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true, })
+            setWishList(Array.isArray(data.data) ? data.data : data)
+        } catch (error) {
+            console.error('위시 목록 조회 실패:', error)
+            setWishList([])
+        }
+    }
+
+    const fetchFollowList = async (id?: number) => {
+        if (!id) return;
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
+                withCredentials: true,
+            })
+            setFollowList(Array.isArray(data.data) ? data.data : [])
+        } catch (error) {
+            console.error('팔로우 목록 조회 실패:', error)
+            setFollowList([])
+        }
+    }
+
+    const fetchQna = async (id?: number) => {
+        if (!id) return;
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/qna?userId=${id}`, {
+                withCredentials: true,
+            })
+            setQna(Array.isArray(data.data) ? data.data : [])
+        } catch (error) {
+            console.error('문의 목록 조회 실패:', error)
+            setQna([])
+        }
+    }
+
+    const fetchStatsData = async (id?: number) => {
+        const userId = id || userData?.id
+        if (!userId) return
+
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${userId}`, {
+                withCredentials: true,
+            })
+            setStats(data)
+        } catch (error) {
+            console.error('통계 조회 실패:', error)
+        }
+    }
+
+    const fetchMyReviews = async (id?: number) => {
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/reviews`, { withCredentials: true })
+            const list = data.data || []
+            setMyReviews(list)
+            setStats((prev) => ({
+                ...prev,
+                totalReviews: Array.isArray(list) ? list.length : 0,
+            }))
+        } catch (error) {
+            console.error('리뷰 조회 실패:', error)
+        }
+    }
+
+    const fetchStats = async () => {
+        const userId = id || userData?.id
+        if (!userId) return
+        
+        try {
+            const response = await axios.get(`${API_BASE_URL}/stats?userId=${userId}`, { withCredentials: true })
+            if (response.data.resultCode === '200') {
+                setStats({
+                    totalQna: response.data.data.totalQna,
+                    totalReviews: response.data.data.totalReviews,
+                })
+            }
+        } catch (error) {
+            console.error('통계 조회 실패:', error)
+        }
+    }
+
+    // =============== 유틸리티 함수 ===============
     const flattenAddresses = (data: any[]): any[] => {
         return data.map((addr) => ({
             userAddressId: addr.userAddressId,
@@ -186,84 +300,26 @@ export default function MyPage() {
         }))
     }
 
-    const fetchAddresses = async (id: number) => {
-        if (!id) return
-        try {
-            const response = await axios.get(`${API_BASE_URL}/addresses?userId=${id}`, { withCredentials: true })
-            const addressesData = response.data?.data || []
-            const cleaned = flattenAddresses(addressesData)
-            console.log('flattened addresses:', cleaned) // 확인용
-            setAddresses(cleaned)
-        } catch (error) {
-            console.error('배송지 조회 실패:', error)
-            setAddresses([])
-        }
+    const resetAddressForm = () => {
+        setNewAddress({
+            recipientName: '',
+            zipcode: '',
+            baseAddress: '',
+            detailAddress: '',
+            extraAddress: '',
+            isDefault: false,
+        })
     }
 
-    const fetchPaymentMethods = async () => {
-        if (!userData?.id) return
-
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                setPaymentMethods(data.data)
-            } else {
-                alert(`결제수단 조회 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error(error)
-            alert('결제수단 조회 중 오류가 발생했습니다.')
-        }
+    const resetPaymentForm = () => {
+        setPaymentType('BANK')
+        setBankName('')
+        setAccountNumber('')
+        setCardCompany('')
+        setCardNumber('')
+        setDefaultPayment(false)
     }
 
-    const fetchWishList = async (id: number) => {
-        if (!id) return
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlist?userId=${id}`, { withCredentials: true })
-            setWishList(Array.isArray(data) ? data : [])
-        } catch (error) {
-            console.error('위시 목록 조회 실패:', error)
-            setWishList([])
-        }
-    }
-
-    const fetchFollowList = async (id: number) => {
-        if (!id) return
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, { withCredentials: true })
-            setFollowList(Array.isArray(data) ? data : [])
-        } catch (error) {
-            console.error('팔로우 목록 조회 실패:', error)
-            setFollowList([])
-        }
-    }
-
-    const fetchStatsData = async (id: number) => {
-        if (!id) return
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${id}`, { withCredentials: true })
-            setStats(data)
-        } catch (error) {
-            console.error('통계 조회 실패:', error)
-        }
-    }
-
-    const fetchMyReviews = async () => {
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/reviews`, { withCredentials: true })
-            // 응답 구조에 따라 data.resultCode / data.code 등 확인
-            const list = data.data || []
-            setMyReviews(list)
-            setStats(prev => ({ ...prev, totalReviews: Array.isArray(list) ? list.length : 0 }))
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    // 카카오 주소 AIP
     const sample6_execDaumPostcode = () => {
         if (!window.daum || !window.daum.Postcode) {
             alert('카카오 우편번호 API가 아직 로드되지 않았습니다.')
@@ -271,18 +327,22 @@ export default function MyPage() {
         }
 
         new window.daum.Postcode({
-            oncomplete: function (data) {
+            oncomplete: (data) => {
                 const addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress
                 let extraAddr = ''
 
                 if (data.userSelectedType === 'R') {
-                    if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname
-                    if (data.buildingName !== '' && data.apartment === 'Y')
+                    if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                        extraAddr += data.bname
+                    }
+                    if (data.buildingName !== '' && data.apartment === 'Y') {
                         extraAddr += extraAddr !== '' ? ', ' + data.buildingName : data.buildingName
-                    if (extraAddr !== '') extraAddr = ' (' + extraAddr + ')'
+                    }
+                    if (extraAddr !== '') {
+                        extraAddr = ' (' + extraAddr + ')'
+                    }
                 }
 
-                //React state로 업데이트
                 setNewAddress((prev) => ({
                     ...prev,
                     zipcode: data.zonecode,
@@ -293,17 +353,51 @@ export default function MyPage() {
         }).open()
     }
 
-    // ------------------- 회원 정보 수정 -------------------
+    // =============== 회원정보 ===============
+    const handleVerifyPassword = async () => {
+        if (!passwordInput) {
+            alert('비밀번호를 입력해주세요.')
+            return
+        }
+
+        try {
+            const { data } = await axios.post(
+                `${API_BASE_URL}/me/verify-password`,
+                {
+                    userId: userData.id,
+                    password: passwordInput,
+                },
+                { withCredentials: true },
+            )
+
+            if (data.resultCode === '200') {
+                setIsAuthenticated(true)
+                alert('비밀번호 인증 완료. 정보 수정을 진행할 수 있습니다.')
+            } else {
+                alert('비밀번호가 올바르지 않습니다.')
+            }
+        } catch (error) {
+            console.error('비밀번호 인증 실패:', error)
+            alert('인증 중 오류가 발생했습니다.')
+        }
+    }
+
     const handleEdit = (section: string) => {
-        if (!isAuthenticated) return alert('정보 수정을 위해 비밀번호 인증이 필요합니다.')
+        if (!isAuthenticated) {
+            alert('정보 수정을 위해 비밀번호 인증이 필요합니다.')
+            return
+        }
         setEditMode({ ...editMode, [section]: true })
         setTempData({ ...userData })
     }
 
     const handleSave = async (section: string) => {
         if (!userData?.id) return
-        if (newPassword && newPassword !== confirmPassword)
-            return alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.')
+
+        if (newPassword && newPassword !== confirmPassword) {
+            alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.')
+            return
+        }
 
         try {
             const { data } = await axios.patch(
@@ -324,7 +418,6 @@ export default function MyPage() {
                 setConfirmPassword('')
                 alert(data.msg || '정보가 수정되었습니다.')
             } else {
-                console.error('정보 수정 실패:', data)
                 alert(`수정에 실패했습니다: ${data.msg || '오류가 발생했습니다.'}`)
             }
         } catch (error: any) {
@@ -338,119 +431,37 @@ export default function MyPage() {
         setEditMode({ ...editMode, [section]: false })
     }
 
-    // ------------------- 프로필 이미지 -------------------
-    const handleSaveProfile = async () => {
-        if (!newProfile.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
-            return alert('이름과 주소를 모두 입력해주세요.')
-        }
-
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/addresses`, newAddress, { withCredentials: true })
-
-            if (data.resultCode === '200') {
-                const savedAddress = data.data
-                
-                if (newAddress.isDefault) {
-                    await axios.patch(`${API_BASE_URL}/addresses/${data.data.userAddressId}/default`, {}, { withCredentials: true })
-                }
-
-                setAddresses((prev) => {
-                    const updated = prev.map((addr) =>
-                        newAddress.isDefault ? { ...addr, isDefault: false } : addr
-                    )
-                    return [...updated, savedAddress]
-                })
-                
-                alert('배송지 등록 성공')
-                await fetchAddresses(userData.id)
-                setIsAddressModal(false) // 모달 닫기
-                setNewAddress({
-                    recipientName: '',
-                    zipcode: '',
-                    baseAddress: '',
-                    detailAddress: '',
-                    extraAddress: '',
-                    isDefault: false,
-                })
-            } else {
-                alert(`등록 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error(error)
-            alert('배송지 등록 중 오류가 발생했습니다.')
-        }
-    }
-
-    // ------------------- 주문, 배송 -------------------
-    const handleStatusClick = (status: string) => {
-        setSelectedStatus(status)
-        setIsStatusModal(true)
-    }
-
-    const handleOrderClick = (order: string) => {
-        setSelectedOrder(order)
-        setIsOrderModal(true)
-    }
-
-    //------------------- 배송지 -------------------
+    // =============== 배송지 ===============
     const handleSaveAddress = async () => {
         if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
-            return alert('이름과 주소를 모두 입력해주세요.')
+            alert('이름과 주소를 모두 입력해주세요.')
+            return
         }
 
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/addresses`, newAddress, { withCredentials: true })
+            const { data } = await axios.post(`${API_BASE_URL}/addresses`, newAddress, {
+                withCredentials: true,
+            })
 
             if (data.resultCode === '200') {
-                const savedAddress = data.data
-                
                 if (newAddress.isDefault) {
-                    await axios.patch(`${API_BASE_URL}/addresses/${data.data.userAddressId}/default`, {}, { withCredentials: true })
+                    await axios.patch(
+                        `${API_BASE_URL}/addresses/${data.data.userAddressId}/default`,
+                        {},
+                        { withCredentials: true },
+                    )
                 }
 
-                setAddresses((prev) => {
-                    const updated = prev.map((addr) =>
-                        newAddress.isDefault ? { ...addr, isDefault: false } : addr
-                    )
-                    return [...updated, savedAddress]
-                })
-                
                 alert('배송지 등록 성공')
                 await fetchAddresses(userData.id)
-                setIsAddressModal(false) // 모달 닫기
-                setNewAddress({
-                    recipientName: '',
-                    zipcode: '',
-                    baseAddress: '',
-                    detailAddress: '',
-                    extraAddress: '',
-                    isDefault: false,
-                })
+                setIsAddressModal(false)
+                resetAddressForm()
             } else {
                 alert(`등록 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error(error)
+            console.error('배송지 등록 실패:', error)
             alert('배송지 등록 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleDeleteAddress = async (addressId: number) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return
-
-        try {
-            const { data } = await axios.delete(`${API_BASE_URL}/addresses/${addressId}`, { withCredentials: true })
-            console.log('삭제 서버 응답:', data)
-
-            if (data.resultCode === '200') {
-                alert('배송지 삭제 성공')
-                setAddresses((prev) => prev.filter((addr) => addr.userAddressId !== addressId))
-            } else {
-                alert(`삭제 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('삭제 실패:', error)
-            alert('배송지 삭제 중 오류가 발생했습니다.')
         }
     }
 
@@ -465,131 +476,192 @@ export default function MyPage() {
             )
 
             if (data.resultCode === '200') {
-                const updatedAddress = data.data
-
                 if (editAddressData.isDefault) {
                     await axios.patch(
                         `${API_BASE_URL}/addresses/${editAddressData.userAddressId}/default`,
                         {},
-                        { withCredentials: true }
+                        { withCredentials: true },
                     )
                 }
 
-                setAddresses((prev) =>
-                    prev.map((addr) => {
-                        if (addr.userAddressId === updatedAddress.userAddressId) return updatedAddress;
-                        if (editAddressData.isDefault) return { ...addr, isDefault: false }
-                        return addr
-                    })
-                )
-
                 alert('배송지 수정 성공')
-                setAddresses((prev) =>
-                    prev.map((addr) => (addr.userAddressId === editAddressData.userAddressId ? editAddressData : addr)),
-                )
+                await fetchAddresses(userData.id)
                 setEditAddressModal(false)
             } else {
                 alert(`수정 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error(error)
+            console.error('배송지 수정 실패:', error)
             alert('배송지 수정 중 오류가 발생했습니다.')
         }
     }
 
-    // ------------------- 결제수단 -------------------
-    const resetPaymentForm = () => {
-        setPaymentType('BANK')
-        setBankName('')
-        setAccountNumber('')
-        setCardCompany('')
-        setCardNumber('')
-        setDefaultPayment(false)
-    }
-
-    const handleSavePayment = async () => {
-        if (paymentType === 'BANK' && (!bankName || !accountNumber)) {
-        return alert('은행명과 계좌번호를 입력해주세요.')
-        }
-        if (paymentType === 'CARD' && (!cardCompany || !cardNumber)) {
-        return alert('카드사와 카드번호를 입력해주세요.')
-        }
-
-        const newPayment = {
-        type: paymentType,
-        bankName,
-        accountNumber,
-        cardCompany,
-        cardNumber,
-        defaultPayment,
-        }
-
-        try {
-        const { data } = await axios.post(
-            `${API_BASE_URL}/payment-methods`,
-            newPayment,
-            { withCredentials: true }
-        )
-
-        if (data.resultCode === '200') {
-            alert('결제수단 등록 성공')
-            await fetchPaymentMethods()
-            setIsPaymentModal(false)
-            resetPaymentForm()
-        } else {
-            alert(`등록 실패: ${data.msg}`)
-        }
-        } catch (error) {
-        console.error(error)
-        alert('결제수단 등록 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleDeletePayment = async (paymentId) => {
+    const handleDeleteAddress = async (addressId: number) => {
         if (!confirm('정말 삭제하시겠습니까?')) return
 
         try {
-        await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
-            withCredentials: true,
-        })
-        alert('삭제 성공')
-        fetchPaymentMethods()
+            const { data } = await axios.delete(`${API_BASE_URL}/addresses/${addressId}`, {
+                withCredentials: true,
+            })
+
+            if (data.resultCode === '200') {
+                alert('배송지 삭제 성공')
+                setAddresses((prev) => prev.filter((addr) => addr.userAddressId !== addressId))
+            } else {
+                alert(`삭제 실패: ${data.msg}`)
+            }
         } catch (error) {
-        console.error(error)
-        alert('삭제 중 오류가 발생했습니다.')
+            console.error('배송지 삭제 실패:', error)
+            alert('배송지 삭제 중 오류가 발생했습니다.')
         }
     }
 
-    const handleSetDefault = async (paymentId) => {
-        try {
-        const { data } = await axios.patch(
-            `${API_BASE_URL}/payment-methods/${paymentId}/default`,
-            {},
-            { withCredentials: true }
-        )
-        if (data.resultCode === '200') {
-            fetchPaymentMethods()
-        } else {
-            alert(`실패: ${data.msg}`)
+    // =============== 결제수단 ===============
+    const handleSavePayment = async () => {
+        if (paymentType === 'BANK' && (!bankName || !accountNumber)) {
+            alert('은행명과 계좌번호를 입력해주세요.')
+            return
         }
+
+        if (paymentType === 'CARD' && (!cardCompany || !cardNumber)) {
+            alert('카드사와 카드번호를 입력해주세요.')
+            return
+        }
+
+        const newPayment = {
+            type: paymentType,
+            bankName,
+            accountNumber,
+            cardCompany,
+            cardNumber,
+            defaultPayment,
+        }
+
+        try {
+            const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, newPayment, { withCredentials: true })
+
+            if (data.resultCode === '200') {
+                alert('결제수단 등록 성공')
+                await fetchPaymentMethods()
+                setIsPaymentModal(false)
+                resetPaymentForm()
+            } else {
+                alert(`등록 실패: ${data.msg}`)
+            }
         } catch (error) {
-        console.error(error)
-        alert('기본 결제수단 설정 중 오류가 발생했습니다.')
+            console.error('결제수단 등록 실패:', error)
+            alert('결제수단 등록 중 오류가 발생했습니다.')
         }
     }
 
-    // ------------------- 팔로우 -------------------
-    const handleFollow = async (studioId: number) => {
+    const handleDeletePayment = async (paymentId: number) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return
+
         try {
-            const { data } = await axios.post(
-                `${API_BASE_URL}/follow`,
-                { studioId },
-                { withCredentials: true }
+            await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
+                withCredentials: true,
+            })
+            alert('삭제 성공')
+            await fetchPaymentMethods()
+        } catch (error) {
+            console.error('결제수단 삭제 실패:', error)
+            alert('삭제 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleSetDefault = async (paymentId: number) => {
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/payment-methods/${paymentId}/default`,
+                {},
+                { withCredentials: true },
             )
 
             if (data.resultCode === '200') {
+                await fetchPaymentMethods()
+            } else {
+                alert(`실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error('기본 결제수단 설정 실패:', error)
+            alert('기본 결제수단 설정 중 오류가 발생했습니다.')
+        }
+    }
+
+    // =============== 리뷰 ===============
+    const handleEditClick = (review: any) => {
+        setEditReview(review)
+        setEditReviewContent(review.content)
+        setEditReviewRating(review.rating)
+        setIsEditReviewModal(true)
+    }
+
+    const handleDeleteClick = (review: any) => {
+        setReviewToDelete(review)
+        setIsDeleteReviewModal(true)
+    }
+
+    const handleCloseModal = () => {
+        setIsEditReviewModal(false)
+        setIsDeleteReviewModal(false)
+        setEditReview(null)
+        setReviewToDelete(null)
+        setEditReviewContent('')
+        setEditReviewRating(0)
+    }
+
+    const handleSaveEdit = async () => {
+        if (!editReview) return
+
+        try {
+            const { data } = await axios.patch(
+                `http://localhost:8090/api/v1/reviews/${editReview.reviewId}`,
+                { rating: editReviewRating, content: editReviewContent },
+                { withCredentials: true },
+            )
+
+            if (data.resultCode === '200') {
+                alert('리뷰가 수정되었습니다.')
+                await fetchMyReviews()
+                handleCloseModal()
+            } else {
+                alert(`수정 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error('리뷰 수정 실패:', error)
+            alert('리뷰 수정 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleDeleteReview = async () => {
+        if (!reviewToDelete) return
+
+        try {
+            const { data } = await axios.delete(`http://localhost:8090/api/v1/reviews/${reviewToDelete.reviewId}`, {
+                withCredentials: true,
+            })
+
+            if (data.resultCode === '200') {
+                alert('리뷰가 삭제되었습니다.')
+                await fetchMyReviews()
+                handleCloseModal()
+            } else {
+                alert(`삭제 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error('리뷰 삭제 실패:', error)
+            alert('리뷰 삭제 중 오류가 발생했습니다.')
+        }
+    }
+
+    // =============== 팔로우 ===============
+    const handleFollow = async (studioId: number) => {
+        try {
+            const { data } = await axios.post(`${API_BASE_URL}/follow`, { studioId }, { withCredentials: true })
+
+            if (data.resultCode === '200') {
                 alert('팔로우 성공')
-                fetchFollowList(userData.id)
+                await fetchFollowList(userData.id)
             } else {
                 alert(`팔로우 실패: ${data.msg}`)
             }
@@ -603,12 +675,12 @@ export default function MyPage() {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/follow`, {
                 params: { studioId },
-                withCredentials: true
+                withCredentials: true,
             })
 
             if (data.resultCode === '200') {
                 alert('언팔로우 성공')
-                fetchFollowList(userData.id)
+                await fetchFollowList(userData.id)
             } else {
                 alert(`언팔로우 실패: ${data.msg}`)
             }
@@ -618,57 +690,106 @@ export default function MyPage() {
         }
     }
 
-    const checkFollowing = async (studioId: number) => {
+    const handleRemoveWish = async (wishlistId: number) => {
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/follow/check`, {
-                params: { studioId },
-                withCredentials: true
+            const { data } = await axios.delete(`${API_BASE_URL}/wishlist/${wishlistId}`, {
+                withCredentials: true,
             })
-            return data.data // true or false
-        } catch (error) {
-            console.error('팔로우 여부 확인 실패:', error)
-            return false
-        }
-    }
-
-    // ------------------- 비밀번호 인증 -------------------
-    const handleVerifyPassword = async () => {
-        if (!passwordInput) return alert('비밀번호를 입력해주세요.')
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/me/verify-password`, {
-                userId: userData.id,
-                password: passwordInput,
-            }, { withCredentials: true })
 
             if (data.resultCode === '200') {
-                setIsAuthenticated(true)
-                alert('비밀번호 인증 완료. 정보 수정을 진행할 수 있습니다.')
+                alert('위시리스트에서 삭제되었습니다.')
+                await fetchWishList(userData.id)
             } else {
-                alert('비밀번호가 올바르지 않습니다.')
+                alert(`삭제 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error('비밀번호 인증 실패:', error)
-            alert('인증 중 오류가 발생했습니다.')
+            console.error('위시리스트 삭제 실패:', error)
+            alert('삭제 중 오류가 발생했습니다.')
         }
     }
 
-    // ------------------- 로딩 / 로그인 체크 -------------------
-    if (loading) return <div>로딩중...</div>
-    if (!userData)
-        return (
-            <div>
-                로그인이 필요합니다. <button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>
-            </div>
-        )
+    // =============== 장바구니 ===============
+    const handleAddToCart = async (productId: number, quantity: number = 1) => {
+        try {
+            const request = { productId, quantity }
+            const { data } = await axios.post(`${API_BASE_URL}/cart`, request, {withCredentials: true,})
+            console.log('장바구니 담기 성공:', data);
 
-    // ------------------- 클릭 시 수정 취소 -------------------
+            setCart((prev) => [...prev, data.data]);
+
+            alert('장바구니에 담겼습니다!');
+        } catch (error) {
+            console.error('장바구니 담기 실패:', error);
+            alert('장바구니 담기에 실패했습니다.');
+        }
+    }
+
+    const handleUpdateCart = async (cartId: number, quantity: number) => {
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/cart/${cartId}?quantity=${quantity}`,
+                {},
+                { withCredentials: true }
+            )
+
+            console.log('수량 수정 성공:', data)
+
+            setCart((prev) =>
+                prev.map((item) =>
+                    item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item
+                )
+            )
+        } catch (error) {
+            console.error('장바구니 수량 수정 실패:', error)
+            alert('수량 수정에 실패했습니다.')
+        }
+    }
+
+    const handleDeleteCart = async (cartId: number) => {
+        try {
+            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
+
+            console.log('삭제 성공:', data)
+
+            setCart((prev) => prev.filter((item) => item.cartId !== cartId))
+        } catch (error) {
+            console.error('장바구니 삭제 실패:', error)
+            alert('삭제에 실패했습니다.')
+        }
+    }
+
+    // =============== UI ===============
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
         setEditMode({})
         setTempData({ ...userData })
     }
 
-    /** ------------------- 렌더링 ------------------- */
+    const handleStatusClick = (status: string) => {
+        setSelectedStatus(status)
+        setIsStatusModal(true)
+    }
+
+    const handleOrderClick = (order: any) => {
+        setSelectedOrder(order)
+        setIsOrderModal(true)
+    }
+
+    // =============== 렌더링 조건 ===============
+    if (loading) {
+        return <div>로딩중...</div>
+    }
+
+    if (!userData) {
+        return (
+            <div>
+                로그인이 필요합니다.
+                <button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>
+            </div>
+        )
+    }
+
+    // =============== 메인 렌더링 ===============
     return (
         <div className="mypage-container">
             {/* 왼쪽 사이드바 */}
@@ -685,6 +806,14 @@ export default function MyPage() {
                                     onClick={() => handleTabClick('orders')}
                                 >
                                     주문배송조회
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    className={`nav-btn ${activeTab === 'cart' ? 'active' : ''}`}
+                                    onClick={() => handleTabClick('cart')}
+                                >
+                                    장바구니
                                 </button>
                             </li>
                             <li>
@@ -727,8 +856,8 @@ export default function MyPage() {
                             </li>
                             <li>
                                 <button
-                                    className={`nav-btn ${activeTab === 'wishlist' ? 'active' : ''}`}
-                                    onClick={() => handleTabClick('wishlist')}
+                                    className={`nav-btn ${activeTab === 'like' ? 'active' : ''}`}
+                                    onClick={() => handleTabClick('like')}
                                 >
                                     나의 좋아요
                                 </button>
@@ -739,10 +868,18 @@ export default function MyPage() {
                     <div className="nav-section">
                         <h2>고객센터</h2>
                         <ul>
-                            <li>상품 문의 내역</li>
+                            <li>
+                                <button
+                                    className={`nav-btn ${activeTab === 'qna' ? 'active' : ''}`}
+                                    onClick={() => handleTabClick('qna')}
+                                >
+                                    문의 내역
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </nav>
+                <a href="#" className='link-btn'>공방 페이지로 이동</a>
             </div>
 
             {/* 오른쪽 콘텐츠 */}
@@ -774,100 +911,17 @@ export default function MyPage() {
                     {activeTab === 'orders' && (
                         <div className="tab-content">
                             <div className="delivery-status-summary">
-                                {['배송 준비중', '배송 중', '배송 완료'].map((status) => (
-                                    <div
-                                        key={status}
-                                        className="status-card"
-                                        onClick={() => {
-                                            setSelectedStatus(status);
-                                            setIsStatusModal(true);
-                                        }}
-                                    >
+                                {['배송준비중', '배송중', '배송완료'].map((status) => (
+                                    <div key={status} className="status-card" onClick={() => handleStatusClick(status)}>
                                         <p>{status}</p>
-                                        <p>{orders.filter((o) => o.deliveryStatus === status).length}</p>
+                                        <p>{orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}</p>
                                     </div>
                                 ))}
                             </div>
-
-                            {isStatusModal && (
-                                <div className="orders-modal" onClick={() => setIsStatusModal(false)}>
-                                    <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
-                                        <button className="orders-modal-close" onClick={() => setIsStatusModal(false)}>&times;</button>
-                                        <h2>{selectedStatus}</h2>
-
-                                        {orders.filter((o) => o.deliveryStatus === selectedStatus).length === 0 ? (
-                                            <p>주문 내역이 없습니다.</p>
-                                        ) : (
-                                            orders
-                                                .filter((o) => o.deliveryStatus === selectedStatus)
-                                                .map((order) => (
-                                                    <div key={order.orderId} className="order-card">
-                                                        <div className="order-header">
-                                                            <p>{order.createdDate} | 주문번호: {order.orderCord}</p>
-                                                            <span>{order.deliveryStatus}</span>
-                                                        </div>
-
-                                                        {order.items.map((item, idx) => (
-                                                            <div key={idx} className="order-item">
-                                                                <p>{item.productName}</p>
-                                                                <p>{item.price?.toLocaleString()}원 / {item.quantity}개</p>
-                                                            </div>
-                                                        ))}
-
-                                                        <div className="order-footer">
-                                                            {order.trackingNumber && <p>운송장: {order.trackingNumber}</p>}
-                                                            <p>총 {order.totalPrice?.toLocaleString()}원</p>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
 
                             <div className="section-header">
                                 <h2>최근 주문</h2>
-                                <button className="btn-primary" onClick={() => setIsOrdersModal(true)}>
-                                    더보기 <ChevronRight size={16} />
-                                </button>
                             </div>
-
-                            <div className="recent-orders">
-                                {orders.slice(0, 3).map((order) => (
-                                <div
-                                    key={order.orderId}
-                                    className="order-card"
-                                    onClick={() => {
-                                    setSelectedOrder(order);
-                                    setIsOrderModal(true);
-                                    }}
-                                >
-                                    <p>{order.createdDate}</p>
-                                    <p>주문번호: {order.orderCord}</p>
-                                    <p>총 {order.totalPrice}원</p>
-                                </div>
-                                ))}
-                            </div>
-
-                            {isOrdersModal && (
-                                <div
-                                    className="orders-modal"
-                                    onClick={() => setIsOrdersModal(false)} // 바깥 클릭 시 닫힘
-                                >
-                                    <div
-                                        className="orders-modal-content"
-                                        onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
-                                    >
-                                        <button className="orders-modal-close" onClick={() => setIsOrdersModal(false)}>
-                                            &times;
-                                        </button>
-
-                                        <h2 style={{ marginBottom: '10px' }}>상세주문 확인</h2>
-                                        <p>상세주문 폼</p>
-                                    </div>
-                                </div>
-                            )}
 
                             {orders.length === 0 ? (
                                 <div className="empty-state">주문 내역이 없습니다.</div>
@@ -875,7 +929,6 @@ export default function MyPage() {
                                 <div className="orders-list">
                                     {orders.map((order) => (
                                         <div key={order.orderId} className="order-card">
-                                            {/* 주문 헤더 */}
                                             <div className="order-header">
                                                 <div>
                                                     <p className="order-date">{order.createdDate}</p>
@@ -884,7 +937,6 @@ export default function MyPage() {
                                                 <span className="order-status">{order.deliveryStatus}</span>
                                             </div>
 
-                                            {/* 주문 상품 목록 */}
                                             {order.items && order.items.length > 0 ? (
                                                 order.items.map((item, idx) => (
                                                     <div key={idx} className="order-item">
@@ -898,57 +950,80 @@ export default function MyPage() {
                                                 <div className="order-item-empty">상품 정보가 없습니다.</div>
                                             )}
 
-                                            {/* 주문 푸터 */}
                                             <div className="order-footer">
                                                 {order.trackingNumber && (
                                                     <p className="order-tracking">운송장: {order.trackingNumber}</p>
                                                 )}
-                                                <p className="order-total">
-                                                    총 {order.totalPrice?.toLocaleString()}원
-                                                </p>
+                                                <p className="order-total">총 {order.totalPrice?.toLocaleString()}원</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    )}
 
-                            {isOrderModal && selectedOrder && (
-                                <div className="modal-backdrop" onClick={() => setIsOrderModal(false)}>
-                                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => setIsOrderModal(false)}>닫기</button>
-                                    <h2>주문 상세</h2>
-                                    {selectedOrder.items.map((item, idx) => (
-                                    <div key={idx} className="order-item">
-                                        <p>{item.productName}</p>
-                                        <p>{item.price}원 × {item.quantity}</p>
-                                    </div>
+                    {/* 장바구니 */}
+                    {activeTab === 'cart' && (
+                        <div className='tab-content'>
+                            <div className='section-header'>
+                                <h2>장바구니</h2>
+                            </div>
+
+                            {cart.length === 0 ? (
+                                    <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
+                            ) : (
+                                <div className="cart-list">
+                                    {cart.map((item) => (
+                                        <div key={item.cartId} className="cart-product">
+                                            <p>{item.productName}</p>
+                                            <p>{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                            
+                                            <div className="quantity-control">
+                                            <button className="btn-primary"
+                                                onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
+                                                disabled={item.quantity <= 1}
+                                            >
+                                                -
+                                            </button>
+                                            <span>{item.quantity}개</span>
+                                            <button className="btn-primary"
+                                                onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
+                                            >
+                                                +
+                                            </button>
+                                            <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
+                                            </div>
+                                        </div>
                                     ))}
-                                    <p>총 {selectedOrder.totalPrice}원</p>
-                                </div>
                                 </div>
                             )}
                         </div>
                     )}
+                    {/* 장바구니 담기 버튼 */}
+                    {/* <button onClick={() => handleAddToCart(item.productId, 1)}>
+                        장바구니 담기
+                    </button> */}
 
                     {/* 회원정보수정 */}
                     {activeTab === 'profile' && (
                         <div className="tab-content">
-                            {/* 비밀번호 인증 */}
                             {!isAuthenticated ? (
                                 <div className="auth-banner">
                                     <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
-                                    <input
-                                        type="password"
-                                        placeholder="현재 비밀번호 입력"
-                                        value={passwordInput}
-                                        onChange={(e) => setPasswordInput(e.target.value)}
-                                    />
-                                    <button onClick={handleVerifyPassword}>인증 확인</button>
+                                    <div className='auth-banner-input'>
+                                        <input
+                                            type="password"
+                                            placeholder="현재 비밀번호 입력"
+                                            value={passwordInput}
+                                            onChange={(e) => setPasswordInput(e.target.value)}
+                                        />
+                                        <button onClick={handleVerifyPassword}>인증 확인</button>
+                                    </div>
+                                    
                                 </div>
                             ) : (
-                                <div className="auth-banner success">
-                                    인증 완료
-                                </div>
+                                <div className="auth-banner success">인증 완료</div>
                             )}
 
                             <div className="section-header">
@@ -972,7 +1047,7 @@ export default function MyPage() {
                             <div>
                                 <div className="form-group">
                                     <label>이름</label>
-                                    <p>{userData.fullName}</p> {/* 읽기 전용 */}
+                                    <p>{userData.fullName}</p>
                                 </div>
 
                                 <div className="form-group">
@@ -1066,92 +1141,6 @@ export default function MyPage() {
                                     + 새 배송지 추가
                                 </button>
                             </div>
-                            {isAddressModal && (
-                                <div
-                                    className="address-modal"
-                                    onClick={() => setIsAddressModal(false)} // 바깥 클릭 시 닫힘
-                                >
-                                    <div
-                                        className="address-modal-content"
-                                        onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫히지 않게
-                                    >
-                                        <button
-                                            className="address-modal-close"
-                                            onClick={() => setIsAddressModal(false)}
-                                        >
-                                            &times;
-                                        </button>
-
-                                        <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
-                                        <input
-                                            type="text"
-                                            placeholder="수령인 이름"
-                                            value={newAddress.recipientName}
-                                            onChange={(e) =>
-                                                setNewAddress({ ...newAddress, recipientName: e.target.value })
-                                            }
-                                        />
-                                        <br />
-
-                                        <input
-                                            type="text"
-                                            id="sample6_postcode"
-                                            placeholder="우편번호"
-                                            value={newAddress.zipcode}
-                                            readOnly
-                                        />
-
-                                        {/* 여기서 onClick을 React 방식으로 */}
-                                        <input
-                                            type="button"
-                                            value="우편번호 찾기"
-                                            onClick={sample6_execDaumPostcode}
-                                            className="btn-primary"
-                                        />
-                                        <br />
-
-                                        <input
-                                            type="text"
-                                            id="sample6_address"
-                                            placeholder="주소"
-                                            value={newAddress.baseAddress}
-                                            readOnly
-                                        />
-                                        <input
-                                            type="text"
-                                            id="sample6_extraAddress"
-                                            placeholder="참고항목"
-                                            value={newAddress.extraAddress}
-                                            readOnly
-                                        />
-                                        <input
-                                            type="text"
-                                            id="sample6_detailAddress"
-                                            placeholder="상세주소"
-                                            value={newAddress.detailAddress}
-                                            onChange={(e) =>
-                                                setNewAddress({ ...newAddress, detailAddress: e.target.value })
-                                            }
-                                        />
-                                        <br />
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                checked={newAddress.isDefault}
-                                                onChange={(e) =>
-                                                    setNewAddress({ ...newAddress, isDefault: e.target.checked })
-                                                }
-                                            />
-                                            기본 배송지로 설정
-                                        </label>
-                                        <br />
-
-                                        <button className="btn-primary" onClick={handleSaveAddress}>
-                                            저장
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
 
                             {addresses.length === 0 ? (
                                 <div className="empty-state">등록된 배송지가 없습니다.</div>
@@ -1161,9 +1150,7 @@ export default function MyPage() {
                                         <div key={addr.userAddressId} className="address-card">
                                             <div className="card-header">
                                                 <div className="card-title">
-                                                    <span>
-                                                        {addr.recipientName}
-                                                    </span>
+                                                    <span>{addr.recipientName}</span>
                                                     {addr.isDefault && <span className="badge">기본배송지</span>}
                                                 </div>
                                                 <div className="card-actions">
@@ -1193,81 +1180,6 @@ export default function MyPage() {
                                     ))}
                                 </div>
                             )}
-
-                            {editAddressModal && editAddressData && (
-                                <div className="address-modal" onClick={() => setEditAddressModal(false)}>
-                                    <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
-                                        <button
-                                            className="address-modal-close"
-                                            onClick={() => setEditAddressModal(false)}
-                                        >
-                                            &times;
-                                        </button>
-
-                                        <h2>배송지 수정</h2>
-
-                                        <input
-                                            type="text"
-                                            placeholder="수령인 이름"
-                                            value={editAddressData.recipientName}
-                                            onChange={(e) =>
-                                                setEditAddressData({
-                                                    ...editAddressData,
-                                                    recipientName: e.target.value,
-                                                })
-                                            }
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="우편번호"
-                                            value={editAddressData.zipcode}
-                                            readOnly
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="주소"
-                                            value={editAddressData.baseAddress}
-                                            readOnly
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="참고항목"
-                                            value={editAddressData.extraAddress}
-                                            onChange={(e) =>
-                                                setEditAddressData({ ...editAddressData, extraAddress: e.target.value })
-                                            }
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="상세주소"
-                                            value={editAddressData.detailAddress}
-                                            onChange={(e) =>
-                                                setEditAddressData({
-                                                    ...editAddressData,
-                                                    detailAddress: e.target.value,
-                                                })
-                                            }
-                                        />
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                checked={editAddressData.isDefault}
-                                                onChange={(e) =>
-                                                    setEditAddressData({
-                                                        ...editAddressData,
-                                                        isDefault: e.target.checked,
-                                                    })
-                                                }
-                                            />
-                                            기본 배송지로 설정
-                                        </label>
-
-                                        <button className="btn-primary" onClick={handleUpdateAddress}>
-                                            저장
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     )}
 
@@ -1281,122 +1193,6 @@ export default function MyPage() {
                                 </button>
                             </div>
 
-                            {/* 결제수단 추가 모달 */}
-                            {isPaymentModal && (
-                                <div
-                                    className="payment-modal"
-                                    onClick={() => setIsPaymentModal(false)}
-                                >
-                                    <div
-                                        className="payment-modal-content"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <button
-                                            className="payment-modal-close"
-                                            onClick={() => setIsPaymentModal(false)}
-                                        >
-                                            &times;
-                                        </button>
-
-                                        <h2>새 결제수단 추가</h2>
-
-                                        {/* 폼 */}
-                                        <form
-                                            onSubmit={async (e) => {
-                                                e.preventDefault();
-                                                await handleSavePayment();
-                                            }}
-                                            className="space-y-4"
-                                        >
-                                            {/* 결제 타입 */}
-                                            <div>
-                                                <label>결제수단 종류</label>
-                                                <select
-                                                    value={paymentType}
-                                                    onChange={(e) => setPaymentType(e.target.value)}
-                                                >
-                                                    <option value="BANK">은행 계좌</option>
-                                                    <option value="CARD">신용/체크카드</option>
-                                                </select>
-                                            </div>
-
-                                            {/* 은행 계좌 */}
-                                            {paymentType === 'BANK' && (
-                                                <>
-                                                    <div>
-                                                        <label>은행명</label>
-                                                        <input
-                                                            type="text"
-                                                            value={bankName}
-                                                            onChange={(e) => setBankName(e.target.value)}
-                                                            placeholder="예: 신한은행"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label>계좌번호</label>
-                                                        <input
-                                                            type="text"
-                                                            value={accountNumber}
-                                                            onChange={(e) => setAccountNumber(e.target.value)}
-                                                            placeholder="123-4567-8901-23"
-                                                        />
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            {/* 카드 */}
-                                            {paymentType === 'CARD' && (
-                                                <>
-                                                    <div>
-                                                        <label>카드사</label>
-                                                        <input
-                                                            type="text"
-                                                            value={cardCompany}
-                                                            onChange={(e) => setCardCompany(e.target.value)}
-                                                            placeholder="예: 현대카드"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label>카드번호</label>
-                                                        <input
-                                                            type="text"
-                                                            value={cardNumber}
-                                                            onChange={(e) => setCardNumber(e.target.value)}
-                                                            placeholder="1234-5678-9012-3456"
-                                                        />
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            {/* 기본 결제수단 */}
-                                            <div>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={defaultPayment}
-                                                    onChange={(e) => setDefaultPayment(e.target.checked)}
-                                                />
-                                                <span>기본 결제수단으로 설정</span>
-                                            </div>
-
-                                            {/* 버튼 */}
-                                            <div className="modal-buttons">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setIsPaymentModal(false)}
-                                                    className="btn-secondary"
-                                                >
-                                                    취소
-                                                </button>
-                                                <button type="submit" className="btn-primary">
-                                                    등록
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* 결제수단 목록 */}
                             {paymentMethods.length === 0 ? (
                                 <div className="empty-state">등록된 결제수단이 없습니다.</div>
                             ) : (
@@ -1439,8 +1235,8 @@ export default function MyPage() {
                         </div>
                     )}
 
-                    {/* 나의 좋아요, 팔로우 */}
-                    {activeTab === 'wishlist' && (
+                    {/* 나의 좋아요 */}
+                    {activeTab === 'like' && (
                         <div className="tab-content">
                             <div className="section-header">
                                 <h2>나의 좋아요</h2>
@@ -1472,7 +1268,7 @@ export default function MyPage() {
                                                     <div className="wishlist-image"></div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
-                                                        <p className="price">{item.price?.toLocaleString()}원</p>
+                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
                                                         <button
                                                             className="link-btn delete"
                                                             onClick={() => handleRemoveWish(item.wishlistId)}
@@ -1488,10 +1284,9 @@ export default function MyPage() {
                             )}
 
                             {activeSubTab === 'follow' && (
-                                <div className="tab-content">
-                                    <h2>내가 팔로우한 작가</h2>
+                                <div className="subtab-content">
                                     {followList.length === 0 ? (
-                                        <p>팔로우한 작가가 없습니다.</p>
+                                        <div className="empty-state">팔로우한 작가가 없습니다.</div>
                                     ) : (
                                         <ul className="follow-list">
                                             {followList.map((follow) => (
@@ -1523,7 +1318,9 @@ export default function MyPage() {
                                     {myReviews.map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
-                                                <span className="my-review-product-name">상품 ID: {review.productId}</span>
+                                                <span className="my-review-product-name">
+                                                    상품 ID: {review.productId}
+                                                </span>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
                                             </div>
 
@@ -1531,10 +1328,55 @@ export default function MyPage() {
 
                                             <div className="my-review-footer">
                                                 <span>작성일: {review.createdDate}</span>
-                                                {review.modifiedDate && (
-                                                    <span> · 수정일: {review.modifiedDate}</span>
-                                                )}
+                                                {review.modifiedDate && <span> · 수정일: {review.modifiedDate}</span>}
                                                 <span className="my-review-like-count">👍 {review.reviewLike}</span>
+                                                <button
+                                                    onClick={() => handleEditClick(review)}
+                                                    className="link-btn"
+                                                >
+                                                    수정
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(review)}
+                                                    className="link-btn delete"
+                                                >
+                                                    삭제
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 문의 내역 */}
+                    {activeTab === 'qna' && (
+                        <div className="tab-content">
+                            <div className="section-header">
+                                <h2>문의 내역</h2>
+                            </div>
+
+                            {qna.length === 0 ? (
+                                <div className="empty-state">작성한 문의가 없습니다.</div>
+                            ) : (
+                                <div className="qna-list">
+                                    {qna.map((qna) => (
+                                        <div key={qna.qnaId} className="qna-card">
+                                            <div className="qna-header">
+                                                <div className="qna-title">{qna.title}</div>
+                                            </div>
+
+                                            <div className="qna-content">{qna.content}</div>
+
+                                            <div className="qna-footer">
+                                                <span>작성일: {qna.createdDate}</span>
+                                                <button
+                                                    onClick={() => handleDeleteClick(qna)}
+                                                    className="link-btn delete"
+                                                >
+                                                    삭제
+                                                </button>
                                             </div>
                                         </div>
                                     ))}
@@ -1544,6 +1386,363 @@ export default function MyPage() {
                     )}
                 </div>
             </div>
+
+            {/* 배송 상태별 주문 모달 */}
+            {isStatusModal && (
+                <div className="orders-modal" onClick={() => setIsStatusModal(false)}>
+                    <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="orders-modal-close" onClick={() => setIsStatusModal(false)}>
+                            &times;
+                        </button>
+                        <h2>{selectedStatus}</h2>
+
+                        {orders.filter((o) => o.deliveryStatus === selectedStatus).length === 0 ? (
+                            <p>주문 내역이 없습니다.</p>
+                        ) : (
+                            orders
+                                .filter((o) => o.deliveryStatus === selectedStatus)
+                                .map((order) => (
+                                    <div key={order.orderId} className="order-card">
+                                        <div className="order-header">
+                                            <p>
+                                                {order.createdDate} | 주문번호: {order.orderCord}
+                                            </p>
+                                            <span>{order.deliveryStatus}</span>
+                                        </div>
+
+                                        {order.items.map((item, idx) => (
+                                            <div key={idx} className="order-item">
+                                                <p>{item.productName}</p>
+                                                <p>
+                                                    {item.price?.toLocaleString()}원 / {item.quantity}개
+                                                </p>
+                                            </div>
+                                        ))}
+
+                                        <div className="order-footer">
+                                            {order.trackingNumber && <p>운송장: {order.trackingNumber}</p>}
+                                            <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                        </div>
+                                    </div>
+                                ))
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* 전체 주문 모달 */}
+            {isOrdersModal && (
+                <div className="orders-modal" onClick={() => setIsOrdersModal(false)}>
+                    <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="orders-modal-close" onClick={() => setIsOrdersModal(false)}>
+                            &times;
+                        </button>
+                        <h2 style={{ marginBottom: '10px' }}>상세주문 확인</h2>
+                        <p>상세주문 폼</p>
+                    </div>
+                </div>
+            )}
+
+            {/* 주문 상세 모달 */}
+            {isOrderModal && selectedOrder && (
+                <div className="modal-backdrop" onClick={() => setIsOrderModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => setIsOrderModal(false)}>닫기</button>
+                        <h2>주문 상세</h2>
+                        {selectedOrder.items.map((item, idx) => (
+                            <div key={idx} className="order-item">
+                                <p>{item.productName}</p>
+                                <p>
+                                    {item.price}원 × {item.quantity}
+                                </p>
+                            </div>
+                        ))}
+                        <p>총 {selectedOrder.totalPrice}원</p>
+                    </div>
+                </div>
+            )}
+
+            {/* 배송지 추가 모달 */}
+            {isAddressModal && (
+                <div className="address-modal" onClick={() => setIsAddressModal(false)}>
+                    <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="address-modal-close" onClick={() => setIsAddressModal(false)}>
+                            &times;
+                        </button>
+
+                        <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
+                        <input
+                            type="text"
+                            placeholder="수령인 이름"
+                            value={newAddress.recipientName}
+                            onChange={(e) => setNewAddress({ ...newAddress, recipientName: e.target.value })}
+                        />
+                        <br />
+
+                        <input
+                            type="text"
+                            id="sample6_postcode"
+                            placeholder="우편번호"
+                            value={newAddress.zipcode}
+                            readOnly
+                        />
+                        <input
+                            type="button"
+                            value="우편번호 찾기"
+                            onClick={sample6_execDaumPostcode}
+                            className="btn-primary"
+                        />
+                        <br />
+
+                        <input
+                            type="text"
+                            id="sample6_address"
+                            placeholder="주소"
+                            value={newAddress.baseAddress}
+                            readOnly
+                        />
+                        <input
+                            type="text"
+                            id="sample6_extraAddress"
+                            placeholder="참고항목"
+                            value={newAddress.extraAddress}
+                            readOnly
+                        />
+                        <input
+                            type="text"
+                            id="sample6_detailAddress"
+                            placeholder="상세주소"
+                            value={newAddress.detailAddress}
+                            onChange={(e) => setNewAddress({ ...newAddress, detailAddress: e.target.value })}
+                        />
+                        <br />
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={newAddress.isDefault}
+                                onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
+                            />
+                            기본 배송지로 설정
+                        </label>
+                        <br />
+
+                        <button className="btn-primary" onClick={handleSaveAddress}>
+                            저장
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 배송지 수정 모달 */}
+            {editAddressModal && editAddressData && (
+                <div className="address-modal" onClick={() => setEditAddressModal(false)}>
+                    <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="address-modal-close" onClick={() => setEditAddressModal(false)}>
+                            &times;
+                        </button>
+
+                        <h2>배송지 수정</h2>
+
+                        <input
+                            type="text"
+                            placeholder="수령인 이름"
+                            value={editAddressData.recipientName}
+                            onChange={(e) =>
+                                setEditAddressData({
+                                    ...editAddressData,
+                                    recipientName: e.target.value,
+                                })
+                            }
+                        />
+                        <input type="text" placeholder="우편번호" value={editAddressData.zipcode} readOnly />
+                        <input type="text" placeholder="주소" value={editAddressData.baseAddress} readOnly />
+                        <input
+                            type="text"
+                            placeholder="참고항목"
+                            value={editAddressData.extraAddress}
+                            onChange={(e) => setEditAddressData({ ...editAddressData, extraAddress: e.target.value })}
+                        />
+                        <input
+                            type="text"
+                            placeholder="상세주소"
+                            value={editAddressData.detailAddress}
+                            onChange={(e) =>
+                                setEditAddressData({
+                                    ...editAddressData,
+                                    detailAddress: e.target.value,
+                                })
+                            }
+                        />
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={editAddressData.isDefault}
+                                onChange={(e) =>
+                                    setEditAddressData({
+                                        ...editAddressData,
+                                        isDefault: e.target.checked,
+                                    })
+                                }
+                            />
+                            기본 배송지로 설정
+                        </label>
+
+                        <button className="btn-primary" onClick={handleUpdateAddress}>
+                            저장
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 결제수단 추가 모달 */}
+            {isPaymentModal && (
+                <div className="payment-modal" onClick={() => setIsPaymentModal(false)}>
+                    <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="payment-modal-close" onClick={() => setIsPaymentModal(false)}>
+                            &times;
+                        </button>
+
+                        <h2>새 결제수단 추가</h2>
+
+                        <form
+                            onSubmit={async (e) => {
+                                e.preventDefault()
+                                await handleSavePayment()
+                            }}
+                            className="space-y-4"
+                        >
+                            <div>
+                                <label>결제수단 종류</label>
+                                <select value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
+                                    <option value="BANK">은행 계좌</option>
+                                    <option value="CARD">신용/체크카드</option>
+                                </select>
+                            </div>
+
+                            {paymentType === 'BANK' && (
+                                <>
+                                    <div>
+                                        <label>은행명</label>
+                                        <input
+                                            type="text"
+                                            value={bankName}
+                                            onChange={(e) => setBankName(e.target.value)}
+                                            placeholder="예: 신한은행"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label>계좌번호</label>
+                                        <input
+                                            type="text"
+                                            value={accountNumber}
+                                            onChange={(e) => setAccountNumber(e.target.value)}
+                                            placeholder="123-4567-8901-23"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {paymentType === 'CARD' && (
+                                <>
+                                    <div>
+                                        <label>카드사</label>
+                                        <input
+                                            type="text"
+                                            value={cardCompany}
+                                            onChange={(e) => setCardCompany(e.target.value)}
+                                            placeholder="예: 현대카드"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label>카드번호</label>
+                                        <input
+                                            type="text"
+                                            value={cardNumber}
+                                            onChange={(e) => setCardNumber(e.target.value)}
+                                            placeholder="1234-5678-9012-3456"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    checked={defaultPayment}
+                                    onChange={(e) => setDefaultPayment(e.target.checked)}
+                                />
+                                <span>기본 결제수단으로 설정</span>
+                            </div>
+
+                            <div className="modal-buttons">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPaymentModal(false)}
+                                    className="btn-secondary"
+                                >
+                                    취소
+                                </button>
+                                <button type="submit" className="btn-primary">
+                                    등록
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* 리뷰 수정 모달 */}
+            {isEditReviewModal && (
+                <div className="review-modal" onClick={() => setIsEditReviewModal(false)}>
+                    <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="review-modal-close" onClick={() => setIsEditReviewModal(false)}>
+                            &times;
+                        </button>
+
+                        <h2>리뷰 수정</h2>
+
+                        <label>별점:</label>
+                        <select
+                            value={editReviewRating}
+                            onChange={(e) => setEditReviewRating(Number(e.target.value))}
+                        >
+                            {[1, 2, 3, 4, 5].map((num) => (
+                                <option key={num} value={num}>
+                                    {num}
+                                </option>
+                            ))}
+                        </select><br />
+
+                        <label>리뷰 내용:</label>
+                        <textarea
+                            value={editReviewContent}
+                            onChange={(e) => setEditReviewContent(e.target.value)}
+                        /> <br />
+
+                        <button className="btn-primary" onClick={handleSaveEdit}>
+                            저장
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 리뷰 삭제 모달 */}
+            {isDeleteReviewModal && (
+                <div className="review-modal" onClick={() => setIsDeleteReviewModal(false)}>
+                    <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="review-modal-close" onClick={() => setIsDeleteReviewModal(false)}>
+                            &times;
+                        </button>
+
+                        <h2>리뷰 삭제</h2>
+                        <p>정말로 이 리뷰를 삭제하시겠습니까?</p>
+
+                        <button className="btn-primary" onClick={handleDeleteReview}>
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

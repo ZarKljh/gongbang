@@ -27,4 +27,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     // 상품 수량
     @Query("SELECT COALESCE(SUM(c.quantity), 0) FROM Cart c WHERE c.siteUser = :siteUser")
     long sumQuantityBySiteUser(@Param("siteUser") SiteUser siteUser);
+
+    @Query("SELECT c FROM Cart c JOIN FETCH c.product p WHERE c.siteUser.id = :userId")
+    List<Cart> findByUserIdWithProduct(@Param("userId") Long userId);
 }

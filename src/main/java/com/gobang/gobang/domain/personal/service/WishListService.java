@@ -98,7 +98,8 @@ public class WishListService {
                 .wishlistId(wishList.getWishlistId())
                 .userId(wishList.getSiteUser().getId())
                 .productId(wishList.getProduct().getId())
-                .productName("상품명") // TODO: Product 엔티티에서 가져오기
+                .productName(wishList.getProduct().getName())
+                .price(wishList.getProduct().getBasePrice())
                 .createdAt(wishList.getCreatedAt())
                 .build();
     }
