@@ -17,13 +17,19 @@ import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
 import com.gobang.gobang.global.rq.Rq;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/auth")
@@ -91,7 +97,6 @@ public class SiteUserController {
         if(siteUser == null){
             throw new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다.");
         }
-
         // 실제 사용자 role 확인
         RoleType actualRole = siteUser.getRole();
         if (actualRole != RoleType.SELLER && actualRole != RoleType.ADMIN) {
@@ -112,7 +117,6 @@ public class SiteUserController {
                 new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
         );
     }
-
     @GetMapping("/me")
     public RsData<LoginUserResponse> me() {
         //System.out.println("me 시작");

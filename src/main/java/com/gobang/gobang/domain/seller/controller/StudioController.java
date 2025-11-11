@@ -74,7 +74,6 @@ public class StudioController {
 
 
 
-
     @PostMapping("/add")
     public RsData<Map<String, Object>> studioAdd(@Valid @RequestBody StudioAddRequest studioAddRequest){
 

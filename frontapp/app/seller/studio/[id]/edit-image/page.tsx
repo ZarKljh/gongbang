@@ -9,6 +9,7 @@ export default function EditStudioImage() {
 
     /* null>(null) 상태 초기값은 (null) 타입은 File 또는 null*/
     /* <File | null > 파일이 있을 수도 있고 null일수도 있다는 의미 */
+
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)

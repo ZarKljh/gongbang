@@ -34,6 +34,10 @@ public class Inquiry {
     @Column(nullable = false, length = 32)
     private InquiryType type;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn( name = "writer_id", nullable = true)
+    private SiteUser writer;
+
 
 
     @Column(nullable = false)
@@ -41,6 +45,12 @@ public class Inquiry {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Lob
+    @Column
+    private String answerContent;
+
+    private LocalDateTime answeredAt;
 
     @PrePersist
     void onCreate() {

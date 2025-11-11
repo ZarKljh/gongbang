@@ -4,16 +4,16 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.inquiry.entity.Inquiry;
 import com.gobang.gobang.domain.inquiry.model.InquiryType;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     long countByAnsweredFalse();
 
@@ -28,6 +28,7 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     @Query("update Inquiry i set i.answered = true where i.answered = false and i.type = :type")
     int markAllAnsweredByType(@Param("type") InquiryType type);
 
+    List<Inquiry> findByWriterId(Long writerId);
 
     List<Inquiry> findAllByUser(SiteUser user);
 

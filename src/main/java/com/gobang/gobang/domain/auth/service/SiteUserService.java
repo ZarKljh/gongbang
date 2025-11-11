@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -120,7 +121,10 @@ public class SiteUserService {
 
         long id = (int) payloadBody.get("id");
         String userName = (String) payloadBody.get("userName");
+        String roleName = (String) payloadBody.get("Role");
         List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + roleName)); // => "ROLE_ADMIN"
+
 
         return new SecurityUser(id, userName, "", authorities);
 
