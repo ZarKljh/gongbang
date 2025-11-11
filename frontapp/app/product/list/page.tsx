@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import api from '@/app/utils/api'
 import styles from './Cards.module.css'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
@@ -216,7 +217,7 @@ export default function Product() {
             api.get(`category/${catId}/min`)
                 .then((res) => {
                     const minSubId = res.data?.data
-                    console.log('📦 서버에서 받은 minSubId:', minSubId)
+
                     onClickSubCategory(catId, minSubId)
                 })
                 .catch((err) => {
@@ -394,13 +395,21 @@ export default function Product() {
                         {products.map((p) => (
                             <li className={styles.card} key={p.id}>
                                 <article>
-                                    <a href="#" className={styles.cardLink} aria-label="카드 1 자세히 보기">
+                                    <Link
+                                        href={{
+                                            pathname: '/product/list/detail',
+                                            query: { productId: p.id },
+                                        }}
+                                        className={styles.cardLink}
+                                        aria-label="카드 1 자세히 보기"
+                                    >
                                         <figure className={styles.cardMedia}>
                                             <img alt="카드 1 대표 이미지" loading="lazy" />
                                         </figure>
                                         <h3 className={styles.cardTitle}>{p.name}</h3>
                                         <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
-                                    </a>
+                                    </Link>
+
                                     <footer className={styles.cardActions}>
                                         <a href="#" className={styles.btnRead}>
                                             자세히
@@ -415,11 +424,3 @@ export default function Product() {
         </>
     )
 }
-
-// {inputData.inputType === "radio" && (
-//   <input type="radio" name="optionGroup" value={o.id} />
-// )}
-// {inputData.inputType === "checkbox" && (
-//   <input type="checkbox" name="optionGroup" value={o.id} />
-// )}
-// {inputData.inputType === "text" && <input type="text" placeholder={o.label} />}
