@@ -23,7 +23,7 @@ export default function ClientNav() {
 
     // 폼 상태
     const [form, setForm] = useState({
-        type: 'OTHER' as 'ACCOUNT' | 'PAYMENT' | 'CONTENT' | 'BUG' | 'FEATURE' | 'PARTNERSHIP' | 'OTHER',
+        type: 'OTHER' as 'ACCOUNT' | 'PAYMENT' | 'CONTENT' | 'BUG' | 'FEATURE' | 'BUSINESS' | 'OTHER',
         title: '',
         content: '',
     })
@@ -183,7 +183,7 @@ export default function ClientNav() {
                                 <option value="CONTENT">콘텐츠(노출/삭제/저작권)</option>
                                 <option value="BUG">오류 / 오작동</option>
                                 <option value="FEATURE">기능요청 / 개선제안</option>
-                                <option value="PARTNERSHIP">제휴 / 비즈니스</option>
+                                <option value="BUSINESS">제휴 / 비즈니스</option>
                                 <option value="OTHER">기타</option>
                             </select>
                         </div>

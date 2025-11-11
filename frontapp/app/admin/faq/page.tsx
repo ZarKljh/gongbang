@@ -76,7 +76,7 @@ export default function AdminFaqPage() {
         if (q.trim()) params.q = q.trim()
 
         const data = await safe<{ content?: FaqRes[] } | FaqRes[]>(
-            api.get('/api/admin/v1/faq', { params, withCredentials: true }),
+            api.get('/admin/faq', { params, withCredentials: true }),
             'FAQ 로드 실패',
         )
         const list = Array.isArray(data) ? data : data.content ?? []
