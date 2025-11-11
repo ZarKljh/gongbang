@@ -34,4 +34,5 @@ public class ReviewImageController {
         String imageUrl = "/uploads/" + newFilename;
         return ResponseEntity.ok(imageUrl);
     }
+
 }

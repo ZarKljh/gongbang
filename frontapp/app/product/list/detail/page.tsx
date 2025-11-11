@@ -440,7 +440,7 @@ export default function detail() {
                 <div className="review-title">
                     <h2>리뷰 목록</h2>
                     {roleType === 'USER' && (
-                        <button className="reivew-write-btn" onClick={handleCreateClick}>
+                        <button className="review-write-btn" onClick={handleCreateClick}>
                             리뷰 작성하기
                         </button>
                     )}

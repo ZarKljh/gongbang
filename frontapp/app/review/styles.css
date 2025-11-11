@@ -4,6 +4,7 @@
     position: relative;
     padding: 20px 0;
     overflow: hidden;
+    
 }
 
 .photoReview-title {
@@ -24,6 +25,7 @@
 
 /* 포토 리뷰 슬라이드 영역 */
 .photoCard {
+
     width: 200px;
     height: 250px;
     background-color: #fafafa;
