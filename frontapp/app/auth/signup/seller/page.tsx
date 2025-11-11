@@ -36,6 +36,9 @@ export default function SellerSignupPage() {
         studioMainImageUrl: '',
         studioLogoImageUrl: '',
         studioGalleryImageUrls: [],
+        studioMainImageName: '',
+        studioLogoImageName: '',
+        studioGalleryImageNames: [],
     })
 
     const [previewMainImage, setPreviewMainImage] = useState<string | null>(null)
@@ -57,10 +60,12 @@ export default function SellerSignupPage() {
             if (name === 'studioGalleryImages') {
                 const fileArray = Array.from(files).slice(0, 5)
                 const localUrls = fileArray.map((file) => URL.createObjectURL(file))
+                const fileNames = fileArray.map((file) => file.name) // ✅ 파일명 배열 생성
 
                 setStudioInfo((prev) => ({
                     ...prev,
                     studioGalleryImageUrls: localUrls,
+                    studioGalleryImageNames: fileNames,
                 }))
                 setPreviewGalleryImages(localUrls)
             } else {
@@ -71,12 +76,14 @@ export default function SellerSignupPage() {
                     setStudioInfo((prev) => ({
                         ...prev,
                         studioMainImageUrl: localUrl,
+                        studioMainImageName: file.name,
                     }))
                     setPreviewMainImage(localUrl)
                 } else if (name === 'studioLogoImage') {
                     setStudioInfo((prev) => ({
                         ...prev,
                         studioLogoImageUrl: localUrl,
+                        studioLogoImageName: file.name,
                     }))
                     setPreviewLogoImage(localUrl)
                 }

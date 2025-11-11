@@ -26,4 +26,7 @@ export interface StudioInfo {
     studioMainImageUrl: string
     studioLogoImageUrl: string
     studioGalleryImageUrls: string[]
+    studioMainImageName: string
+    studioLogoImageName: string
+    studioGalleryImageNames: string[]
 }

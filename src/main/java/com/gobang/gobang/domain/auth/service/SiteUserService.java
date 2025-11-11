@@ -285,6 +285,7 @@ public class SiteUserService {
             images.add(Image.builder()
                     .imageUrl(request.getStudioMainImageUrl())
                     .refType(Image.RefType.STUDIO_MAIN)
+                    .imageFileName(request.getStudioMainImageName())
                     .sortOrder(0)
                     .build());
         }
@@ -293,6 +294,7 @@ public class SiteUserService {
             images.add(Image.builder()
                     .imageUrl(request.getStudioLogoImageUrl())
                     .refType(Image.RefType.STUDIO_LOGO)
+                    .imageFileName(request.getStudioLogoImageName())
                     .sortOrder(1)
                     .build());
         }
@@ -302,6 +304,7 @@ public class SiteUserService {
                 images.add(Image.builder()
                         .imageUrl(request.getStudioGalleryImageUrls().get(i))
                         .refType(Image.RefType.STUDIO)
+                        .imageFileName(request.getStudioGalleryImageNames().get(i))
                         .sortOrder(i + 2)
                         .build());
             }

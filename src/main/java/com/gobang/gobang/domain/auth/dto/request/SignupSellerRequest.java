@@ -42,6 +42,9 @@ public class SignupSellerRequest {
     private String studioAddDetail;
 
     private String studioMainImageUrl; //공방 메인이미지
+    private String studioMainImageName;
     private String studioLogoImageUrl; //공방 로고이미지
+    private String studioLogoImageName;
     private List<String> studioGalleryImageUrls; //공방 내부 사진 최대 5장
+    private List<String> studioGalleryImageNames;
 }

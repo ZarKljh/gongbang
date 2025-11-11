@@ -32,6 +32,7 @@ export default function viewStudioInfo() {
         studioAddPostNumber: '',
         studioAddMain: '',
         studioAddDetail: '',
+        studioMainImage: '',
     })
     const [studioList, setStudioList] = useState([])
     const [productList, setProductList] = useState([])
@@ -77,6 +78,7 @@ export default function viewStudioInfo() {
                     studioAddPostNumber: studioData.studioAddPostNumber,
                     studioAddMain: studioData.studioAddMain,
                     studioAddDetail: studioData.studioAddDetail,
+                    studioMainImage: studioData.studioMainImage,
                 })
                 console.log('studio 정보를 셋팅하였습니다')
                 setStudioList(studioListData)
@@ -86,6 +88,7 @@ export default function viewStudioInfo() {
                 router.back()
             }
         }
+        /*
         const fetchMainImage = async () => {
             try {
                 const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}/studio-main-image`, {
@@ -105,6 +108,7 @@ export default function viewStudioInfo() {
                 console.error('대표 이미지 로딩 실패:', error)
             }
         }
+        */
         /*
         const fetchProductList = async () => {
             try {
@@ -132,7 +136,7 @@ export default function viewStudioInfo() {
                     <div className="studio-layout">
                         <section className="studio-left studio-info">
                             <div className="studio-main-img">
-                                <img src="null" alt="공방대표사진"></img>
+                                <img src={studio.studioMainImage || '/default-image.jpg'} alt="공방대표사진"></img>
                             </div>
                             <div className="studio-info-main">
                                 <div className="studio-info-header">
