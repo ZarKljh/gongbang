@@ -148,8 +148,8 @@ export default function SellerPage() {
     // ------------------- 클릭 시 수정 취소 -------------------
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
-        setEditMode({})
-        setTempData({ ...userData })
+        //setEditMode({})
+        //setTempData({ ...userData })
     }
 
     /** ------------------- 렌더링 ------------------- */
@@ -157,13 +157,21 @@ export default function SellerPage() {
         <div className="seller-page-container">
             <SellerSidebar
                 seller={seller}
+                studio={studio}
                 studioList={studioList}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 selectedStudioId={selectedStudioId}
                 handleStudioSelect={handleStudioSelect}
+                handleTabClick={handleTabClick}
             />
-            <SellerPageMainContent />
+            <SellerPageMainContent
+                activeTab={activeTab}
+                seller={seller}
+                studio={studio}
+                productList={productList}
+                mainImage={mainImage}
+            />
         </div>
     )
 }

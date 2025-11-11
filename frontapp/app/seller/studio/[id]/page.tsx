@@ -136,7 +136,10 @@ export default function viewStudioInfo() {
                     <div className="studio-layout">
                         <section className="studio-left studio-info">
                             <div className="studio-main-img">
-                                <img src={studio.studioMainImage || '/default-image.jpg'} alt="공방대표사진"></img>
+                                <img
+                                    src={`http://localhost:8080/images/${encodeURIComponent('nauen_main.jpg')}`}
+                                    alt="공방대표사진"
+                                ></img>
                             </div>
                             <div className="studio-info-main">
                                 <div className="studio-info-header">

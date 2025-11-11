@@ -2,20 +2,14 @@ import { useState } from 'react'
 
 export default function SellerSidebar({
     seller,
+    studio,
     studioList,
     activeTab,
     setActiveTab,
     selectedStudioId,
-    setSelectedStudioId,
+    handleStudioSelect,
+    handleTabClick,
 }) {
-    const handleTabClick = (tabName) => {
-        setActiveTab(tabName)
-    }
-
-    const handleStudioSelect = (studioId) => {
-        setSelectedStudioId(studioId)
-    }
-
     return (
         <div className="seller-sidebar">
             <h1>{seller.nickName}님</h1>
