@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
@@ -28,7 +29,9 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     int markAllAnsweredByType(@Param("type") InquiryType type);
 
 
-    List<Inquiry> findByUser(SiteUser user);
+    List<Inquiry> findAllByUser(SiteUser user);
+
+    Optional<Inquiry> findByIdAndUser(Long id, SiteUser user);
 
     List<Inquiry> findByUserAndAnswered(SiteUser user, boolean answered);
 

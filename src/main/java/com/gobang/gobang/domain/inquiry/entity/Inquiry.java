@@ -48,7 +48,7 @@ public class Inquiry {
     }
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private SiteUser user;
 }
