@@ -6,6 +6,8 @@ import com.gobang.gobang.domain.personal.dto.request.CartRequest;
 import com.gobang.gobang.domain.personal.dto.response.CartResponse;
 import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.repository.CartRepository;
+import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +22,12 @@ import java.util.stream.Collectors;
 public class CartService {
 
     private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
 
     // 사용자별 장바구니 목록 조회
+    @Transactional(readOnly = true)
     public List<CartResponse> getCartsByUserId(SiteUser siteUser) {
-        List<Cart> carts = cartRepository.findBySiteUser(siteUser);
+        List<Cart> carts = cartRepository.findByUserIdWithProduct(siteUser.getId());
 
         return carts.stream()
                 .map(this::convertToResponse)
@@ -33,9 +37,13 @@ public class CartService {
     // 장바구니 담기
     @Transactional
     public CartResponse addToCart(CartRequest request) {
+        Product product = productRepository.findById(request.getProduct().getId())
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+
+        SiteUser siteUser = request.getSiteUser();
+
         // 이미 장바구니에 있는 상품인지 확인
-        Optional<Cart> existingCart = cartRepository.findBySiteUserAndProduct(
-                request.getSiteUser(), request.getProduct());
+        Optional<Cart> existingCart = cartRepository.findBySiteUserAndProduct(siteUser, product);
 
         if (existingCart.isPresent()) {
             // 이미 있으면 수량 증가
@@ -47,8 +55,8 @@ public class CartService {
         } else {
             // 없으면 새로 추가
             Cart cart = Cart.builder()
-                    .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
-                    .product(request.getProduct())
+                    .siteUser(SiteUser.builder().id(siteUser.getId()).build())
+                    .product(product)
                     .quantity(request.getQuantity())
                     .build();
 
@@ -95,6 +103,7 @@ public class CartService {
                 .productId(cart.getProduct().getId())
                 .productName(cart.getProduct() != null ? cart.getProduct().getName() : null)
                 .quantity(cart.getQuantity())
+                .price(cart.getProduct().getBasePrice())
                 .createdAt(cart.getCreatedAt())
                 .build();
     }

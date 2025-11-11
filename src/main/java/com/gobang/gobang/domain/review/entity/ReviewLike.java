@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.review.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,10 @@ public class ReviewLike {
     @JsonIgnore
     private Review review;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+//    @Column(name = "user_id", nullable = false)
+//    private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private SiteUser siteUser;
 }

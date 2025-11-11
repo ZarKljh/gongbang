@@ -79,3 +79,5 @@ export const fetchStats = async (userId: number) => {
     const { data } = await api.get(`/mypage/stats?userId=${userId}`);
     return data;
 }
+
+

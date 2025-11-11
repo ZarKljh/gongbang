@@ -38,4 +38,13 @@ public class CategoryController {
         List<SubCategoryDto> subcategoryList = categoryService.getSubCategoryIdList(categoryId, size);
         return RsData.of("200", "카테고리 다건 조회 성공", new SubCategoryResponse(subcategoryList));
     }
+
+
+    // GET /subcategory/{categoryId}/min-id 서브카테고리 최소값 id 조회
+    @GetMapping("/{categoryId}/min")
+    public RsData<Long> getMinSubCategoryId(@PathVariable Long categoryId) {
+        Long minSubId = categoryService.getMinSubCategoryId(categoryId);
+
+        return RsData.of("200", "서브카테고리의 최소값 조회 성공", minSubId);
+    }
 }

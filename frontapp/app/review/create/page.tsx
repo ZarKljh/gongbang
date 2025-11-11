@@ -12,22 +12,23 @@ export default function ReviewCreate({ fetchReviews }) {
         orderId: 1,
         orderItemId: 1,
         productId: 1,
-        userId: 1,
     })
 
     const [review, setReview] = useState({
         orderId: 1,
         orderItemId: 1,
         productId: 1,
-        userId: 1,
         rating: 0,
         content: '',
+        imageUrls: [],
     })
 
     const handleChange = (e) => {
         const { name, value } = e.target
-        const newValue = name === 'rating' ? Number(value) : value
-        setReview({ ...review, [name]: newValue })
+        setReview((prev) => ({
+            ...prev,
+            [name]: name === 'rating' ? Number(value) : value,
+        }))
     }
 
     const handleSubmit = async (e) => {
@@ -46,7 +47,7 @@ export default function ReviewCreate({ fetchReviews }) {
             orderId: idCounter.orderId + 1,
             orderItemId: idCounter.orderItemId + 1,
             productId: idCounter.productId + 1,
-            userId: idCounter.userId + 1,
+            // userId: idCounter.userId + 1,
         }
 
         const reviewToSend = {
@@ -64,6 +65,63 @@ export default function ReviewCreate({ fetchReviews }) {
             alert('리뷰 등록 실패')
         }
     }
+
+    // ✅ 이미지 업로드 임시 기능
+    // const handleImageUpload = () => {
+    //     const url = prompt('이미지 URL을 입력해주세요 (예: https://example.com/img.jpg)')
+    //     if (url) {
+    //         setReview((prev) => ({
+    //             ...prev,
+    //             imageUrls: [...prev.imageUrls, url],
+    //         }))
+    //     }
+    // }
+
+    const handleFileChange = async (e) => {
+        const files = Array.from(e.target.files)
+        const token = localStorage.getItem('accessToken')
+
+        const previews = []
+        const uploadedUrls = []
+
+        for (const file of files) {
+            // 1️⃣ 미리보기용 base64
+            const base64 = await toBase64(file)
+            previews.push(base64)
+
+            // 2️⃣ 서버 업로드
+            const formData = new FormData()
+            formData.append('file', file)
+
+            try {
+                const res = await fetch('http://localhost:8090/api/v1/images/upload', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                })
+                const url = await res.text()
+                uploadedUrls.push(url)
+            } catch (err) {
+                console.error('❌ 업로드 실패:', err)
+            }
+        }
+
+        // 3️⃣ base64 → 즉시 미리보기, url은 나중에 서버 저장용
+        setReview((prev) => ({
+            ...prev,
+            imagePreviews: [...(prev.imagePreviews || []), ...previews],
+            imageUrls: [...prev.imageUrls, ...uploadedUrls],
+        }))
+    }
+
+    // base64 변환 유틸
+    const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = () => resolve(reader.result)
+            reader.onerror = (error) => reject(error)
+        })
 
     return (
         <div
@@ -135,7 +193,7 @@ export default function ReviewCreate({ fetchReviews }) {
                         />
                     </div>
 
-                    {/* 이미지 업로드 + 등록 버튼 */}
+                    {/* 이미지 업로드 + 등록 */}
                     <div
                         style={{
                             display: 'flex',
@@ -145,13 +203,12 @@ export default function ReviewCreate({ fetchReviews }) {
                             paddingTop: '20px',
                         }}
                     >
-                        <Link
-                            href="#"
+                        <label
+                            htmlFor="imageUpload"
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                textDecoration: 'none',
-                                color: 'black',
+                                cursor: 'pointer',
                             }}
                         >
                             <div
@@ -170,8 +227,16 @@ export default function ReviewCreate({ fetchReviews }) {
                             >
                                 <FaPlus />
                             </div>
-                            <span style={{ fontSize: '16px' }}>이미지 업로드하기</span>
-                        </Link>
+                            <span style={{ fontSize: '16px' }}>파일을 첨부해주세요</span>
+                        </label>
+                        <input
+                            id="imageUpload"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            style={{ display: 'none' }}
+                            onChange={handleFileChange}
+                        />
 
                         <input
                             type="submit"
@@ -184,10 +249,33 @@ export default function ReviewCreate({ fetchReviews }) {
                                 padding: '10px 20px',
                                 cursor: 'pointer',
                                 fontWeight: 'bold',
-                                marginRight: '10px'
+                                marginRight: '10px',
                             }}
                         />
                     </div>
+
+                    {/* ✅ 현재 추가된 이미지 미리보기 */}
+                    {review.imagePreviews && review.imagePreviews.length > 0 && (
+                        <div style={{ marginTop: '20px' }}>
+                            <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>첨부된 이미지</p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                {review.imagePreviews.map((url, i) => (
+                                    <img
+                                        key={i}
+                                        src={url}
+                                        alt={`preview-${i}`}
+                                        style={{
+                                            width: '100px',
+                                            height: '100px',
+                                            objectFit: 'cover',
+                                            borderRadius: '6px',
+                                            border: '1px solid #ccc',
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </form>
             </div>
 

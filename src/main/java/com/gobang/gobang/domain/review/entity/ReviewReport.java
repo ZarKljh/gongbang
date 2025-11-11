@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.review.entity;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -22,8 +23,12 @@ public class ReviewReport {
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+//    @Column(name = "user_id", nullable = false)
+//    private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private SiteUser siteUser;
 
     @Column(nullable = false, length = 255)
     private String reason;
