@@ -41,11 +41,6 @@ public class ApiV1ReportsController {
         return Map.of("count", count);
     }
 
-    @PostMapping("/ack")
-    public Map<String, Boolean> ackAll() {
-        reportService.acknowledgeAll();
-        return Map.of("ok", true);
-    }
 
 
     @PatchMapping("/{id}/status")

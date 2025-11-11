@@ -90,7 +90,7 @@ export default function ReportButton({ targetType, targetId }: Props) {
                             <option value="SPAM">스팸/광고</option>
                             <option value="ABUSE">욕설/비하</option>
                             <option value="FRAUD">사기/허위 정보</option>
-                            <option value="COPyRIGHT">저작권 침해</option>
+                            <option value="COPYRIGHT">저작권 침해</option>
                             <option value="PRIVACY">개인정보 침해</option>
                             <option value="OTHER">기타</option>
                         </select>

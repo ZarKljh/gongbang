@@ -163,26 +163,9 @@ export default function AdminReportsPage() {
                                                         <>
                                                             <button
                                                                 className={`${styles.btn} ${styles.btnPrimary}`}
-                                                                onClick={() => changeStatus(r.id, 'REVIEWING')}
-                                                            >
-                                                                검토 시작
-                                                            </button>
-                                                            <button
-                                                                className={`${styles.btn} ${styles.btnDanger}`}
-                                                                onClick={() => changeStatus(r.id, 'REJECTED')}
-                                                            >
-                                                                기각
-                                                            </button>
-                                                        </>
-                                                    )}
-
-                                                    {r.status === 'REVIEWING' && (
-                                                        <>
-                                                            <button
-                                                                className={`${styles.btn} ${styles.btnPrimary}`}
                                                                 onClick={() => changeStatus(r.id, 'RESOLVED')}
                                                             >
-                                                                처리 완료
+                                                                검토 시작
                                                             </button>
                                                             <button
                                                                 className={`${styles.btn} ${styles.btnDanger}`}
@@ -196,7 +179,7 @@ export default function AdminReportsPage() {
                                                     {(r.status === 'RESOLVED' || r.status === 'REJECTED') && (
                                                         <button
                                                             className={`${styles.btn} ${styles.btnGhost}`}
-                                                            onClick={() => changeStatus(r.id, 'REVIEWING')}
+                                                            onClick={() => changeStatus(r.id, 'RESOLVED')}
                                                         >
                                                             다시 검토로
                                                         </button>
