@@ -6,6 +6,7 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.seller.service.StudioService;
@@ -36,6 +37,9 @@ public class SiteUserService {
     private final StudioService studioService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+
+//    @Value("${custom.genFileDirPath}")
+//    public String genFileDirPath;
 
 
     public SiteUser signupUser(SignupUserRequest signupUserRequest){
@@ -139,7 +143,8 @@ public class SiteUserService {
                 .fullName(signupSellerRequest.getFullName())
                 .mobilePhone(signupSellerRequest.getMobilePhone())
                 .nickName(signupSellerRequest.getNickName())
-                .role(RoleType.SELLER)
+                //초기 사업자 회원가입시 user권한으로 가입, 추후 admin입점심사 후 seller 권한 변경
+                .role(RoleType.USER)
                 .status(signupSellerRequest.getStatus())
                 .gender(signupSellerRequest.getGender())
                 .birth(signupSellerRequest.getBirth().atStartOfDay())
@@ -161,18 +166,31 @@ public class SiteUserService {
                 .studioAddDetail(signupSellerRequest.getStudioAddDetail())
                 .build();
 
+        // ✅ 이미지 정보 → Image 엔티티 리스트로 변환
+        List<Image> studioImages = buildStudioImagesFromRequest(signupSellerRequest);
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
         newStudio.setSiteUser(newUser);
         siteUserRepository.save(newUser);
         System.out.println("유저정보가 저장되었습니다");
-        studioService.createStudio(newStudio);
+
+        //studioService.createStudio(newStudio);
+        studioService.createStudio(newStudio, studioImages);
         System.out.println("공방이 저장되었습니다");
         return newUser;
 
     }
 
+    public SiteUser getSiteUserById(Long id) {
+        Optional<SiteUser> os = siteUserRepository.findById(id);
+
+        if ( os.isPresent() ) {
+            return os.get();
+        } else {
+            return null;
+        }
+    }
 
 
     @AllArgsConstructor
@@ -261,5 +279,46 @@ public class SiteUserService {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
         return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    public List<Image> buildStudioImagesFromRequest(SignupSellerRequest request) {
+        List<Image> images = new ArrayList<>();
+
+        if (request.getStudioMainImageUrl() != null) {
+
+//            String savedFileName = UUID.randomUUID().toString() + ".jpg";
+//            String savedFilePath = genFileDirPath + File.separator + savedFileName;
+
+            //request.getStudioMainImageUrl().transform(new File(savedFilePath));
+
+            images.add(Image.builder()
+                    .imageUrl(request.getStudioMainImageUrl())
+                    .refType(Image.RefType.STUDIO_MAIN)
+                    .imageFileName(request.getStudioMainImageName())
+                    .sortOrder(0)
+                    .build());
+        }
+
+        if (request.getStudioLogoImageUrl() != null) {
+            images.add(Image.builder()
+                    .imageUrl(request.getStudioLogoImageUrl())
+                    .refType(Image.RefType.STUDIO_LOGO)
+                    .imageFileName(request.getStudioLogoImageName())
+                    .sortOrder(1)
+                    .build());
+        }
+
+        if (request.getStudioGalleryImageUrls() != null) {
+            for (int i = 0; i < request.getStudioGalleryImageUrls().size(); i++) {
+                images.add(Image.builder()
+                        .imageUrl(request.getStudioGalleryImageUrls().get(i))
+                        .refType(Image.RefType.STUDIO)
+                        .imageFileName(request.getStudioGalleryImageNames().get(i))
+                        .sortOrder(i + 2)
+                        .build());
+            }
+        }
+
+        return images;
     }
 }
