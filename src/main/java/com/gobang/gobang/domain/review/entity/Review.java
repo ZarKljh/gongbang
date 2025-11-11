@@ -113,5 +113,6 @@ public class Review {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "ref_id", referencedColumnName = "review_id", insertable = false, updatable = false)
     @Where(clause = "ref_type = 'REVIEW'")
+//    @OrderBy("sortOrder ASC")
     private List<Image> images = new ArrayList<>();
 }

@@ -26,14 +26,16 @@ public class WebConfig implements WebMvcConfigurer {
         return source;
     }
 
-    /*공방이미지 저장을 위한 저장폴더 선언*/
-    @Override
+
+
+    // 이미지 파일명 접근
+     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 로컬 이미지 폴더
-        registry.addResourceHandler("/images/**") // 요청 경로
+        // 🖼 로컬 이미지 폴더
+        registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:C:/gongbangImg/");
-        
-        // 프로젝트 내부 uploads 폴더
+
+        // 📁 프로젝트 내부 uploads 폴더
         String uploadPath = System.getProperty("user.dir") + "/uploads/";
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath);
