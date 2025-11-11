@@ -59,10 +59,4 @@ public class ReportService {
         return r;
     }
 
-    @Transactional
-    public void acknowledgeAll() {
-        reportRepository.findAll().stream()
-                .filter(r -> r.getStatus() == ReportStatus.PENDING)
-                .forEach(r -> r.setStatus(ReportStatus.REVIEWING));
-    }
 }

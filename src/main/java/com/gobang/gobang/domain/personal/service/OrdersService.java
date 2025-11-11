@@ -8,7 +8,6 @@ import com.gobang.gobang.domain.personal.dto.response.UserAddressResponse;
 import com.gobang.gobang.domain.personal.entity.Delivery;
 import com.gobang.gobang.domain.personal.entity.OrderItem;
 import com.gobang.gobang.domain.personal.entity.Orders;
-import com.gobang.gobang.domain.personal.repository.DeliveryRepository;
 import com.gobang.gobang.domain.personal.repository.OrderItemRepository;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,6 @@ public class OrdersService {
 
     private final OrdersRepository ordersRepository;
     private final OrderItemRepository orderItemRepository;
-    private final DeliveryRepository deliveryRepository;
 
     // 사용자별 주문 목록 조회
     public List<OrdersResponse> getOrdersByUserId(SiteUser siteUser) {
@@ -81,6 +79,7 @@ public class OrdersService {
             if (delivery.getDeliveryStatus() != null) {
                 deliveryStatus = delivery.getDeliveryStatus();
             }
+
 
             UserAddressResponse addressResponse = null;
             if (delivery.getAddress() != null) {

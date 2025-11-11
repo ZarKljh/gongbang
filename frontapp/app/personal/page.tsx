@@ -3,7 +3,6 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
-import Link from 'next/link'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
@@ -228,11 +227,10 @@ export default function MyPage() {
     }
 
     const fetchQna = async (id?: number) => {
-        if (!id) return;
+        const userId = id || userData?.id
+        if (!userId) return;
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/qna?userId=${id}`, {
-                withCredentials: true,
-            })
+            const { data } = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {withCredentials: true,})
             setQna(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('문의 목록 조회 실패:', error)
@@ -1361,18 +1359,33 @@ export default function MyPage() {
                                 <div className="empty-state">작성한 문의가 없습니다.</div>
                             ) : (
                                 <div className="qna-list">
-                                    {qna.map((qna) => (
-                                        <div key={qna.qnaId} className="qna-card">
+                                    {qna.map((item) => (
+                                        <div key={item.qnaId} className="qna-card">
                                             <div className="qna-header">
-                                                <div className="qna-title">{qna.title}</div>
+                                                <div className="qna-title">{item.title}</div>
+                                                <span className="qna-type">{item.type}</span>
                                             </div>
 
-                                            <div className="qna-content">{qna.content}</div>
+                                            <div className="qna-status">
+                                                {item.answered ? (
+                                                    <span className="answered">답변 완료</span>
+                                                ) : (
+                                                    <span className="waiting">답변 대기 중</span>
+                                                )}
+                                            </div>
+
+                                            <div className="qna-content">{item.content}</div>
 
                                             <div className="qna-footer">
-                                                <span>작성일: {qna.createdDate}</span>
+                                                <span>작성일: {' '}
+                                                    {new Date(item.createdAt).toLocaleDateString('ko-KR', {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                    })}
+                                                </span>
                                                 <button
-                                                    onClick={() => handleDeleteClick(qna)}
+                                                    onClick={() => handleDeleteClick(item)}
                                                     className="link-btn delete"
                                                 >
                                                     삭제

@@ -16,7 +16,7 @@ public class QnaResponse {
     private String title;
     private String content;
     private InquiryType type;
-    private boolean answered; //답변여부
+    private Boolean answered;
     private LocalDateTime createdAt;
 
     public static QnaResponse from(Inquiry inquiry) {

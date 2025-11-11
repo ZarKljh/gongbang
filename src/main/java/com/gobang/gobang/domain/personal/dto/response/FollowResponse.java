@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.personal.entity.Follow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

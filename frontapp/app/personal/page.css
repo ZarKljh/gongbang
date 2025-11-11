@@ -15,6 +15,7 @@ body {
     max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
+
 }
 
 /* 사이드바 */
@@ -515,4 +516,65 @@ body {
 .orders-modal-close:hover,
 .review-modal-close:hover {
     color: #000;
+}
+
+/* 문의 */
+.qna-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.qna-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fff;
+}
+
+.qna-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.qna-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.qna-type {
+  font-size: 12px;
+  color: #666;
+  background-color: #f3f3f3;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.qna-content {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.qna-status {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.qna-status .answered {
+  color: green;
+  font-weight: 500;
+}
+
+.qna-status .waiting {
+  color: #999;
+}
+
+.qna-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
 }
