@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class LoginUserResponse {
+    private Long id;
     private String email;
     private String userName;
     private String fullName;
@@ -22,6 +23,7 @@ public class LoginUserResponse {
 
 
     public LoginUserResponse(SiteUser siteUser) {
+        this.id= siteUser.getId();
         this.fullName = siteUser.getFullName();
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();

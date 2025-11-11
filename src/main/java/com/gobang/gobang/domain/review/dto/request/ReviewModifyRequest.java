@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,4 +19,6 @@ public class ReviewModifyRequest {
 
     @NotBlank
     private String content;
+
+    private List<String> imageUrls = new ArrayList<>();
 }

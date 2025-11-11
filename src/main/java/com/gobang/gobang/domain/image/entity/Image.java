@@ -28,6 +28,10 @@ public class Image extends BaseEntity {
     @Column(name = "image_url", length = 255, nullable = false)
     private String imageUrl;
 
+            //테스트용 임시 hy
+//    @Column(name = "image_url", columnDefinition = "TEXT", nullable = false)
+//    private String imageUrl;  // ✅ TEXT 타입으로 변경
+
     /** 정렬 순서(대표=0 권장) */
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;

@@ -11,4 +11,6 @@ public interface SiteUserRepository extends JpaRepository<SiteUser, Long> {
     SiteUser findByEmail(String email);
     Optional<SiteUser> findByUserName(String userName);
     Optional<SiteUser> findByRefreshToken(String refreshToken);
+
+    Optional<SiteUser> findByNickName(String nickName);
 }
