@@ -7,6 +7,8 @@ import com.gobang.gobang.domain.inquiry.model.InquiryType;
 import com.gobang.gobang.domain.inquiry.repository.InquiryRepository;
 import com.gobang.gobang.domain.personal.dto.response.QnaResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +22,35 @@ public class QnaService {
 
     private final InquiryRepository inquiryRepository;
     private final SiteUserRepository siteUserRepository;
+    private static final Logger log = LoggerFactory.getLogger(QnaService.class);
 
     // 전체 내 문의 조회
+//    @Transactional(readOnly = true)
+//    public List<QnaResponse> getMyInquiries(Long userId) {
+//        SiteUser user = siteUserRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+//        return inquiryRepository.findAllByUser(user)
+//                .stream()
+//                .filter(inquiry -> inquiry != null)
+//                .map(QnaResponse::from)
+//                .toList();
+//    }
     @Transactional(readOnly = true)
     public List<QnaResponse> getMyInquiries(Long userId) {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return inquiryRepository.findAllByUser(user)
-                .stream()
-                .filter(inquiry -> inquiry != null)
-                .map(QnaResponse::from)
-                .toList();
+
+        List<Inquiry> inquiries = inquiryRepository.findAllByUser(user);
+        List<QnaResponse> safeList = new ArrayList<>();
+
+        for (Inquiry inquiry : inquiries) {
+            try {
+                safeList.add(QnaResponse.from(inquiry));
+            } catch (Exception e) {
+                log.warn("Inquiry 변환 실패 id={} reason={}", inquiry.getId(), e.getMessage());
+            }
+        }
+        return safeList;
     }
 
     // 특정 문의 상세 조회
