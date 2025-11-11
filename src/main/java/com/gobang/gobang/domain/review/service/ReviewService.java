@@ -50,7 +50,7 @@ public class ReviewService {
 //
 //        return this.reviewRepository.getAllReviews(pageable);
 //    }
-    public Page<Review> getReviews(int page, String sort) {
+    public Page<Review> getReviews(Long productId, int page, String sort) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
 
         Sort sortOption = switch (sort) {
@@ -62,9 +62,18 @@ public class ReviewService {
             default -> Sort.by(Sort.Direction.DESC, "createdDate");
         };
 
-        System.out.println("🧭 최종 sortOption = " + sortOption);
+//        System.out.println("🧭 최종 sortOption = " + sortOption);
         Pageable pageable = PageRequest.of(page, 10, sortOption);
-        return reviewRepository.findAll(pageable);
+
+        // productId 기준 리뷰 조회
+        Page<Review> reviewPage;
+        if (productId != null) {
+            reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
+        } else {
+            reviewPage = reviewRepository.findByIsActiveTrue(pageable);
+        }
+
+        return reviewPage;
     }
 
 

@@ -25,4 +25,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findBySiteUser_Id(Long userId);
 
     Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
+
+    Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
+    Page<Review> findByIsActiveTrue(Pageable pageable);
 }

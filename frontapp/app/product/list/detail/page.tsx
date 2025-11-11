@@ -4,6 +4,7 @@ import { FaRegThumbsUp, FaStar } from 'react-icons/fa'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Pagination, Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import 'swiper/css/navigation'
 import './review.css'
 import styles from './Detail.module.css'
@@ -12,8 +13,6 @@ export default function detail() {
     // ======================== 상품 =========================
 
     // ======================= 상품 끝 =======================
-
-
 
     // ================= 리뷰 =================
     const [reviews, setReviews] = useState([])
@@ -33,6 +32,10 @@ export default function detail() {
     const nextRef = useRef<HTMLDivElement | null>(null)
     const [sortType, setSortType] = useState('date_desc')
     const [keyword, setKeyword] = useState('')
+
+    // 상품Id 기준 리뷰 가져오기
+    const searchParams = useSearchParams()
+    const [productId, setProductId] = useState<number | null>(null)
 
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
@@ -67,11 +70,11 @@ export default function detail() {
     useEffect(() => {
         const init = async () => {
             await checkLoginStatus() // 1️⃣ 로그인 먼저 확인
-            await fetchReviews(currentPage) // 2️⃣ 로그인 완료 후 리뷰 로드
+            if (productId) await fetchReviews(productId, currentPage) // 2️⃣ 로그인 완료 후 리뷰 로드
         }
 
         init()
-    }, [currentPage, sortType]) // ✅ 페이지·정렬 바뀔 때만 다시 실행
+    }, [productId, currentPage, sortType]) // ✅ 페이지·정렬 바뀔 때만 다시 실행
 
     // 페이지 버튼 클릭 시에 호출(상단 이동)
 
@@ -81,7 +84,8 @@ export default function detail() {
 
     const handlePageChange = (pageNumber) => {
         // 페이지 변경
-        fetchReviews(pageNumber)
+        if (!productId) return
+        fetchReviews(productId, pageNumber)
 
         // 스크롤 이동 — DOM 업데이트 후 실행되도록 약간의 delay 추가
         setTimeout(() => {
@@ -89,11 +93,21 @@ export default function detail() {
         }, 100)
     }
 
+    useEffect(() => {
+        const productIdStr = searchParams.get('productId')
+        if (!productIdStr) return
+
+        const id = Number(productIdStr)
+        if (!Number.isFinite(id) || id <= 0) return
+
+        setProductId(id)
+    }, [searchParams])
+
     // 리뷰 목록 조회
-    const fetchReviews = async (page = 0, sort = sortType) => {
+    const fetchReviews = async (productId: number, page = 0, sort = sortType) => {
         try {
             const res = await fetch(
-                `http://localhost:8090/api/v1/reviews?page=${page}&sort=${sortType}&keyword=${encodeURIComponent(
+                `http://localhost:8090/api/v1/reviews?productId=${productId}&page=${page}&sort=${sortType}&keyword=${encodeURIComponent(
                     keyword,
                 )}`,
                 {
@@ -132,36 +146,36 @@ export default function detail() {
     // const totalCount = 226
 
     // 평균 별점 (물품 상세 만들어지면 사용)
-    // useEffect(() => {
-    //     const fetchAverage = async () => {
-    //         try {
-    //             // 상품상세 연결 후 reviewId -> productId로 변경
-    //             const res = await fetch(`http://localhost:8090/api/v1/reviews/average/${productId}`)
-    //             const data = await res.json()
-    //             setAvgRating(data?.data?.avgRating || 0)
-    //             setTotalCount(data?.data?.totalCount || 0)
-    //         } catch (err) {
-    //             console.error('평균 별점 불러오기 실패:', err)
-    //         }
-    //     }
-    //     fetchAverage()
-    // }, [])
-
-    // 상세 만들어지기 전 임시 사용
     useEffect(() => {
         const fetchAverage = async () => {
             try {
-                const res = await fetch('http://localhost:8090/api/v1/reviews/stats/average')
+                // 상품상세 연결 후 reviewId -> productId로 변경
+                const res = await fetch(`http://localhost:8090/api/v1/reviews/average/${productId}`)
                 const data = await res.json()
-                console.log('⭐ 평균별점 응답:', data)
-                setAvgRating(data?.data?.avgRating ?? 0)
-                setTotalCount(data?.data?.totalCount ?? 0)
+                setAvgRating(data?.data?.avgRating || 0)
+                setTotalCount(data?.data?.totalCount || 0)
             } catch (err) {
                 console.error('평균 별점 불러오기 실패:', err)
             }
         }
         fetchAverage()
     }, [])
+
+    // 상세 만들어지기 전 임시 사용
+    // useEffect(() => {
+    //     const fetchAverage = async () => {
+    //         try {
+    //             const res = await fetch('http://localhost:8090/api/v1/reviews/stats/average')
+    //             const data = await res.json()
+    //             console.log('⭐ 평균별점 응답:', data)
+    //             setAvgRating(data?.data?.avgRating ?? 0)
+    //             setTotalCount(data?.data?.totalCount ?? 0)
+    //         } catch (err) {
+    //             console.error('평균 별점 불러오기 실패:', err)
+    //         }
+    //     }
+    //     fetchAverage()
+    // }, [])
 
     // 포토리뷰
     const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
@@ -172,19 +186,18 @@ export default function detail() {
 
     // ✅ 정렬 요청
     const handleSortChange = (type) => {
-        let newSort = 'date_desc' // 기본값
-
+        if (!productId) return
+        let newSort = 'date_desc'
         if (type === '추천순') newSort = 'like_desc'
-        else if (type === '최신순') newSort = 'date_desc'
         else if (type === '별점순') newSort = 'rating_desc'
-
         setSortType(newSort)
-        fetchReviews(0, newSort)
+        fetchReviews(productId, 0, newSort)
     }
 
     // 검색 기능 나중에
     const handleSearch = async () => {
-        fetchReviews(0)
+        if (!productId) return
+        fetchReviews(productId, 0)
     }
 
     // 댓글 조회
@@ -209,7 +222,7 @@ export default function detail() {
                 window.location.href = '/auth/login'
             }
         } else {
-            window.location.href = '/review/create'
+            window.location.href = `/review/create?productId=${productId}`
         }
     }
 

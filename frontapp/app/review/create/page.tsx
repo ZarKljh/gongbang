@@ -1,23 +1,25 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { FaStar, FaPlus } from 'react-icons/fa'
 import api from '@/app/utils/api'
 import Link from 'next/link'
 
-export default function ReviewCreate({ fetchReviews }) {
+export default function ReviewCreate() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const productIdParam = searchParams.get('productId')
+    const productId = productIdParam ? Number(productIdParam) : null
     const [idCounter, setIdCounter] = useState({
         orderId: 1,
         orderItemId: 1,
-        productId: 1,
     })
 
     const [review, setReview] = useState({
         orderId: 1,
         orderItemId: 1,
-        productId: 1,
+        productId: productId,
         rating: 0,
         content: '',
         imageUrls: [],
@@ -30,6 +32,12 @@ export default function ReviewCreate({ fetchReviews }) {
             [name]: name === 'rating' ? Number(value) : value,
         }))
     }
+
+    useEffect(() => {
+        if (productId) {
+            setReview((prev) => ({ ...prev, productId }))
+        }
+    }, [productId])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -46,7 +54,7 @@ export default function ReviewCreate({ fetchReviews }) {
         const nextIds = {
             orderId: idCounter.orderId + 1,
             orderItemId: idCounter.orderItemId + 1,
-            productId: idCounter.productId + 1,
+            // productId: idCounter.productId + 1,
             // userId: idCounter.userId + 1,
         }
 
@@ -59,23 +67,13 @@ export default function ReviewCreate({ fetchReviews }) {
             const res = await api.post('/reviews', review)
             if (res.status === 200 || res.status === 201) {
                 alert('리뷰가 등록되었습니다.')
-                router.push('/review')
+                router.push(`/product/list/detail?productId=${review.productId}`)
             }
         } catch (err) {
             alert('리뷰 등록 실패')
         }
     }
 
-    // ✅ 이미지 업로드 임시 기능
-    // const handleImageUpload = () => {
-    //     const url = prompt('이미지 URL을 입력해주세요 (예: https://example.com/img.jpg)')
-    //     if (url) {
-    //         setReview((prev) => ({
-    //             ...prev,
-    //             imageUrls: [...prev.imageUrls, url],
-    //         }))
-    //     }
-    // }
 
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files)
@@ -171,7 +169,7 @@ export default function ReviewCreate({ fetchReviews }) {
                         </div>
                     </div>
 
-                    {/* 후기 작성 */}
+                    {/* 리뷰 작성 */}
                     <div style={{ marginBottom: '20px' }}>
                         <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>5자 이상, 300자 이하</p>
                         <textarea
