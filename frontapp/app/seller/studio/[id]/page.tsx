@@ -6,7 +6,7 @@ import Link from 'next/link'
 import ProductList from '../components/productListOfStudio'
 import '../style/studio.css'
 import ProductListScroll from '../components/productListScrollOfStudio'
-import useCurrentUser from '@/app/auth/common/useCurrentUser'
+//import useCurrentUser from '@/app/auth/common/useCurrentUser'
 
 export default function viewStudioInfo() {
     const params = useParams()
@@ -14,7 +14,7 @@ export default function viewStudioInfo() {
     const studioId = params?.id
 
     //현재 로그인 사용자 정보
-    const currentUser = useCurrentUser()
+    //const currentUser = useCurrentUser()
 
     //도메인별 변수세팅
     const [seller, setSeller] = useState({
@@ -32,9 +32,17 @@ export default function viewStudioInfo() {
         studioAddPostNumber: '',
         studioAddMain: '',
         studioAddDetail: '',
+        studioMainImage: '',
+        studioLogoImage: '',
+        sutdioGalleryImages: [],
     })
     const [studioList, setStudioList] = useState([])
     const [productList, setProductList] = useState([])
+    // ✅ 대표 이미지 상태를 객체로 관리
+    const [mainImage, setMainImage] = useState({
+        mainImageFileName: '',
+        mainImageUrl: '',
+    })
 
     useEffect(() => {
         if (!studioId) {
@@ -72,6 +80,9 @@ export default function viewStudioInfo() {
                     studioAddPostNumber: studioData.studioAddPostNumber,
                     studioAddMain: studioData.studioAddMain,
                     studioAddDetail: studioData.studioAddDetail,
+                    studioMainImage: studioData.studioMainImage,
+                    studioLogoImage: studioData.studioLogoImage,
+                    sutdioGalleryImages: studioData.sutdioGalleryImages,
                 })
                 console.log('studio 정보를 셋팅하였습니다')
                 setStudioList(studioListData)
@@ -81,6 +92,27 @@ export default function viewStudioInfo() {
                 router.back()
             }
         }
+        /*
+        const fetchMainImage = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}/studio-main-image`, {
+                    method: 'GET',
+                    credentials: 'include',
+                })
+                if (!response.ok) throw new Error('대표 이미지 정보를 불러올 수 없습니다.')
+
+                const result = await response.json()
+                const { imageFileName, imageUrl } = result.data
+
+                setMainImage({
+                    mainImageFileName: imageFileName,
+                    mainImageUrl: `http://localhost:8090${imageUrl}`,
+                })
+            } catch (error) {
+                console.error('대표 이미지 로딩 실패:', error)
+            }
+        }
+        */
         /*
         const fetchProductList = async () => {
             try {
@@ -108,15 +140,12 @@ export default function viewStudioInfo() {
                     <div className="studio-layout">
                         <section className="studio-left studio-info">
                             <div className="studio-main-img">
-                                <img src="null" alt="공방대표사진"></img>
-                                {currentUser.userName === seller.userName && (
-                                    <button
-                                        onClick={() => router.push(`/seller/studio/${studioId}/edit-image`)}
-                                        className="edit-button large"
-                                    >
-                                        ✏️ 대표 이미지 변경
-                                    </button>
-                                )}
+                                <img
+                                    src={`http://localhost:8090/images/${studio.studioMainImage.imageFileName}`}
+                                    alt="공방대표사진"
+                                    width="280"
+                                    height="280"
+                                ></img>
                             </div>
                             <div className="studio-info-main">
                                 <div className="studio-info-header">
@@ -129,14 +158,6 @@ export default function viewStudioInfo() {
                                             <span>카테고리</span>
                                         </div>
                                     </div>
-                                    {currentUser.userName === seller.userName && (
-                                        <button
-                                            onClick={() => router.push(`/seller/studio/${studioId}/edit-studio-info`)}
-                                            className="edit-button medium"
-                                        >
-                                            ✏️ 공방정보수정
-                                        </button>
-                                    )}
                                 </div>
                                 <div className="studio-info-detail">
                                     <ul>
@@ -176,14 +197,6 @@ export default function viewStudioInfo() {
                                         ))}
                                     </ul>
                                 </div>
-                                {currentUser.userName === seller.userName && (
-                                    <button
-                                        onClick={() => router.push(`/seller/studio/${studioId}/edit-seller-info`)}
-                                        className="edit-button medium"
-                                    >
-                                        ✏️ 셀러정보수정
-                                    </button>
-                                )}
                             </div>
 
                             {/* ✅ 상품 리스트 컴포넌트 삽입 */}

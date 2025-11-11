@@ -27,6 +27,7 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
 
+
     // 이미지 파일명 접근
      @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -38,5 +39,6 @@ public class WebConfig implements WebMvcConfigurer {
         String uploadPath = System.getProperty("user.dir") + "/uploads/";
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath);
+ 
     }
 }

@@ -4,6 +4,7 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
 import com.gobang.gobang.domain.seller.dto.StudioResponse;
@@ -36,15 +37,19 @@ public class StudioController {
     public RsData<Map<String, Object>> getStudio(@PathVariable("id") Long id){
         Studio studio = studioService.getStudioById(id);
         SiteUser seller = siteUserService.getSiteUserByUserName(studio.getSiteUser().getUserName());
+        Image studioMainImage = studioService.getMainImage(studio.getStudioId());
+        Image studioLogoImage = new Image();
+        List<Image> studioImages = studioService.getStudioImages(studio.getStudioId());;
 
         List<StudioSimpleDto> studioList = new ArrayList<>();
         for (Studio s : seller.getStudioList()) {
-            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName()));
+            studioLogoImage = studioService.getLogoImage(s.getStudioId());
+            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName(), studioLogoImage));
             System.out.println("공방ID : " + s.getStudioId());
             System.out.println("공방이름 : " + s.getStudioName());
         }
-
-        StudioResponse studioResponse = new StudioResponse(seller, studio);
+        studioLogoImage = studioService.getLogoImage(studio.getStudioId());
+        StudioResponse studioResponse = new StudioResponse(seller, studio, studioMainImage, studioLogoImage, studioImages);
 
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("studio", studioResponse);
@@ -68,10 +73,13 @@ public class StudioController {
 
 
 
+
+
     @PostMapping("/add")
     public RsData<Map<String, Object>> studioAdd(@Valid @RequestBody StudioAddRequest studioAddRequest){
 
         SiteUser seller = rq.getSiteUser();
+        Image studioLogoImage = new Image();
         if(seller == null){
             throw new IllegalArgumentException("판매자로그인 혹은 회원가입을 해주세요.");
         } else if( seller.getRole() != RoleType.SELLER){
@@ -81,7 +89,8 @@ public class StudioController {
 
         List<StudioSimpleDto> studioList = new ArrayList<>();
         for (Studio s : seller.getStudioList()) {
-            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName()));
+            studioLogoImage = studioService.getLogoImage(s.getStudioId());
+            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName(), studioLogoImage));
         }
 
         StudioResponse studioResponse = new StudioResponse(seller, newStudio);
@@ -92,6 +101,7 @@ public class StudioController {
 
         return  RsData.of("s-1", "신규공방이 등록되었습니다", responseMap);
     }
+
 
 
 }
