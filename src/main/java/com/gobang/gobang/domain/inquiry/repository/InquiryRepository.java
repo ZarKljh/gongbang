@@ -38,4 +38,6 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     List<Inquiry> findByUserAndType(SiteUser user, InquiryType type);
 
     List<Inquiry> findByUserAndTypeAndAnswered(SiteUser user, InquiryType type, boolean answered);
+
+    long countByUserId(Long userId);
 }

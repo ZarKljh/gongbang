@@ -21,9 +21,9 @@ public class QnaResponse {
 
     public static QnaResponse from(Inquiry inquiry) {
         return QnaResponse.builder()
-                .userId(inquiry.getUser().getId())
-                .title(inquiry.getTitle())
-                .content(inquiry.getContent())
+                .userId(inquiry.getUser() != null ? inquiry.getUser().getId() : null)
+                .title(inquiry.getTitle() != null ? inquiry.getTitle() : "")
+                .content(inquiry.getContent() != null ? inquiry.getContent() : "")
                 .type(inquiry.getType())
                 .answered(inquiry.isAnswered())
                 .createdAt(inquiry.getCreatedAt())

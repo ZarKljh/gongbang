@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,11 +22,13 @@ public class QnaService {
     private final SiteUserRepository siteUserRepository;
 
     // 전체 내 문의 조회
+    @Transactional(readOnly = true)
     public List<QnaResponse> getMyInquiries(Long userId) {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         return inquiryRepository.findAllByUser(user)
                 .stream()
+                .filter(inquiry -> inquiry != null)
                 .map(QnaResponse::from)
                 .toList();
     }
