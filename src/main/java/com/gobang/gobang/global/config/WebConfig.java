@@ -28,8 +28,13 @@ public class WebConfig implements WebMvcConfigurer {
 
 
     // 이미지 파일명 접근
-    @Override
+     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 🖼 로컬 이미지 폴더
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:C:/gongbangImg/");
+
+        // 📁 프로젝트 내부 uploads 폴더
         String uploadPath = System.getProperty("user.dir") + "/uploads/";
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath);
