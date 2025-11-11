@@ -38,6 +38,9 @@ public class SiteUserService {
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
+//    @Value("${custom.genFileDirPath}")
+//    public String genFileDirPath;
+
 
     public SiteUser signupUser(SignupUserRequest signupUserRequest){
 
@@ -282,6 +285,12 @@ public class SiteUserService {
         List<Image> images = new ArrayList<>();
 
         if (request.getStudioMainImageUrl() != null) {
+
+//            String savedFileName = UUID.randomUUID().toString() + ".jpg";
+//            String savedFilePath = genFileDirPath + File.separator + savedFileName;
+
+            //request.getStudioMainImageUrl().transform(new File(savedFilePath));
+
             images.add(Image.builder()
                     .imageUrl(request.getStudioMainImageUrl())
                     .refType(Image.RefType.STUDIO_MAIN)

@@ -33,6 +33,8 @@ export default function viewStudioInfo() {
         studioAddMain: '',
         studioAddDetail: '',
         studioMainImage: '',
+        studioLogoImage: '',
+        sutdioGalleryImages: [],
     })
     const [studioList, setStudioList] = useState([])
     const [productList, setProductList] = useState([])
@@ -79,6 +81,8 @@ export default function viewStudioInfo() {
                     studioAddMain: studioData.studioAddMain,
                     studioAddDetail: studioData.studioAddDetail,
                     studioMainImage: studioData.studioMainImage,
+                    studioLogoImage: studioData.studioLogoImage,
+                    sutdioGalleryImages: studioData.sutdioGalleryImages,
                 })
                 console.log('studio 정보를 셋팅하였습니다')
                 setStudioList(studioListData)
@@ -137,8 +141,10 @@ export default function viewStudioInfo() {
                         <section className="studio-left studio-info">
                             <div className="studio-main-img">
                                 <img
-                                    src={`http://localhost:8080/images/${encodeURIComponent('nauen_main.jpg')}`}
+                                    src={`http://localhost:8090/images/${studio.studioMainImage.imageFileName}`}
                                     alt="공방대표사진"
+                                    width="280"
+                                    height="280"
                                 ></img>
                             </div>
                             <div className="studio-info-main">
