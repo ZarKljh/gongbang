@@ -5,6 +5,8 @@ import { useRef } from 'react'
 import { useEffect, useState } from 'react'
 import api from '@/app/utils/api'
 import styles from './Cards.module.css'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
@@ -42,6 +44,9 @@ type FilterOptionDto = {
 //
 
 export default function Product() {
+    const searchParams = useSearchParams()
+    const didMount = useRef(false)
+
     const [items, setItems] = useState<any[]>([])
     const [products, setProducts] = useState<Product[]>([])
 
@@ -56,7 +61,6 @@ export default function Product() {
     const [filterOptions, setFilterOptions] = useState<Record<number, FilterOptionDto[]>>({})
     // code별로 선택된 값 집합 관리 (예: COLOR → {베이지, 화이트})
     const [selectedBtn, setSelectedBtn] = useState<Record<string, string | null>>({})
-    const didMount = useRef(false)
 
     const MUTEX: Record<string, string[]> = {
         PRICE_MIN: ['PRICE_MAX'],
@@ -64,8 +68,6 @@ export default function Product() {
     }
 
     const onClickSubCategory = (catId: number, subId: number) => {
-        setSelectedCatId(catId) // 클릭한 카테고리의 id를 상태에 저장
-        setSelectedSubCatId(subId) // 클릭한 서브카테고리의 id를 상태에 저장
         // 2️⃣ 이전 필터·선택 상태·결과 초기화
         setSelectedBtn({}) // 선택된 필터버튼 초기화
         setFilterGroups([]) // 기존 필터 그룹 제거
@@ -79,12 +81,12 @@ export default function Product() {
 
         // 4️⃣ 새 카테고리의 공통 필터 로딩
         loadFilters(catId)
+
+        setSelectedSubCatId(subId) // 클릭한 서브카테고리의 id를 상태에 저장
+        setSelectedCatId(catId) // 클릭한 카테고리의 id를 상태에 저장
     }
     //
 
-    // const handleImmediateSubmit = async () => {
-    //     requestAnimationFrame(() => submitFilter())
-    // }
     const handleFilterClick = (code: string, label: string) => {
         setSelectedBtn((prev) => {
             const next = { ...prev }
@@ -99,16 +101,6 @@ export default function Product() {
         for (const [k, v] of Object.entries(state)) if (v != null) extra[k] = v
         return extra
     }
-    /** 선택 상태 -> extra(flat) 변환 (싱글이므로 string 또는 미포함) */
-    // const buildExtra = (state: Record<string, string | null>) => {
-    //     const extra: Record<string, string> = {}
-    //     for (const [k, v] of Object.entries(state)) {
-    //         if (v != null) extra[k] = v
-    //     }
-    //     return extra
-    // }
-    // const [selectedMin, setSelectedMin] = useState<number | null>(null)
-    // const [selectedMax, setSelectedMax] = useState<number | null>(null)
 
     //카테고리, 서브카테고리 초기 조회
     useEffect(() => {
@@ -198,26 +190,46 @@ export default function Product() {
             payload.categoryId = String(selectedCategoryId)
             payload.subCategoryId = String(selectedSubCategoryId)
 
-            // 5) (선택) Axios 배열 직렬화가 서버 기대와 다르면 직접 직렬화
-            //    예: MATERIAL=A&MATERIAL=B 형태가 필요하면 아래처럼:
-            // const params = new URLSearchParams();
-            // Object.entries(payload).forEach(([k, v]) => {
-            //   if (Array.isArray(v)) v.forEach(val => params.append(k, val));
-            //   else params.append(k, v);
-            // });
-
-            // 6) 엔드포인트 확인: 카테고리 기준이면 categoryId를 path로 쓰세요.
-            //    api.get(`product/${selectedCategoryId}/search`, { params: payload })
             api.get(`product/${selectedSubCategoryId}/search`, { params: payload })
                 .then((res) => {
                     const productFilterList = res.data.data.productFilterList
-                    console.log(productFilterList)
+                    //console.log(productFilterList)
                     setProducts(productFilterList)
                 })
                 .catch((err) => console.error('상품 검색 실패:', err))
         },
         [selectedCategoryId, selectedSubCategoryId],
     )
+
+    // ✅ 파라미터에서 categoryId, subId 받아서 상태로 설정
+    useEffect(() => {
+        const catIdStr = searchParams.get('categoryId')
+        const subIdStr = searchParams.get('subId') ?? '0'
+        if (!catIdStr) return
+
+        const catId = Number(catIdStr)
+        const subId = Number(subIdStr)
+
+        if (!Number.isFinite(catId) || catId <= 0) return
+
+        // subId가 0이면 API에서 최소값 조회
+        if (subId === 0) {
+            api.get(`category/${catId}/min`)
+                .then((res) => {
+                    const minSubId = res.data?.data
+
+                    onClickSubCategory(catId, minSubId)
+                })
+                .catch((err) => {
+                    console.error(' sub-min 값 검색 실패:', err)
+                })
+        }
+
+        // subId가 0이 아니면 그대로 사용
+        else {
+            onClickSubCategory(catId, subId)
+        }
+    }, [searchParams])
 
     useEffect(() => {
         if (!didMount.current) {
@@ -229,22 +241,6 @@ export default function Product() {
         const extra = buildExtra(selectedBtn)
         submitFilter(extra)
     }, [selectedBtn, selectedCategoryId, selectedSubCategoryId, submitFilter])
-
-    // 선택한 selectedSubCategoryId변경 될 때 상품목록 조회하기
-    // useEffect(() => {
-    //     if (selectedSubCategoryId == null) return
-    //     ;(async () => {
-    //         try {
-    //             // 백엔드: GET /api/v1/product/{id}
-    //             const { data } = await api.get(`product/${selectedSubCategoryId}/search`, { params: payload })
-    //             const productFilterList = data.data.productFilterList
-
-    //             setProducts(productFilterList)
-    //         } catch (error) {
-    //             console.error('상품목록 조회 실패:', error)
-    //         }
-    //     })()
-    // }, [selectedSubCategoryId])
 
     return (
         <>
@@ -399,13 +395,21 @@ export default function Product() {
                         {products.map((p) => (
                             <li className={styles.card} key={p.id}>
                                 <article>
-                                    <a href="#" className={styles.cardLink} aria-label="카드 1 자세히 보기">
+                                    <Link
+                                        href={{
+                                            pathname: '/product/list/detail',
+                                            query: { productId: p.id },
+                                        }}
+                                        className={styles.cardLink}
+                                        aria-label="카드 1 자세히 보기"
+                                    >
                                         <figure className={styles.cardMedia}>
                                             <img alt="카드 1 대표 이미지" loading="lazy" />
                                         </figure>
                                         <h3 className={styles.cardTitle}>{p.name}</h3>
                                         <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
-                                    </a>
+                                    </Link>
+
                                     <footer className={styles.cardActions}>
                                         <a href="#" className={styles.btnRead}>
                                             자세히
@@ -420,11 +424,3 @@ export default function Product() {
         </>
     )
 }
-
-// {inputData.inputType === "radio" && (
-//   <input type="radio" name="optionGroup" value={o.id} />
-// )}
-// {inputData.inputType === "checkbox" && (
-//   <input type="checkbox" name="optionGroup" value={o.id} />
-// )}
-// {inputData.inputType === "text" && <input type="text" placeholder={o.label} />}

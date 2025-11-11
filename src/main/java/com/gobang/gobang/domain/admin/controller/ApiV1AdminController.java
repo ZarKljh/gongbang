@@ -11,7 +11,7 @@ import java.util.Map;
 // 임시용 컨트롤러
 
 @RestController
-@RequestMapping("/api/admin/v1")
+@RequestMapping("/api/v1/admin")
 public class ApiV1AdminController {
 
 

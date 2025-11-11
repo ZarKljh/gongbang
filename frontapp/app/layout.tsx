@@ -4,9 +4,10 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
-import ClientNav from "./components/ClientNav";
+import ClientNav from './admin/components/ClientNav'
 import ReactQueryProviders from '@/app/utils/ReactQueryProviders'
-import Script from "next/script";
+import Script from 'next/script'
+import AdminNavButton from './admin/components/AdminNavButton'
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -61,13 +62,10 @@ export default function RootLayout({
                     <Link href="/auth/login">로그인</Link>
                     <Link href="/auth/signup">회원가입</Link>
                     <ClientNav />
-                    <Link
-                      href="/support/faq"
-                      className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
-                      prefetch
-                    >
-                    F&Q
+                    <Link href="/admin/faq" prefetch>
+                        F&Q
                     </Link>
+                    <AdminNavButton /> {/* ✅ 관리자만 보이는 버튼 */}
                 </nav>
                 <ReactQueryProviders>{children}</ReactQueryProviders>
       </body>

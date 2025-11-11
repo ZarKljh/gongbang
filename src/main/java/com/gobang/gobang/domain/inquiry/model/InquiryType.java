@@ -6,5 +6,6 @@ public enum InquiryType {
     CONTENT,
     BUG,
     FEATURE,
-    OTHER,
+    BUSINESS,
+    OTHER
 }

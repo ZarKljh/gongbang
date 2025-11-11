@@ -12,17 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/v1/inquiries")
+@RequestMapping("/api/v1/admin/inquiries")
 @RequiredArgsConstructor
 public class InquiryV1Controller {
 
     private final InquiryService service;
 
-    // 문의 생성
-    @PostMapping
-    public InquiryResponse create(@RequestBody InquiryRequest req) {
-        return InquiryResponse.from(service.createInquiry(req));
-    }
 
     // 전체 조회, 필터링 미구현 상태 필요시 구현 예정
     @GetMapping
@@ -55,4 +50,16 @@ public class InquiryV1Controller {
         service.markAllAnswered();
         return Map.of("ok", true);
     }
+
+
+    @PostMapping("/{id}/answer")
+    public Map<String, Boolean> answerOne(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        String answer = body.get("answer");
+        service.answerInquiry(id, answer);
+        return Map.of("ok", true);
+    }
+
 }

@@ -25,8 +25,13 @@ public class StatsService {
     public Map<String, Object> getStats(SiteUser user) {
         Map<String, Object> stats = new HashMap<>();
 
+<<<<<<< HEAD
         long postCount = reviewRepository.countByUserId(user.getId());
         long qnaCount = inquiryRepository.countByUserId(user.getId());
+=======
+        long postCount = reviewRepository.countBySiteUser_Id(user.getId());
+
+>>>>>>> 8bc40c24bff1e149a17459ec8530a5ac03b2e573
         long wishCount = wishListRepository.countBySiteUser_Id(user.getId());
 
         stats.put("postCount", postCount);
