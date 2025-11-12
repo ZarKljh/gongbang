@@ -31,12 +31,13 @@ export default function MyPage() {
 
     // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
+    const [deliveryDetail, setDeliveryDetail] = useState<any[]>([])
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
     const [isOrderModal, setIsOrderModal] = useState(false)
     const [isOrdersModal, setIsOrdersModal] = useState(false)
-
+setDeliveryDetail
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
     const [isAddressModal, setIsAddressModal] = useState(false)
@@ -152,6 +153,11 @@ export default function MyPage() {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
         }
+    }
+
+    const fetchDeliveryDetail = async (orderId: number) => {
+        const res = await axios.get(`${API_BASE_URL}/orders/${orderId}/delivery`)
+        return res.data.data
     }
 
     const fetchCart = async (id?: number) => {
@@ -355,6 +361,17 @@ export default function MyPage() {
                 }))
             },
         }).open()
+    }
+
+    // =============== 주문, 배송정보 ===============
+    const handleOrderClick = async (orderId: number) => {
+        try {
+            const deliveryDetail = await fetchDeliveryDetail(orderId)
+            setSelectedDelivery(deliveryDetail)
+            setIsStatusModal(true)
+        } catch (error) {
+            console.error('배송 정보 조회 실패:', error)
+        }
     }
 
     // =============== 회원정보 ===============
@@ -1445,6 +1462,23 @@ export default function MyPage() {
                                     </div>
                                 ))
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* 배송 상세 모달 */}
+            {isDeliveryModal && deliveryDetail && (
+                <div className="delivery-modal" onClick={() => setIsDeliveryModal(false)}>
+                    <div className="delivery-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close" onClick={() => setIsDeliveryModal(false)}>
+                            &times;
+                        </button>
+                        <h3>배송 상세 정보</h3>
+                        <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
+                        <p>배송상태: {deliveryDetail.deliveryStatus}</p>
+                        <p>수령인: {deliveryDetail.recipientName}</p>
+                        <p>주소: {deliveryDetail.baseAddress} {deliveryDetail.detailAddress}</p>
+                        <p>우편번호: {deliveryDetail.zipcode}</p>
                     </div>
                 </div>
             )}
