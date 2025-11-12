@@ -598,7 +598,7 @@ export default function detail() {
                                         </span>
                                     </div>
 
-                                    {/* ⭐ 별점 */}
+                                    {/* 별점 */}
                                     <div className="review-rating-row">
                                         <div className="review-stars">
                                             {[1, 2, 3, 4, 5].map((num) => (
@@ -612,7 +612,7 @@ export default function detail() {
                                             <strong style={{ marginLeft: '6px', fontSize: '15px' }}></strong>
                                         </div>
 
-                                        {/* ✏️ 좋아요 / 삭제 버튼 */}
+                                        {/* 좋아요 / 삭제 버튼 */}
                                         <div className="review-actions">
                                             {(roleType === 'USER' || roleType === 'SELLER') && (
                                                 <button
@@ -623,7 +623,7 @@ export default function detail() {
                                                     도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
                                             )}
-                                            {Number(currentUserId) === Number(review.userId) && (
+                                            {Number(currentUserId) === Number(review.userId) || roleType === 'ADMIN' && (
                                                 <button
                                                     className="review-delete-btn"
                                                     onClick={() => handleDeleteClick(review.reviewId)}
@@ -634,7 +634,7 @@ export default function detail() {
                                         </div>
                                     </div>
 
-                                    {/* 📃 리뷰 내용 */}
+                                    {/* 리뷰 내용 */}
                                     <h4 className="review-content-title">📃 리뷰 내용</h4>
                                     <div
                                         className="review-content-box"
@@ -652,13 +652,14 @@ export default function detail() {
 
                                     <hr className="review-divider" />
 
-                                    {/* 💬 댓글 */}
+                                    {/* 댓글 */}
                                     {comments[review.reviewId]?.reviewComment && (
                                         <div className="review-comment">{comments[review.reviewId].reviewComment}</div>
                                     )}
 
-                                    {/* 💼 SELLER만 댓글 조작 */}
-                                    {roleType === 'SELLER' && (
+                                    {/* SELLER만 댓글 조작 
+                                    현재 ADMIN도 가능. 추후 삭제만 가능하도록 변경*/}
+                                    {roleType === 'SELLER' || roleType === 'ADMIN' && (
                                         <>
                                             {comments[review.reviewId]?.reviewComment ? (
                                                 <>
@@ -675,6 +676,7 @@ export default function detail() {
                                                         ✏️ 댓글 수정
                                                     </button>
 
+                                                    {}
                                                     <button
                                                         className="review-comment-delete-btn"
                                                         onClick={() =>

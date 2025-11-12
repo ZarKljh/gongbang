@@ -14,6 +14,11 @@ ALTER TABLE filter_option ADD COLUMN filter_code varchar(50);
 ALTER TABLE image ALTER COLUMN image_url TYPE VARCHAR(255);
 ALTER TABLE image ALTER COLUMN image_url TYPE TEXT;
 
+-- roletype seller로 강제 업데이트
+UPDATE site_user
+SET role = 'SELLER'
+WHERE id = 33;
+
 SELECT r.review_id, r.user_id
 FROM TBL_REVIEW r
 LEFT JOIN site_user u ON u.id = r.user_id

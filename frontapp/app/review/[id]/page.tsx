@@ -242,28 +242,6 @@ export default function ReviewDetail() {
                     >
                         ← 목록으로 돌아가기
                     </Link>
-                    {/* <button
-                        onClick={() => {
-                            if (review?.productId) {
-                                router.push(`/product/list/detail?productId=${review.productId}`)
-                            } else {
-                                alert('연결된 상품 정보를 찾을 수 없습니다.')
-                                router.push('/')
-                            }
-                        }}
-                        style={{
-                            display: 'inline-block',
-                            backgroundColor: '#ddd',
-                            color: '#333',
-                            textDecoration: 'none',
-                            borderRadius: '8px',
-                            padding: '10px 20px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        ← 목록으로 돌아가기
-                    </button> */}
                 </div>
             </div>
 
