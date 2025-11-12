@@ -52,20 +52,65 @@ public class SellerController {
         responseMap.put("studioList", studioList);
         return  RsData.of("s-1", "해당공방의 정보와 seller 의 정보를 가져왔습니다", responseMap);
     }
+    @GetMapping("/studioList/{id}")
+    public RsData<Map<String, Object>> getStudioList(
+            @PathVariable("id") Long id
+    ){
+        SiteUser seller = sellerService.getSiteUserById(id);
+
+        Image studioMainImage = new Image();
+        Image studioLogoImage = new Image();
+        List<Image> studioImages = new ArrayList<>();
+
+        List<StudioResponse> studioList = new ArrayList<>();
+        for (Studio s : seller.getStudioList()) {
+            studioMainImage = studioService.getMainImage(s.getStudioId());
+            studioLogoImage = studioService.getLogoImage(s.getStudioId());
+            studioImages = studioService.getStudioImages(s.getStudioId());
+            studioList.add(new StudioResponse(seller, s, studioMainImage, studioLogoImage, studioImages));
+        }
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("studioList", studioList);
+        return  RsData.of("s-1", "해당공방의 정보와 seller 의 정보를 가져왔습니다", responseMap);
+    }
+    @GetMapping("/studio/{id}")
+    public RsData<Map<String, Object>> getStudio(
+            @PathVariable("id") Long id
+    ){
+        SiteUser seller = sellerService.getSiteUserById(id);
+
+        Image studioMainImage = new Image();
+        Image studioLogoImage = new Image();
+        List<Image> studioImages = new ArrayList<>();
+
+        Studio firstStudio = seller.getStudioList().get(0);
+
+        studioMainImage = studioService.getMainImage(firstStudio.getStudioId());
+        studioLogoImage = studioService.getLogoImage(firstStudio.getStudioId());
+        studioImages = studioService.getStudioImages(firstStudio.getStudioId());
+        StudioResponse studio = new StudioResponse(seller, firstStudio, studioMainImage, studioLogoImage, studioImages);
+
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("studio", studio);
+        return  RsData.of("s-1", "해당공방의 정보와 seller 의 정보를 가져왔습니다", responseMap);
+    }
     /*
-    @GetMapping("/{id}")
     public RsData<Map<String, Object>> getStudio(@PathVariable("id") Long id){
         Studio studio = studioService.getStudioById(id);
         SiteUser seller = siteUserService.getSiteUserByUserName(studio.getSiteUser().getUserName());
+        Image studioMainImage = studioService.getMainImage(studio.getStudioId());
+        Image studioLogoImage = new Image();
+        List<Image> studioImages = studioService.getStudioImages(studio.getStudioId());;
 
         List<StudioSimpleDto> studioList = new ArrayList<>();
         for (Studio s : seller.getStudioList()) {
-            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName()));
+            studioLogoImage = studioService.getLogoImage(s.getStudioId());
+            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName(), studioLogoImage));
             System.out.println("공방ID : " + s.getStudioId());
             System.out.println("공방이름 : " + s.getStudioName());
         }
-
-        StudioResponse studioResponse = new StudioResponse(seller, studio);
+        studioLogoImage = studioService.getLogoImage(studio.getStudioId());
+        StudioResponse studioResponse = new StudioResponse(seller, studio, studioMainImage, studioLogoImage, studioImages);
 
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("studio", studioResponse);
@@ -73,6 +118,6 @@ public class SellerController {
 
         return  RsData.of("s-1", "해당공방의 정보와 seller 의 정보를 가져왔습니다", responseMap);
     }
+     */
 
-    * */
 }

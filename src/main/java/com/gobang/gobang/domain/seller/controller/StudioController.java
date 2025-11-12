@@ -34,7 +34,7 @@ public class StudioController {
     private final Rq rq;
 
     @GetMapping("/{id}")
-    public RsData<Map<String, Object>> getStudio(@PathVariable("id") Long id){
+    public RsData<Map<String, Object>> getStudioAndStuidioList(@PathVariable("id") Long id){
         Studio studio = studioService.getStudioById(id);
         SiteUser seller = siteUserService.getSiteUserByUserName(studio.getSiteUser().getUserName());
         Image studioMainImage = studioService.getMainImage(studio.getStudioId());
@@ -57,6 +57,7 @@ public class StudioController {
 
         return  RsData.of("s-1", "해당공방의 정보와 seller 의 정보를 가져왔습니다", responseMap);
     }
+
     @GetMapping("/{id}/products")
     public RsData<Page<ProductDto>> getProductList(
             @PathVariable("id") Long studioId,
