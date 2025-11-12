@@ -16,11 +16,28 @@ export default function SignupUser() {
         birth: '',
         nickName: '',
         mobilePhone: '',
+        profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
+        profileImageName: '', // 이미지 파일명
     })
+
+    const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
 
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
+    }
+
+    const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        const previewUrl = URL.createObjectURL(file)
+        setPreviewProfileImage(previewUrl)
+        setFormData((prev) => ({
+            ...prev,
+            profileImageUrl: previewUrl, // 실제 서버 업로드 후 URL로 교체 가능
+            profileImageName: file.name, // 파일명 저장
+        }))
     }
 
     const handleSubmit = async (e) => {
@@ -146,6 +163,26 @@ export default function SignupUser() {
                             onChange={handleChange}
                             placeholder="번호만적어주세요"
                         />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">프로필 이미지</label>
+                        <input
+                            type="file"
+                            name="profileImage"
+                            className="form-input"
+                            accept="image/*"
+                            onChange={handleImagePreview}
+                        />
+                        {previewProfileImage && (
+                            <div className="image-preview">
+                                <p>프로필 이미지 미리보기:</p>
+                                <img
+                                    src={previewProfileImage}
+                                    alt="프로필 이미지"
+                                    style={{ maxWidth: '300px', marginTop: '10px' }}
+                                />
+                            </div>
+                        )}
                     </div>
                     <div className="button-group">
                         <input type="submit" className="btn btn-primary" value="저장" />
