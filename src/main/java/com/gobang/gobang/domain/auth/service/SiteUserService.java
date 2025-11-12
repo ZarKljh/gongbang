@@ -71,12 +71,14 @@ public class SiteUserService {
                 .createdDate(LocalDateTime.now())
                 .build();
 
-        Image profileImage = buildProfileImagesFromRequest(signupUserRequest);
+
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
 
-        siteUserRepository.save(newUser);
+        SiteUser savedSiteUser = siteUserRepository.save(newUser);
+
+        Image profileImage = buildProfileImagesFromRequest(signupUserRequest, savedSiteUser);
         imageRepository.save(profileImage);
         return newUser;
     }
@@ -285,12 +287,13 @@ public class SiteUserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
-    private Image buildProfileImagesFromRequest(SignupUserRequest request) {
+    private Image buildProfileImagesFromRequest(SignupUserRequest request, SiteUser savedSiteUser) {
 
         if (request.getProfileImageUrl() != null) {
 
             Image profileImage = Image.builder()
                     .imageUrl(request.getProfileImageUrl())
+                    .refId(savedSiteUser.getId())
                     .refType(Image.RefType.USER_PROFILE)
                     .imageFileName(request.getProfileImageName())
                     .sortOrder(0)
