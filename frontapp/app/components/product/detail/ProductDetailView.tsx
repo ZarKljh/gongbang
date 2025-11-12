@@ -17,17 +17,17 @@ type ProductDetail = {
     images?: string[]
 }
 
-type Props = {
-    /** 선택: 외부에서 productId를 넘길 수도 있고, 없으면 쿼리스트링에서 읽음 */
-    productId?: string | number
-    onBuy?: (id: number, qty: number) => void
-    onAddCart?: (id: number, qty: number) => void
-    onToggleFav?: (id: number) => void
-}
+// type Props = { 안쓸거임 쿼리스트링에서 읽는걸로 개발해버렸음
+//     /** 선택: 외부에서 productId를 넘길 수도 있고, 없으면 쿼리스트링에서 읽음 */
+//     productId?: string | number
+//     onBuy?: (id: number, qty: number) => void
+//     onAddCart?: (id: number, qty: number) => void
+//     onToggleFav?: (id: number) => void
+// }
 
-export default function ProductDetailView({ productId: productIdProp, onBuy, onAddCart, onToggleFav }: Props) {
+export default function ProductDetailView({}) {
     const searchParams = useSearchParams()
-    const productId = String(productIdProp ?? searchParams.get('productId') ?? '')
+    const productId = searchParams.get('productId')
 
     const [count, setCount] = useState(1)
 
@@ -104,32 +104,11 @@ export default function ProductDetailView({ productId: productIdProp, onBuy, onA
                     </div>
 
                     <div className={styles.buttonRow}>
-                        <button
-                            className={styles.btnBuy}
-                            onClick={() => (onBuy ? onBuy(product.id, count) : console.log('구매', product.id, count))}
-                        >
-                            바로구매하기
-                        </button>
+                        <button className={styles.btnBuy}>바로구매하기</button>
 
                         <div className={styles.subButtons}>
-                            <button
-                                className={styles.btnCart}
-                                onClick={() =>
-                                    onAddCart
-                                        ? onAddCart(product.id, count)
-                                        : console.log('장바구니', product.id, count)
-                                }
-                            >
-                                장바구니
-                            </button>
-                            <button
-                                className={styles.btnFav}
-                                onClick={() =>
-                                    onToggleFav ? onToggleFav(product.id) : console.log('좋아요', product.id)
-                                }
-                            >
-                                ♥
-                            </button>
+                            <button className={styles.btnCart}>장바구니</button>
+                            <button className={styles.btnFav}>♥</button>
                         </div>
                     </div>
                 </section>
