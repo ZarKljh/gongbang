@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,12 +63,27 @@ public class ReviewService {
         Pageable pageable = PageRequest.of(page, 10, sortOption);
 
         // productId 기준 리뷰 조회
-        Page<Review> reviewPage;
-        if (productId != null) {
-            reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
-        } else {
-            reviewPage = reviewRepository.findByIsActiveTrue(pageable);
-        }
+//        Page<Review> reviewPage;
+//        if (productId != null) {
+//            reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
+//        } else {
+//            reviewPage = reviewRepository.findByIsActiveTrue(pageable);
+//        }
+
+        // productId 기준 리뷰 조회
+        Page<Review> reviewPage = (productId != null)
+                ? reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable)
+                : reviewRepository.findByIsActiveTrue(pageable);
+
+        // 각 리뷰에 이미지 목록 수동 주입
+        reviewPage.forEach(review -> {
+            List<Image> images = reviewImageRepository.findByRefTypeAndRefId(Image.RefType.REVIEW, review.getReviewId())
+                    .stream()
+                    .sorted(Comparator.comparing(Image::getSortOrder))
+                    .toList();
+
+            review.setImages(images);
+        });
 
         return reviewPage;
     }
@@ -79,7 +91,20 @@ public class ReviewService {
 
     // 리뷰 단건 조회
     public Optional<Review> getReviewById(Long id) {
-        return reviewRepository.findById(id);
+//        return reviewRepository.findById(id);
+
+        Optional<Review> optionalReview = reviewRepository.findById(id);
+
+        optionalReview.ifPresent(review -> {
+            List<Image> images = reviewImageRepository.findByRefTypeAndRefId(Image.RefType.REVIEW, review.getReviewId())
+                    .stream()
+                    .sorted(Comparator.comparing(Image::getSortOrder))
+                    .toList();
+
+            review.setImages(images);
+        });
+
+        return optionalReview;
     }
 
     // 리뷰 등록
@@ -107,7 +132,7 @@ public class ReviewService {
 
         reviewRepository.save(review);
 
-        // ✅ 이미지가 존재하면 함께 저장
+        // 이미지가 존재하면 함께 저장
         if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
             reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
         }
@@ -121,28 +146,12 @@ public class ReviewService {
         return reviewRepository.findById(reviewId);
     }
 
-    ///  기존 수정 록직
-//    @Transactional
-//    public RsData<Review> modify(Review review, @NotNull Integer rating, @NotBlank String content) {
-//        review.setRating(rating);
-//        review.setContent(content);
-//        review.setModifiedDate(LocalDateTime.now());
-//
-//        reviewRepository.save(review);
-//
-//        return RsData.of(
-//                "200",
-//                "%d번 리뷰가 수정되었습니다.".formatted(review.getReviewId()),
-//                review
-//        );
-//    }
-
     @Transactional
     public RsData<Review> modifyReview(Long reviewId, ReviewModifyRequest request, Long currentUserId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
 
-        // 🔒 작성자 검증
+        // 작성자 검증
         if (!review.getSiteUser().getId().equals(currentUserId)) {
             return RsData.of("403", "본인만 리뷰를 수정할 수 있습니다.");
         }
@@ -215,7 +224,7 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
 
-        // 🔒 작성자 검증
+        // 작성자 검증
         if (!review.getSiteUser().getId().equals(currentUserId)) {
             return RsData.of("403", "본인만 리뷰를 삭제할 수 있습니다.");
         }

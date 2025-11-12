@@ -54,8 +54,6 @@ export default function ReviewCreate() {
         const nextIds = {
             orderId: idCounter.orderId + 1,
             orderItemId: idCounter.orderItemId + 1,
-            // productId: idCounter.productId + 1,
-            // userId: idCounter.userId + 1,
         }
 
         const reviewToSend = {
@@ -291,9 +289,8 @@ export default function ReviewCreate() {
             >
                 <p style={{ marginBottom: '15px', fontWeight: 'bold' }}>이런 후기는 삭제될 수 있어요.</p>
                 <p>
-                    ~~~~~~~~~~~~~~~~~~~~
-                    <br />
-                    사용하면서 어땠고~~어쩌고 솔직한 후기를 남겨주세요 😊
+                    비속어, 타인 비방, 도배성 문구가 포함된 후기는 노출이 제한될 수 있습니다.
+                    <br /> 솔직한 경험을 나눠주세요.
                 </p>
             </div>
         </div>

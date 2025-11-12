@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static jakarta.persistence.CascadeType.ALL;
+
 @Entity
 @Table(name = "TBL_REVIEW")
 @Getter
@@ -29,11 +31,12 @@ import java.util.List;
 @SuperBuilder
 public class Review {
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    // orphanRemoval 부모와 연결 끊긴 자식 유령 데이터 방지
+    @OneToMany(mappedBy = "review", cascade = ALL, orphanRemoval = true)
     @JsonIgnore
     private List<ReviewComment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "review", cascade = ALL, orphanRemoval = true)
     private List<ReviewLike> likes = new ArrayList<>();
 
     @Id
@@ -53,18 +56,11 @@ public class Review {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    // 작성자 (회원 ID)
-//    @Column(name = "user_id", nullable = false)
-//    private Long userId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
 //    @JsonIgnoreProperties({"reviews"})
     @JsonIgnore
     private SiteUser siteUser;
-
-//    @Column(name = "user_name", nullable = false)
-//    private String userName;
 
     @Column(nullable = false)
     private Integer rating; // 1~5 점수
@@ -94,25 +90,11 @@ public class Review {
     @Column(name = "created_by", nullable = false)
     private String createdBy;
 
-
     @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
 
-//    @PrePersist
-//    public void onCreate() {
-//        this.createdDate = LocalDateTime.now();
-//        this.modifiedDate = LocalDateTime.now();
-//    }
-//
-//    @PreUpdate
-//    public void onUpdate() {
-//        this.modifiedDate = LocalDateTime.now();
-//    }
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ref_id", referencedColumnName = "review_id", insertable = false, updatable = false)
-//    @Where(clause = "ref_type = 'REVIEW'")
-//    @OrderBy("sortOrder ASC")
+    // 이미지 리스트를 영속성 관계 제외
+    @Transient
     private List<Image> images = new ArrayList<>();
 }

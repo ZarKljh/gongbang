@@ -69,8 +69,8 @@ export default function detail() {
     // 로그인 + 리뷰 로드 통합
     useEffect(() => {
         const init = async () => {
-            await checkLoginStatus() // 1️⃣ 로그인 먼저 확인
-            if (productId) await fetchReviews(productId, currentPage) // 2️⃣ 로그인 완료 후 리뷰 로드
+            await checkLoginStatus() // 로그인 먼저 확인
+            if (productId) await fetchReviews(productId, currentPage) // 로그인 완료 후 리뷰 로드
         }
 
         init()
@@ -142,8 +142,6 @@ export default function detail() {
 
     // ✅ 임시 평점 통계 데이터 (추후 연동)
     const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
-    // const avgRating = 4.5
-    // const totalCount = 226
 
     // 평균 별점 (물품 상세 만들어지면 사용)
     useEffect(() => {

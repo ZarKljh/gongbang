@@ -1,8 +1,9 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { FaStar, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import api from '@/app/utils/api'
 import Link from 'next/link'
 
 export default function ReviewDetail() {
@@ -12,10 +13,47 @@ export default function ReviewDetail() {
     const [currentUserId, setCurrentUserId] = useState(null)
     const [selectedImageIndex, setSelectedImageIndex] = useState(null) // ✅ index 기반으로 변경
 
+
+    const searchParams = useSearchParams()
+    const [product, setProduct] = useState(null)
+
+    const productIdStr = searchParams.get('productId')
+    const productId = productIdStr ? Number(productIdStr) : null
+
     useEffect(() => {
         checkLoginStatus()
         fetchReviewDetail()
     }, [params.id])
+
+    // ✅ 파라미터에서 categoryId, subId 받아서 상태로 설정
+    useEffect(() => {
+        const catIdStr = searchParams.get('categoryId')
+        const subIdStr = searchParams.get('subId') ?? '0'
+        if (!catIdStr) return
+
+        const catId = Number(catIdStr)
+        const subId = Number(subIdStr)
+
+        if (!Number.isFinite(catId) || catId <= 0) return
+
+        // subId가 0이면 API에서 최소값 조회
+        if (subId === 0) {
+            api.get(`category/${catId}/min`)
+                .then((res) => {
+                    const minSubId = res.data?.data
+
+                    onClickSubCategory(catId, minSubId)
+                })
+                .catch((err) => {
+                    console.error(' sub-min 값 검색 실패:', err)
+                })
+        }
+
+        // subId가 0이 아니면 그대로 사용
+        else {
+            onClickSubCategory(catId, subId)
+        }
+    }, [searchParams])
 
     // 로그인 정보 확인
     const checkLoginStatus = async () => {
@@ -54,20 +92,15 @@ export default function ReviewDetail() {
     // 이전/다음 이미지 이동
     const handlePrevImage = (e) => {
         e.stopPropagation()
-        setSelectedImageIndex((prev) =>
-            prev > 0 ? prev - 1 : review.imageUrls.length - 1
-        )
+        setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : review.imageUrls.length - 1))
     }
 
     const handleNextImage = (e) => {
         e.stopPropagation()
-        setSelectedImageIndex((prev) =>
-            prev < review.imageUrls.length - 1 ? prev + 1 : 0
-        )
+        setSelectedImageIndex((prev) => (prev < review.imageUrls.length - 1 ? prev + 1 : 0))
     }
 
-    const currentImage =
-        selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
+    const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
 
     return (
         <div
@@ -79,7 +112,7 @@ export default function ReviewDetail() {
                 justifyContent: 'space-between',
             }}
         >
-            {/* 왼쪽: 리뷰 상세 */}
+            {/* 리뷰 상세 */}
             <div style={{ width: '70%' }}>
                 <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>리뷰 상세보기</h2>
 
@@ -93,10 +126,7 @@ export default function ReviewDetail() {
                         paddingBottom: '8px',
                     }}
                 >
-                    <strong style={{ color: '#333' }}>
-                        {review.userNickName || '익명'}
-                    </strong>{' '}
-                    · 작성일:{' '}
+                    <strong style={{ color: '#333' }}>{review.userNickName || '익명'}</strong> · 작성일:{' '}
                     {review.createdDate
                         ? new Date(review.createdDate).toLocaleDateString('ko-KR', {
                               year: 'numeric',
@@ -119,11 +149,7 @@ export default function ReviewDetail() {
                         {review.imageUrls.map((url, i) => (
                             <img
                                 key={i}
-                                src={
-                                    url.startsWith('data:')
-                                        ? url
-                                        : `http://localhost:8090${url}`
-                                }
+                                src={url.startsWith('data:') ? url : `http://localhost:8090${url}`}
                                 alt={`리뷰 이미지 ${i + 1}`}
                                 style={{
                                     width: '120px',
@@ -134,19 +160,15 @@ export default function ReviewDetail() {
                                     cursor: 'pointer',
                                     transition: 'transform 0.2s ease',
                                 }}
-                                onClick={() => setSelectedImageIndex(i)} // ✅ index 저장
-                                onMouseEnter={(e) =>
-                                    (e.currentTarget.style.transform = 'scale(1.05)')
-                                }
-                                onMouseLeave={(e) =>
-                                    (e.currentTarget.style.transform = 'scale(1)')
-                                }
+                                onClick={() => setSelectedImageIndex(i)} // index 저장
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                             />
                         ))}
                     </div>
                 )}
 
-                {/* ⭐ 별점 */}
+                {/* 별점 */}
                 <div
                     style={{
                         display: 'flex',
@@ -162,12 +184,10 @@ export default function ReviewDetail() {
                             style={{ marginRight: '4px' }}
                         />
                     ))}
-                    <span style={{ marginLeft: '10px', color: '#777' }}>
-                        {review.rating} / 5
-                    </span>
+                    <span style={{ marginLeft: '10px', color: '#777' }}>{review.rating} / 5</span>
                 </div>
 
-                {/* 📜 내용 */}
+                {/* 내용 */}
                 <div
                     style={{
                         border: '1px solid #ddd',
@@ -183,13 +203,11 @@ export default function ReviewDetail() {
                     {review.content || '리뷰 내용이 없습니다.'}
                 </div>
 
-                {/* ✏️ 버튼 영역 */}
+                {/* 버튼 영역 */}
                 <div style={{ display: 'flex', gap: '12px' }}>
                     {Number(currentUserId) === Number(review.userId) && (
                         <button
-                            onClick={() =>
-                                router.push(`/review/${params.id}/modify`)
-                            }
+                            onClick={() => router.push(`/review/${params.id}/modify`)}
                             style={{
                                 backgroundColor: '#AD9263',
                                 color: 'white',
@@ -200,19 +218,18 @@ export default function ReviewDetail() {
                                 fontWeight: 'bold',
                                 transition: '0.2s',
                             }}
-                            onMouseEnter={(e) =>
-                                (e.currentTarget.style.backgroundColor = '#8f744d')
-                            }
-                            onMouseLeave={(e) =>
-                                (e.currentTarget.style.backgroundColor = '#AD9263')
-                            }
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#8f744d')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#AD9263')}
                         >
                             리뷰 수정하기
                         </button>
                     )}
 
                     <Link
-                        href="/review"
+                        href={{
+                            pathname: '/product/list/detail',
+                            query: { productId: review?.productId },
+                        }}
                         style={{
                             display: 'inline-block',
                             backgroundColor: '#ddd',
@@ -225,10 +242,32 @@ export default function ReviewDetail() {
                     >
                         ← 목록으로 돌아가기
                     </Link>
+                    {/* <button
+                        onClick={() => {
+                            if (review?.productId) {
+                                router.push(`/product/list/detail?productId=${review.productId}`)
+                            } else {
+                                alert('연결된 상품 정보를 찾을 수 없습니다.')
+                                router.push('/')
+                            }
+                        }}
+                        style={{
+                            display: 'inline-block',
+                            backgroundColor: '#ddd',
+                            color: '#333',
+                            textDecoration: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        ← 목록으로 돌아가기
+                    </button> */}
                 </div>
             </div>
 
-            {/* ✅ 팝업 모달 (이미지 확대 보기) */}
+            {/* 팝업 모달 (이미지 확대 보기) */}
             {selectedImageIndex !== null && (
                 <div
                     onClick={() => setSelectedImageIndex(null)}

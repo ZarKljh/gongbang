@@ -12,15 +12,10 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-//    List<Review> findAllByOrderByCreatedDateDesc();
+    long countBySiteUser_Id(Long userId);
 
     @Query("SELECT r FROM Review r ORDER BY r.createdDate DESC")
     Page<Review> getAllReviews(Pageable pageable);
-
-//    // 기존 리뷰 찾아 수정
-//    boolean existsByOrderItemId(Long orderItemId);
-
-    long countBySiteUser_Id(Long userId);
 
     List<Review> findBySiteUser_Id(Long userId);
 
@@ -28,4 +23,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
     Page<Review> findByIsActiveTrue(Pageable pageable);
+
 }
