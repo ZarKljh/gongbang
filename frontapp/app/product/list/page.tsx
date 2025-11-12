@@ -243,184 +243,204 @@ export default function Product() {
     }, [selectedBtn, selectedCategoryId, selectedSubCategoryId, submitFilter])
 
     return (
-        <>
-            <nav className="category-tree" aria-label="카테고리 메뉴">
-                <h2>카테고리</h2>
-                {categories.map((cat) => (
-                    <ul className="category-list mb-3" key={cat.id}>
-                        <li className="category-item">
-                            <button className="category-toggle" aria-expanded="false">
-                                {cat.name} <span className="icon">+</span>
-                            </button>
-                            <ul className="subcategory-list">
-                                {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
-                                    <li key={sub.id}>
-                                        <a
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                onClickSubCategory(cat.id, sub.id)
-                                            }}
-                                        >
-                                            {sub.name}
-                                        </a>
+        <div className={styles.pageFrame}>
+            <div className={styles.grid}>
+                {/* 왼쪽: 카테고리 사이드바 */}
+                <nav className={styles.categoryTree} aria-label="카테고리 메뉴">
+                    <h2>카테고리</h2>
+                    {categories.map((cat) => (
+                        <ul className={`${styles.categoryList} mb-3`} key={cat.id}>
+                            <li className={styles.categoryItem}>
+                                <button className={styles.categoryToggle} aria-expanded="false">
+                                    {cat.name} <span className={styles.icon}>+</span>
+                                </button>
+
+                                <ul className={styles.subcategoryList}>
+                                    {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
+                                        <li key={sub.id}>
+                                            <a
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    onClickSubCategory(cat.id, sub.id)
+                                                }}
+                                            >
+                                                {sub.name}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </li>
+                        </ul>
+                    ))}
+                </nav>
+
+                {/* 오른쪽 컬럼 */}
+                <div className={styles.contentColumn}>
+                    {/* 필터 영역 */}
+                    <section aria-labelledby="filter-heading" className={styles.filterArea}>
+                        <form id="filterForm" method="get" className={styles.filterForm} action=""></form>
+
+                        <h2 id="filter-heading" className="text-lg font-semibold mb-3">
+                            필터 영역
+                        </h2>
+
+                        {filterGroups.length === 0 ? (
+                            <p className="text-sm text-gray-500">표시할 필터그룹이 없습니다.</p>
+                        ) : (
+                            <ul className={styles.filterGroups}>
+                                {filterGroups.map((g) => (
+                                    <li key={g.id} className={styles.filterGroup}>
+                                        <div className={styles.groupTitle}>{g.name}</div>
+                                        <div>
+                                            <ul className={styles.optionList}>
+                                                {(filterOptions[g.id] ?? []).length > 0 ? (
+                                                    filterOptions[g.id].map((o) => (
+                                                        <li key={o.id} className={styles.optLabel}>
+                                                            {o.label && <label>{o.label}</label>}
+
+                                                            {o.inputType === 'submit' ? (
+                                                                <>
+                                                                    {/*색상 */}
+
+                                                                    <button
+                                                                        form="filterForm"
+                                                                        name={`${o.filterCode}`}
+                                                                        value={o.label}
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleFilterClick(o.filterCode, o.label)
+                                                                        }
+                                                                        aria-pressed={
+                                                                            selectedBtn[o.filterCode] === o.label
+                                                                        }
+                                                                        className={`${styles.chip} ${
+                                                                            selectedBtn[o.filterCode] === o.label
+                                                                                ? styles.active
+                                                                                : ''
+                                                                        }`}
+                                                                        style={{ backgroundColor: o.colorHex }}
+                                                                    />
+                                                                </>
+                                                            ) : o.inputType === 'CHIP' ? (
+                                                                <>
+                                                                    {/*가격대 */}
+                                                                    <button
+                                                                        form="filterForm"
+                                                                        name="PRICE_MIN"
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleFilterClick('PRICE_MIN', '30000')
+                                                                        }
+                                                                        aria-pressed={
+                                                                            selectedBtn['PRICE_MIN'] === '30000'
+                                                                        }
+                                                                        className={`${styles.prChip} ${
+                                                                            selectedBtn['PRICE_MIN'] === '30000'
+                                                                                ? styles.active
+                                                                                : ''
+                                                                        }`}
+                                                                    >
+                                                                        3만원 이하
+                                                                    </button>
+
+                                                                    <button
+                                                                        form="filterForm"
+                                                                        name="PRICE_MAX"
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleFilterClick('PRICE_MAX', '30000')
+                                                                        }
+                                                                        aria-pressed={
+                                                                            selectedBtn['PRICE_MAX'] === '30000'
+                                                                        }
+                                                                        className={`${styles.prChip} ${
+                                                                            selectedBtn['PRICE_MAX'] === '30000'
+                                                                                ? styles.active
+                                                                                : ''
+                                                                        }`}
+                                                                    >
+                                                                        3만원 이상
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    {/*디자인 */}
+                                                                    <input
+                                                                        form="filterForm"
+                                                                        type="CHECKBOX"
+                                                                        name={o.filterCode}
+                                                                        value={o.label ?? ''}
+                                                                        checked={
+                                                                            (selectedBtn[o.filterCode] ?? '') ===
+                                                                            (o.label ?? '')
+                                                                        }
+                                                                        onChange={() => {
+                                                                            // 단일 선택 토글
+                                                                            setSelectedBtn(
+                                                                                (
+                                                                                    prev: Record<string, string | null>,
+                                                                                ) => ({
+                                                                                    ...prev,
+                                                                                    [o.filterCode]:
+                                                                                        prev[o.filterCode] === o.label
+                                                                                            ? null
+                                                                                            : o.label!,
+                                                                                }),
+                                                                            )
+                                                                        }}
+                                                                    />
+                                                                </>
+                                                            )}
+                                                        </li>
+                                                    ))
+                                                ) : (
+                                                    <li className="text-xs text-gray-400">옵션 없음</li>
+                                                )}
+                                            </ul>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>
-                        </li>
-                    </ul>
-                ))}
-            </nav>
+                        )}
+                    </section>
 
-            {/*  */}
-            <section aria-labelledby="filter-heading" className="filter-area">
-                <form id="filterForm" method="get" className="filter-form" action=""></form>
-                <h2 id="filter-heading" className="text-lg font-semibold mb-3">
-                    필터 영역
-                </h2>
+                    {/* 카드 섹션 */}
+                    <section aria-labelledby="cards-title" className={styles.cardsWrap}>
+                        <h2 id="cards-title">카드섹션</h2>
 
-                {filterGroups.length == 0 ? (
-                    <p className="text-sm text-gray-500">표시할 필터그룹이 없습니다.</p>
-                ) : (
-                    <ul className="">
-                        {filterGroups.map((g) => (
-                            <li key={g.id} className="">
-                                <div className="">{g.name}</div>
-                                <div className="">
-                                    {/* 옵션 목록 */}
+                        {products.length === 0 ? (
+                            <p className="text-sm text-gray-500">표시할 상품목록이 없습니다.</p>
+                        ) : (
+                            <ul className={styles.cardGrid} role="list">
+                                {products.map((p) => (
+                                    <li className={styles.card} key={p.id}>
+                                        <article>
+                                            <Link
+                                                href={{ pathname: '/product/list/detail', query: { productId: p.id } }}
+                                                className={styles.cardLink}
+                                                aria-label="카드 1 자세히 보기"
+                                            >
+                                                <figure className={styles.cardMedia}>
+                                                    <img alt="카드 대표 이미지" loading="lazy" />
+                                                </figure>
+                                                <h3 className={styles.cardTitle}>{p.name}</h3>
+                                                <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
+                                            </Link>
 
-                                    <ul className="">
-                                        {(filterOptions[g.id] ?? []).length > 0 ? (
-                                            filterOptions[g.id].map((o) => (
-                                                <li key={o.id} className="">
-                                                    {o.label && <label>{o.label}</label>}
-                                                    {/* type을 submit이라고 썼지만 컬러값버튼임.. 수정해야함! */}
-                                                    {o.inputType === 'submit' ? (
-                                                        <>
-                                                            <button
-                                                                form="filterForm"
-                                                                name={`${o.filterCode}`}
-                                                                value={o.label}
-                                                                type="button"
-                                                                onClick={() => handleFilterClick(o.filterCode, o.label)}
-                                                                aria-pressed={selectedBtn[o.filterCode] === o.label}
-                                                                className={`${styles.chip} ${
-                                                                    selectedBtn[o.filterCode] === o.label
-                                                                        ? styles.active
-                                                                        : ''
-                                                                }`}
-                                                                style={{
-                                                                    backgroundColor: o.colorHex,
-                                                                }}
-                                                            />
-                                                        </>
-                                                    ) : o.inputType === 'CHIP' ? (
-                                                        <>
-                                                            {/* CHIP: 3만원 이하 */}
-                                                            <button
-                                                                form="filterForm"
-                                                                name="PRICE_MIN"
-                                                                type="button"
-                                                                onClick={() => handleFilterClick('PRICE_MIN', '30000')}
-                                                                aria-pressed={selectedBtn['PRICE_MIN'] === '30000'}
-                                                                className={`${styles.prChip} ${
-                                                                    selectedBtn['PRICE_MIN'] === '30000'
-                                                                        ? styles.active
-                                                                        : ''
-                                                                }`}
-                                                            >
-                                                                3만원 이하
-                                                            </button>
-
-                                                            {/* CHIP: 3만원 이상 */}
-                                                            <button
-                                                                form="filterForm"
-                                                                name="PRICE_MAX"
-                                                                type="button"
-                                                                onClick={() => handleFilterClick('PRICE_MAX', '30000')}
-                                                                aria-pressed={selectedBtn['PRICE_MAX'] === '30000'}
-                                                                className={`${styles.prChip} ${
-                                                                    selectedBtn['PRICE_MAX'] === '30000'
-                                                                        ? styles.active
-                                                                        : ''
-                                                                }`}
-                                                            >
-                                                                3만원 이상
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <input
-                                                                form="filterForm"
-                                                                type="CHECKBOX"
-                                                                name={o.filterCode} // ex) "COLOR"
-                                                                value={o.label ?? ''} // label 말고 code 권장
-                                                                checked={
-                                                                    (selectedBtn[o.filterCode] ?? '') ===
-                                                                    (o.label ?? '')
-                                                                } // ✅ 항상 boolean
-                                                                onChange={() => {
-                                                                    setSelectedBtn((prev) => ({
-                                                                        ...prev,
-                                                                        // 같은 걸 다시 누르면 해제(null), 아니면 선택
-                                                                        [o.filterCode]:
-                                                                            prev[o.filterCode] === o.label
-                                                                                ? null
-                                                                                : o.label!,
-                                                                    })) // 단일 선택 저장
-                                                                    // 필요 시 즉시 검색
-                                                                    // handleImmediateSubmit();
-                                                                }}
-                                                            />
-                                                        </>
-                                                    )}
-                                                </li>
-                                            ))
-                                        ) : (
-                                            <li className="text-xs text-gray-400">옵션 없음</li>
-                                        )}
-                                    </ul>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
-
-            <section aria-labelledby="cards-title">
-                <h2 id="cards-title">카드섹션</h2>
-                {products.length == 0 ? (
-                    <p className="text-sm text-gray-500">표시할 상품목록이 없습니다.</p>
-                ) : (
-                    <ul className={styles.cardGrid} role="list">
-                        {products.map((p) => (
-                            <li className={styles.card} key={p.id}>
-                                <article>
-                                    <Link
-                                        href={{
-                                            pathname: '/product/list/detail',
-                                            query: { productId: p.id },
-                                        }}
-                                        className={styles.cardLink}
-                                        aria-label="카드 1 자세히 보기"
-                                    >
-                                        <figure className={styles.cardMedia}>
-                                            <img alt="카드 1 대표 이미지" loading="lazy" />
-                                        </figure>
-                                        <h3 className={styles.cardTitle}>{p.name}</h3>
-                                        <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
-                                    </Link>
-
-                                    <footer className={styles.cardActions}>
-                                        <a href="#" className={styles.btnRead}>
-                                            자세히
-                                        </a>
-                                    </footer>
-                                </article>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
-        </>
+                                            <footer className={styles.cardActions}>
+                                                <a href="#" className={styles.btnRead}>
+                                                    자세히
+                                                </a>
+                                            </footer>
+                                        </article>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </div>
+            </div>
+        </div>
     )
 }
