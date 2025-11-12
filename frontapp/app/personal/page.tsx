@@ -228,10 +228,16 @@ export default function MyPage() {
 
     const fetchQna = async (id?: number) => {
         const userId = id || userData?.id
+        console.log('fetchQna 호출 - userId:', userId)
         if (!userId) return;
+        
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {withCredentials: true,})
-            setQna(Array.isArray(data.data) ? data.data : [])
+            const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
+                withCredentials: true,
+            })
+            console.log('전체 응답:', response)
+            console.log('data.data:', response.data.data)
+            setQna(Array.isArray(response.data.data) ? response.data.data : [])
         } catch (error) {
             console.error('문의 목록 조회 실패:', error)
             setQna([])

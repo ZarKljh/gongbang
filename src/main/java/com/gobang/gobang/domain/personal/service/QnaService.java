@@ -40,7 +40,7 @@ public class QnaService {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        List<Inquiry> inquiries = inquiryRepository.findAllByUser(user);
+        List<Inquiry> inquiries = inquiryRepository.findAllByWriter(user);
         List<QnaResponse> safeList = new ArrayList<>();
 
         for (Inquiry inquiry : inquiries) {
@@ -57,7 +57,7 @@ public class QnaService {
     public QnaResponse getInquiryDetail(Long userId, Long qnaId) {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        Inquiry inquiry = inquiryRepository.findByIdAndUser(qnaId, user)
+        Inquiry inquiry = inquiryRepository.findByIdAndWriter(qnaId, user)
                 .orElseThrow(() -> new IllegalArgumentException("해당 문의를 찾을 수 없습니다."));
         return QnaResponse.from(inquiry);
     }
@@ -66,17 +66,25 @@ public class QnaService {
     public List<QnaResponse> getInquiriesByAnswered(Long userId, boolean answered) {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return inquiryRepository.findByUserAndAnswered(user, answered)
-                .stream()
-                .map(QnaResponse::from)
-                .toList();
+
+        List<Inquiry> inquiries = inquiryRepository.findByWriterAndAnswered(user, answered);
+        List<QnaResponse> safeList = new ArrayList<>();
+
+        for (Inquiry inquiry : inquiries) {
+            try {
+                safeList.add(QnaResponse.from(inquiry));
+            } catch (Exception e) {
+                log.warn("Inquiry 변환 실패 id={} reason={}", inquiry.getId(), e.getMessage());
+            }
+        }
+        return safeList;
     }
 
     // 타입별 조회
     public List<QnaResponse> getMyInquiriesByType(Long userId, InquiryType type) {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return inquiryRepository.findByUserAndType(user, type)
+        return inquiryRepository.findByWriterAndType(user, type)
                 .stream()
                 .map(QnaResponse::from)
                 .toList();
@@ -86,7 +94,7 @@ public class QnaService {
     public List<QnaResponse> getInquiriesByTypeAndAnswered(Long userId, InquiryType type, boolean answered) {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return inquiryRepository.findByUserAndTypeAndAnswered(user, type, answered)
+        return inquiryRepository.findByWriterAndTypeAndAnswered(user, type, answered)
                 .stream()
                 .map(QnaResponse::from)
                 .toList();
@@ -100,7 +108,7 @@ public class QnaService {
         Inquiry inquiry = inquiryRepository.findById(qnaId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 문의를 찾을 수 없습니다."));
 
-        if (!inquiry.getUser().getId().equals(user.getId())) {
+        if (!inquiry.getWriter().getId().equals(user.getId())) {
             throw new IllegalArgumentException("본인의 문의만 삭제할 수 있습니다.");
         }
 

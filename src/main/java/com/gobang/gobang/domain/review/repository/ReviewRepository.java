@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.review.repository;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +24,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findBySiteUser_Id(Long userId);
 
     Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
+
 }
