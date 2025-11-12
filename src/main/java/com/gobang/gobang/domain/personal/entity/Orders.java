@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -30,6 +32,6 @@ public class Orders {
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
-    private Delivery delivery;
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    private List<Delivery> deliveries = new ArrayList<>();
 }

@@ -8,6 +8,7 @@ import com.gobang.gobang.domain.auth.dto.request.SignupUserRequest;
 import com.gobang.gobang.domain.auth.dto.response.LoginUserResponse;
 import com.gobang.gobang.domain.auth.dto.response.SignupSellerResponse;
 import com.gobang.gobang.domain.auth.dto.response.SignupUserResponse;
+import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
@@ -16,13 +17,19 @@ import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
 import com.gobang.gobang.global.rq.Rq;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/auth")
@@ -32,7 +39,6 @@ public class SiteUserController {
     private final SiteUserService siteUserService;
     private final StudioService studioService;
     private final JwtProvider jwtProvider;
-    //private final HttpServletResponse resp;
     private final Rq rq;
     private final PasswordEncoder passwordEncoder;
 
@@ -83,7 +89,7 @@ public class SiteUserController {
     }
     @PostMapping("/login/seller")
     public RsData<LoginResponseBody> loginSeller(@Valid @RequestBody LoginSellerRequest loginSellerRequest, HttpServletResponse res){
-        if(!"SELLER".equals(loginSellerRequest.getRole())){
+        if(!"SELLER".equals(loginSellerRequest.getRole()) && !"ADMIN".equals(loginSellerRequest.getRole())){
             throw new IllegalArgumentException("사업자전용 로그인 화면입니다.");
         }
 
@@ -91,6 +97,12 @@ public class SiteUserController {
         if(siteUser == null){
             throw new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다.");
         }
+        // 실제 사용자 role 확인
+        RoleType actualRole = siteUser.getRole();
+        if (actualRole != RoleType.SELLER && actualRole != RoleType.ADMIN) {
+            throw new IllegalArgumentException("해당 사용자는 사업자 또는 관리자 권한이 없습니다.");
+        }
+
         RsData<SiteUserService.AuthAndMakeTokensResponseBody> authAndMakeTokensRs = siteUserService.authAndMakeTokens(loginSellerRequest.getUserName(), loginSellerRequest.getPassword());
 
 
@@ -105,46 +117,6 @@ public class SiteUserController {
                 new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
         );
     }
-
-    /*
-    @PostMapping("/login/seller")
-    public RsData<LoginResponseBody> loginSeller(@Valid @RequestBody LoginUserRequest loginUserRequest, HttpServletResponse res) {
-        SiteUser siteUser = siteUserService.getSiteUserByUserNamePassword(loginUserRequest.getUserName(), loginUserRequest.getPassword());
-        RsData<SiteUserService.AuthAndMakeTokensResponseBody> authAndMakeTokensRs = siteUserService.authAndMakeTokens(loginUserRequest.getUserName(), loginUserRequest.getPassword());
-
-
-        // accessToken 발급
-        rq.setCrossDomainCookie("accessToken", authAndMakeTokensRs.getData().getAccessToken());
-        rq.setCrossDomainCookie("refreshToken", authAndMakeTokensRs.getData().getRefreshToken());
-
-
-        return RsData.of(
-                authAndMakeTokensRs.getResultCode(),
-                authAndMakeTokensRs.getMsg(),
-                new LoginResponseBody(new SiteUserDto(authAndMakeTokensRs.getData().getSiteUser()))
-        );
-    }
-    */
-    /*
-    @GetMapping("/me")
-    public RsData<LoginUserResponse> me(HttpServletRequest req) {
-        Cookie[] cookies = req.getCookies();
-        String accessToken = "";
-
-        for (Cookie cookie : cookies) {
-            if ("accessToken".equals(cookie.getName())) {
-                accessToken = cookie.getValue();
-                //System.out.println("액세스토큰 : " + accessToken);
-            }
-        }
-
-        Map<String, Object> claims = jwtProvider.getClaims(accessToken);
-        String userName = (String) claims.get("userName");
-        SiteUser siteUser = this.siteUserService.getSiteUserByUserName(userName);
-
-        return RsData.of("200", "내 회원정보", new LoginUserResponse(siteUser));
-    }
-    */
     @GetMapping("/me")
     public RsData<LoginUserResponse> me() {
         //System.out.println("me 시작");
@@ -164,17 +136,4 @@ public class SiteUserController {
 
         return RsData.of("200","로그아웃 성공");
     }
-    /*
-    private void _addHeaderCookie(String tokenName, String token) {
-        ResponseCookie cookie = ResponseCookie
-                .from(tokenName, token)
-                .path("/")
-                .sameSite("None")
-                .secure(true)
-                .httpOnly(true)
-                .build();
-
-        resp.addHeader("Set-Cookie", cookie.toString());
-    }
-    */
 }

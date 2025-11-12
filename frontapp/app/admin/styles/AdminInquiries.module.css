@@ -1,0 +1,250 @@
+/* 페이지 상단 헤더 영역 */
+.headerSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.pageTitle {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.pageSubtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* 우측 카운터 + 버튼 영역 */
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.counterBox {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    min-width: 110px;
+}
+
+.counterLabel {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.counterValue {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* 버튼 스타일 */
+.primaryButton {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    background-color: #0f172a;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primaryButton:hover {
+    background-color: #111827;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+}
+
+.primaryButton:disabled {
+    background-color: #cbd5f5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.secondaryButton {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+    font-weight: 400;
+    background-color: #ffffff;
+    color: #111827;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.secondaryButton:hover {
+    background-color: #f9fafb;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+}
+
+/* 필터/에러 영역 */
+.controlSection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 8px;
+}
+
+.checkboxLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #4b5563;
+}
+
+.errorBox {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    font-size: 12px;
+    color: #b91c1c;
+}
+
+/* 테이블 영역 */
+.tableSection {
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    padding: 12px;
+}
+
+.infoText {
+    font-size: 13px;
+    color: #6b7280;
+    padding: 8px 4px;
+}
+
+.tableWrapper {
+    overflow: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.table thead {
+    background-color: #f9fafb;
+}
+
+.table th,
+.table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.table th {
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 12px;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 행 스타일 */
+.rowUnread {
+    background-color: #fefce8; /* 약한 노란색 */
+    cursor: pointer;
+}
+
+.rowAnswered {
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.rowUnread:hover,
+.rowAnswered:hover {
+    background-color: #e5f2ff;
+}
+
+.titleCell {
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 상태 배지 */
+.badgePending {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #92400e;
+    background-color: #fef3c7;
+    border: 1px solid #fbbf24;
+}
+
+.badgeAnswered {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #166534;
+    background-color: #dcfce7;
+    border: 1px solid #22c55e;
+}
+
+/* 상세 모달 내용 */
+.detailBody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.detailRow {
+    display: flex;
+    gap: 8px;
+}
+
+.detailLabel {
+    width: 80px;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.detailContentWrap {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detailContentLabel {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.detailContentBox {
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #111827;
+    white-space: pre-wrap;
+}

@@ -1,0 +1,504 @@
+/* === 전체 레이아웃 === */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css');
+
+body {
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto,
+        'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+}
+
+.dashboardLayout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+    width: 1280px;
+    margin: 0 auto;
+}
+
+/* === Sidebar === */
+.sidebar {
+    background: #1e293b;
+    color: white;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 160px;
+}
+
+.profileBox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.profileName {
+    font-weight: 600;
+    font-size: 1rem;
+}
+.profileRole {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+}
+
+.navMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.navItem {
+    text-decoration: none;
+    color: #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.navItem:hover {
+    background: #334155;
+    color: #fff;
+}
+
+/* === 메인 === */
+.mainArea {
+    padding: 32 0 0 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* === 차트 섹션 === */
+
+.chartArea {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 72px;
+}
+
+.chartRight {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.kpiBox {
+    display: flex;
+    flex-direction: column;
+    gap: 27px;
+}
+
+.kpiItem {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 4px 4px 20px 0 rgba(0, 0, 0, 0.15);
+    width: 160px;
+    height: 124px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.kpiItem span {
+    font-size: 16px;
+}
+
+.kpiItemDesign {
+    display: block;
+    width: 115px;
+    height: 2px;
+    background-color: #d9d9d9;
+    border-radius: 20px;
+    margin-top: 21px;
+    margin-bottom: 21px;
+}
+
+.kpiItem strong {
+    font-size: 12px;
+    display: block;
+    margin-top: 6px;
+    color: #0f172a;
+}
+.kpiItem.up strong {
+    color: #16a34a;
+}
+.kpiItem.down strong {
+    color: #dc2626;
+}
+
+/* === 하단 빠른 액세스 === */
+.bottomDashboard {
+    padding: 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+.bottomTitle {
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1e293b;
+}
+.bottomGrid {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+.circleCard {
+    flex: 1;
+    height: 120px;
+    border-radius: 50%;
+    font-weight: 600;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.circleCard:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+.cardShop {
+    background: linear-gradient(135deg, #38bdf8, #2563eb);
+}
+.cardReport {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+}
+.cardInquiry {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+}
+
+.cardDivider {
+    display: block;
+    width: 115px;
+    height: 2px;
+    background-color: #d9d9d9;
+    border-radius: 20px;
+    margin-top: 21px;
+    margin-bottom: 21px;
+}
+
+/* 1:1 문의하기 버튼 */
+.inquiryButton {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db; /* slate-300 */
+    font-size: 14px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.inquiryButton:hover {
+    background-color: #f9fafb; /* slate-50 */
+    border-color: #cbd5f5;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+/* 폼 전체 */
+.inquiryForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 상단 그리드 (이름/이메일/타입) */
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 640px) {
+    .formGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* 필드 하나 */
+.formField {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2칸 전체 쓰는 필드 (에러 메시지 / 문의 유형 등) */
+.formFieldFull {
+    grid-column: 1 / -1;
+}
+
+/* 라벨 */
+.label {
+    font-size: 11px;
+    color: #64748b; /* slate-500 */
+    margin-bottom: 4px;
+}
+
+/* 공통 인풋 베이스 */
+.inputBase {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    outline: none;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+/* 일반 인풋 */
+.input {
+    composes: inputBase;
+}
+
+/* 읽기 전용 인풋 */
+.readonlyInput {
+    composes: inputBase;
+    background-color: #f8fafc; /* slate-50 */
+}
+
+/* 포커스 시 */
+.input:focus,
+.readonlyInput:focus,
+.select:focus,
+.textarea:focus {
+    border-color: #0f172a; /* slate-900 */
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+/* select */
+.select {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+/* textarea */
+.textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+/* 에러 텍스트 */
+.errorText {
+    font-size: 11px;
+    color: #e11d48; /* rose-600 */
+}
+
+/* 정보 메시지 박스 */
+.infoBox {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background-color: #f8fafc;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #334155;
+}
+
+/* 버튼 영역 */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+/* 전송 버튼 */
+.submitButton {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 14px;
+    color: #ffffff;
+    background-color: #0f172a; /* slate-900 */
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.submitButton:hover {
+    background-color: #1f2937; /* slate-800 */
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+}
+
+/* 비활성 전송 버튼 */
+.submitButtonDisabled {
+    background-color: #cbd5f5; /* 대략 slate-300 톤 */
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* 닫기 버튼 */
+.closeButton {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.closeButton:hover {
+    background-color: #f9fafb;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+/* ========== Modal 공통 ========== */
+
+.modalRoot {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 어두운 배경 */
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45); /* 대략 slate-900 45% */
+}
+
+/* 모달 박스 */
+.modalDialog {
+    position: relative;
+    width: 100%;
+    margin: 0 16px; /* 모바일에서 좌우 여백 */
+    border-radius: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 사이즈별 너비 */
+.modalSm {
+    max-width: 480px;
+}
+
+.modalMd {
+    max-width: 640px;
+}
+
+.modalLg {
+    max-width: 768px;
+}
+
+/* 헤더 영역 */
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modalTitle {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+/* 닫기 버튼 (×) */
+.modalCloseButton {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background-color: #ffffff;
+    cursor: pointer;
+    font-size: 16px;
+    color: #6b7280;
+    padding: 0;
+}
+
+.modalCloseButton:hover {
+    background-color: #f9fafb;
+    color: #111827;
+}
+
+/* 내용 영역 */
+.modalBody {
+    padding: 16px 20px;
+    overflow-y: auto;
+}
+
+/* 네비게이션 영역 안에서 버튼 감싸는 래퍼 (필요하면 여백 조절용) */
+.inquiryNavWrapper {
+    display: inline-block;
+}
+
+/* 이미 만들어둔 버튼: 필요 시 약간 다듬어도 됨 */
+.inquiryButton {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.inquiryButton:hover {
+    background-color: #f9fafb;
+    border-color: #cbd5f5;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+/* ✅ 화면 하단에 잠깐 떠 있는 토스트 메시지 */
+.inquiryToast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 1100;
+    max-width: 90vw;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background-color: #0f172a;
+    color: #f9fafb;
+    font-size: 13px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
+    text-align: center;
+}
+
+.reportButton {
+    all: unset;
+    cursor: pointer;
+}

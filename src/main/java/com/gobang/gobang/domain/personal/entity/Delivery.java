@@ -20,7 +20,7 @@ public class Delivery {
     @Column(name = "delivery_id")
     private Long deliveryId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Orders order;
 
@@ -33,7 +33,7 @@ public class Delivery {
 
     @Builder.Default
     @Column(name = "delivery_status", nullable = false, length = 30)
-    private String deliveryStatus = "배송중";
+    private String deliveryStatus = "배송준비중";
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

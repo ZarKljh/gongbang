@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/admin/v1") @RequiredArgsConstructor
+@RequestMapping("/api/v1/admin") @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class FaqAdminController {
     private final FaqService faqService;

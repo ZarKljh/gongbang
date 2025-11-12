@@ -2,11 +2,15 @@ package com.gobang.gobang.domain.review.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -50,8 +54,14 @@ public class Review {
     private Long productId;
 
     // 작성자 (회원 ID)
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+//    @Column(name = "user_id", nullable = false)
+//    private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+//    @JsonIgnoreProperties({"reviews"})
+    @JsonIgnore
+    private SiteUser siteUser;
 
 //    @Column(name = "user_name", nullable = false)
 //    private String userName;
@@ -99,4 +109,10 @@ public class Review {
 //    public void onUpdate() {
 //        this.modifiedDate = LocalDateTime.now();
 //    }
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ref_id", referencedColumnName = "review_id", insertable = false, updatable = false)
+    @Where(clause = "ref_type = 'REVIEW'")
+//    @OrderBy("sortOrder ASC")
+    private List<Image> images = new ArrayList<>();
 }

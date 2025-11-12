@@ -23,8 +23,8 @@ public class ApiSecurityConfig {
                 .securityMatcher("/api/**")
                 .authorizeRequests(
                         authorizeRequests -> authorizeRequests
-                                .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/*").permitAll()
@@ -39,7 +39,7 @@ public class ApiSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/v1/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/v1/review/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/reviews/**").authenticated()
 
 
                                 .anyRequest().authenticated()

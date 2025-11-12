@@ -8,6 +8,9 @@ interface Props {
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
     setStudioInfo: React.Dispatch<React.SetStateAction<StudioInfo>>
+    previewMainImage: string | null
+    previewLogoImage: string | null
+    previewGalleryImages: string[]
 }
 
 declare global {
@@ -16,7 +19,15 @@ declare global {
     }
 }
 
-export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioInfo }: Props) {
+export default function StudioForm({
+    studioInfo,
+    onChange,
+    onSubmit,
+    setStudioInfo,
+    previewMainImage,
+    previewLogoImage,
+    previewGalleryImages,
+}: Props) {
     const handleAddressSearch = () => {
         if (typeof window === 'undefined' || !window.daum) {
             alert('주소 검색 기능을 사용할 수 없습니다. 페이지를 새로고침 해주세요.')
@@ -78,7 +89,7 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                 <input
                     type="text"
                     name="studioBusinessNumber"
-                    className="group-input"
+                    className="form-input"
                     value={studioInfo.studioBusinessNumber}
                     onChange={onChange}
                     placeholder="사업자번호를 적어주세요"
@@ -151,21 +162,20 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                 />
             </div>
             <div className="form-group">
-                <label className="form-label">주소 검색</label>
-                <button className="btn btn-primary" type="button" onClick={handleAddressSearch}>
-                    주소 찾기
-                </button>
-            </div>
-            <div className="form-group">
                 <label className="form-label">우편번호</label>
-                <input
-                    type="text"
-                    name="studioAddPostNumber"
-                    className="form-input"
-                    value={studioInfo.studioAddPostNumber}
-                    onChange={onChange}
-                    placeholder="우편번호를 검색해주세요"
-                />
+                <div className="form-row">
+                    <input
+                        type="text"
+                        name="studioAddPostNumber"
+                        className="form-input"
+                        value={studioInfo.studioAddPostNumber}
+                        onChange={onChange}
+                        placeholder="우편번호를 검색해주세요"
+                    />
+                    <button className="btn btn-primary address-btn" type="button" onClick={handleAddressSearch}>
+                        주소 찾기
+                    </button>
+                </div>
             </div>
             <div className="form-group">
                 <label className="form-label">기본주소</label>
@@ -188,6 +198,62 @@ export default function StudioForm({ studioInfo, onChange, onSubmit, setStudioIn
                     onChange={onChange}
                     placeholder="공방소재재의 상세주소를 적어주세요"
                 />
+            </div>
+            <div className="form-group">
+                <label className="form-label">대표 이미지</label>
+                <input type="file" name="studioMainImage" className="form-input" accept="image/*" onChange={onChange} />
+                {previewMainImage && (
+                    <div className="image-preview">
+                        <p>대표 이미지 미리보기:</p>
+                        <img
+                            src={previewMainImage}
+                            alt="대표 이미지"
+                            style={{ maxWidth: '300px', marginTop: '10px' }}
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">로고 이미지</label>
+                <input type="file" name="studioLogoImage" className="form-input" accept="image/*" onChange={onChange} />
+                {previewLogoImage && (
+                    <div className="image-preview">
+                        <p>로고 이미지 미리보기:</p>
+                        <img
+                            src={previewLogoImage}
+                            alt="로고 이미지"
+                            style={{ maxWidth: '300px', marginTop: '10px' }}
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">매장 사진 (최대 5장)</label>
+                <input
+                    type="file"
+                    name="studioGalleryImages"
+                    className="form-input"
+                    accept="image/*"
+                    multiple
+                    onChange={onChange}
+                />
+                {previewGalleryImages.length > 0 && (
+                    <div className="image-preview">
+                        <p>매장 사진 미리보기:</p>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                            {previewGalleryImages.map((url, index) => (
+                                <img
+                                    key={index}
+                                    src={url}
+                                    alt={`매장사진${index + 1}`}
+                                    style={{ width: '150px', borderRadius: '6px' }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="button-group">
                 <button className="btn btn-primary" type="button" onClick={onSubmit}>

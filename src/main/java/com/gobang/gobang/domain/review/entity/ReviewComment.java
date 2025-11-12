@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.review.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,9 +34,9 @@ public class ReviewComment{
     @JsonIgnore
     private Review review;
 
-    // 테스트용 nullable=true
-    @Column(name = "seller_id", nullable = true)
-    private String sellerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "studio_id", nullable = false)
+    private Studio studio;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false)
