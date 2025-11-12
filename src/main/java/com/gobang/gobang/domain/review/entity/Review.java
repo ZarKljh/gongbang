@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -115,4 +116,9 @@ public class Review {
     @Where(clause = "ref_type = 'REVIEW'")
 //    @OrderBy("sortOrder ASC")
     private List<Image> images = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id",  insertable = false, updatable = false)
+    @JsonIgnore
+    private Product product;
 }

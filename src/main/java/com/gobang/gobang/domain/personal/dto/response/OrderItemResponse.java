@@ -24,6 +24,7 @@ public class OrderItemResponse {
                 .orderItemId(orderItem.getOrderItemId())
                 .orderId(orderItem.getOrder().getOrderId())
                 .productId(orderItem.getProduct().getId())
+                .productName(orderItem.getProduct().getName())
                 .quantity(orderItem.getQuantity())
                 .price(orderItem.getPrice())
                 .build();

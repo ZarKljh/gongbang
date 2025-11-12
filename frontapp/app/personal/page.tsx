@@ -3,6 +3,7 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
+import Link from 'next/link';
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
@@ -11,7 +12,6 @@ export default function MyPage() {
     // 사용자 정보
     const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
-    const [profileImg, setProfileImg] = useState<any[]>([])
     const [stats, setStats] = useState<any>({
         totalQna: 0,
         totalReviews: 0,
@@ -31,13 +31,13 @@ export default function MyPage() {
 
     // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
-    const [deliveryDetail, setDeliveryDetail] = useState<any[]>([])
+    const [deliveryDetail, setDeliveryDetail] = useState<any>(null)
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
-    const [isOrderModal, setIsOrderModal] = useState(false)
     const [isOrdersModal, setIsOrdersModal] = useState(false)
-setDeliveryDetail
+    const [isOrderDetailModal, setIsOrderDetailModal] = useState(false)
+
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
     const [isAddressModal, setIsAddressModal] = useState(false)
@@ -84,6 +84,7 @@ setDeliveryDetail
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
+            setLoading(true);
             try {
                 const user = await fetchUser()
                 if (!user || !user.id) return
@@ -91,6 +92,8 @@ setDeliveryDetail
                 await loadAllData(user.id)
             } catch (error) {
                 console.error('초기 데이터 로딩 실패:', error)
+            } finally {
+                setLoading(false);
             }
         }
 
@@ -108,7 +111,6 @@ setDeliveryDetail
 
     // =============== API 호출 함수 ===============
     const loadAllData = async (userId: number) => {
-        setLoading(true)
         try {
             await Promise.all([
                 fetchOrders(userId),
@@ -364,14 +366,11 @@ setDeliveryDetail
     }
 
     // =============== 주문, 배송정보 ===============
-    const handleOrderClick = async (orderId: number) => {
-        try {
-            const deliveryDetail = await fetchDeliveryDetail(orderId)
-            setSelectedDelivery(deliveryDetail)
-            setIsStatusModal(true)
-        } catch (error) {
-            console.error('배송 정보 조회 실패:', error)
-        }
+    const isWithinSevenDays = (completedAt?: string | null) => {
+        if (!completedAt) return true // 완료일 없으면 그냥 true
+        const completedTime = new Date(completedAt).getTime()
+        const sevenDaysLater = completedTime + 30 * 24 * 60 * 60 * 1000
+        return Date.now() <= sevenDaysLater
     }
 
     // =============== 회원정보 ===============
@@ -791,9 +790,18 @@ setDeliveryDetail
         setIsStatusModal(true)
     }
 
-    const handleOrderClick = (order: any) => {
-        setSelectedOrder(order)
-        setIsOrderModal(true)
+    const handleOrderClick = async (order: any) => {
+        try {
+            setSelectedOrder(order)
+            
+            const detail = await fetchDeliveryDetail(order.orderId)
+            setDeliveryDetail(detail)
+            
+            setIsOrderDetailModal(true)
+        } catch (error) {
+            console.error('배송 상세 조회 실패:', error)
+            setIsOrderDetailModal(true)
+        }
     }
 
     // =============== 렌더링 조건 ===============
@@ -803,7 +811,7 @@ setDeliveryDetail
 
     if (!userData) {
         return (
-            <div>
+            <div className='need-login'>
                 로그인이 필요합니다.
                 <button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>
             </div>
@@ -935,51 +943,46 @@ setDeliveryDetail
                                 {['배송준비중', '배송중', '배송완료'].map((status) => (
                                     <div key={status} className="status-card" onClick={() => handleStatusClick(status)}>
                                         <p>{status}</p>
-                                        <p>{orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}</p>
+                                        <p>
+                                            {orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}
+                                        </p>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="section-header">
-                                <h2>최근 주문</h2>
+                                <h2>주문 내역</h2>
                             </div>
 
                             {orders.length === 0 ? (
-                                <div className="empty-state">주문 내역이 없습니다.</div>
+                                <p>주문 내역이 없습니다.</p>
                             ) : (
-                                <div className="orders-list">
-                                    {orders.map((order) => (
-                                        <div key={order.orderId} className="order-card">
-                                            <div className="order-header">
-                                                <div>
-                                                    <p className="order-date">{order.createdDate}</p>
-                                                    <p className="order-number">주문번호: {order.orderCord}</p>
-                                                </div>
-                                                <span className="order-status">{order.deliveryStatus}</span>
-                                            </div>
-
-                                            {order.items && order.items.length > 0 ? (
-                                                order.items.map((item, idx) => (
-                                                    <div key={idx} className="order-item">
-                                                        <p className="order-item-name">{item.productName}</p>
-                                                        <p className="order-item-detail">
-                                                            {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                        </p>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="order-item-empty">상품 정보가 없습니다.</div>
-                                            )}
-
-                                            <div className="order-footer">
-                                                {order.trackingNumber && (
-                                                    <p className="order-tracking">운송장: {order.trackingNumber}</p>
-                                                )}
-                                                <p className="order-total">총 {order.totalPrice?.toLocaleString()}원</p>
-                                            </div>
+                                orders.map((order) => (
+                                    <div key={order.orderId} className="order-card"
+                                        onClick={() => setIsOrdersModal(true)}
+                                    >
+                                        <div className="order-header">
+                                            <p>
+                                                주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
+                                            </p>
+                                            <span>{order.deliveryStatus}</span>
                                         </div>
-                                    ))}
-                                </div>
+
+                                        {(order.items || []).map((item, idx) => (
+                                            <div key={idx} className="order-item">
+                                                <p>주문 상품: {item.productName}</p>
+                                                <p>
+                                                    {item.price?.toLocaleString()}원 / {item.quantity}개
+                                                </p>
+                                            </div>
+                                        ))}
+
+                                        <div className="order-footer">
+                                            {order.trackingNumber && <p>운송장: {order.trackingNumber}</p>}
+                                            <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                        </div>
+                                    </div>
+                                ))
                             )}
                         </div>
                     )}
@@ -997,8 +1000,10 @@ setDeliveryDetail
                                 <div className="cart-list">
                                     {cart.map((item) => (
                                         <div key={item.cartId} className="cart-product">
-                                            <p>{item.productName}</p>
-                                            <p>{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                            <Link href={`http://localhost:3000/product/list/detail/${item.productId}`} className="product-name">
+                                                {item.productName}
+                                            </Link>
+                                            <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
                                             
                                             <div className="quantity-control">
                                             <button className="btn-primary"
@@ -1340,9 +1345,16 @@ setDeliveryDetail
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
                                                 <span className="my-review-product-name">
-                                                    상품 ID: {review.productId}
+                                                    상품명: {review.productName}
                                                 </span>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
+                                            </div>
+
+                                            <div className="my-review-images">
+                                                {review.images?.map((imgUrl, idx) => (
+                                                    <img key={idx} src={imgUrl} alt={`리뷰 이미지 ${idx + 1}`} />
+                                                ))}
+                                                <p>⭐이미지 꼭 확인해볼 것⭐</p>
                                             </div>
 
                                             <div className="my-review-content">{review.content}</div>
@@ -1432,26 +1444,22 @@ setDeliveryDetail
                         </button>
                         <h2>{selectedStatus}</h2>
 
-                        {orders.filter((o) => o.deliveryStatus === selectedStatus).length === 0 ? (
+                        {orders.filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))).length === 0 ? (
                             <p>주문 내역이 없습니다.</p>
                         ) : (
                             orders
-                                .filter((o) => o.deliveryStatus === selectedStatus)
+                                .filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)))
                                 .map((order) => (
                                     <div key={order.orderId} className="order-card">
                                         <div className="order-header">
-                                            <p>
-                                                {order.createdDate} | 주문번호: {order.orderCord}
-                                            </p>
+                                            <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
                                             <span>{order.deliveryStatus}</span>
                                         </div>
 
-                                        {order.items.map((item, idx) => (
+                                        {(order.items || []).map((item, idx) => (
                                             <div key={idx} className="order-item">
                                                 <p>{item.productName}</p>
-                                                <p>
-                                                    {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                </p>
+                                                <p>{item.price?.toLocaleString()}원 / {item.quantity}개</p>
                                             </div>
                                         ))}
 
@@ -1466,51 +1474,60 @@ setDeliveryDetail
                 </div>
             )}
 
-            {/* 배송 상세 모달 */}
-            {isDeliveryModal && deliveryDetail && (
-                <div className="delivery-modal" onClick={() => setIsDeliveryModal(false)}>
-                    <div className="delivery-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="modal-close" onClick={() => setIsDeliveryModal(false)}>
-                            &times;
-                        </button>
-                        <h3>배송 상세 정보</h3>
-                        <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
-                        <p>배송상태: {deliveryDetail.deliveryStatus}</p>
-                        <p>수령인: {deliveryDetail.recipientName}</p>
-                        <p>주소: {deliveryDetail.baseAddress} {deliveryDetail.detailAddress}</p>
-                        <p>우편번호: {deliveryDetail.zipcode}</p>
-                    </div>
-                </div>
-            )}
-
-            {/* 전체 주문 모달 */}
-            {isOrdersModal && (
+            {/* 주문 상세 모달 */}
+            {isOrdersModal && selectedOrder && (
                 <div className="orders-modal" onClick={() => setIsOrdersModal(false)}>
                     <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="orders-modal-close" onClick={() => setIsOrdersModal(false)}>
                             &times;
                         </button>
-                        <h2 style={{ marginBottom: '10px' }}>상세주문 확인</h2>
-                        <p>상세주문 폼</p>
-                    </div>
-                </div>
-            )}
 
-            {/* 주문 상세 모달 */}
-            {isOrderModal && selectedOrder && (
-                <div className="modal-backdrop" onClick={() => setIsOrderModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => setIsOrderModal(false)}>닫기</button>
-                        <h2>주문 상세</h2>
-                        {selectedOrder.items.map((item, idx) => (
+                        <h2 style={{ marginBottom: '10px' }}>주문 상세 내역</h2>
+
+                        <div className="order-info">
+                            <p>주문일자: {selectedOrder.createdDate}</p>
+                            <p>주문번호: {selectedOrder.orderCode}</p>
+                            <p>배송상태: {selectedOrder.deliveryStatus}</p>
+
+                            {deliveryDetail.deliveryStatus === '배송완료' && !isWithinSevenDays(deliveryDetail.completedAt) ? (
+                                <p>이 배송 완료 정보는 7일이 지나 더 이상 표시되지 않습니다.</p>
+                            ) : (
+                                <>
+                                    <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
+                                    <p>배송상태: {deliveryDetail.deliveryStatus || '정보 없음'}</p>
+                                    <p>수령인: {deliveryDetail.recipientName || '정보 없음'}</p>
+                                    <p>주소: {deliveryDetail.baseAddress || ''} {deliveryDetail.detailAddress || ''}</p>
+                                    <p>우편번호: {deliveryDetail.zipcode || ''}</p>
+                                    {deliveryDetail.completedAt && <p>배송 완료일: {new Date(deliveryDetail.completedAt).toLocaleDateString()}</p>}
+                                </>
+                            )}
+
+                            {/* 배송완료일 표시 (배송완료 상태일 때만) */}
+                            {selectedOrder.deliveryStatus === '배송완료' && selectedOrder.completedAt && (
+                                <p>
+                                    배송완료일:{' '}
+                                    {new Date(selectedOrder.completedAt).toLocaleDateString('ko-KR', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                    })}
+                                </p>
+                            )}
+                        </div>
+
+                        <h3 style={{ marginTop: '15px' }}>상품 내역</h3>
+                        {(selectedOrder.items || []).map((item, idx) => (
                             <div key={idx} className="order-item">
                                 <p>{item.productName}</p>
                                 <p>
-                                    {item.price}원 × {item.quantity}
+                                    {item.price?.toLocaleString()}원 / {item.quantity}개
                                 </p>
                             </div>
                         ))}
-                        <p>총 {selectedOrder.totalPrice}원</p>
+
+                        <div className="order-footer">
+                            <p>총 결제금액: {selectedOrder.totalPrice?.toLocaleString()}원</p>
+                        </div>
                     </div>
                 </div>
             )}

@@ -18,7 +18,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     List<Orders> findBySiteUser(SiteUser siteUser);
 
     // 주문번호로 조회
-    Optional<Orders> findByOrderCord(String orderCord);
+    Optional<Orders> findByOrderCode(String orderCode);
 
     // 사용자별 주문 목록 (배송정보 포함)
     @Query(" SELECT DISTINCT o FROM Orders o LEFT JOIN FETCH o.deliveries d WHERE o.siteUser = :siteUser ORDER BY o.orderId DESC ")

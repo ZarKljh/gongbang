@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,12 +27,18 @@ public class Orders {
     @JoinColumn(name = "user_id", nullable = false)
     private SiteUser siteUser;
 
-    @Column(name = "order_cord", nullable = false, unique = true, length = 100)
-    private String orderCord;
+    @Column(name = "order_code", nullable = false, unique = true, length = 100)
+    private String orderCode;
 
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
+    @Column(name = "created_date", nullable = false)
+    private LocalDateTime createdDate;
+
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
     private List<Delivery> deliveries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems = new ArrayList<>();
 }

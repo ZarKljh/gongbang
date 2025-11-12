@@ -122,6 +122,7 @@ public class SiteUserController {
         //System.out.println("me 시작");
         SiteUser siteUser = rq.getSiteUser();
         //System.out.println("rq.getSiteuser동작" + siteUser.getUserName());
+        System.out.println("siteUser: " + siteUser);
         return RsData.of(
                 "200",
                 "내 정보 조회 성공",

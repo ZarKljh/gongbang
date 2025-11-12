@@ -107,7 +107,7 @@ public class OrdersService {
         return OrdersResponse.builder()
                 .orderId(order.getOrderId())
                 .userId(order.getSiteUser().getId())
-                .orderCord(order.getOrderCord())
+                .orderCode(order.getOrderCode())
                 .totalPrice(order.getTotalPrice())
                 .deliveryStatus(
                         order.getDeliveries() != null && !order.getDeliveries().isEmpty()
