@@ -7,6 +7,7 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.seller.service.StudioService;
@@ -35,6 +36,7 @@ import java.util.Optional;
 public class SiteUserService {
     private final SiteUserRepository siteUserRepository;
     private final StudioService studioService;
+    private final ImageRepository imageRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
@@ -65,18 +67,20 @@ public class SiteUserService {
                 .role(RoleType.USER)
                 .status(signupUserRequest.getStatus())
                 .gender(signupUserRequest.getGender())
-                //.profileImg(signupUserRequest.getProfileImg())
                 .birth(signupUserRequest.getBirth().atStartOfDay())
                 .createdDate(LocalDateTime.now())
                 .build();
+
+        Image profileImage = buildProfileImagesFromRequest(signupUserRequest);
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
 
         siteUserRepository.save(newUser);
-
+        imageRepository.save(profileImage);
         return newUser;
     }
+
 
     public SiteUser getSiteUserByEmail(String email) {
         return siteUserRepository.findByEmail(email);
@@ -279,6 +283,22 @@ public class SiteUserService {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
         return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    private Image buildProfileImagesFromRequest(SignupUserRequest request) {
+
+        if (request.getProfileImageUrl() != null) {
+
+            Image profileImage = Image.builder()
+                    .imageUrl(request.getProfileImageUrl())
+                    .refType(Image.RefType.USER_PROFILE)
+                    .imageFileName(request.getProfileImageName())
+                    .sortOrder(0)
+                    .build();
+
+            return profileImage;
+
+        } else return null;
     }
 
     public List<Image> buildStudioImagesFromRequest(SignupSellerRequest request) {

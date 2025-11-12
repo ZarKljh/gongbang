@@ -150,7 +150,10 @@ export default function viewStudioInfo() {
                             <div className="studio-info-main">
                                 <div className="studio-info-header">
                                     <div className="studio-logo-img">
-                                        <img src="null" alt="공방로고사진"></img>
+                                        <img
+                                            src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
+                                            alt="공방로고사진"
+                                        ></img>
                                     </div>
                                     <div className="studio-info-header-studioName">
                                         <h3>{studio.studioName}</h3>
@@ -172,33 +175,39 @@ export default function viewStudioInfo() {
                                     </ul>
                                 </div>
                             </div>
-                        </section>
-                        <section className="studio-right">
+                            <div className="studio-info-description">
+                                <h2>공방 소개</h2>
+                                <p>{studio.studioDescription}</p>
+                            </div>
                             <div className="seller-info">
                                 <div className="seller-name">
                                     <h2>셀러정보</h2>
-                                    <div>
+                                    <div className="seller-info-profileImage">
                                         <img src="null" alt="셀러프로필사진"></img>
                                     </div>
-                                    <ul>
+                                    <ul className="seller-info-detail">
                                         <li>📝 닉네임: {seller.nickName}</li>
                                         <li>👤 아이디: {seller.userName}</li>
                                     </ul>
                                 </div>
                                 <div className="studio-list">
                                     <h2>{seller.nickName}님의 공방리스트</h2>
-                                    <ul>
+                                    <ul className="sutdio-logo-list">
                                         {studioList.map((item) => (
                                             <li key={item.studioId}>
                                                 <Link href={`/seller/studio/${item.studioId}`}>
-                                                    🏠 {item.studioName}
+                                                    <img
+                                                        src={`http://localhost:8090/images/${item.studioLogoImage?.imageFileName}`}
+                                                        alt={item.studioName}
+                                                    />
                                                 </Link>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
                             </div>
-
+                        </section>
+                        <section className="studio-right">
                             {/* ✅ 상품 리스트 컴포넌트 삽입 */}
                             {/*<ProductList products={productList} />*/}
                             {/* ✅ 상품 리스트with 무한스크롤 컴포넌트 삽입 */}

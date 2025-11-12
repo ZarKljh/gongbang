@@ -22,5 +22,6 @@ public class SignupUserRequest {
     private String status;
     private String gender;
     private LocalDate birth;
-    private String imageUrl;
+    private String profileImageUrl; //유저 프로필이미지
+    private String profileImageName; //유저 프로필이미지 파일명
 }

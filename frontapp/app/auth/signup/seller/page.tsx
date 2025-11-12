@@ -53,7 +53,7 @@ export default function SellerSignupPage() {
 
     const handleStudioChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
-        // 파일 입력 처리
+        // 이미지파일 입력 처리
         if ('files' in e.target && e.target.files) {
             const files = e.target.files
 
