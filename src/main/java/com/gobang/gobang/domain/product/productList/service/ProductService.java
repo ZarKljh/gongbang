@@ -118,6 +118,11 @@ public class ProductService {
         return ProductDto.builder()
                 .id(productDetail.getId())
                 .name(productDetail.getName())
+                .subtitle(productDetail.getSubtitle())
+                .summary(productDetail.getSummary())
+                .description(productDetail.getDescription())
+                .basePrice(productDetail.getBasePrice())
+                .stockQuantity(productDetail.getStockQuantity())
                 .build();
 
     }
