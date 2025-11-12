@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.product.productList.controller;
 
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
+import com.gobang.gobang.domain.product.dto.response.ProductDetailResponse;
 import com.gobang.gobang.domain.product.dto.response.ProductResponse;
 import com.gobang.gobang.domain.product.productList.service.ProductService;
 import com.gobang.gobang.global.RsData.RsData;
@@ -49,7 +50,12 @@ public class ProductController {
 
 
 
-
+    @GetMapping("/{productId}/detail")
+    @Operation(summary = "상품 상세 조회")
+    public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
+        ProductDto productDetailList = productService.getProductDetail(productId);
+        return RsData.of("200", "상품 다건 조회 성공", new ProductDetailResponse(productDetailList));
+    }
 
 
 

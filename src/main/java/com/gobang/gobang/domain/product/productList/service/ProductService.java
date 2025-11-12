@@ -4,6 +4,7 @@ import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -110,4 +111,14 @@ public class ProductService {
         }
     }
 
+    public ProductDto getProductDetail(Long productId) {
+
+        Product productDetail = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다. id=" + productId));
+        return ProductDto.builder()
+                .id(productDetail.getId())
+                .name(productDetail.getName())
+                .build();
+
+    }
 }
