@@ -89,7 +89,7 @@ public class InitSellerApplications {
 
             studio.setSiteUser(user);
 
-            studioService.createStudio(studio);
+            //studioService.createStudio(studio);
 
             created++;
         }
