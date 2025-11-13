@@ -19,7 +19,7 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                     <ul>
                         <li>
                             <button
-                                className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`}
+                                className={`nav-btn ${activeTab === 'studio' ? 'active' : ''}`}
                                 onClick={() => onTabClick('studio')}
                             >
                                 공방정보

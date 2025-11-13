@@ -30,6 +30,7 @@ public class SellerController {
     private final SellerService sellerService;
     private final Rq rq;
 
+    //siteUserId를 이용한 studioList검색
     @GetMapping("/{id}")
     public RsData<Map<String, Object>> getSeller(
             @PathVariable("id") Long id

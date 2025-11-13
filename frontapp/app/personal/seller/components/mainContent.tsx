@@ -1,3 +1,5 @@
+import { MainContentProps } from './types/mainContent.types'
+/*
 import OrdersTab from './tabs/OrdersTab'
 import CartTab from './tabs/CartTab'
 import ProfileTab from './tabs/ProfileTab'
@@ -6,8 +8,10 @@ import PaymentTab from './tabs/PaymentTab'
 import LikeTab from './tabs/LikeTab'
 import ReviewsTab from './tabs/ReviewsTab'
 import QnaTab from './tabs/QnaTab'
+*/
 import StudioTab from './tabs/studioTab'
-
+import ProfileTab from './tabs/profileTab'
+/*
 interface MainContentProps {
     activeTab: string
     activeSubTab: string
@@ -24,10 +28,27 @@ interface MainContentProps {
     qna: any[]
     studioList: any[]
     studio: any
+
+    // profile 관련 (선택적 — 나중에 필요할 경우 사용)
+    tempData?: any
+    isAuthenticated?: boolean
+    editMode?: any
+    passwordInput?: string
+    newPassword?: string
+    confirmPassword?: string
+    onVerifyPassword?: () => void
+    onEdit?: (section: string) => void
+    onSave?: (section: string) => void
+    onCancel?: (section: string) => void
+    onTempChange?: (field: string, value: string) => void
+    onNewPasswordChange?: (val: string) => void
+    onConfirmPasswordChange?: (val: string) => void
 }
+*/
 
 export default function MainContent(props: MainContentProps) {
-    const { activeTab, userData, stats, studioList, studio } = props
+    //const { activeTab, userData, stats, studioList, studio } = props
+    const { activeTab } = props
 
     return (
         <div className="main-content">
@@ -46,14 +67,20 @@ export default function MainContent(props: MainContentProps) {
                                 <td>
                                     <div className="profile-image"></div>
                                 </td>
-                                <td>{stats.totalQna}</td>
-                                <td>{stats.totalReviews}</td>
+                                <td>{/*stats.totalQna*/}</td>
+                                <td>{/*stats.totalReviews*/}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 {activeTab === 'studio' && <StudioTab {...props} />}
-                {activeTab === 'orders' && <OrdersTab {...props} />}
+                {activeTab === 'profile' && <ProfileTab {...props} />}
+            </div>
+        </div>
+    )
+}
+/*
+ {activeTab === 'orders' && <OrdersTab {...props} />}
                 {activeTab === 'cart' && <CartTab {...props} />}
                 {activeTab === 'profile' && <ProfileTab {...props} />}
                 {activeTab === 'addresses' && <AddressesTab {...props} />}
@@ -61,7 +88,4 @@ export default function MainContent(props: MainContentProps) {
                 {activeTab === 'like' && <LikeTab {...props} />}
                 {activeTab === 'reviews' && <ReviewsTab {...props} />}
                 {activeTab === 'qna' && <QnaTab {...props} />}
-            </div>
-        </div>
-    )
-}
+*/

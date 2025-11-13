@@ -1,6 +1,6 @@
 import type { MainContentProps } from '../types/mainContent.types'
 /*
-interface StudioTabProps {
+interface ProfileTabProps {
     userData: any
     tempData: any
     isAuthenticated: boolean
@@ -15,11 +15,9 @@ interface StudioTabProps {
     onTempChange: (field: string, value: string) => void
     onNewPasswordChange: (val: string) => void
     onConfirmPasswordChange: (val: string) => void
-    studioList: any[]
-    studio: any
 }
 */
-export type StudioTabProps = Pick<
+export type ProfileTabProps = Pick<
     MainContentProps,
     | 'userData'
     | 'tempData'
@@ -35,43 +33,30 @@ export type StudioTabProps = Pick<
     | 'onTempChange'
     | 'onNewPasswordChange'
     | 'onConfirmPasswordChange'
-    | 'activeSubTab'
-    | 'onSubTabClick'
-    | 'stats'
-    | 'studioList'
-    | 'studio'
 >
 
-/*
-export interface StudioTabProps {
-    activeSubTab: string
-    onSubTabClick: (tab: string) => void
-    userData: any
-    stats: any
-    studioList: any[]
-    studio: any
-}
-*/
-export default function StudioTab(props: StudioTabProps) {
+export default function ProfileTab(props: ProfileTabProps) {
+    // 안전한 디폴트 설정
     const {
+        userData = {},
+        tempData = {},
         isAuthenticated = false,
         editMode = {},
         passwordInput = '',
         newPassword = '',
         confirmPassword = '',
-        tempData = {},
-        studio = {},
-        onTempChange,
         onVerifyPassword,
         onEdit,
         onSave,
         onCancel,
+        onTempChange,
         onNewPasswordChange,
         onConfirmPasswordChange,
     } = props
-    console.log('📌 StudioTab props:', props)
+
     return (
         <div className="tab-content">
+            {/*비밀번호 인증 영역 */}
             {!isAuthenticated ? (
                 <div className="auth-banner">
                     <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
@@ -90,7 +75,7 @@ export default function StudioTab(props: StudioTabProps) {
             )}
 
             <div className="section-header">
-                <h2>공방정보수정</h2>
+                <h2>회원정보수정</h2>
                 {!editMode.profile ? (
                     <button className="btn-primary" onClick={() => onEdit('profile')}>
                         수정
@@ -106,19 +91,7 @@ export default function StudioTab(props: StudioTabProps) {
                     </div>
                 )}
             </div>
-            <div>
-                <p>{JSON.stringify(studio)}</p>
-                <div className="form-group">
-                    <label>공방이름</label>
-                    <p>{String(studio.studio.studioName)}</p>
-                </div>
-            </div>
-        </div>
-    )
-}
 
-/*
-        
             <div>
                 <div className="form-group">
                     <label>이름</label>
@@ -204,4 +177,5 @@ export default function StudioTab(props: StudioTabProps) {
                 </div>
             </div>
         </div>
-        */
+    )
+}

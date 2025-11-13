@@ -17,6 +17,14 @@ export default function MyPage() {
     const [activeSubTab, setActiveSubTab] = useState('studio')
     const [loading, setLoading] = useState(true)
 
+    // =========== 인증 & 회원정보 ============
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [editMode, setEditMode] = useState<{ [key: string]: boolean }>({})
+    const [tempData, setTempData] = useState<any>({})
+    const [passwordInput, setPasswordInput] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+
     // 탭별 데이터 상태
     const [orders, setOrders] = useState<any[]>([])
     const [cart, setCart] = useState<any[]>([])
@@ -29,7 +37,7 @@ export default function MyPage() {
 
     // seller&studio 데이터 상태
     const [studioList, setStudioList] = useState<any[]>([])
-    const [studio, setStudio] = useState<any[]>([])
+    const [studio, setStudio] = useState<any>(null)
 
     // ======= 초기 로딩 =======
     useEffect(() => {
@@ -98,25 +106,100 @@ export default function MyPage() {
         setMyReviews(data.data)
     }
     const fetchStats = async (id: number) => {
-        const { data } = await axios.get(`${API_BASE_URL}/mypagestats?userId=${id}`, { withCredentials: true })
+        const { data } = await axios.get(`${API_BASE_URL}/mypage/stats?userId=${id}`, { withCredentials: true })
         setStats(data.data)
     }
 
     //공방 전체 리스트 fetch
     const fetchStudioList = async (id: number) => {
         const { data } = await axios.get(`${API_BASE_URL}/personal/seller/studioList/${id}`, { withCredentials: true })
-        setStats(data.data)
+        setStudioList(data.data)
     }
     //공방 전체 리스트중 최초 등록 공방 fetch
     const fetchStudio = async (id: number) => {
         const { data } = await axios.get(`${API_BASE_URL}/personal/seller/studio/${id}`, { withCredentials: true })
-        setStats(data.data)
+        //console.log('📌 fetchStudio 응답:', data.data)
+        setStudio(data.data)
     }
+
+    // =============== 🔐 회원정보 관련 함수 ===============
+    const handleVerifyPassword = async () => {
+        if (!passwordInput) return alert('비밀번호를 입력해주세요.')
+
+        try {
+            const { data } = await axios.post(
+                `${API_BASE_URL}/mypage/me/verify-password`,
+                { userId: userData.id, password: passwordInput },
+                { withCredentials: true },
+            )
+            if (data.resultCode === '200') {
+                setIsAuthenticated(true)
+                alert('비밀번호 인증 완료')
+            } else alert('비밀번호가 올바르지 않습니다.')
+        } catch (err) {
+            console.error('인증 실패:', err)
+            alert('인증 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleEdit = (section: string) => {
+        if (!isAuthenticated) return alert('비밀번호 인증이 필요합니다.')
+        setEditMode({ ...editMode, [section]: true })
+        setTempData({ ...userData })
+    }
+
+    const handleSave = async (section: string) => {
+        if (!userData?.id) return
+        if (newPassword && newPassword !== confirmPassword) return alert('비밀번호 확인이 일치하지 않습니다.')
+
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/mypage/me/${userData.id}`,
+                {
+                    nickName: tempData.nickName,
+                    email: tempData.email,
+                    mobilePhone: tempData.mobilePhone,
+                    ...(newPassword ? { password: newPassword } : {}),
+                },
+                { withCredentials: true },
+            )
+            if (data.resultCode === '200') {
+                setUserData(data.data)
+                setEditMode({ ...editMode, [section]: false })
+                alert('정보 수정 완료')
+            }
+        } catch (e) {
+            console.error('정보 수정 실패:', e)
+            alert('수정 실패')
+        }
+    }
+
+    const handleCancel = (section: string) => {
+        setEditMode({ ...editMode, [section]: false })
+        setTempData({ ...userData })
+    }
+
+    const handleTempChange = (field: string, value: string) => {
+        //setTempData((prev: any) => ({ ...prev, [field]: value }))
+        if (field === 'passwordInput') {
+            setPasswordInput(value)
+        } else {
+            setTempData((prev: any) => ({ ...prev, [field]: value }))
+        }
+    }
+
+    /*
+    const onTempChange = (field: string, value: string) => {
+        if (field === 'passwordInput') setPasswordInput(value)
+        else setTempData((prev: any) => ({ ...prev, [field]: value }))
+    }
+    */
 
     // ======= UI 이벤트 =======
     const handleTabClick = (tab: string) => setActiveTab(tab)
     const handleSubTabClick = (sub: string) => setActiveSubTab(sub)
 
+    // =============== 렌더링 조건 ===============
     if (loading) return <div>로딩중...</div>
     if (!userData) return <div>로그인이 필요합니다.</div>
 
@@ -145,6 +228,19 @@ export default function MyPage() {
                 qna={qna}
                 studioList={studioList}
                 studio={studio}
+                tempData={tempData}
+                isAuthenticated={isAuthenticated}
+                editMode={editMode}
+                passwordInput={passwordInput}
+                newPassword={newPassword}
+                confirmPassword={confirmPassword}
+                onVerifyPassword={handleVerifyPassword}
+                onEdit={handleEdit}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                onTempChange={handleTempChange}
+                onNewPasswordChange={setNewPassword}
+                onConfirmPasswordChange={setConfirmPassword}
             />
         </div>
     )
