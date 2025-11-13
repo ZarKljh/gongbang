@@ -28,8 +28,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("SELECT AVG(r.rating), COUNT(r.reviewId) FROM Review r WHERE r.productId = :productId AND r.isActive = true")
     List<Object[]> findAverageRatingAndCountByProductId(@Param("productId") Long productId);
 
-    // 상세 만들어지기 전 사용
-//    @Query("SELECT new map(COALESCE(AVG(r.rating), 0) as avgRating, COUNT(r) as totalCount) FROM Review r WHERE r.isActive = true")
-//    Map<String, Object> findAverageRatingAndCountAsMap();
+
+    // 별점 분포 그래프
+    @Query("""
+    SELECT r.rating, COUNT(r)
+    FROM Review r
+    WHERE r.productId = :productId AND r.isActive = true
+    GROUP BY r.rating
+""")
+    List<Object[]> countRatingGroup(@Param("productId") Long productId);
+
 
 }

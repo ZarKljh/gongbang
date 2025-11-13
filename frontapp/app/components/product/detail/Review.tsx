@@ -40,6 +40,15 @@ export default function detail() {
     const productIdStr = searchParams.get('productId') // 초기엔 null
     const [productId, setProductId] = useState<number | null>(null)
 
+    // 별점 그래프
+    const [ratingData, setRatingData] = useState({
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+    })
+
     // searchParams 감지해서 productId채우기
     useEffect(() => {
         const id = searchParams.get('productId')
@@ -184,10 +193,9 @@ export default function detail() {
 
     const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
 
-    // ✅ 임시 평점 통계 데이터 (추후 연동)
-    const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
 
-    // 평균 별점 (물품 상세 만들어지면 사용)
+
+    // 평균 별점
     useEffect(() => {
         if (!productId) return // productId가 있을 때 실행
 
@@ -206,12 +214,38 @@ export default function detail() {
         fetchAverage()
     }, [productId])
 
-    // 포토리뷰
-    // const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
-    //     id: i + 1,
-    //     title: `포토리뷰${i + 1}`,
-    //     img: `/images/review${i + 1}.jpg`,
-    // }))
+    // ✅ 임시 평점 통계 데이터 (추후 연동)
+    // const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
+    
+    // 별점 그래프
+    useEffect(() => {
+        if (!productId) return
+
+        const fetchRatingGroup = async () => {
+            try {
+                const res = await fetch(`http://localhost:8090/api/v1/reviews/rating-group/${productId}`)
+                const data = await res.json()
+
+                if (res.ok) {
+                    const counts = data.data
+
+                    const total = Object.values(counts).reduce((a, b) => a + b, 0)
+
+                    // 퍼센트로 변환
+                    const percentData = {}
+                    for (let i = 1; i <= 5; i++) {
+                        percentData[i] = total === 0 ? 0 : Math.round((counts[i] / total) * 100)
+                    }
+
+                    setRatingData(percentData)
+                }
+            } catch (err) {
+                console.error('별점 분포 불러오기 실패:', err)
+            }
+        }
+
+        fetchRatingGroup()
+    }, [productId])
 
     // 정렬 요청
     const handleSortChange = (type) => {
@@ -498,10 +532,7 @@ export default function detail() {
                             {photoReviews.map((r) => (
                                 <SwiperSlide key={r.id}>
                                     <div className="photoCard" onClick={() => router.push(`/review/${r.id}`)}>
-                                        <img
-                                            src={r.img}
-                                            alt={r.title}
-                                        />
+                                        <img src={r.img} alt={r.title} />
                                         <p>{r.title}</p>
                                     </div>
                                 </SwiperSlide>
