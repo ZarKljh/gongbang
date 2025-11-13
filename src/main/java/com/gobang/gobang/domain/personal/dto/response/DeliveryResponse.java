@@ -37,6 +37,10 @@ public class DeliveryResponse {
                 .completedAt(delivery.getCompletedAt())
                 .createdDate(delivery.getCreatedDate())
                 .modifiedDate(delivery.getModifiedDate())
+                .recipientName(delivery.getAddress().getRecipientName())
+                .baseAddress(delivery.getAddress().getBaseAddress())
+                .detailAddress(delivery.getAddress().getDetailAddress())
+                .zipcode(delivery.getAddress().getZipcode())
                 .build();
     }
 }

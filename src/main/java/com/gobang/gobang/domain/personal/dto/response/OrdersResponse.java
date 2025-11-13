@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class OrdersResponse {
     private BigDecimal totalPrice;
     private String createdDate;
     private String deliveryStatus;
+    private LocalDateTime completedAt;
     private List<OrderItemResponse> items;
 
     public static OrdersResponse from(Orders orders) {
@@ -33,6 +35,14 @@ public class OrdersResponse {
                 .map(OrderItemResponse::from)
                 .toList();
 
+        LocalDateTime completedAt = null;
+        if (orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()) {
+            if (orders.getDeliveries().get(0).getDeliveryStatus() != null) {
+                deliveryStatus = orders.getDeliveries().get(0).getDeliveryStatus();
+            }
+            completedAt = orders.getDeliveries().get(0).getCompletedAt();
+        }
+
         return OrdersResponse.builder()
                 .orderId(orders.getOrderId())
                 .userId(orders.getSiteUser().getId())
@@ -40,6 +50,7 @@ public class OrdersResponse {
                 .totalPrice(orders.getTotalPrice())
                 .createdDate(createdDateStr)
                 .deliveryStatus(deliveryStatus)
+                .completedAt(completedAt)
                 .items(items)
                 .build();
     }
