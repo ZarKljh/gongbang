@@ -6,14 +6,9 @@ import { Pagination, Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import 'swiper/css/navigation'
-import './review.css'
-import styles from './Detail.module.css'
+import styles from '@/app/components/product/detail/styles/review.module.css'
 
 export default function detail() {
-    // ======================== 상품 =========================
-
-    // ======================= 상품 끝 =======================
-
     // ================= 리뷰 =================
     const [reviews, setReviews] = useState([])
     const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -407,295 +402,313 @@ export default function detail() {
 
     return (
         <>
-            <div className={styles.pageWrapper}>
-                <div className={styles.productDetail}>
-                    <div className={styles.productImage}>상품이미지</div>
-
-                    <div className={styles.productInfo}>
-                        <div className={styles.sellerHeader}>
-                            <span>상품의 셀러 프로필</span>
-                            <span>팔로우</span>
-                        </div>
-
-                        <div className={styles.productOptions}>
-                            <p>상품옵션 선택</p>
-                            <input type="text" placeholder="옵션 1" />
-                            <input type="text" placeholder="옵션 2" />
-                            <input type="text" placeholder="옵션 3" />
-                        </div>
-
-                        <div className={styles.actionButtons}>
-                            <button>장바구니</button>
-                            <button>구매/결제</button>
-                        </div>
+            <div>
+                <div
+                    style={{
+                        maxWidth: '1280px',
+                        margin: '0 auto',
+                        padding: '0 20px',
+                    }}
+                >
+                    {/* 🎨 상단 배너 */}
+                    <div className="reviewBanner">
+                        배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정(안 할수도)
+                        <br />
+                        리뷰 이미지를 추가하고 리뷰 작성 유도 문구 삽입
                     </div>
-                </div>
-            </div>
 
-            {/* =============================== 리뷰 영역 ===================================== */}
-            <div
-                style={{
-                    maxWidth: '1280px',
-                    margin: '0 auto',
-                    padding: '0 20px',
-                }}
-            >
-                {/* 🎨 상단 배너 */}
-                <div className="review-banner">
-                    배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정(안 할수도)
-                    <br />
-                    리뷰 이미지를 추가하고 리뷰 작성 유도 문구 삽입
-                </div>
+                    {/* 제목 + 버튼 */}
+                    <div className="styles.review-title">
+                        <h2>리뷰 목록</h2>
+                        {roleType === 'USER' && (
+                            <button className="styles.review-write-btn" onClick={handleCreateClick}>
+                                리뷰 작성하기
+                            </button>
+                        )}
+                    </div>
 
-                {/* 제목 + 버튼 */}
-                <div className="review-title">
-                    <h2>리뷰 목록</h2>
-                    {roleType === 'USER' && (
-                        <button className="review-write-btn" onClick={handleCreateClick}>
-                            리뷰 작성하기
-                        </button>
-                    )}
-                </div>
+                    <hr />
+                    <section className="styles.photoReview-container">
+                        <h3 className="styles.photoReview-title">📸 포토 리뷰</h3>
 
-                <hr />
-                <section className="photoReview-container">
-                    <h3 className="photoReview-title">📸 포토 리뷰</h3>
-
-                    <Swiper
-                        modules={[Navigation]}
-                        slidesPerView={5}
-                        slidesPerGroup={5}
-                        spaceBetween={20}
-                        loop={false}
-                        centeredSlides={false}
-                        // 버튼을 초기화 전에 수동 주입
-                        onBeforeInit={(swiper) => {
-                            swiper.params.navigation = {
-                                ...(swiper.params.navigation as object),
+                        <Swiper
+                            modules={[Navigation]}
+                            slidesPerView={5}
+                            slidesPerGroup={5}
+                            spaceBetween={20}
+                            loop={false}
+                            centeredSlides={false}
+                            // 버튼을 초기화 전에 수동 주입
+                            onBeforeInit={(swiper) => {
+                                swiper.params.navigation = {
+                                    ...(swiper.params.navigation as object),
+                                    prevEl: prevRef.current,
+                                    nextEl: nextRef.current,
+                                }
+                            }}
+                            navigation={{
                                 prevEl: prevRef.current,
                                 nextEl: nextRef.current,
-                            }
-                        }}
-                        navigation={{
-                            prevEl: prevRef.current,
-                            nextEl: nextRef.current,
-                        }}
-                        className="photoReview-swiper"
-                        // 화면 폭에 따른 보장 (옵션)
-                        breakpoints={{
-                            1200: { slidesPerView: 5, slidesPerGroup: 5, spaceBetween: 20 },
-                            992: { slidesPerView: 4, slidesPerGroup: 4, spaceBetween: 16 },
-                            768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 12 },
-                            0: { slidesPerView: 2, slidesPerGroup: 2, spaceBetween: 10 },
-                        }}
-                    >
-                        {photoReviews.map((r) => (
-                            <SwiperSlide key={r.id}>
-                                <div className="photoCard">
-                                    <img src={r.img} alt={r.title} />
-                                    <p>{r.title}</p>
-                                </div>
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
-
-                    {/* 커스텀 네비게이션 */}
-                    <div ref={prevRef} className="custom-prev">
-                        <ChevronLeft size={26} strokeWidth={2.5} />
-                    </div>
-                    <div ref={nextRef} className="custom-next">
-                        <ChevronRight size={26} strokeWidth={2.5} />
-                    </div>
-                </section>
-                <hr />
-
-                {/* 📜 리뷰 목록 */}
-                <div ref={reviewTopRef} aria-hidden>
-                    <h3>리뷰</h3>
-                </div>
-                {/* 평균 별점 */}
-                <div className="review-average-container">
-                    {/* 왼쪽 평균 */}
-                    <div className="review-average-score">
-                        <h2 className="review-average-value">{avgRating}</h2>
-                        <div className="review-average-stars">
-                            {[1, 2, 3, 4, 5].map((num) => (
-                                <FaStar
-                                    key={num}
-                                    size={22}
-                                    color={num <= Math.round(avgRating) ? '#FFD700' : '#E0E0E0'}
-                                    style={{ marginRight: '3px' }}
-                                />
+                            }}
+                            className="photoReview-swiper"
+                            // 화면 폭에 따른 보장 (옵션)
+                            breakpoints={{
+                                1200: { slidesPerView: 5, slidesPerGroup: 5, spaceBetween: 20 },
+                                992: { slidesPerView: 4, slidesPerGroup: 4, spaceBetween: 16 },
+                                768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 12 },
+                                0: { slidesPerView: 2, slidesPerGroup: 2, spaceBetween: 10 },
+                            }}
+                        >
+                            {photoReviews.map((r) => (
+                                <SwiperSlide key={r.id}>
+                                    <div className="photoCard">
+                                        <img src={r.img} alt={r.title} />
+                                        <p>{r.title}</p>
+                                    </div>
+                                </SwiperSlide>
                             ))}
-                            <small className="review-average-count">({totalCount})</small>
+                        </Swiper>
+
+                        {/* 커스텀 네비게이션 */}
+                        <div ref={prevRef} className="custom-prev">
+                            <ChevronLeft size={26} strokeWidth={2.5} />
+                        </div>
+                        <div ref={nextRef} className="custom-next">
+                            <ChevronRight size={26} strokeWidth={2.5} />
+                        </div>
+                    </section>
+                    <hr />
+
+                    {/* 📜 리뷰 목록 */}
+                    <div ref={reviewTopRef} aria-hidden>
+                        <h3>리뷰</h3>
+                    </div>
+                    {/* 평균 별점 */}
+                    <div className="review-average-container">
+                        {/* 왼쪽 평균 */}
+                        <div className="review-average-score">
+                            <h2 className="review-average-value">{avgRating}</h2>
+                            <div className="review-average-stars">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                    <FaStar
+                                        key={num}
+                                        size={22}
+                                        color={num <= Math.round(avgRating) ? '#FFD700' : '#E0E0E0'}
+                                        style={{ marginRight: '3px' }}
+                                    />
+                                ))}
+                                <small className="review-average-count">({totalCount})</small>
+                            </div>
+                        </div>
+
+                        {/* 오른쪽 그래프 */}
+                        <div className="review-average-graph">
+                            {['최고', '좋음', '보통', '별로', '나쁨'].map((label, i) => {
+                                const score = 5 - i
+                                const percent = ratingData[score] || 0
+                                return (
+                                    <div className="review-graph-row" key={label}>
+                                        <span className="review-graph-label">{label}</span>
+                                        <div className="review-graph-bar-bg">
+                                            <div className="review-graph-bar-fill" style={{ width: `${percent}%` }} />
+                                        </div>
+                                        <span className="review-graph-percent">{percent}%</span>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
 
-                    {/* 오른쪽 그래프 */}
-                    <div className="review-average-graph">
-                        {['최고', '좋음', '보통', '별로', '나쁨'].map((label, i) => {
-                            const score = 5 - i
-                            const percent = ratingData[score] || 0
-                            return (
-                                <div className="review-graph-row" key={label}>
-                                    <span className="review-graph-label">{label}</span>
-                                    <div className="review-graph-bar-bg">
-                                        <div className="review-graph-bar-fill" style={{ width: `${percent}%` }} />
-                                    </div>
-                                    <span className="review-graph-percent">{percent}%</span>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
+                    {/* ⭐ 정렬 + 검색 바 */}
+                    <div className="review-sort-search">
+                        {/* 정렬 */}
+                        <div className="review-sort-buttons">
+                            {['최신순', '추천순', '별점순'].map((type) => (
+                                <button
+                                    key={type}
+                                    onClick={() => handleSortChange(type)}
+                                    className={`review-sort-btn ${
+                                        (type === '최신순' && sortType === 'date_desc') ||
+                                        (type === '추천순' && sortType === 'like_desc') ||
+                                        (type === '별점순' && sortType === 'rating_desc')
+                                            ? 'active'
+                                            : ''
+                                    }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
 
-                {/* ⭐ 정렬 + 검색 바 */}
-                <div className="review-sort-search">
-                    {/* 정렬 */}
-                    <div className="review-sort-buttons">
-                        {['최신순', '추천순', '별점순'].map((type) => (
-                            <button
-                                key={type}
-                                onClick={() => handleSortChange(type)}
-                                className={`review-sort-btn ${
-                                    (type === '최신순' && sortType === 'date_desc') ||
-                                    (type === '추천순' && sortType === 'like_desc') ||
-                                    (type === '별점순' && sortType === 'rating_desc')
-                                        ? 'active'
-                                        : ''
-                                }`}
-                            >
-                                {type}
+                        {/* 검색 */}
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                                type="text"
+                                className="review-search-input"
+                                placeholder="키워드 검색"
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
+                            />
+                            <button className="review-search-btn" onClick={handleSearch}>
+                                검색
                             </button>
-                        ))}
+                        </div>
                     </div>
 
-                    {/* 검색 */}
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <input
-                            type="text"
-                            className="review-search-input"
-                            placeholder="키워드 검색"
-                            value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
-                        />
-                        <button className="review-search-btn" onClick={handleSearch}>
-                            검색
-                        </button>
-                    </div>
-                </div>
-
-                <div className="review-list">
-                    {reviews.length === 0 ? (
-                        <p className="review-empty">현재 작성된 리뷰가 없습니다.</p>
-                    ) : (
-                        <ul>
-                            {reviews.map((review) => (
-                                <li key={review.reviewId} className="review-item">
-                                    <div className="review-header">
-                                        <span className="review-meta">
-                                            {review.createdDate} / 작성자 : {review.createdBy}
-                                        </span>
-                                    </div>
-
-                                    {/* 별점 */}
-                                    <div className="review-rating-row">
-                                        <div className="review-stars">
-                                            {[1, 2, 3, 4, 5].map((num) => (
-                                                <FaStar
-                                                    key={num}
-                                                    size={22}
-                                                    color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
-                                                    style={{ marginRight: '3px' }}
-                                                />
-                                            ))}
-                                            <strong style={{ marginLeft: '6px', fontSize: '15px' }}></strong>
+                    <div className="review-list">
+                        {reviews.length === 0 ? (
+                            <p className="review-empty">현재 작성된 리뷰가 없습니다.</p>
+                        ) : (
+                            <ul>
+                                {reviews.map((review) => (
+                                    <li key={review.reviewId} className="review-item">
+                                        <div className="review-header">
+                                            <span className="review-meta">
+                                                {review.createdDate} / 작성자 : {review.createdBy}
+                                            </span>
                                         </div>
 
-                                        {/* 좋아요 / 삭제 버튼 */}
-                                        <div className="review-actions">
-                                            {(roleType === 'USER' || roleType === 'SELLER') && (
-                                                <button
-                                                    className="review-like-btn"
-                                                    onClick={() => handleLikeClick(review.reviewId)}
-                                                >
-                                                    <FaRegThumbsUp />
-                                                    도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
-                                                </button>
-                                            )}
-                                            {Number(currentUserId) === Number(review.userId) ||
-                                                (roleType === 'ADMIN' && (
-                                                    <button
-                                                        className="review-delete-btn"
-                                                        onClick={() => handleDeleteClick(review.reviewId)}
-                                                    >
-                                                        삭제
-                                                    </button>
+                                        {/* 별점 */}
+                                        <div className="review-rating-row">
+                                            <div className="review-stars">
+                                                {[1, 2, 3, 4, 5].map((num) => (
+                                                    <FaStar
+                                                        key={num}
+                                                        size={22}
+                                                        color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
+                                                        style={{ marginRight: '3px' }}
+                                                    />
                                                 ))}
+                                                <strong style={{ marginLeft: '6px', fontSize: '15px' }}></strong>
+                                            </div>
+
+                                            {/* 좋아요 / 삭제 버튼 */}
+                                            <div className="review-actions">
+                                                {(roleType === 'USER' || roleType === 'SELLER') && (
+                                                    <button
+                                                        className="review-like-btn"
+                                                        onClick={() => handleLikeClick(review.reviewId)}
+                                                    >
+                                                        <FaRegThumbsUp />
+                                                        도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
+                                                    </button>
+                                                )}
+                                                {Number(currentUserId) === Number(review.userId) ||
+                                                    (roleType === 'ADMIN' && (
+                                                        <button
+                                                            className="review-delete-btn"
+                                                            onClick={() => handleDeleteClick(review.reviewId)}
+                                                        >
+                                                            삭제
+                                                        </button>
+                                                    ))}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* 리뷰 내용 */}
-                                    <h4 className="review-content-title">📃 리뷰 내용</h4>
-                                    <div
-                                        className="review-content-box"
-                                        onClick={() => (window.location.href = `/review/${review.reviewId}`)}
-                                    >
-                                        <p className="review-content-text">{review.content}</p>
-                                        {review.imageUrls && review.imageUrls.length > 0 && (
-                                            <img
-                                                src={`http://localhost:8090${review.imageUrls[0]}`}
-                                                alt="리뷰 이미지"
-                                                className="review-image"
-                                            />
+                                        {/* 리뷰 내용 */}
+                                        <h4 className="review-content-title">📃 리뷰 내용</h4>
+                                        <div
+                                            className="review-content-box"
+                                            onClick={() => (window.location.href = `/review/${review.reviewId}`)}
+                                        >
+                                            <p className="review-content-text">{review.content}</p>
+                                            {review.imageUrls && review.imageUrls.length > 0 && (
+                                                <img
+                                                    src={`http://localhost:8090${review.imageUrls[0]}`}
+                                                    alt="리뷰 이미지"
+                                                    className="review-image"
+                                                />
+                                            )}
+                                        </div>
+
+                                        <hr className="review-divider" />
+
+                                        {/* 댓글 */}
+                                        {comments[review.reviewId]?.reviewComment && (
+                                            <div className="review-comment">
+                                                {comments[review.reviewId].reviewComment}
+                                            </div>
                                         )}
-                                    </div>
 
-                                    <hr className="review-divider" />
-
-                                    {/* 댓글 */}
-                                    {comments[review.reviewId]?.reviewComment && (
-                                        <div className="review-comment">{comments[review.reviewId].reviewComment}</div>
-                                    )}
-
-                                    {/* SELLER만 댓글 조작 
+                                        {/* SELLER만 댓글 조작 
                                     현재 ADMIN도 가능. 추후 삭제만 가능하도록 변경*/}
-                                    {roleType === 'SELLER' ||
-                                        (roleType === 'ADMIN' && (
-                                            <>
-                                                {comments[review.reviewId]?.reviewComment ? (
-                                                    <>
-                                                        <button
-                                                            className="review-comment-edit-btn"
-                                                            onClick={() =>
-                                                                setActiveCommentBox(
-                                                                    activeCommentBox === `edit-${review.reviewId}`
-                                                                        ? null
-                                                                        : `edit-${review.reviewId}`,
-                                                                )
-                                                            }
-                                                        >
-                                                            ✏️ 댓글 수정
-                                                        </button>
+                                        {roleType === 'SELLER' ||
+                                            (roleType === 'ADMIN' && (
+                                                <>
+                                                    {comments[review.reviewId]?.reviewComment ? (
+                                                        <>
+                                                            <button
+                                                                className="review-comment-edit-btn"
+                                                                onClick={() =>
+                                                                    setActiveCommentBox(
+                                                                        activeCommentBox === `edit-${review.reviewId}`
+                                                                            ? null
+                                                                            : `edit-${review.reviewId}`,
+                                                                    )
+                                                                }
+                                                            >
+                                                                ✏️ 댓글 수정
+                                                            </button>
 
-                                                        {}
-                                                        <button
-                                                            className="review-comment-delete-btn"
-                                                            onClick={() =>
-                                                                handleCommentDelete(
-                                                                    review.reviewId,
-                                                                    comments[review.reviewId]?.commentId,
-                                                                )
-                                                            }
-                                                        >
-                                                            🗑 댓글 삭제
-                                                        </button>
+                                                            {}
+                                                            <button
+                                                                className="review-comment-delete-btn"
+                                                                onClick={() =>
+                                                                    handleCommentDelete(
+                                                                        review.reviewId,
+                                                                        comments[review.reviewId]?.commentId,
+                                                                    )
+                                                                }
+                                                            >
+                                                                🗑 댓글 삭제
+                                                            </button>
 
-                                                        {isLoggedIn &&
-                                                            activeCommentBox === `edit-${review.reviewId}` && (
-                                                                <div className="review-comment-editbox">
+                                                            {isLoggedIn &&
+                                                                activeCommentBox === `edit-${review.reviewId}` && (
+                                                                    <div className="review-comment-editbox">
+                                                                        <textarea
+                                                                            placeholder="수정할 댓글 내용을 입력하세요."
+                                                                            value={reviewComment}
+                                                                            onChange={(e) =>
+                                                                                setReviewComment(e.target.value)
+                                                                            }
+                                                                            className="review-comment-textarea"
+                                                                        />
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleCommentEdit(
+                                                                                    review.reviewId,
+                                                                                    comments[review.reviewId]
+                                                                                        ?.commentId,
+                                                                                )
+                                                                            }
+                                                                            className="review-comment-save-btn"
+                                                                        >
+                                                                            저장
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                className="review-comment-add-btn"
+                                                                onClick={() =>
+                                                                    setActiveCommentBox(
+                                                                        activeCommentBox === review.reviewId
+                                                                            ? null
+                                                                            : review.reviewId,
+                                                                    )
+                                                                }
+                                                            >
+                                                                💬 댓글 달기
+                                                            </button>
+
+                                                            {isLoggedIn && activeCommentBox === review.reviewId && (
+                                                                <div className="review-comment-addbox">
                                                                     <textarea
-                                                                        placeholder="수정할 댓글 내용을 입력하세요."
+                                                                        placeholder="댓글을 입력하세요."
+                                                                        maxLength={200}
                                                                         value={reviewComment}
                                                                         onChange={(e) =>
                                                                             setReviewComment(e.target.value)
@@ -704,93 +717,58 @@ export default function detail() {
                                                                     />
                                                                     <button
                                                                         onClick={() =>
-                                                                            handleCommentEdit(
-                                                                                review.reviewId,
-                                                                                comments[review.reviewId]?.commentId,
-                                                                            )
+                                                                            handleCommentSubmit(review.reviewId)
                                                                         }
                                                                         className="review-comment-save-btn"
                                                                     >
-                                                                        저장
+                                                                        댓글 등록
                                                                     </button>
                                                                 </div>
                                                             )}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <button
-                                                            className="review-comment-add-btn"
-                                                            onClick={() =>
-                                                                setActiveCommentBox(
-                                                                    activeCommentBox === review.reviewId
-                                                                        ? null
-                                                                        : review.reviewId,
-                                                                )
-                                                            }
-                                                        >
-                                                            💬 댓글 달기
-                                                        </button>
+                                                        </>
+                                                    )}
+                                                </>
+                                            ))}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
 
-                                                        {isLoggedIn && activeCommentBox === review.reviewId && (
-                                                            <div className="review-comment-addbox">
-                                                                <textarea
-                                                                    placeholder="댓글을 입력하세요."
-                                                                    maxLength={200}
-                                                                    value={reviewComment}
-                                                                    onChange={(e) => setReviewComment(e.target.value)}
-                                                                    className="review-comment-textarea"
-                                                                />
-                                                                <button
-                                                                    onClick={() => handleCommentSubmit(review.reviewId)}
-                                                                    className="review-comment-save-btn"
-                                                                >
-                                                                    댓글 등록
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                )}
-                                            </>
-                                        ))}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-
-                {/* 페이지네이션 */}
-                <div className="review-pagination">
-                    <button
-                        className="pagination-btn prev"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 0}
-                    >
-                        ◀ 이전
-                    </button>
-
-                    {[...Array(totalPages)].map((_, index) => (
+                    {/* 페이지네이션 */}
+                    <div className="review-pagination">
                         <button
-                            key={index}
-                            className={`pagination-btn page-number ${currentPage === index ? 'active' : ''}`}
-                            onClick={() => {
-                                fetchReviews(index)
-                                scrollToTop()
-                            }}
+                            className="pagination-btn prev"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 0}
                         >
-                            {index + 1}
+                            ◀ 이전
                         </button>
-                    ))}
 
-                    <button
-                        className="pagination-btn next"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage + 1 >= totalPages}
-                    >
-                        다음 ▶
-                    </button>
+                        {[...Array(totalPages)].map((_, index) => (
+                            <button
+                                key={index}
+                                className={`pagination-btn page-number ${currentPage === index ? 'active' : ''}`}
+                                onClick={() => {
+                                    fetchReviews(index)
+                                    scrollToTop()
+                                }}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            className="pagination-btn next"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage + 1 >= totalPages}
+                        >
+                            다음 ▶
+                        </button>
+                    </div>
                 </div>
+                {/* =============================== 리뷰 영역 끝 ===================================== */}
             </div>
-            {/* =============================== 리뷰 영역 끝 ===================================== */}
         </>
     )
 }
