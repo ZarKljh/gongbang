@@ -1189,7 +1189,13 @@ export default function MyPage() {
                         <div className="tab-content">
                             <div className="delivery-status-summary">
                                 {['배송준비중', '배송중', '배송완료'].map((status) => (
-                                    <div key={status} className="status-card" onClick={() => handleStatusClick(status)}>
+                                    <div
+                                        key={status}
+                                        className="status-card"
+                                        onClick={() => {
+                                            handleStatusClick(status)
+                                            setIsStatusModal(true)
+                                        }}>
                                         <p>{status}</p>
                                         <p>
                                             {orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}
@@ -1205,9 +1211,9 @@ export default function MyPage() {
                             {orders.length === 0 ? (
                                 <p>주문 내역이 없습니다.</p>
                             ) : (
-                                orders.map((order) => (
+                                orders.map((order, deliveryDetail, orderItem) => (
                                     <div key={order.orderId} className="order-card"
-                                        onClick={() => setIsOrdersModal(true)}
+                                        onClick={() => setIsOrdersModal(order)}
                                     >
                                         <div className="order-header">
                                             <p>
@@ -1216,17 +1222,14 @@ export default function MyPage() {
                                             <span>{order.deliveryStatus}</span>
                                         </div>
 
-                                        {(order.items || []).map((item, idx) => (
-                                            <div key={idx} className="order-item">
-                                                <p>주문 상품: {item.productName}</p>
-                                                <p>
-                                                    {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                </p>
+                                        {(orderItem || []).map((orderItem) => (
+                                            <div key={orderItem.orderItemId} className="order-item">
+                                                <p>주문 상품: {orderItem.productName} 이거 이미지로 수정</p>
                                             </div>
                                         ))}
 
                                         <div className="order-footer">
-                                            {order.trackingNumber && <p>운송장: {order.trackingNumber}</p>}
+                                            {deliveryDetail.trackingNumber && <p>운송장: {deliveryDetail.trackingNumber}</p>}
                                             <p>총 {order.totalPrice?.toLocaleString()}원</p>
                                         </div>
                                     </div>
@@ -1712,7 +1715,7 @@ export default function MyPage() {
                                         ))}
 
                                         <div className="order-footer">
-                                            {order.trackingNumber && <p>운송장: {order.trackingNumber}</p>}
+                                            {order.deliveries.trackingNumber && <p>운송장: {order.deliveries.trackingNumber}</p>}
                                             <p>총 {order.totalPrice?.toLocaleString()}원</p>
                                         </div>
                                     </div>
