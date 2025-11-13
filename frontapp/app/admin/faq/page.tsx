@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import api from '@/app/utils/api' // axios 인스턴스 (baseURL, withCredentials 설정)
-import styles from '@/app/MySection.module.css'
+import styles from '@/app/admin/styles/AdminFAQ.module.css'
+import Sidebar from '@/app/admin/components/Sidebar'
 
 type Id = string
 
@@ -192,121 +193,127 @@ export default function AdminFaqPage() {
 
     // -------- UI --------
     return (
-        <section className="mx-auto max-w-6xl p-6">
-            <header className="mb-5 flex items-center justify-between">
-                <div>
-                    <h1 className="text-xl font-semibold">FAQ 관리</h1>
-                    <p className="text-sm text-slate-500">카테고리와 FAQ를 추가/수정/삭제할 수 있습니다.</p>
-                </div>
-                <div className="flex gap-2">
-                    <button className="h-9 rounded-lg border px-3" onClick={() => setCatManagerOpen(true)}>
-                        카테고리 관리
-                    </button>
-                    <button
-                        className="h-9 rounded-lg border px-3 disabled:opacity-50"
-                        onClick={() => setEditing({ categoryId: selectedCat?.id })}
-                        disabled={categories.length === 0}
-                        title={categories.length === 0 ? '먼저 카테고리를 추가하세요' : ''}
+        <section className={styles.section}>
+            {/* 사이드바 */}
+            <Sidebar />
+            <div>
+                <header className="mb-5 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-semibold">FAQ 관리</h1>
+                        <p className="text-sm text-slate-500">카테고리와 FAQ를 추가/수정/삭제할 수 있습니다.</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button className="h-9 rounded-lg border px-3" onClick={() => setCatManagerOpen(true)}>
+                            카테고리 관리
+                        </button>
+                        <button
+                            className="h-9 rounded-lg border px-3 disabled:opacity-50"
+                            onClick={() => setEditing({ categoryId: selectedCat?.id })}
+                            disabled={categories.length === 0}
+                            title={categories.length === 0 ? '먼저 카테고리를 추가하세요' : ''}
+                        >
+                            FAQ 추가
+                        </button>
+                    </div>
+                </header>
+
+                {err && (
+                    <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700 text-sm">
+                        {err}
+                    </div>
+                )}
+
+                {/* Filters */}
+                <div className="mb-4 flex flex-wrap items-center gap-3">
+                    <select
+                        className="h-9 rounded-lg border bg-white px-3"
+                        value={selectedCatId}
+                        onChange={(e) => setSelectedCatId(e.target.value as any)}
                     >
-                        FAQ 추가
+                        <option value="all">(전체)</option>
+                        {categories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.active ? '' : '[비활성] '}
+                                {c.name}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="relative">
+                        <input
+                            className="h-9 rounded-lg border pl-9 pr-3"
+                            placeholder="검색: 질문/답변"
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') loadFaqs()
+                            }}
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
+                    </div>
+                    <button className="h-9 rounded-lg border px-3" onClick={loadFaqs}>
+                        검색
                     </button>
                 </div>
-            </header>
 
-            {err && (
-                <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700 text-sm">{err}</div>
-            )}
-
-            {/* Filters */}
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-                <select
-                    className="h-9 rounded-lg border bg-white px-3"
-                    value={selectedCatId}
-                    onChange={(e) => setSelectedCatId(e.target.value as any)}
-                >
-                    <option value="all">(전체)</option>
-                    {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                            {c.active ? '' : '[비활성] '}
-                            {c.name}
-                        </option>
-                    ))}
-                </select>
-                <div className="relative">
-                    <input
-                        className="h-9 rounded-lg border pl-9 pr-3"
-                        placeholder="검색: 질문/답변"
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') loadFaqs()
-                        }}
-                    />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
-                </div>
-                <button className="h-9 rounded-lg border px-3" onClick={loadFaqs}>
-                    검색
-                </button>
-            </div>
-
-            {/* FAQ 테이블 */}
-            <div className="overflow-hidden rounded-2xl border">
-                <table className="w-full text-sm">
-                    <thead className="bg-slate-50">
-                        <tr>
-                            <th className="p-2 text-left">카테고리</th>
-                            <th className="p-2 text-left">질문</th>
-                            <th className="p-2">정렬</th>
-                            <th className="p-2">공개</th>
-                            <th className="w-36 p-2"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
+                {/* FAQ 테이블 */}
+                <div className="overflow-hidden rounded-2xl border">
+                    <table className="w-full text-sm">
+                        <thead className="bg-slate-50">
                             <tr>
-                                <td className="p-4 text-center text-slate-500" colSpan={5}>
-                                    로딩 중…
-                                </td>
+                                <th className="p-2 text-left">카테고리</th>
+                                <th className="p-2 text-left">질문</th>
+                                <th className="p-2">정렬</th>
+                                <th className="p-2">공개</th>
+                                <th className="w-36 p-2"></th>
                             </tr>
-                        ) : rows.length === 0 ? (
-                            <tr>
-                                <td className="p-6 text-center text-slate-500" colSpan={5}>
-                                    항목이 없습니다.
-                                </td>
-                            </tr>
-                        ) : (
-                            rows.map((r) => (
-                                <tr key={r.id} className="border-t">
-                                    <td className="whitespace-nowrap p-2">{r.categoryName}</td>
-                                    <td className="p-2">
-                                        <div className="line-clamp-2">{r.question}</div>
-                                    </td>
-                                    <td className="p-2 text-center">{r.orderNo}</td>
-                                    <td className="p-2 text-center">
-                                        <button
-                                            className={`h-7 rounded-full px-3 text-xs border ${
-                                                r.published
-                                                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                                                    : 'border-slate-300 bg-slate-50 text-slate-600'
-                                            }`}
-                                            onClick={() => onTogglePublish(r)}
-                                        >
-                                            {r.published ? '공개' : '비공개'}
-                                        </button>
-                                    </td>
-                                    <td className="p-2 text-right">
-                                        <button className="px-2" onClick={() => setEditing(r)}>
-                                            수정
-                                        </button>
-                                        <button className="px-2 text-rose-600" onClick={() => onDeleteFaq(r.id)}>
-                                            삭제
-                                        </button>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr>
+                                    <td className="p-4 text-center text-slate-500" colSpan={5}>
+                                        로딩 중…
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : rows.length === 0 ? (
+                                <tr>
+                                    <td className="p-6 text-center text-slate-500" colSpan={5}>
+                                        항목이 없습니다.
+                                    </td>
+                                </tr>
+                            ) : (
+                                rows.map((r) => (
+                                    <tr key={r.id} className="border-t">
+                                        <td className="whitespace-nowrap p-2">{r.categoryName}</td>
+                                        <td className="p-2">
+                                            <div className="line-clamp-2">{r.question}</div>
+                                        </td>
+                                        <td className="p-2 text-center">{r.orderNo}</td>
+                                        <td className="p-2 text-center">
+                                            <button
+                                                className={`h-7 rounded-full px-3 text-xs border ${
+                                                    r.published
+                                                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                                                        : 'border-slate-300 bg-slate-50 text-slate-600'
+                                                }`}
+                                                onClick={() => onTogglePublish(r)}
+                                            >
+                                                {r.published ? '공개' : '비공개'}
+                                            </button>
+                                        </td>
+                                        <td className="p-2 text-right">
+                                            <button className="px-2" onClick={() => setEditing(r)}>
+                                                수정
+                                            </button>
+                                            <button className="px-2 text-rose-600" onClick={() => onDeleteFaq(r.id)}>
+                                                삭제
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* 카테고리 관리 모달 */}
