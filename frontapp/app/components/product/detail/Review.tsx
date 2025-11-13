@@ -6,7 +6,7 @@ import { Pagination, Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import 'swiper/css/navigation'
-import styles from '@/app/components/product/detail/styles/review.module.css'
+import '@/app/components/product/detail/styles/review.css'
 
 export default function detail() {
     // ================= 리뷰 =================
@@ -411,7 +411,7 @@ export default function detail() {
                     }}
                 >
                     {/* 🎨 상단 배너 */}
-                    <div className="reviewBanner">
+                    <div className="review-banner">
                         배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정(안 할수도)
                         <br />
                         리뷰 이미지를 추가하고 리뷰 작성 유도 문구 삽입
