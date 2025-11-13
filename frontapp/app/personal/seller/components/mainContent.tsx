@@ -11,6 +11,7 @@ import QnaTab from './tabs/QnaTab'
 */
 import StudioTab from './tabs/studioTab'
 import ProfileTab from './tabs/profileTab'
+import StudioDescTab from './tabs/studioDescTab'
 /*
 interface MainContentProps {
     activeTab: string
@@ -75,6 +76,7 @@ export default function MainContent(props: MainContentProps) {
                 </div>
                 {activeTab === 'studio' && <StudioTab {...props} />}
                 {activeTab === 'profile' && <ProfileTab {...props} />}
+                {activeTab === 'studioDesc' && <StudioDescTab {...props} />}
             </div>
         </div>
     )

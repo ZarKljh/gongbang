@@ -25,6 +25,14 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                                 공방정보
                             </button>
                         </li>
+                        <li>
+                            <button
+                                className={`nav-btn ${activeTab === 'studioDesc' ? 'active' : ''}`}
+                                onClick={() => onTabClick('studioDesc')}
+                            >
+                                공방 상세설명
+                            </button>
+                        </li>
                     </ul>
                 </div>
                 <div className="nav-section">

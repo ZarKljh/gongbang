@@ -170,6 +170,9 @@ export default function MyPage() {
         if (section === 'studio') {
             setTempData({ ...studio })
         }
+        if (section === 'studioDesc') {
+            setTempData({ ...studio })
+        }
     }
 
     const handleSave = async (section: string) => {
@@ -201,10 +204,12 @@ export default function MyPage() {
             }
 
             // 3️⃣ 공방정보 저장
-            else if (section === 'studio') {
+            else if (section === 'studio' || section === 'studioDesc') {
                 response = await axios.patch(
-                    `${API_BASE_URL}/personal/seller/studio/${studio.studioId}`,
+                    `${API_BASE_URL}/studio/${studio.studioId}`,
                     {
+                        studioBusinessNumber: tempData.studioBusinessNumber,
+                        categoryId: tempData.categoryId,
                         studioMobile: tempData.studioMobile,
                         studioOfficeTell: tempData.studioOfficeTell,
                         studioFax: tempData.studioFax,
@@ -224,6 +229,7 @@ export default function MyPage() {
                     alert('공방 정보가 수정되었습니다.')
                 }
             }
+
             /*
             // 1️추후 Tabs 추가시 여기에 다른 섹션 저장 로직 추가 가능
             else if (section === 'address') {
@@ -281,6 +287,9 @@ export default function MyPage() {
             setTempData({ ...userData })
         }
         if (section === 'studio') {
+            setTempData({ ...studio })
+        }
+        if (section === 'studioDesc') {
             setTempData({ ...studio })
         }
     }
