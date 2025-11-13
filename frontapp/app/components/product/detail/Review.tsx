@@ -1,10 +1,11 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { FaRegThumbsUp, FaStar } from 'react-icons/fa'
+import { FaRegThumbsUp, FaStar, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Pagination, Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import Router from 'next/router'
 import 'swiper/css/navigation'
 import '@/app/components/product/detail/styles/review.css'
 
@@ -27,6 +28,12 @@ export default function detail() {
     const nextRef = useRef<HTMLDivElement | null>(null)
     const [sortType, setSortType] = useState('date_desc')
     const [keyword, setKeyword] = useState('')
+
+    // 포토 리뷰 가져오기
+    const [photoReviews, setPhotoReviews] = useState([])
+
+    // 이미지 모달
+    const [selectedImageIndex, setSelectedImageIndex] = useState(null)
 
     // 상품Id 기준 리뷰 가져오기
     const searchParams = useSearchParams()
@@ -142,6 +149,41 @@ export default function detail() {
         }
     }
 
+    // 리뷰 목록 조회 후 사진이 있는 리뷰만
+    useEffect(() => {
+        if (reviews.length > 0) {
+            const pr = reviews
+                .filter((r) => r.imageUrls && r.imageUrls.length > 0)
+                .map((r) => ({
+                    id: r.reviewId,
+                    img: `http://localhost:8090${r.imageUrls[0]}`,
+                    title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
+                }))
+
+            setPhotoReviews(pr)
+        }
+    }, [reviews])
+
+    // 포토 리뷰 모달
+    useEffect(() => {
+        const handleEsc = (e) => e.key === 'Escape' && setSelectedImageIndex(null)
+        window.addEventListener('keydown', handleEsc)
+        return () => window.removeEventListener('keydown', handleEsc)
+    }, [])
+
+    // 이전/다음 이미지 이동
+    const handlePrevImage = (e) => {
+        e.stopPropagation()
+        setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : review.imageUrls.length - 1))
+    }
+
+    const handleNextImage = (e) => {
+        e.stopPropagation()
+        setSelectedImageIndex((prev) => (prev < review.imageUrls.length - 1 ? prev + 1 : 0))
+    }
+
+    const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
+
     // ✅ 임시 평점 통계 데이터 (추후 연동)
     const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
 
@@ -165,11 +207,11 @@ export default function detail() {
     }, [productId])
 
     // 포토리뷰
-    const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
-        id: i + 1,
-        title: `포토리뷰${i + 1}`,
-        img: `/images/review${i + 1}.jpg`,
-    }))
+    // const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
+    //     id: i + 1,
+    //     title: `포토리뷰${i + 1}`,
+    //     img: `/images/review${i + 1}.jpg`,
+    // }))
 
     // 정렬 요청
     const handleSortChange = (type) => {
@@ -412,18 +454,18 @@ export default function detail() {
                     </div>
 
                     {/* 제목 + 버튼 */}
-                    <div className="styles.review-title">
+                    <div className="review-title">
                         <h2>리뷰 목록</h2>
                         {roleType === 'USER' && (
-                            <button className="styles.review-write-btn" onClick={handleCreateClick}>
+                            <button className="review-write-btn" onClick={handleCreateClick}>
                                 리뷰 작성하기
                             </button>
                         )}
                     </div>
 
                     <hr />
-                    <section className="styles.photoReview-container">
-                        <h3 className="styles.photoReview-title">📸 포토 리뷰</h3>
+                    <section className="photoReview-container">
+                        <h3 className="photoReview-title">📸 포토 리뷰</h3>
 
                         <Swiper
                             modules={[Navigation]}
@@ -455,8 +497,11 @@ export default function detail() {
                         >
                             {photoReviews.map((r) => (
                                 <SwiperSlide key={r.id}>
-                                    <div className="photoCard">
-                                        <img src={r.img} alt={r.title} />
+                                    <div className="photoCard" onClick={() => router.push(`/review/${r.id}`)}>
+                                        <img
+                                            src={r.img}
+                                            alt={r.title}
+                                        />
                                         <p>{r.title}</p>
                                     </div>
                                 </SwiperSlide>
@@ -755,6 +800,116 @@ export default function detail() {
                     </div>
                 </div>
                 {/* =============================== 리뷰 영역 끝 ===================================== */}
+
+                {selectedImageIndex !== null && (
+                    <div
+                        onClick={() => setSelectedImageIndex(null)}
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'rgba(0,0,0,0.8)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1000,
+                            cursor: 'zoom-out',
+                        }}
+                    >
+                        <div
+                            style={{
+                                position: 'relative',
+                                maxWidth: '70%',
+                                maxHeight: '80%',
+                            }}
+                        >
+                            <img
+                                src={
+                                    currentImage?.startsWith('data:')
+                                        ? currentImage
+                                        : `http://localhost:8090${currentImage}`
+                                }
+                                alt="확대 이미지"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain',
+                                    borderRadius: '8px',
+                                }}
+                            />
+
+                            {/* 닫기 버튼 */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedImageIndex(null)
+                                }}
+                                style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    right: '10px',
+                                    background: 'rgba(0,0,0,0.6)',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '32px',
+                                    height: '32px',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                }}
+                            >
+                                <FaTimes />
+                            </button>
+
+                            {/* 이전 / 다음 버튼 */}
+                            {review.imageUrls.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={handlePrevImage}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '-60px',
+                                            transform: 'translateY(-50%)',
+                                            background: 'rgba(0,0,0,0.5)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '40px',
+                                            height: '40px',
+                                            cursor: 'pointer',
+                                            fontSize: '18px',
+                                        }}
+                                    >
+                                        <FaChevronLeft />
+                                    </button>
+
+                                    <button
+                                        onClick={handleNextImage}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            right: '-60px',
+                                            transform: 'translateY(-50%)',
+                                            background: 'rgba(0,0,0,0.5)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '40px',
+                                            height: '40px',
+                                            cursor: 'pointer',
+                                            fontSize: '18px',
+                                        }}
+                                    >
+                                        <FaChevronRight />
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     )
