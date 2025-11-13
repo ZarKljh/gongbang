@@ -40,6 +40,7 @@ export type StudioTabProps = Pick<
     | 'stats'
     | 'studioList'
     | 'studio'
+    | 'onAddressSearch'
 >
 
 /*
@@ -68,6 +69,7 @@ export default function StudioTab(props: StudioTabProps) {
         onCancel,
         onNewPasswordChange,
         onConfirmPasswordChange,
+        onAddressSearch,
     } = props
     console.log('📌 StudioTab props:', props)
     return (
@@ -91,34 +93,211 @@ export default function StudioTab(props: StudioTabProps) {
 
             <div className="section-header">
                 <h2>공방정보수정</h2>
-                {!editMode.profile ? (
-                    <button className="btn-primary" onClick={() => onEdit('profile')}>
+                {!editMode.studio ? (
+                    <button className="btn-primary" onClick={() => onEdit('studio')}>
                         수정
                     </button>
                 ) : (
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-primary" onClick={() => onSave('profile')}>
+                        <button className="btn-primary" onClick={() => onSave('studio')}>
                             저장
                         </button>
-                        <button className="btn-secondary" onClick={() => onCancel('profile')}>
+                        <button className="btn-secondary" onClick={() => onCancel('studio')}>
                             취소
                         </button>
                     </div>
                 )}
             </div>
             <div>
-                <p>{JSON.stringify(studio)}</p>
+                <div className="form-group">
+                    <label>사업자번호</label>
+                    <p>{studio.studioBusinessNumber}</p>
+                </div>
                 <div className="form-group">
                     <label>공방이름</label>
-                    <p>{String(studio.studio.studioName)}</p>
+                    {editMode.studio ? (
+                        <input
+                            type="text"
+                            value={tempData.studioName || ''}
+                            onChange={(e) => onTempChange('studioName', e.target.value)}
+                            className="editable"
+                        />
+                    ) : (
+                        <p>{studio.studioName}</p>
+                    )}
                 </div>
+                <div className="form-group">
+                    <label>공방대표번호</label>
+                    {editMode.studio ? (
+                        <input
+                            type="text"
+                            value={tempData.studioMobile || ''}
+                            onChange={(e) => onTempChange('studioMobile', e.target.value)}
+                            className="editable"
+                        />
+                    ) : (
+                        <p>{studio.studioMobile}</p>
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>사무실전화번호</label>
+                    {editMode.studio ? (
+                        <input
+                            type="text"
+                            value={tempData.studioOfficeTell || ''}
+                            onChange={(e) => onTempChange('studioOfficeTell', e.target.value)}
+                            className="editable"
+                        />
+                    ) : (
+                        <p>{studio.studioOfficeTell}</p>
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>팩스</label>
+                    {editMode.studio ? (
+                        <input
+                            type="text"
+                            value={tempData.studioFax || ''}
+                            onChange={(e) => onTempChange('studioFax', e.target.value)}
+                            className="editable"
+                        />
+                    ) : (
+                        <p>{studio.studioFax}</p>
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>이메일</label>
+                    {editMode.studio ? (
+                        <input
+                            type="text"
+                            value={tempData.studioEmail || ''}
+                            onChange={(e) => onTempChange('studioEmail', e.target.value)}
+                            className="editable"
+                        />
+                    ) : (
+                        <p>{studio.studioEmail}</p>
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>우편번호</label>
+                    {editMode.studio ? (
+                        <>
+                            <input
+                                type="text"
+                                value={tempData.studioAddPostNumber || ''}
+                                onChange={(e) => onTempChange('studioAddPostNumber', e.target.value)}
+                                className="editable"
+                            />
+                            <button className="btn btn-primary address-btn" type="button" onClick={onAddressSearch}>
+                                주소 찾기
+                            </button>
+                        </>
+                    ) : (
+                        <p>{studio.studioAddPostNumber}</p>
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>기본주소</label>
+                    {editMode.studio ? (
+                        <input
+                            type="text"
+                            value={tempData.studioAddMain || ''}
+                            onChange={(e) => onTempChange('studioAddMain', e.target.value)}
+                            className="editable"
+                        />
+                    ) : (
+                        <p>{studio.studioAddMain}</p>
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>상세주소</label>
+                    {editMode.studio ? (
+                        <input
+                            type="text"
+                            value={tempData.studioAddDetail || ''}
+                            onChange={(e) => onTempChange('studioAddDetail', e.target.value)}
+                            className="editable"
+                        />
+                    ) : (
+                        <p>{studio.studioAddDetail}</p>
+                    )}
+                </div>
+                <p>{JSON.stringify(studio)}</p>
             </div>
         </div>
     )
 }
 
 /*
-        
+
+            <div className="form-group">
+                <label className="form-label">우편번호</label>
+                <div className="form-row">
+                    <input
+                        type="text"
+                        name="studioAddPostNumber"
+                        className="form-input"
+                        value={studioInfo.studioAddPostNumber}
+                        onChange={onChange}
+                        placeholder="우편번호를 검색해주세요"
+                    />
+                    <button className="btn btn-primary address-btn" type="button" onClick={handleAddressSearch}>
+                        주소 찾기
+                    </button>
+                </div>
+            </div>
+            <div className="form-group">
+                <label className="form-label">기본주소</label>
+                <input
+                    type="text"
+                    name="studioAddMain"
+                    className="form-input"
+                    value={studioInfo.studioAddMain}
+                    onChange={onChange}
+                    placeholder="공방소재지의 기본주소를 입력해주세요"
+                />
+            </div>
+            <div className="form-group">
+                <label className="form-label">상세주소</label>
+                <input
+                    type="text"
+                    name="studioAddDetail"
+                    className="form-input"
+                    value={studioInfo.studioAddDetail}
+                    onChange={onChange}
+                    placeholder="공방소재재의 상세주소를 적어주세요"
+                />
+            </div>
+            <div className="form-group">
+                <label className="form-label">대표 이미지</label>
+                <input type="file" name="studioMainImage" className="form-input" accept="image/*" onChange={onChange} />
+                {previewMainImage && (
+                    <div className="image-preview">
+                        <p>대표 이미지 미리보기:</p>
+                        <img
+                            src={previewMainImage}
+                            alt="대표 이미지"
+                            style={{ maxWidth: '300px', marginTop: '10px' }}
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">로고 이미지</label>
+                <input type="file" name="studioLogoImage" className="form-input" accept="image/*" onChange={onChange} />
+                {previewLogoImage && (
+                    <div className="image-preview">
+                        <p>로고 이미지 미리보기:</p>
+                        <img
+                            src={previewLogoImage}
+                            alt="로고 이미지"
+                            style={{ maxWidth: '300px', marginTop: '10px' }}
+                        />
+                    </div>
+                )}
+            </div>
+
             <div>
                 <div className="form-group">
                     <label>이름</label>

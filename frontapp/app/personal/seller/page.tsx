@@ -119,7 +119,7 @@ export default function MyPage() {
     const fetchStudio = async (id: number) => {
         const { data } = await axios.get(`${API_BASE_URL}/personal/seller/studio/${id}`, { withCredentials: true })
         //console.log('📌 fetchStudio 응답:', data.data)
-        setStudio(data.data)
+        setStudio(data.data.studio)
     }
 
     // =============== 🔐 회원정보 관련 함수 ===============
@@ -142,16 +142,111 @@ export default function MyPage() {
         }
     }
 
+    const handleAddressSearch = () => {
+        if (typeof window === 'undefined' || !window.daum) {
+            alert('주소 검색 기능을 사용할 수 없습니다. 페이지를 새로고침 해주세요.')
+            return
+        }
+        new window.daum.Postcode({
+            oncomplete: function (data: any) {
+                // ✅ [수정 2] onChange 대신 setStudioInfo 직접 호출
+                setTempData((prev) => ({
+                    ...prev,
+                    studioAddPostNumber: data.zonecode,
+                    studioAddMain: data.roadAddress,
+                    studioAddDetail: '',
+                }))
+            },
+        }).open()
+    }
+
     const handleEdit = (section: string) => {
         if (!isAuthenticated) return alert('비밀번호 인증이 필요합니다.')
         setEditMode({ ...editMode, [section]: true })
-        setTempData({ ...userData })
+        //setTempData({ ...userData, ...studio })
+        if (section === 'profile') {
+            setTempData({ ...userData })
+        }
+        if (section === 'studio') {
+            setTempData({ ...studio })
+        }
     }
 
     const handleSave = async (section: string) => {
         if (!userData?.id) return
-        if (newPassword && newPassword !== confirmPassword) return alert('비밀번호 확인이 일치하지 않습니다.')
+        //if (newPassword && newPassword !== confirmPassword) return alert('비밀번호 확인이 일치하지 않습니다.')
+        if (newPassword && newPassword !== confirmPassword) {
+            return alert('비밀번호 확인이 일치하지 않습니다.')
+        }
+        try {
+            let response
 
+            // 2️⃣ 프로필 저장
+            if (section === 'profile') {
+                response = await axios.patch(
+                    `${API_BASE_URL}/mypage/me/${userData.id}`,
+                    {
+                        nickName: tempData.nickName,
+                        email: tempData.email,
+                        mobilePhone: tempData.mobilePhone,
+                        ...(newPassword ? { password: newPassword } : {}),
+                    },
+                    { withCredentials: true },
+                )
+
+                if (response.data.resultCode === '200') {
+                    setUserData(response.data.data)
+                    alert('회원 정보가 수정되었습니다.')
+                }
+            }
+
+            // 3️⃣ 공방정보 저장
+            else if (section === 'studio') {
+                response = await axios.patch(
+                    `${API_BASE_URL}/personal/seller/studio/${studio.studioId}`,
+                    {
+                        studioMobile: tempData.studioMobile,
+                        studioOfficeTell: tempData.studioOfficeTell,
+                        studioFax: tempData.studioFax,
+                        studioEmail: tempData.studioEmail,
+                        studioDescription: tempData.studioDescription,
+                        studioName: tempData.studioName,
+                        studioAddPostNumber: tempData.studioAddPostNumber,
+                        studioAddMain: tempData.studioAddMain,
+                        studioAddDetail: tempData.studioAddDetail,
+                    },
+                    { withCredentials: true },
+                )
+
+                if (response.data.resultCode === '200') {
+                    setStudio(response.data.data)
+                    setEditMode({ ...editMode, [section]: false })
+                    alert('공방 정보가 수정되었습니다.')
+                }
+            }
+            /*
+            // 1️추후 Tabs 추가시 여기에 다른 섹션 저장 로직 추가 가능
+            else if (section === 'address') {
+                response = await axios.patch(
+                    `${API_BASE_URL}/mypage/address/${tempData.addressId}`,
+                    {
+                        post: tempData.post,
+                        addr1: tempData.addr1,
+                        addr2: tempData.addr2,
+                        receiver: tempData.receiver,
+                        receiverPhone: tempData.receiverPhone,
+                    },
+                    { withCredentials: true }
+                );
+
+                if (response.data.resultCode === '200') {
+                    alert("배송지가 수정되었습니다.");
+                }
+            }
+            */
+
+            /* 
+        //기존코드
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/mypage/me/${userData.id}`,
@@ -172,11 +267,22 @@ export default function MyPage() {
             console.error('정보 수정 실패:', e)
             alert('수정 실패')
         }
+        */
+        } catch (err) {
+            console.error('저장 실패:', err)
+            alert('저장 중 오류가 발생했습니다.')
+        }
     }
 
     const handleCancel = (section: string) => {
         setEditMode({ ...editMode, [section]: false })
-        setTempData({ ...userData })
+        //setTempData({ ...userData, ...studio })
+        if (section === 'profile') {
+            setTempData({ ...userData })
+        }
+        if (section === 'studio') {
+            setTempData({ ...studio })
+        }
     }
 
     const handleTempChange = (field: string, value: string) => {
@@ -241,6 +347,7 @@ export default function MyPage() {
                 onTempChange={handleTempChange}
                 onNewPasswordChange={setNewPassword}
                 onConfirmPasswordChange={setConfirmPassword}
+                onAddressSearch={handleAddressSearch}
             />
         </div>
     )

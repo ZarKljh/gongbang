@@ -32,4 +32,5 @@ export interface MainContentProps {
     onTempChange?: (field: string, value: string) => void
     onNewPasswordChange?: (val: string) => void
     onConfirmPasswordChange?: (val: string) => void
+    onAddressSearch?: () => void
 }
