@@ -6,6 +6,10 @@ import MonthlyVisitorsSection from '@/app/admin/components/MonthlyVisitorsSectio
 import { getMonthlyVisitors, calcKPI, type MonthlyVisitorPoint } from '@/app/utils/metrics'
 import { fetchPendingCounts, type PendingCounts } from '@/app/utils/adminQuickAccess'
 import styles from '@/app/admin/styles/MySection.module.css'
+import RecentUsersCard from '@/app/admin/components/RecentUsersCard'
+import RecentSellerCard from '@/app/admin/components/RecentSellerCard'
+import Link from 'next/link'
+
 import { api } from '@/app/utils/api'
 
 export default function AdminDashboard() {
@@ -101,29 +105,37 @@ export default function AdminDashboard() {
                 </section>
 
                 {/* 하단 빠른 액세스 */}
-                <section className={styles.bottomDashboard}>
-                    <div className={styles.bottomTitle}>빠른 액세스</div>
-                    <div className={styles.bottomGrid}>
-                        {/* 입점 신청: 사업자/입점 관련 문의 카운트 */}
-                        <button className={`${styles.circleCard} ${styles.cardShop}`}>
-                            <span className={styles.cardTitle}>입점 신청</span>
-                            <span className={styles.cardDivider}></span>
-                            <span className={styles.cardSubText}>미처리 {pending.shop.toLocaleString()}건</span>
-                        </button>
+                <section className={styles.bottomsection}>
+                    <div className={styles.bottomLeft}>
+                        <RecentUsersCard limit={6} />
+                    </div>
+                    <div>
+                        <RecentSellerCard title="최근 입점 신청" limit={6} pollMs={5000} />
+                    </div>
+                    <div className={styles.bottomright}>
+                        <div className={styles.bottomTitle}>빠른 액세스</div>
+                        <div className={styles.bottomGrid}>
+                            {/* 입점 신청: 사업자/입점 관련 문의 카운트 */}
+                            <Link className={`${styles.circleCard} ${styles.cardShop}`} href="/admin/business">
+                                <span className={styles.cardTitle}>입점 신청</span>
+                                <span className={styles.cardDivider}></span>
+                                <span className={styles.cardSubText}>미처리 {pending.shop.toLocaleString()}건</span>
+                            </Link>
 
-                        {/* 신고 관리: ReportController 의 pending count */}
-                        <button className={`${styles.circleCard} ${styles.cardReport}`}>
-                            <span className={styles.cardTitle}>신고 관리</span>
-                            <span className={styles.cardDivider}></span>
-                            <span className={styles.cardSubText}>미처리 {pending.report.toLocaleString()}건</span>
-                        </button>
+                            {/* 신고 관리: ReportController 의 pending count */}
+                            <Link className={`${styles.circleCard} ${styles.cardReport}`} href="/admin/admin_reports">
+                                <span className={styles.cardTitle}>신고 관리</span>
+                                <span className={styles.cardDivider}></span>
+                                <span className={styles.cardSubText}>미처리 {pending.report.toLocaleString()}건</span>
+                            </Link>
 
-                        {/* 문의 신청: 일반 문의 */}
-                        <button className={`${styles.circleCard} ${styles.cardInquiry}`}>
-                            <span className={styles.cardTitle}>문의 신청</span>
-                            <span className={styles.cardDivider}></span>
-                            <span className={styles.cardSubText}>미처리 {pending.inquiry.toLocaleString()}건</span>
-                        </button>
+                            {/* 문의 신청: 일반 문의 */}
+                            <Link className={`${styles.circleCard} ${styles.cardInquiry}`} href="/admin/inquiries">
+                                <span className={styles.cardTitle}>문의 신청</span>
+                                <span className={styles.cardDivider}></span>
+                                <span className={styles.cardSubText}>미처리 {pending.inquiry.toLocaleString()}건</span>
+                            </Link>
+                        </div>
                     </div>
                 </section>
             </main>
