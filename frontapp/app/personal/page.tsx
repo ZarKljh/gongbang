@@ -1251,25 +1251,27 @@ export default function MyPage() {
                                 <div className="cart-list">
                                     {cart.map((item) => (
                                         <div key={item.cartId} className="cart-product">
-                                            <Link href={`http://localhost:3000/product/list/detail/${item.productId}`} className="product-name">
-                                                {item.productName}
-                                            </Link>
-                                            <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
-                                            
+                                            <div className="cart-image"></div>
+                                            <div className='cart-text'>
+                                                <Link href={`http://localhost:3000/product/list/detail/${item.productId}`} className="product-name">
+                                                    {item.productName}
+                                                </Link>
+                                                <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
+                                            </div>
                                             <div className="quantity-control">
-                                            <button className="btn-primary"
-                                                onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
-                                                disabled={item.quantity <= 1}
-                                            >
-                                                -
-                                            </button>
-                                            <span>{item.quantity}개</span>
-                                            <button className="btn-primary"
-                                                onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
-                                            >
-                                                +
-                                            </button>
-                                            <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
+                                                <button className="btn-primary"
+                                                    onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
+                                                    disabled={item.quantity <= 1}
+                                                >
+                                                    -
+                                                </button>
+                                                <span>{item.quantity}개</span>
+                                                <button className="btn-primary"
+                                                    onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
+                                                >
+                                                    +
+                                                </button>
+                                                <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
                                             </div>
                                         </div>
                                     ))}

@@ -748,13 +748,21 @@ body {
     /* border-radius: 12px; */
     padding: 16px 24px;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     gap: 8px;
     transition: box-shadow 0.2s;
 }
 
-.cart-product:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+.cart-text {
+    flex-grow: 1;
+    height: 100%;
+    padding: 20px;
+}
+
+.cart-image {
+    height: 150px;
+    width: 150px;
+    background: #f3f4f6;
 }
 
 /* 상품 이름 */
