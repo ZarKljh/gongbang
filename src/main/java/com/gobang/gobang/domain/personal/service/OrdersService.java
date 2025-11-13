@@ -31,7 +31,7 @@ public class OrdersService {
         List<Orders> orders = ordersRepository.findBySiteUserWithDelivery(siteUser);
 
         return orders.stream()
-                .map(this::convertToResponse)
+                .map(OrdersResponse::from)
                 .collect(Collectors.toList());
     }
 
@@ -40,7 +40,7 @@ public class OrdersService {
         Orders order = ordersRepository.findByIdWithDeliveryAndAddress(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        return convertToResponse(order);
+        return OrdersResponse.from(order);
     }
 
     // 주문 삭제
@@ -50,70 +50,5 @@ public class OrdersService {
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         ordersRepository.delete(order);
-    }
-
-    // Entity -> Response DTO 변환
-    private OrdersResponse convertToResponse(Orders order) {
-        // 주문 상품 목록 조회
-        List<OrderItem> orderItems = orderItemRepository.findByOrder_OrderId(order.getOrderId());
-
-        List<OrderItemResponse> orderItemResponses = orderItems.stream()
-                .filter(Objects::nonNull)
-                .map(item -> OrderItemResponse.builder()
-                        .orderItemId(item.getOrderItemId())
-                        .orderId(item.getOrder().getOrderId())
-                        .productId(item.getProduct().getId())
-                        .productName(item.getProduct().getName())
-                        .quantity(item.getQuantity())
-                        .price(item.getPrice())
-                        .build())
-                .collect(Collectors.toList());
-
-        // 배송 정보 변환
-        DeliveryResponse deliveryResponse = null;
-        String deliveryStatus = "배송준비중";
-
-        if (order.getDeliveries() != null) {
-            Delivery delivery = order.getDeliveries().get(0);
-
-            if (delivery.getDeliveryStatus() != null) {
-                deliveryStatus = delivery.getDeliveryStatus();
-            }
-
-
-            UserAddressResponse addressResponse = null;
-            if (delivery.getAddress() != null) {
-                addressResponse = UserAddressResponse.builder()
-                        .userAddressId(delivery.getAddress().getUserAddressId())
-                        .recipientName(delivery.getAddress().getRecipientName())
-                        .baseAddress(delivery.getAddress().getBaseAddress())
-                        .detailAddress(delivery.getAddress().getDetailAddress())
-                        .zipcode(delivery.getAddress().getZipcode())
-                        .build();
-            }
-
-            deliveryResponse = DeliveryResponse.builder()
-                    .deliveryId(delivery.getDeliveryId())
-                    .orderId(delivery.getOrder().getOrderId())
-                    .trackingNumber(delivery.getTrackingNumber())
-                    .deliveryStatus(delivery.getDeliveryStatus())
-                    .completedAt(delivery.getCompletedAt())
-                    .createdDate(delivery.getCreatedDate())
-                    .modifiedDate(delivery.getModifiedDate())
-                    .addressId(delivery.getAddress().getUserAddressId())
-                    .build();
-        }
-
-        return OrdersResponse.builder()
-                .orderId(order.getOrderId())
-                .userId(order.getSiteUser().getId())
-                .orderCode(order.getOrderCode())
-                .totalPrice(order.getTotalPrice())
-                .deliveryStatus(
-                        order.getDeliveries() != null && !order.getDeliveries().isEmpty()
-                                ? order.getDeliveries().get(0).getDeliveryStatus()
-                                : null
-                )
-                .build();
     }
 }

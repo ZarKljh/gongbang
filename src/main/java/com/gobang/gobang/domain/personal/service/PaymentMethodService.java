@@ -24,7 +24,7 @@ public class PaymentMethodService {
         List<PaymentMethod> paymentMethods = paymentMethodRepository.findBySiteUser(siteUser);
 
         return paymentMethods.stream()
-                .map(this::convertToResponse)
+                .map(PaymentMethodResponse::from)
                 .collect(Collectors.toList());
     }
 
@@ -53,7 +53,7 @@ public class PaymentMethodService {
                 .build();
 
         PaymentMethod saved = paymentMethodRepository.save(paymentMethod);
-        return convertToResponse(saved);
+        return PaymentMethodResponse.from(saved);
     }
 
     // 결제수단 수정
@@ -80,7 +80,7 @@ public class PaymentMethodService {
             paymentMethod.setDefaultPayment(request.getDefaultPayment());
         }
 
-        return convertToResponse(paymentMethod);
+        return PaymentMethodResponse.from(paymentMethod);
     }
 
     // 결제수단 삭제
@@ -118,21 +118,5 @@ public class PaymentMethodService {
 
         String lastFour = cardNumber.substring(cardNumber.length() - 4);
         return "****-****-****-" + lastFour;
-    }
-
-    // Entity -> Response DTO 변환
-    private PaymentMethodResponse convertToResponse(PaymentMethod paymentMethod) {
-        return PaymentMethodResponse.builder()
-                .paymentId(paymentMethod.getPaymentId())
-                .userId(paymentMethod.getSiteUser().getId())
-                .type(paymentMethod.getType())
-                .bankName(paymentMethod.getBankName())
-                .accountNumber(paymentMethod.getAccountNumber())
-                .cardCompany(paymentMethod.getCardCompany())
-                .cardNumber(paymentMethod.getCardNumber())
-                .defaultPayment(paymentMethod.getDefaultPayment())
-                .createdAt(paymentMethod.getCreatedAt())
-                .modifiedDate(paymentMethod.getModifiedDate())
-                .build();
     }
 }
