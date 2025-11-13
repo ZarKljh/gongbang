@@ -12,29 +12,20 @@ import com.gobang.gobang.domain.review.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.response.ReviewsResponse;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
-import com.gobang.gobang.domain.review.service.ReviewReportService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
-import com.gobang.gobang.global.rq.Rq;
 import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final ReviewReportService reviewReportService;
     private final ReviewCommentService reviewCommentService;
     private final ReviewService reviewService;
     private final SiteUserService siteUserService;
@@ -53,6 +44,20 @@ public class ReviewController {
 //                "목록 조회 성공",
 //                new ReviewsResponse(reviewPage)
 //        );
+
+    // (평균 별점)상품 상세 만들어지면 사용
+    @GetMapping("/average/{productId}")
+    public RsData<Map<String, Object>> getAverageRating(@PathVariable Long productId) {
+        Map<String, Object> avgData = reviewService.getAverageRating(productId);
+        return RsData.of("200", "평균 별점 조회 성공", avgData);
+    }
+
+    // (평균 별점)상세 만들어지기 전 임시 사용
+//    @GetMapping("/stats/average")
+//    public RsData<Map<String, Object>> getAverageRating() {
+//        Map<String, Object> avgData = reviewLikeService.getAverageRatingAndCount();
+//        return RsData.of("200", "전체 리뷰 평균 조회 성공", avgData);
+//    }
 
 
     @GetMapping
