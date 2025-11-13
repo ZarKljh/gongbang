@@ -6,7 +6,7 @@ import { Pagination, Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import 'swiper/css/navigation'
-import styles from '@/app/components/product/detail/styles/review.module.css'
+import '@/app/components/product/detail/styles/review.css'
 
 export default function detail() {
     // ================= 리뷰 =================
@@ -30,7 +30,14 @@ export default function detail() {
 
     // 상품Id 기준 리뷰 가져오기
     const searchParams = useSearchParams()
+    const productIdStr = searchParams.get('productId') // 초기엔 null
     const [productId, setProductId] = useState<number | null>(null)
+
+    // searchParams 감지해서 productId채우기
+    useEffect(() => {
+        const id = searchParams.get('productId')
+        if (id) setProductId(Number(id))
+    }, [searchParams])
 
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
@@ -140,11 +147,14 @@ export default function detail() {
 
     // 평균 별점 (물품 상세 만들어지면 사용)
     useEffect(() => {
+        if (!productId) return // productId가 있을 때 실행
+
         const fetchAverage = async () => {
             try {
                 // 상품상세 연결 후 reviewId -> productId로 변경
                 const res = await fetch(`http://localhost:8090/api/v1/reviews/average/${productId}`)
                 const data = await res.json()
+                console.log('⭐ 평균별점 응답:', data)
                 setAvgRating(data?.data?.avgRating || 0)
                 setTotalCount(data?.data?.totalCount || 0)
             } catch (err) {
@@ -152,23 +162,7 @@ export default function detail() {
             }
         }
         fetchAverage()
-    }, [])
-
-    // 상세 만들어지기 전 임시 사용
-    // useEffect(() => {
-    //     const fetchAverage = async () => {
-    //         try {
-    //             const res = await fetch('http://localhost:8090/api/v1/reviews/stats/average')
-    //             const data = await res.json()
-    //             console.log('⭐ 평균별점 응답:', data)
-    //             setAvgRating(data?.data?.avgRating ?? 0)
-    //             setTotalCount(data?.data?.totalCount ?? 0)
-    //         } catch (err) {
-    //             console.error('평균 별점 불러오기 실패:', err)
-    //         }
-    //     }
-    //     fetchAverage()
-    // }, [])
+    }, [productId])
 
     // 포토리뷰
     const photoReviews = Array.from({ length: 25 }).map((_, i) => ({
@@ -177,7 +171,7 @@ export default function detail() {
         img: `/images/review${i + 1}.jpg`,
     }))
 
-    // ✅ 정렬 요청
+    // 정렬 요청
     const handleSortChange = (type) => {
         if (!productId) return
         let newSort = 'date_desc'
@@ -247,7 +241,7 @@ export default function detail() {
                 }
             }
 
-            // ✅ 요청 실패 시 (서버 오류 등)
+            // 요청 실패 시 (서버 오류 등)
             if (!res.ok) {
                 console.error('좋아요 요청 실패:', res.status)
                 return
@@ -255,7 +249,7 @@ export default function detail() {
 
             const data = await res.json()
 
-            // ✅ 서버에서 메시지 보고 판단
+            // 서버에서 메시지 보고 판단
             if (data.msg.includes('등록')) {
                 // 좋아요 추가
                 setLikeCounts((prev) => ({
@@ -411,7 +405,7 @@ export default function detail() {
                     }}
                 >
                     {/* 🎨 상단 배너 */}
-                    <div className="reviewBanner">
+                    <div className="review-banner">
                         배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정(안 할수도)
                         <br />
                         리뷰 이미지를 추가하고 리뷰 작성 유도 문구 삽입
@@ -621,8 +615,6 @@ export default function detail() {
                                             )}
                                         </div>
 
-                                        <hr className="review-divider" />
-
                                         {/* 댓글 */}
                                         {comments[review.reviewId]?.reviewComment && (
                                             <div className="review-comment">
@@ -632,83 +624,41 @@ export default function detail() {
 
                                         {/* SELLER만 댓글 조작 
                                     현재 ADMIN도 가능. 추후 삭제만 가능하도록 변경*/}
-                                        {roleType === 'SELLER' ||
-                                            (roleType === 'ADMIN' && (
-                                                <>
-                                                    {comments[review.reviewId]?.reviewComment ? (
-                                                        <>
-                                                            <button
-                                                                className="review-comment-edit-btn"
-                                                                onClick={() =>
-                                                                    setActiveCommentBox(
-                                                                        activeCommentBox === `edit-${review.reviewId}`
-                                                                            ? null
-                                                                            : `edit-${review.reviewId}`,
-                                                                    )
-                                                                }
-                                                            >
-                                                                ✏️ 댓글 수정
-                                                            </button>
+                                        {roleType === 'SELLER' && (
+                                            <>
+                                                {comments[review.reviewId]?.reviewComment ? (
+                                                    <>
+                                                        <button
+                                                            className="review-comment-edit-btn"
+                                                            onClick={() =>
+                                                                setActiveCommentBox(
+                                                                    activeCommentBox === `edit-${review.reviewId}`
+                                                                        ? null
+                                                                        : `edit-${review.reviewId}`,
+                                                                )
+                                                            }
+                                                        >
+                                                            ✏️ 댓글 수정
+                                                        </button>
 
-                                                            {}
-                                                            <button
-                                                                className="review-comment-delete-btn"
-                                                                onClick={() =>
-                                                                    handleCommentDelete(
-                                                                        review.reviewId,
-                                                                        comments[review.reviewId]?.commentId,
-                                                                    )
-                                                                }
-                                                            >
-                                                                🗑 댓글 삭제
-                                                            </button>
+                                                        {}
+                                                        <button
+                                                            className="review-comment-delete-btn"
+                                                            onClick={() =>
+                                                                handleCommentDelete(
+                                                                    review.reviewId,
+                                                                    comments[review.reviewId]?.commentId,
+                                                                )
+                                                            }
+                                                        >
+                                                            🗑 댓글 삭제
+                                                        </button>
 
-                                                            {isLoggedIn &&
-                                                                activeCommentBox === `edit-${review.reviewId}` && (
-                                                                    <div className="review-comment-editbox">
-                                                                        <textarea
-                                                                            placeholder="수정할 댓글 내용을 입력하세요."
-                                                                            value={reviewComment}
-                                                                            onChange={(e) =>
-                                                                                setReviewComment(e.target.value)
-                                                                            }
-                                                                            className="review-comment-textarea"
-                                                                        />
-                                                                        <button
-                                                                            onClick={() =>
-                                                                                handleCommentEdit(
-                                                                                    review.reviewId,
-                                                                                    comments[review.reviewId]
-                                                                                        ?.commentId,
-                                                                                )
-                                                                            }
-                                                                            className="review-comment-save-btn"
-                                                                        >
-                                                                            저장
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <button
-                                                                className="review-comment-add-btn"
-                                                                onClick={() =>
-                                                                    setActiveCommentBox(
-                                                                        activeCommentBox === review.reviewId
-                                                                            ? null
-                                                                            : review.reviewId,
-                                                                    )
-                                                                }
-                                                            >
-                                                                💬 댓글 달기
-                                                            </button>
-
-                                                            {isLoggedIn && activeCommentBox === review.reviewId && (
-                                                                <div className="review-comment-addbox">
+                                                        {isLoggedIn &&
+                                                            activeCommentBox === `edit-${review.reviewId}` && (
+                                                                <div className="review-comment-editbox">
                                                                     <textarea
-                                                                        placeholder="댓글을 입력하세요."
-                                                                        maxLength={200}
+                                                                        placeholder="수정할 댓글 내용을 입력하세요."
                                                                         value={reviewComment}
                                                                         onChange={(e) =>
                                                                             setReviewComment(e.target.value)
@@ -717,18 +667,55 @@ export default function detail() {
                                                                     />
                                                                     <button
                                                                         onClick={() =>
-                                                                            handleCommentSubmit(review.reviewId)
+                                                                            handleCommentEdit(
+                                                                                review.reviewId,
+                                                                                comments[review.reviewId]?.commentId,
+                                                                            )
                                                                         }
                                                                         className="review-comment-save-btn"
                                                                     >
-                                                                        댓글 등록
+                                                                        저장
                                                                     </button>
                                                                 </div>
                                                             )}
-                                                        </>
-                                                    )}
-                                                </>
-                                            ))}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            className="review-comment-add-btn"
+                                                            onClick={() =>
+                                                                setActiveCommentBox(
+                                                                    activeCommentBox === review.reviewId
+                                                                        ? null
+                                                                        : review.reviewId,
+                                                                )
+                                                            }
+                                                        >
+                                                            💬 댓글 달기
+                                                        </button>
+
+                                                        {isLoggedIn && activeCommentBox === review.reviewId && (
+                                                            <div className="review-comment-addbox">
+                                                                <textarea
+                                                                    placeholder="댓글을 입력하세요."
+                                                                    maxLength={200}
+                                                                    value={reviewComment}
+                                                                    onChange={(e) => setReviewComment(e.target.value)}
+                                                                    className="review-comment-textarea"
+                                                                />
+                                                                <button
+                                                                    onClick={() => handleCommentSubmit(review.reviewId)}
+                                                                    className="review-comment-save-btn"
+                                                                >
+                                                                    댓글 등록
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                                <hr className="review-divider" />
+                                            </>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
