@@ -621,7 +621,7 @@ export default function detail() {
                                             )}
                                         </div>
 
-                                        <hr className="review-divider" />
+                                      
 
                                         {/* 댓글 */}
                                         {comments[review.reviewId]?.reviewComment && (
@@ -632,8 +632,7 @@ export default function detail() {
 
                                         {/* SELLER만 댓글 조작 
                                     현재 ADMIN도 가능. 추후 삭제만 가능하도록 변경*/}
-                                        {roleType === 'SELLER' ||
-                                            (roleType === 'ADMIN' && (
+                                        {roleType === 'SELLER' && (
                                                 <>
                                                     {comments[review.reviewId]?.reviewComment ? (
                                                         <>
@@ -727,8 +726,9 @@ export default function detail() {
                                                             )}
                                                         </>
                                                     )}
+                                                    <hr className="review-divider" />
                                                 </>
-                                            ))}
+                                            )}
                                     </li>
                                 ))}
                             </ul>

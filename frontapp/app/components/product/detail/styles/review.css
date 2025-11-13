@@ -390,30 +390,35 @@
 
 /* 💬 댓글 영역 */
 .review-comment {
-  margin-top: 8px;
+  display: flex;
   width: 800px;
-  min-height: 30px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 8px;
+  height: 100px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  overflow: hidden;
+  cursor: pointer;
   background-color: #fafafa;
-  white-space: pre-wrap;
+  transition: 0.3s;
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 
 /* 댓글 버튼들 */
 .review-comment-edit-btn,
 .review-comment-delete-btn,
 .review-comment-add-btn {
-  background-color: #ad9263;
+  background-color: #d1aa65;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
+  border-radius: 8px;
+  padding: 8px 16px;
   margin-top: 5px;
+  margin-left: 5px;
   cursor: pointer;
 }
 .review-comment-delete-btn {
-  background-color: #b33a3a;
+  background-color: #ec551ac2;
 }
 
 /* 댓글 수정/등록 박스 */
@@ -422,20 +427,27 @@
   margin-top: 10px;
 }
 .review-comment-textarea {
-  width: 300px;
-  height: 60px;
-  border: 1px solid #ccc;
+  display: flex;
+  width: 800px;
+  height: 100px;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 5px;
+  padding: 10px;
+  overflow: hidden;
+  background-color: #fafafa;
+  transition: 0.3s;
+  line-height: 1.6;
+  margin-bottom: 10px;
   resize: none;
 }
 .review-comment-save-btn {
-  background-color: #ad9263;
+  background-color: #d1aa65;
   color: white;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
   margin-top: 5px;
+  margin-left: 5px;
   cursor: pointer;
 }
 
