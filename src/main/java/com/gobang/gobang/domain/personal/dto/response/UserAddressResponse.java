@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.entity.UserAddress;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +21,7 @@ public class UserAddressResponse {
     private Boolean isDefault;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UserAddressResponse address;
 
     public static UserAddressResponse from(UserAddress userAddress) {
         return UserAddressResponse.builder()

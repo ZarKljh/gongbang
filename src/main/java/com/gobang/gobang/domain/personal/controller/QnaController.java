@@ -1,6 +1,10 @@
 package com.gobang.gobang.domain.personal.controller;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.inquiry.entity.Inquiry;
 import com.gobang.gobang.domain.inquiry.model.InquiryType;
+import com.gobang.gobang.domain.inquiry.repository.InquiryRepository;
 import com.gobang.gobang.domain.personal.dto.response.QnaResponse;
 import com.gobang.gobang.domain.personal.service.QnaService;
 import com.gobang.gobang.global.RsData.RsData;

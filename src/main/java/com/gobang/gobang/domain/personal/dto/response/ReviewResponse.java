@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class ReviewResponse {
     private Long reviewId;
     private Long productId;
-//    private Product productName;
+    private String productName;
     private Integer rating;
     private String content;
     private Integer reviewLike;
@@ -30,6 +30,7 @@ public class ReviewResponse {
         return ReviewResponse.builder()
                 .reviewId(review.getReviewId())
                 .productId(review.getProductId())
+                .productName(review.getProduct() != null ? review.getProduct().getName() : "알 수 없음")
                 .rating(review.getRating())
                 .content(review.getContent())
                 .reviewLike(review.getReviewLike())

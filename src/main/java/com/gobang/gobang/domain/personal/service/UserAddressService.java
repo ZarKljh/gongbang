@@ -24,7 +24,7 @@ public class UserAddressService {
         List<UserAddress> addresses = userAddressRepository.findBySiteUser(siteUser);
 
         return addresses.stream()
-                .map(this::convertToResponse)
+                .map(UserAddressResponse::from)
                 .collect(Collectors.toList());
     }
 
@@ -46,7 +46,7 @@ public class UserAddressService {
                 .build();
 
         UserAddress savedAddress = userAddressRepository.save(address);
-        return convertToResponse(savedAddress);
+        return UserAddressResponse.from(savedAddress);
     }
 
     // 배송지 수정
@@ -69,7 +69,7 @@ public class UserAddressService {
             address.setIsDefault(request.getIsDefault());
         }
 
-        return convertToResponse(address);
+        return UserAddressResponse.from(address);
     }
 
     // 배송지 삭제
@@ -92,20 +92,5 @@ public class UserAddressService {
 
         // 새로운 기본 배송지 설정
         address.setIsDefault(true);
-    }
-
-    // Entity -> Response DTO 변환
-    private UserAddressResponse convertToResponse(UserAddress address) {
-        return UserAddressResponse.builder()
-                .userAddressId(address.getUserAddressId())
-                .userId(address.getSiteUser().getId())
-                .recipientName(address.getRecipientName())
-                .baseAddress(address.getBaseAddress())
-                .detailAddress(address.getDetailAddress())
-                .zipcode(address.getZipcode())
-                .isDefault(address.getIsDefault())
-                .createdAt(address.getCreatedAt())
-                .updatedAt(address.getUpdatedAt())
-                .build();
     }
 }

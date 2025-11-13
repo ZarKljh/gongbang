@@ -123,6 +123,12 @@ body {
     border-color: #bbf7d0;
 }
 
+.auth-banner-input input {
+    flex: 1;
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+}
+
 .auth-banner button {
     padding: 8px 16px;
     background: #000;
@@ -219,6 +225,42 @@ body {
 
 .btn-secondary:hover {
     background: #f9fafb;
+}
+
+/* 배송 상태 요약 */
+.delivery-status-summary {
+    display: flex;
+    /* gap: 16px; */
+    padding: 0;
+    margin-bottom: 24px;
+    border: 1px solid #e5e7eb;
+}
+
+.status-card {
+    flex: 1;
+    text-align: center;
+    padding: 16px;
+    margin: 10px 0;
+    border-right: 1px solid #e5e7eb;
+    /* border-radius: 12px; */
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.status-card:hover {
+    background: #f9fafb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.status-name {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.status-count {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 8px;
 }
 
 /* 주문 카드 */
@@ -577,4 +619,167 @@ body {
   justify-content: space-between;
   font-size: 13px;
   color: #666;
+}
+
+/* 리뷰 */
+.my-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.my-review-card {
+  border: 1px solid #ddd;
+  padding: 16px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.my-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.my-review-product-name {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.my-review-rating {
+  color: #ff9900;
+}
+
+.my-review-images {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.my-review-images img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.my-review-content {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.my-review-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #888;
+  align-items: center;
+}
+
+.my-review-like-count {
+  color: #ff5a5f;
+}
+
+/* 로그인 필요 */
+.need-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* min-height: 100vh; */
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; */
+    color: #000;
+    font-size: 24px;
+    font-weight: 600;
+    gap: 30px;
+    padding: 20px;
+}
+
+.need-login button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: #000;
+    /* border: 2px solid rgba(255, 255, 255, 0.8); */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    /* backdrop-filter: blur(10px); */
+    /* box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); */
+}
+
+.need-login button:hover {
+    background: #1f2937;
+    /* border-color: #fff; */
+    transform: translateY(-2px);
+    /* box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); */
+}
+
+.need-login button:active {
+    transform: translateY(0);
+    /* box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15); */
+}
+
+/* 비어있는 장바구니 상태 */
+.empty-state {
+    text-align: center;
+    color: #6b7280;
+    padding: 32px 0;
+}
+
+/* 장바구니 목록 */
+.cart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 장바구니 상품 */
+.cart-product {
+    border: 1px solid #e5e7eb;
+    /* border-radius: 12px; */
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: box-shadow 0.2s;
+}
+
+.cart-product:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* 상품 이름 */
+.product-name {
+    font-weight: 500;
+    font-size: 16px;
+    color: #111827;
+    text-decoration: none;
+}
+
+.product-name:hover {
+    text-decoration: underline;
+}
+
+/* 가격 */
+.cart-product p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* 수량 조절 */
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
 }

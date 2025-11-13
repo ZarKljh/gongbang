@@ -3,15 +3,54 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
+import Link from 'next/link';
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
+    // =============== 타입 정의 ===============
+    interface OrderItemResponse {
+        orderItemId: number;
+        orderId: number;
+        productId: number;
+        productName: string;
+        quantity: number;
+        price: number;
+    }
+
+    interface OrdersResponse {
+        orderId: number;
+        userId: number;
+        orderCode: string;
+        totalPrice: number;
+        createdDate: string;
+        deliveryStatus: string;
+        completedAt?: string;
+        items: OrderItemResponse[];
+        deliveries?: DeliveryResponse[];
+    }
+
+    interface DeliveryResponse {
+        deliveryId: number;
+        orderId: number;
+        addressId: number;
+        trackingNumber: string | null;
+        deliveryStatus: string;
+        completedAt: string | null; // 백엔드에서 String으로 내려주는 것
+        createdDate: string | null;
+        modifiedDate: string | null;
+
+        // 배송지 정보
+        recipientName: string | null;
+        baseAddress: string | null;
+        detailAddress: string | null;
+        zipcode: string | null;
+    }
+
     // =============== State 관리 ===============
     // 사용자 정보
     const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
-    const [profileImg, setProfileImg] = useState<any[]>([])
     const [stats, setStats] = useState<any>({
         totalQna: 0,
         totalReviews: 0,
@@ -31,11 +70,14 @@ export default function MyPage() {
 
     // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
+    const [orderItem, setOrderItem] = useState<any[]>([])
+    const [deliveryDetail, setDeliveryDetail] = useState<any>(null)
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
-    const [isOrderModal, setIsOrderModal] = useState(false)
-    const [isOrdersModal, setIsOrdersModal] = useState(false)
+    const [isOrderDetailModal, setIsOrderDetailModal] = useState(false)
+    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null);
+
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -83,6 +125,7 @@ export default function MyPage() {
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
+            setLoading(true);
             try {
                 const user = await fetchUser()
                 if (!user || !user.id) return
@@ -90,11 +133,17 @@ export default function MyPage() {
                 await loadAllData(user.id)
             } catch (error) {
                 console.error('초기 데이터 로딩 실패:', error)
+            } finally {
+                setLoading(false);
             }
         }
 
         init()
     }, [])
+
+    useEffect(() => {
+        console.log('orders state:', orders)
+    }, [orders])
 
     useEffect(() => {
         if (isAddressModal && !window.daum) {
@@ -107,10 +156,10 @@ export default function MyPage() {
 
     // =============== API 호출 함수 ===============
     const loadAllData = async (userId: number) => {
-        setLoading(true)
         try {
             await Promise.all([
                 fetchOrders(userId),
+                fetchOrderItem(),
                 fetchAddresses(userId),
                 fetchPaymentMethods(userId),
                 fetchWishList(userId),
@@ -147,11 +196,29 @@ export default function MyPage() {
 
         try {
             const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
-            setOrders(Array.isArray(data.data) ? data.data : [])
+            console.log('orders axios data:', data);
+            setOrders(data.data || [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
         }
+    }
+
+    const fetchOrderItem = async (orderId?: number) => {
+        if (!orderId) return
+
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {withCredentials: true,})
+            setOrderItem(Array.isArray(data.data) ? data.data : [])
+        } catch (error) {
+            console.error('주문 상세 내역 조회 실패:', error)
+            setOrderItem([])
+        }
+    }
+
+    const fetchDeliveryDetail = async (orderId: number) => {
+        const res = await axios.get(`${API_BASE_URL}/orders/${orderId}/delivery`)
+        return res.data.data
     }
 
     const fetchCart = async (id?: number) => {
@@ -226,18 +293,6 @@ export default function MyPage() {
         }
     }
 
-    const fetchQna = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return;
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {withCredentials: true,})
-            setQna(Array.isArray(data.data) ? data.data : [])
-        } catch (error) {
-            console.error('문의 목록 조회 실패:', error)
-            setQna([])
-        }
-    }
-
     const fetchStatsData = async (id?: number) => {
         const userId = id || userData?.id
         if (!userId) return
@@ -266,20 +321,21 @@ export default function MyPage() {
         }
     }
 
-    const fetchStats = async () => {
+    const fetchQna = async (id?: number) => {
         const userId = id || userData?.id
-        if (!userId) return
+        console.log('fetchQna 호출 - userId:', userId)
+        if (!userId) return;
         
         try {
-            const response = await axios.get(`${API_BASE_URL}/stats?userId=${userId}`, { withCredentials: true })
-            if (response.data.resultCode === '200') {
-                setStats({
-                    totalQna: response.data.data.totalQna,
-                    totalReviews: response.data.data.totalReviews,
-                })
-            }
+            const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
+                withCredentials: true,
+            })
+            console.log('전체 응답:', response)
+            console.log('data.data:', response.data.data)
+            setQna(Array.isArray(response.data.data) ? response.data.data : [])
         } catch (error) {
-            console.error('통계 조회 실패:', error)
+            console.error('문의 목록 조회 실패:', error)
+            setQna([])
         }
     }
 
@@ -349,6 +405,137 @@ export default function MyPage() {
                 }))
             },
         }).open()
+    }
+
+    // =============== 주문, 배송정보 ===============
+    const isWithinSevenDays = (dateString?: string) => {
+        if (!dateString) return false
+        const completedDate = new Date(dateString)
+        const now = new Date()
+        const diffTime = Math.abs(now.getTime() - completedDate.getTime())
+        const diffDays = diffTime / (1000 * 60 * 60 * 24)
+        return diffDays <= 7
+    }
+
+    const handleOrderAction = async (order: any, action: 'cancel' | 'return' | 'exchange') => {
+        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
+
+        // 상태 체크
+        if (action === 'cancel' && order.deliveryStatus !== '배송준비중') {
+            return alert('배송 준비중일 때만 주문 취소가 가능합니다.');
+        }
+        if ((action === 'return' || action === 'exchange') && order.deliveryStatus !== '배송완료') {
+            return alert('배송 완료된 주문만 반품/교환 신청이 가능합니다.');
+        }
+
+        if (!confirm(`정말 ${action === 'cancel' ? '취소' : action === 'return' ? '반품' : '교환'}하시겠습니까?`)) return;
+
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/orders/${order.orderId}/${action}`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (data.resultCode === '200') {
+                alert(`${action === 'cancel' ? '주문 취소' : action === 'return' ? '반품 신청' : '교환 신청'} 완료`);
+                await fetchOrders(userData.id); // OrdersResponse 기반으로 다시 가져오기
+            } else {
+                alert(`실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error(`${action} 실패:`, error);
+            alert(`${action} 중 오류가 발생했습니다.`);
+        }
+    }
+
+    // ================= 주문 취소 / 반품 / 교환 =================
+
+    // 주문 취소 (배송 준비중일 때만 가능)
+    const handleCancelOrder = async (orderId: number) => {
+        const order = orders.find((o) => o.orderId === orderId);
+        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
+        if (order.deliveryStatus !== "배송준비중") {
+            return alert("배송 준비중 상태일 때만 주문 취소가 가능합니다.");
+        }
+
+        if (!confirm("정말 주문을 취소하시겠습니까?")) return;
+
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/orders/${orderId}/cancel`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (data.resultCode === "200") {
+                alert("주문이 취소되었습니다.");
+                await fetchOrders(userData.id);
+            } else {
+                alert(`취소 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("주문 취소 실패:", error);
+            alert("주문 취소 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 반품 신청 (배송 완료 상태)
+    const handleReturnOrder = async (orderId: number) => {
+        const order = orders.find((o) => o.orderId === orderId);
+        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
+        if (order.deliveryStatus !== "배송완료") {
+            return alert("배송 완료된 주문만 반품 신청이 가능합니다.");
+        }
+
+        if (!confirm("이 주문을 반품 신청하시겠습니까?")) return;
+
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/orders/${orderId}/return`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (data.resultCode === "200") {
+                alert("반품 신청이 완료되었습니다.");
+                await fetchOrders(userData.id);
+            } else {
+                alert(`반품 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("반품 신청 실패:", error);
+            alert("반품 신청 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 교환 신청
+    const handleExchangeOrder = async (orderId: number) => {
+        const order = orders.find((o) => o.orderId === orderId);
+        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
+        if (order.deliveryStatus !== "배송완료") {
+            return alert("배송 완료된 주문만 교환 신청이 가능합니다.");
+        }
+
+        if (!confirm("이 주문을 교환 신청하시겠습니까?")) return;
+
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/orders/${orderId}/exchange`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (data.resultCode === "200") {
+                alert("교환 신청이 완료되었습니다.");
+                await fetchOrders(userData.id);
+            } else {
+                alert(`교환 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("교환 신청 실패:", error);
+            alert("교환 신청 중 오류가 발생했습니다.");
+        }
     }
 
     // =============== 회원정보 ===============
@@ -651,6 +838,89 @@ export default function MyPage() {
             alert('리뷰 삭제 중 오류가 발생했습니다.')
         }
     }
+    // ================= 리뷰 수정 / 삭제 =================
+
+    // 리뷰 이미지 업로드 핸들러
+    const handleUploadReviewImage = async (reviewId: number, file: File) => {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const { data } = await axios.post(
+                `http://localhost:8090/api/v1/reviews/${reviewId}/image`,
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    withCredentials: true,
+                }
+            );
+
+            if (data.resultCode === "200") {
+                alert("이미지가 업로드되었습니다.");
+                await fetchMyReviews();
+            } else {
+                alert(`업로드 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("리뷰 이미지 업로드 실패:", error);
+            alert("이미지 업로드 중 오류가 발생했습니다.");
+        }
+    }
+
+    // ================= Q&A 기능 =================
+
+    // 문의 작성
+    const handleCreateQna = async (newQna: { title: string; content: string; productId?: number }) => {
+        try {
+            const { data } = await axios.post(`${API_BASE_URL}/qna`, newQna, { withCredentials: true });
+
+            if (data.resultCode === "200") {
+                alert("문의가 등록되었습니다.");
+                await fetchQna(userData.id);
+            } else {
+                alert(`등록 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("문의 등록 실패:", error);
+            alert("문의 등록 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 문의 수정
+    const handleEditQna = async (qnaId: number, updated: { title: string; content: string }) => {
+        try {
+            const { data } = await axios.patch(`${API_BASE_URL}/qna/${qnaId}`, updated, { withCredentials: true });
+
+            if (data.resultCode === "200") {
+                alert("문의가 수정되었습니다.");
+                await fetchQna(userData.id);
+            } else {
+                alert(`수정 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("문의 수정 실패:", error);
+            alert("문의 수정 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 문의 삭제
+    const handleDeleteQna = async (qnaId: number) => {
+        if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return;
+
+        try {
+            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, { withCredentials: true });
+
+            if (data.resultCode === "200") {
+                alert("문의가 삭제되었습니다.");
+                await fetchQna(userData.id);
+            } else {
+                alert(`삭제 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error("문의 삭제 실패:", error);
+            alert("문의 삭제 중 오류가 발생했습니다.");
+        }
+    }
 
     // =============== 팔로우 ===============
     const handleFollow = async (studioId: number) => {
@@ -768,9 +1038,18 @@ export default function MyPage() {
         setIsStatusModal(true)
     }
 
-    const handleOrderClick = (order: any) => {
-        setSelectedOrder(order)
-        setIsOrderModal(true)
+    const handleOrderClick = async (order: any) => {
+        try {
+            setSelectedOrder(order)
+            
+            const detail = await fetchDeliveryDetail(order.orderId)
+            setDeliveryDetail(detail)
+            
+            setIsOrderDetailModal(true)
+        } catch (error) {
+            console.error('배송 상세 조회 실패:', error)
+            setIsOrderDetailModal(true)
+        }
     }
 
     // =============== 렌더링 조건 ===============
@@ -780,7 +1059,7 @@ export default function MyPage() {
 
     if (!userData) {
         return (
-            <div>
+            <div className='need-login'>
                 로그인이 필요합니다.
                 <button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>
             </div>
@@ -912,51 +1191,46 @@ export default function MyPage() {
                                 {['배송준비중', '배송중', '배송완료'].map((status) => (
                                     <div key={status} className="status-card" onClick={() => handleStatusClick(status)}>
                                         <p>{status}</p>
-                                        <p>{orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}</p>
+                                        <p>
+                                            {orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}
+                                        </p>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="section-header">
-                                <h2>최근 주문</h2>
+                                <h2>주문 내역</h2>
                             </div>
 
                             {orders.length === 0 ? (
-                                <div className="empty-state">주문 내역이 없습니다.</div>
+                                <p>주문 내역이 없습니다.</p>
                             ) : (
-                                <div className="orders-list">
-                                    {orders.map((order) => (
-                                        <div key={order.orderId} className="order-card">
-                                            <div className="order-header">
-                                                <div>
-                                                    <p className="order-date">{order.createdDate}</p>
-                                                    <p className="order-number">주문번호: {order.orderCord}</p>
-                                                </div>
-                                                <span className="order-status">{order.deliveryStatus}</span>
-                                            </div>
-
-                                            {order.items && order.items.length > 0 ? (
-                                                order.items.map((item, idx) => (
-                                                    <div key={idx} className="order-item">
-                                                        <p className="order-item-name">{item.productName}</p>
-                                                        <p className="order-item-detail">
-                                                            {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                        </p>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="order-item-empty">상품 정보가 없습니다.</div>
-                                            )}
-
-                                            <div className="order-footer">
-                                                {order.trackingNumber && (
-                                                    <p className="order-tracking">운송장: {order.trackingNumber}</p>
-                                                )}
-                                                <p className="order-total">총 {order.totalPrice?.toLocaleString()}원</p>
-                                            </div>
+                                orders.map((order) => (
+                                    <div key={order.orderId} className="order-card"
+                                        onClick={() => setIsOrdersModal(true)}
+                                    >
+                                        <div className="order-header">
+                                            <p>
+                                                주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
+                                            </p>
+                                            <span>{order.deliveryStatus}</span>
                                         </div>
-                                    ))}
-                                </div>
+
+                                        {(order.items || []).map((item, idx) => (
+                                            <div key={idx} className="order-item">
+                                                <p>주문 상품: {item.productName}</p>
+                                                <p>
+                                                    {item.price?.toLocaleString()}원 / {item.quantity}개
+                                                </p>
+                                            </div>
+                                        ))}
+
+                                        <div className="order-footer">
+                                            {order.trackingNumber && <p>운송장: {order.trackingNumber}</p>}
+                                            <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                        </div>
+                                    </div>
+                                ))
                             )}
                         </div>
                     )}
@@ -974,8 +1248,10 @@ export default function MyPage() {
                                 <div className="cart-list">
                                     {cart.map((item) => (
                                         <div key={item.cartId} className="cart-product">
-                                            <p>{item.productName}</p>
-                                            <p>{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                            <Link href={`http://localhost:3000/product/list/detail/${item.productId}`} className="product-name">
+                                                {item.productName}
+                                            </Link>
+                                            <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
                                             
                                             <div className="quantity-control">
                                             <button className="btn-primary"
@@ -1317,9 +1593,16 @@ export default function MyPage() {
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
                                                 <span className="my-review-product-name">
-                                                    상품 ID: {review.productId}
+                                                    상품명: {review.productName}
                                                 </span>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
+                                            </div>
+
+                                            <div className="my-review-images">
+                                                {review.images?.map((imgUrl, idx) => (
+                                                    <img key={idx} src={imgUrl} alt={`리뷰 이미지 ${idx + 1}`} />
+                                                ))}
+                                                <p>⭐이미지 꼭 확인해볼 것⭐</p>
                                             </div>
 
                                             <div className="my-review-content">{review.content}</div>
@@ -1409,26 +1692,22 @@ export default function MyPage() {
                         </button>
                         <h2>{selectedStatus}</h2>
 
-                        {orders.filter((o) => o.deliveryStatus === selectedStatus).length === 0 ? (
+                        {orders.filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))).length === 0 ? (
                             <p>주문 내역이 없습니다.</p>
                         ) : (
                             orders
-                                .filter((o) => o.deliveryStatus === selectedStatus)
+                                .filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)))
                                 .map((order) => (
                                     <div key={order.orderId} className="order-card">
                                         <div className="order-header">
-                                            <p>
-                                                {order.createdDate} | 주문번호: {order.orderCord}
-                                            </p>
+                                            <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
                                             <span>{order.deliveryStatus}</span>
                                         </div>
 
-                                        {order.items.map((item, idx) => (
+                                        {(order.items || []).map((item, idx) => (
                                             <div key={idx} className="order-item">
                                                 <p>{item.productName}</p>
-                                                <p>
-                                                    {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                </p>
+                                                <p>{item.price?.toLocaleString()}원 / {item.quantity}개</p>
                                             </div>
                                         ))}
 
@@ -1443,34 +1722,60 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* 전체 주문 모달 */}
+            {/* 주문 상세 모달 */}
             {isOrdersModal && (
                 <div className="orders-modal" onClick={() => setIsOrdersModal(false)}>
                     <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="orders-modal-close" onClick={() => setIsOrdersModal(false)}>
                             &times;
                         </button>
-                        <h2 style={{ marginBottom: '10px' }}>상세주문 확인</h2>
-                        <p>상세주문 폼</p>
-                    </div>
-                </div>
-            )}
 
-            {/* 주문 상세 모달 */}
-            {isOrderModal && selectedOrder && (
-                <div className="modal-backdrop" onClick={() => setIsOrderModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => setIsOrderModal(false)}>닫기</button>
-                        <h2>주문 상세</h2>
-                        {selectedOrder.items.map((item, idx) => (
+                        <h2 style={{ marginBottom: '10px' }}>주문 상세 내역</h2>
+
+                        <div className="order-info">
+                            <p>주문일자: {isOrdersModal.createdDate}</p>
+                            <p>주문번호: {isOrdersModal.orderCode}</p>
+                            <p>배송상태: {isOrdersModal.deliveryStatus}</p>
+
+                            {isOrdersModal.deliveries?.length > 0 && (() => {
+                                const deliveryDetail = isOrdersModal.deliveries[0];
+                                return (
+                                    <>
+                                    <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
+                                    <p>배송상태: {deliveryDetail.deliveryStatus || '정보 없음'}</p>
+                                    <p>수령인: {deliveryDetail.recipientName || '정보 없음'}</p>
+                                    <p>주소: {deliveryDetail.baseAddress || ''} {deliveryDetail.detailAddress || ''}</p>
+                                    <p>우편번호: {deliveryDetail.zipcode || ''}</p>
+                                    </>
+                                );
+                            })()}
+
+                            {/* 배송완료일 표시 (배송완료 상태일 때만) */}
+                            {isOrdersModal.deliveryStatus === '배송완료' && isOrdersModal.completedAt && (
+                                <p>
+                                    배송완료일:{' '}
+                                    {new Date(isOrdersModal.completedAt).toLocaleDateString('ko-KR', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                    })}
+                                </p>
+                            )}
+                        </div>
+
+                        <h3 style={{ marginTop: '15px' }}>상품 내역</h3>
+                        {(isOrdersModal.items || []).map((item, idx) => (
                             <div key={idx} className="order-item">
                                 <p>{item.productName}</p>
                                 <p>
-                                    {item.price}원 × {item.quantity}
+                                    {item.price?.toLocaleString()}원 / {item.quantity}개
                                 </p>
                             </div>
                         ))}
-                        <p>총 {selectedOrder.totalPrice}원</p>
+
+                        <div className="order-footer">
+                            <p>총 결제금액: {isOrdersModal.totalPrice?.toLocaleString()}원</p>
+                        </div>
                     </div>
                 </div>
             )}

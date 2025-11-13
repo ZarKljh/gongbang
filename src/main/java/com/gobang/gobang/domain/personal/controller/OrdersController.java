@@ -47,4 +47,10 @@ public class OrdersController {
         DeliveryResponse response = deliveryService.updateDelivery(request);
         return RsData.of("200", "배송 정보 수정 성공", response);
     }
+
+    @GetMapping("/{orderId}/delivery")
+    public RsData<DeliveryResponse> getDeliveryDetail(@PathVariable Long orderId) {
+        DeliveryResponse delivery = deliveryService.getDeliveryByOrderId(orderId);
+        return RsData.of("200", "배송 상세 조회 성공", delivery);
+    }
 }
