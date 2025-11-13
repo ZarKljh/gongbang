@@ -1,3 +1,124 @@
+/* ====== 공통 프레임 ====== */
+.pageFrame {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    box-sizing: border-box;
+}
+
+/* 좌: 사이드바 / 우: 콘텐츠 2열 */
+.grid {
+    display: grid;
+    grid-template-columns: 260px 1fr; /* 사이드바 260px, 본문 나머지 */
+    gap: 24px;
+    align-items: start;
+}
+
+.categoryTree {
+    position: sticky;
+    top: 16px;
+    background: #7a6868;
+    color: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    height: calc(100dvh - 32px);
+    overflow: auto;
+}
+
+.categoryTree h2 {
+    font-size: 16px;
+    margin: 0 0 12px;
+}
+
+.categoryList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.categoryItem {
+    margin: 0;
+}
+
+.categoryToggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 6px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+}
+
+.subcategoryList {
+    list-style: none;
+    padding: 6px 8px 0;
+    margin: 6px 0 0;
+}
+
+.subcategoryList li a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: #fff;
+    opacity: 0.9;
+    text-decoration: none;
+}
+.subcategoryList li a:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ====== 우측 콘텐츠 ====== */
+.contentColumn {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+}
+
+/* ====== 필터 영역 ====== */
+.filterArea {
+    background: #f6c1c1;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+#filterHeading {
+    margin: 0 0 10px;
+}
+
+.filterForm {
+    margin: 0;
+}
+
+.chip,
+.prChip {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 12px;
+    margin: 6px 8px 0 0;
+    background: #8d8d8d;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.05s ease;
+}
+
+.chip:active,
+.prChip:active {
+    transform: scale(0.98);
+}
+
+.active {
+    outline: 2px solid #333;
+}
+
+/* --- ----------------------------------------*/
 .cardGrid {
     display: grid;
     max-width: 1280px; /* ✅ 최대 너비 제한 */
@@ -87,4 +208,97 @@
     border-color: blueviolet;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     transform: translateY(1px); /* 눌린 듯한 느낌 */
+}
+
+/* ===== 필터 바 ===== */
+.filterArea {
+    background: #f6c1c1; /* 연핑크 */
+    border-radius: 8px;
+    padding: 16px 20px;
+}
+
+/* 그룹들을 가로로 배치 (색상 / 디자인 / 가격대 …) */
+.filterGroups {
+    display: flex;
+    gap: 48px; /* 그룹들 사이 간격 */
+    flex-wrap: wrap; /* 좁아지면 다음 줄로 */
+    align-items: flex-start;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* 각 그룹(ul>li의 li 하나)에 적용할 래퍼 */
+.filterGroup {
+    min-width: 200px; /* 너무 좁아지지 않게 */
+}
+
+/* 그룹 타이틀(예: 색상 / 디자인 / 가격대) */
+.groupTitle {
+    display: block;
+    font-weight: 600;
+    margin: 0 0 8px;
+}
+
+/* 그룹 내부 옵션 리스트 */
+.optionList {
+    display: flex;
+    gap: 10px 14px;
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+/* ===== 칩 스타일 ===== */
+.chip,
+.prChip {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: #8d8d8d;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.05s ease, box-shadow 0.15s ease;
+    line-height: 1;
+}
+.chip:active,
+.prChip:active {
+    transform: scale(0.98);
+}
+
+.active {
+    outline: 2px solid #333; /* 선택 상태 */
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08) inset;
+}
+
+/* 색상 전용 원형 버튼(배경색으로 표시) */
+.chip {
+    width: 32px;
+    height: 32px;
+    padding: 0; /* 원형이므로 내부 패딩 제거 */
+    border-radius: 50%;
+    background: #8d8d8d; /* 기본값, 실제 색상은 style={{backgroundColor}}로 덮어씀 */
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* 가격대 버튼은 pill 형태 */
+.prChip {
+    min-width: 96px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #faf6f6;
+    color: #333;
+    border: 1px solid #e7dede;
+}
+
+/* 라벨(옵션 이름) */
+.optLabel {
+    font-size: 13px;
+    color: #333;
+    margin-right: 8px;
 }

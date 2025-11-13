@@ -117,14 +117,18 @@
 }
 
 .studio-logo-img {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     border: 1px solid #e2e8f0;
     border-radius: 50%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     /*
     margin-right: 20px;
     */
+}
+.studio-logo-img > img {
+    width: 100%;
+    height: 100%;
 }
 
 .studio-info-header-studioName {
@@ -140,24 +144,113 @@
     margin-left: auto;
 }
 
+/* 공방 소개 영역 */
+.studio-info-description {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.studio-info-description > h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.studio-info-description > p {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* 셀러 정보 전체 영역 */
+.seller-info {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+/* 셀러 이름 영역 */
+.seller-name {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 180px;
+}
+
+.seller-name > h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+/* 프로필 이미지 */
+.seller-info-profileImage > img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #aaa;
+}
+
+/* 셀러 상세 정보 */
+.seller-info-detail {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.seller-info-detail > li {
+    margin: 6px 0;
+}
+
+/* 공방 리스트 영역 */
+.studio-list {
+    flex: 1;
+}
+
+.studio-list > h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+/* 공방 로고 리스트 */
+.sutdio-logo-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    list-style: none;
+    padding: 0;
+}
+
+.sutdio-logo-list > li {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sutdio-logo-list > li > a > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 오른쪽 상품관련 세션 */
+
 .studio-right {
     flex: 3; /* 전체 너비의 3 비율 */
     display: flex;
     flex-direction: column;
     /*min-width: 0;*/
-}
-
-.seller-info {
-    width: 100%;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    gap: 5px;
-    padding: 10px 20px;
-    margin-bottom: 30px;
-    display: flex;
-    flex-direction: row;
-    position: relative; /* 버튼 위치 기준 */
 }
 
 .product-list {
