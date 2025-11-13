@@ -1,12 +1,7 @@
 package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
-import com.gobang.gobang.domain.personal.dto.response.DeliveryResponse;
-import com.gobang.gobang.domain.personal.dto.response.OrderItemResponse;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
-import com.gobang.gobang.domain.personal.dto.response.UserAddressResponse;
-import com.gobang.gobang.domain.personal.entity.Delivery;
-import com.gobang.gobang.domain.personal.entity.OrderItem;
 import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.repository.OrderItemRepository;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
@@ -15,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service

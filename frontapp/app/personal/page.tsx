@@ -8,6 +8,45 @@ import Link from 'next/link';
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
+    // =============== 타입 정의 ===============
+    interface OrderItemResponse {
+        orderItemId: number;
+        orderId: number;
+        productId: number;
+        productName: string;
+        quantity: number;
+        price: number;
+    }
+
+    interface OrdersResponse {
+        orderId: number;
+        userId: number;
+        orderCode: string;
+        totalPrice: number;
+        createdDate: string;
+        deliveryStatus: string;
+        completedAt?: string;
+        items: OrderItemResponse[];
+        deliveries?: DeliveryResponse[];
+    }
+
+    interface DeliveryResponse {
+        deliveryId: number;
+        orderId: number;
+        addressId: number;
+        trackingNumber: string | null;
+        deliveryStatus: string;
+        completedAt: string | null; // 백엔드에서 String으로 내려주는 것
+        createdDate: string | null;
+        modifiedDate: string | null;
+
+        // 배송지 정보
+        recipientName: string | null;
+        baseAddress: string | null;
+        detailAddress: string | null;
+        zipcode: string | null;
+    }
+
     // =============== State 관리 ===============
     // 사용자 정보
     const [userData, setUserData] = useState<any>(null)
@@ -36,8 +75,9 @@ export default function MyPage() {
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
-    const [isOrdersModal, setIsOrdersModal] = useState(false)
     const [isOrderDetailModal, setIsOrderDetailModal] = useState(false)
+    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null);
+
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -102,6 +142,10 @@ export default function MyPage() {
     }, [])
 
     useEffect(() => {
+        console.log('orders state:', orders)
+    }, [orders])
+
+    useEffect(() => {
         if (isAddressModal && !window.daum) {
             const script = document.createElement('script')
             script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
@@ -152,7 +196,8 @@ export default function MyPage() {
 
         try {
             const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
-            setOrders(Array.isArray(data.data) ? data.data : [])
+            console.log('orders axios data:', data);
+            setOrders(data.data || [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
@@ -248,24 +293,6 @@ export default function MyPage() {
         }
     }
 
-    const fetchQna = async (id?: number) => {
-        const userId = id || userData?.id
-        console.log('fetchQna 호출 - userId:', userId)
-        if (!userId) return;
-        
-        try {
-            const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
-                withCredentials: true,
-            })
-            console.log('전체 응답:', response)
-            console.log('data.data:', response.data.data)
-            setQna(Array.isArray(response.data.data) ? response.data.data : [])
-        } catch (error) {
-            console.error('문의 목록 조회 실패:', error)
-            setQna([])
-        }
-    }
-
     const fetchStatsData = async (id?: number) => {
         const userId = id || userData?.id
         if (!userId) return
@@ -291,6 +318,24 @@ export default function MyPage() {
             }))
         } catch (error) {
             console.error('리뷰 조회 실패:', error)
+        }
+    }
+
+    const fetchQna = async (id?: number) => {
+        const userId = id || userData?.id
+        console.log('fetchQna 호출 - userId:', userId)
+        if (!userId) return;
+        
+        try {
+            const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
+                withCredentials: true,
+            })
+            console.log('전체 응답:', response)
+            console.log('data.data:', response.data.data)
+            setQna(Array.isArray(response.data.data) ? response.data.data : [])
+        } catch (error) {
+            console.error('문의 목록 조회 실패:', error)
+            setQna([])
         }
     }
 
@@ -370,6 +415,38 @@ export default function MyPage() {
         const diffTime = Math.abs(now.getTime() - completedDate.getTime())
         const diffDays = diffTime / (1000 * 60 * 60 * 24)
         return diffDays <= 7
+    }
+
+    const handleOrderAction = async (order: any, action: 'cancel' | 'return' | 'exchange') => {
+        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
+
+        // 상태 체크
+        if (action === 'cancel' && order.deliveryStatus !== '배송준비중') {
+            return alert('배송 준비중일 때만 주문 취소가 가능합니다.');
+        }
+        if ((action === 'return' || action === 'exchange') && order.deliveryStatus !== '배송완료') {
+            return alert('배송 완료된 주문만 반품/교환 신청이 가능합니다.');
+        }
+
+        if (!confirm(`정말 ${action === 'cancel' ? '취소' : action === 'return' ? '반품' : '교환'}하시겠습니까?`)) return;
+
+        try {
+            const { data } = await axios.patch(
+                `${API_BASE_URL}/orders/${order.orderId}/${action}`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (data.resultCode === '200') {
+                alert(`${action === 'cancel' ? '주문 취소' : action === 'return' ? '반품 신청' : '교환 신청'} 완료`);
+                await fetchOrders(userData.id); // OrdersResponse 기반으로 다시 가져오기
+            } else {
+                alert(`실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error(`${action} 실패:`, error);
+            alert(`${action} 중 오류가 발생했습니다.`);
+        }
     }
 
     // ================= 주문 취소 / 반품 / 교환 =================
@@ -1646,7 +1723,7 @@ export default function MyPage() {
             )}
 
             {/* 주문 상세 모달 */}
-            {isOrdersModal && selectedOrder && (
+            {isOrdersModal && (
                 <div className="orders-modal" onClick={() => setIsOrdersModal(false)}>
                     <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="orders-modal-close" onClick={() => setIsOrdersModal(false)}>
@@ -1656,28 +1733,28 @@ export default function MyPage() {
                         <h2 style={{ marginBottom: '10px' }}>주문 상세 내역</h2>
 
                         <div className="order-info">
-                            <p>주문일자: {selectedOrder.createdDate}</p>
-                            <p>주문번호: {selectedOrder.orderCode}</p>
-                            <p>배송상태: {selectedOrder.deliveryStatus}</p>
+                            <p>주문일자: {isOrdersModal.createdDate}</p>
+                            <p>주문번호: {isOrdersModal.orderCode}</p>
+                            <p>배송상태: {isOrdersModal.deliveryStatus}</p>
 
-                            {deliveryDetail.deliveryStatus === '배송완료' && !isWithinSevenDays(deliveryDetail.completedAt) ? (
-                                <p>이 배송 완료 정보는 7일이 지나 더 이상 표시되지 않습니다.</p>
-                            ) : (
-                                <>
+                            {isOrdersModal.deliveries?.length > 0 && (() => {
+                                const deliveryDetail = isOrdersModal.deliveries[0];
+                                return (
+                                    <>
                                     <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
                                     <p>배송상태: {deliveryDetail.deliveryStatus || '정보 없음'}</p>
                                     <p>수령인: {deliveryDetail.recipientName || '정보 없음'}</p>
                                     <p>주소: {deliveryDetail.baseAddress || ''} {deliveryDetail.detailAddress || ''}</p>
                                     <p>우편번호: {deliveryDetail.zipcode || ''}</p>
-                                    {deliveryDetail.completedAt && <p>배송 완료일: {new Date(deliveryDetail.completedAt).toLocaleDateString()}</p>}
-                                </>
-                            )}
+                                    </>
+                                );
+                            })()}
 
                             {/* 배송완료일 표시 (배송완료 상태일 때만) */}
-                            {selectedOrder.deliveryStatus === '배송완료' && selectedOrder.completedAt && (
+                            {isOrdersModal.deliveryStatus === '배송완료' && isOrdersModal.completedAt && (
                                 <p>
                                     배송완료일:{' '}
-                                    {new Date(selectedOrder.completedAt).toLocaleDateString('ko-KR', {
+                                    {new Date(isOrdersModal.completedAt).toLocaleDateString('ko-KR', {
                                         year: 'numeric',
                                         month: '2-digit',
                                         day: '2-digit',
@@ -1687,7 +1764,7 @@ export default function MyPage() {
                         </div>
 
                         <h3 style={{ marginTop: '15px' }}>상품 내역</h3>
-                        {(selectedOrder.items || []).map((item, idx) => (
+                        {(isOrdersModal.items || []).map((item, idx) => (
                             <div key={idx} className="order-item">
                                 <p>{item.productName}</p>
                                 <p>
@@ -1697,7 +1774,7 @@ export default function MyPage() {
                         ))}
 
                         <div className="order-footer">
-                            <p>총 결제금액: {selectedOrder.totalPrice?.toLocaleString()}원</p>
+                            <p>총 결제금액: {isOrdersModal.totalPrice?.toLocaleString()}원</p>
                         </div>
                     </div>
                 </div>
