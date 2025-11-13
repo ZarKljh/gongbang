@@ -28,7 +28,7 @@ public class WishListService {
         List<WishList> wishLists = wishListRepository.findBySiteUser(siteUser);
 
         return wishLists.stream()
-                .map(this::convertToResponse)
+                .map(WishListResponse::from)
                 .collect(Collectors.toList());
     }
 
@@ -49,7 +49,7 @@ public class WishListService {
                 .build();
 
         WishList saved = wishListRepository.save(wishList);
-        return convertToResponse(saved);
+        return WishListResponse.from(saved);
     }
 
     // 위시 삭제
@@ -90,17 +90,5 @@ public class WishListService {
     // 사용자의 위시 개수 조회
     public long getUserWishCount(SiteUser siteUser) {
         return wishListRepository.countBySiteUser(siteUser);
-    }
-
-    // Entity -> Response DTO 변환
-    private WishListResponse convertToResponse(WishList wishList) {
-        return WishListResponse.builder()
-                .wishlistId(wishList.getWishlistId())
-                .userId(wishList.getSiteUser().getId())
-                .productId(wishList.getProduct().getId())
-                .productName(wishList.getProduct().getName())
-                .price(wishList.getProduct().getBasePrice())
-                .createdAt(wishList.getCreatedAt())
-                .build();
     }
 }

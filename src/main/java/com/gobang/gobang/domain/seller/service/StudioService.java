@@ -104,4 +104,20 @@ public class StudioService {
     public List<Image> getStudioImages(Long studioId) {
         return imageRepository.findALLByRefIdAndRefType(studioId, Image.RefType.STUDIO);
     }
+
+    public Studio modifyStudio(StudioAddRequest studioAddRequest, Studio studio, SiteUser seller) {
+
+        studio.setCategoryId(Long.parseLong(studioAddRequest.getCategoryId()));
+        studio.setStudioName(studioAddRequest.getStudioName());
+        studio.setStudioDescription(studioAddRequest.getStudioDescription());
+        studio.setStudioMobile(studioAddRequest.getStudioMobile());
+        studio.setStudioOfficeTell(studioAddRequest.getStudioOfficeTell());
+        studio.setStudioFax(studioAddRequest.getStudioFax());
+        studio.setStudioEmail(studioAddRequest.getStudioEmail());
+        studio.setStudioBusinessNumber(studioAddRequest.getStudioBusinessNumber());
+
+        studioRepository.save(studio);
+
+        return studio;
+    }
 }

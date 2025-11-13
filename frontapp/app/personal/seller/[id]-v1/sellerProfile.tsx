@@ -12,11 +12,28 @@ interface SellerProfileProps {
         birth?: string
         mobilePhone?: string
     }
+    isAuthenticated: boolean
 }
 
-export default function SellerProfile({ seller }: SellerProfileProps) {
+export default function SellerProfile({ seller, isAuthenticated }: SellerProfileProps) {
     return (
         <div className="tab-content">
+            {!isAuthenticated ? (
+                <div className="auth-banner">
+                    <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
+                    <div className="auth-banner-input">
+                        <input
+                            type="password"
+                            placeholder="현재 비밀번호 입력"
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                        />
+                        <button onClick={handleVerifyPassword}>인증 확인</button>
+                    </div>
+                </div>
+            ) : (
+                <div className="auth-banner success">인증 완료</div>
+            )}
             <h2>셀러 프로필</h2>
             <p>
                 <strong>아이디:</strong> {seller.userName}

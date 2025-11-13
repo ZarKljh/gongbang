@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -97,4 +98,9 @@ public class Review {
     // 이미지 리스트를 영속성 관계 제외
     @Transient
     private List<Image> images = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id",  insertable = false, updatable = false)
+    @JsonIgnore
+    private Product product;
 }

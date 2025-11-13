@@ -26,7 +26,7 @@ public class FollowService {
         List<Follow> follows = followRepository.findBySiteUser(siteUser);
 
         return follows.stream()
-                .map(this::convertToResponse)
+                .map(FollowResponse::from)
                 .collect(Collectors.toList());
     }
 
@@ -35,7 +35,7 @@ public class FollowService {
         List<Follow> followers = followRepository.findByStudio(studio);
 
         return followers.stream()
-                .map(this::convertToResponse)
+                .map(FollowResponse::from)
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +56,7 @@ public class FollowService {
                 .build();
 
         Follow saved = followRepository.save(follow);
-        return convertToResponse(saved);
+        return FollowResponse.from(saved);
     }
 
     // 팔로우 취소
@@ -81,16 +81,5 @@ public class FollowService {
     // 팔로잉 수 조회
     public long getFollowingCount(SiteUser siteUser) {
         return followRepository.countBySiteUser(siteUser);
-    }
-
-    // Entity -> Response DTO 변환
-    private FollowResponse convertToResponse(Follow follow) {
-        return FollowResponse.builder()
-                .followId(follow.getFollowId())
-                .userId(follow.getSiteUser().getId())
-                .studioId(follow.getStudio().getStudioId())
-                .studioName(follow.getStudio().getStudioName())
-                .createdAt(follow.getCreatedAt())
-                .build();
     }
 }

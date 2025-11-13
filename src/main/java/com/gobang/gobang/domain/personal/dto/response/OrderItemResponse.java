@@ -1,11 +1,9 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
 import com.gobang.gobang.domain.personal.entity.OrderItem;
-import com.gobang.gobang.domain.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
 import java.math.BigDecimal;
 
 @Getter
@@ -24,6 +22,7 @@ public class OrderItemResponse {
                 .orderItemId(orderItem.getOrderItemId())
                 .orderId(orderItem.getOrder().getOrderId())
                 .productId(orderItem.getProduct().getId())
+                .productName(orderItem.getProduct().getName())
                 .quantity(orderItem.getQuantity())
                 .price(orderItem.getPrice())
                 .build();

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class QnaResponse {
+    private Long qnaId;
     private Long userId;
     private String title;
     private String content;
@@ -20,10 +21,20 @@ public class QnaResponse {
     private LocalDateTime createdAt;
 
     public static QnaResponse from(Inquiry inquiry) {
+        Long userId = null;
+        try {
+            if (inquiry.getWriter() != null) {
+                userId = inquiry.getWriter().getId();
+            }
+        } catch (Exception e) {
+            userId = null; // Lazy 로딩 예외 방지
+        }
+
         return QnaResponse.builder()
-                .userId(inquiry.getUser().getId())
-                .title(inquiry.getTitle())
-                .content(inquiry.getContent())
+                .qnaId(inquiry.getId())
+                .userId(userId)
+                .title(inquiry.getTitle() != null ? inquiry.getTitle() : "")
+                .content(inquiry.getContent() != null ? inquiry.getContent() : "")
                 .type(inquiry.getType())
                 .answered(inquiry.isAnswered())
                 .createdAt(inquiry.getCreatedAt())

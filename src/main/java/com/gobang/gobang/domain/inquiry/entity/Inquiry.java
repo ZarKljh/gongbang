@@ -35,7 +35,7 @@ public class Inquiry {
     private InquiryType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn( name = "writer_id", nullable = true)
+    @JoinColumn( name = "user_id", nullable = true)
     private SiteUser writer;
 
 
@@ -56,9 +56,4 @@ public class Inquiry {
     void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
     }
-
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private SiteUser user;
 }
