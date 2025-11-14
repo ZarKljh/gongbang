@@ -81,7 +81,7 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                 />
             </div>
             <div className="form-group">
-                <label className="form-labe">닉네임</label>
+                <label className="form-label">닉네임</label>
                 <input
                     type="text"
                     name="nickName"

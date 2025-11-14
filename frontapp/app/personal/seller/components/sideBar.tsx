@@ -38,7 +38,7 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                                 className={`nav-btn ${activeTab === 'studioAdd' ? 'active' : ''}`}
                                 onClick={() => onTabClick('studioAdd')}
                             >
-                                공방 상세설명
+                                신규 공방등록
                             </button>
                         </li>
                     </ul>

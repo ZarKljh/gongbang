@@ -111,7 +111,7 @@ export default function MyPage() {
     }
     const fetchMyReviews = async (id: number) => {
         const { data } = await axios.get(`${API_BASE_URL}/mypage/reviews`, { withCredentials: true })
-        setMyReviews(data.data)
+        setMyReviews(data.data.studioList)
     }
     const fetchStats = async (id: number) => {
         const { data } = await axios.get(`${API_BASE_URL}/mypage/stats?userId=${id}`, { withCredentials: true })
@@ -121,7 +121,7 @@ export default function MyPage() {
     //공방 전체 리스트 fetch
     const fetchStudioList = async (id: number) => {
         const { data } = await axios.get(`${API_BASE_URL}/personal/seller/studioList/${id}`, { withCredentials: true })
-        setStudioList(data.data)
+        setStudioList(data.data.studioList)
     }
     //공방 전체 리스트중 최초 등록 공방 fetch
     const fetchStudio = async (id: number) => {

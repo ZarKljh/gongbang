@@ -6,7 +6,6 @@ import type { MainContentProps } from '../types/mainContent.types'
 export type StudioAddTabProps = Pick<
     MainContentProps,
     | 'userData'
-    | 'studioList'
     | 'tempData'
     | 'isAuthenticated'
     | 'editMode'
@@ -28,7 +27,6 @@ export default function StudioAddTab(props: StudioAddTabProps) {
         passwordInput = '',
         tempData = {},
         studioImages = {},
-        studioList = [],
         onTempChange,
         onVerifyPassword,
         onEdit,
@@ -60,7 +58,7 @@ export default function StudioAddTab(props: StudioAddTabProps) {
 
             {/* 헤더 */}
             <div className="section-header">
-                <h2>공방 관리</h2>
+                <h2>공방 신규 등록</h2>
 
                 {!editMode.studioAdd ? (
                     <button className="btn-primary" onClick={() => onEdit('studioAdd')}>
@@ -78,39 +76,10 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                 )}
             </div>
 
-            {/* =============================== */}
-            {/*   1. 신규 등록이 아닐 때 → 리스트   */}
-            {/* =============================== */}
-            {!editMode.studioAdd && (
-                <div className="studio-list">
-                    {studioList.length === 0 ? (
-                        <p>등록된 공방이 없습니다.</p>
-                    ) : (
-                        studioList.map((studio) => (
-                            <div key={studio.studioId} className="studio-item">
-                                <img
-                                    src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
-                                    alt="logo"
-                                    width={80}
-                                    height={80}
-                                    style={{ borderRadius: 8, objectFit: 'cover' }}
-                                />
-                                <div className="info">
-                                    <h3>{studio.studioName}</h3>
-                                    <p>{studio.studioDescription}</p>
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            )}
-
-            {/* ================================ */}
-            {/*  2. 신규 등록 모드일 때 → Form   */}
-            {/* ================================ */}
+            {/* 신규 등록 Form */}
             {editMode.studioAdd && (
-                <div className="studio-add-form">
-                    {/* 카테고리 */}
+                <div>
+                    {/* ▶ 카테고리 */}
                     <div className="form-group">
                         <label>카테고리</label>
                         <select
@@ -118,7 +87,9 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                             value={tempData.categoryId || ''}
                             onChange={(e) => onTempChange('categoryId', e.target.value)}
                         >
-                            <option value="">선택해주세요</option>
+                            <option value="" disabled>
+                                선택해주세요
+                            </option>
                             {CATEGORY_OPTIONS.map((c) => (
                                 <option key={c.id} value={c.id}>
                                     {c.label}
@@ -127,9 +98,9 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                         </select>
                     </div>
 
-                    {/* 공방 이름 */}
+                    {/* ▶ 공방 이름 */}
                     <div className="form-group">
-                        <label>공방 이름</label>
+                        <label>공방이름</label>
                         <input
                             type="text"
                             className="editable"
@@ -138,7 +109,7 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                         />
                     </div>
 
-                    {/* 상세설명 */}
+                    {/* ▶ 상세설명 */}
                     <div className="form-group">
                         <label>상세설명</label>
                         <textarea
@@ -149,41 +120,46 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                         />
                     </div>
 
-                    {/* 대표 이미지 */}
+                    {/* ▶ 대표 이미지 */}
                     <div className="form-group">
                         <label>대표 이미지</label>
+
                         <input
                             type="file"
                             accept="image/*"
                             onChange={(e) => onStudioImageChange?.('STUDIO_MAIN', e.target.files?.[0] ?? null)}
                         />
+
                         {studioImages.STUDIO_MAIN && (
                             <img
                                 src={URL.createObjectURL(studioImages.STUDIO_MAIN)}
-                                style={{ width: 150, marginTop: 10, borderRadius: 8 }}
+                                style={{ width: 150, marginTop: 10 }}
                             />
                         )}
                     </div>
 
-                    {/* 로고 이미지 */}
+                    {/* ▶ 로고 이미지 */}
                     <div className="form-group">
                         <label>로고 이미지</label>
+
                         <input
                             type="file"
                             accept="image/*"
                             onChange={(e) => onStudioImageChange?.('STUDIO_LOGO', e.target.files?.[0] ?? null)}
                         />
+
                         {studioImages.STUDIO_LOGO && (
                             <img
                                 src={URL.createObjectURL(studioImages.STUDIO_LOGO)}
-                                style={{ width: 150, marginTop: 10, borderRadius: 8 }}
+                                style={{ width: 150, marginTop: 10 }}
                             />
                         )}
                     </div>
 
-                    {/* 갤러리 이미지 */}
+                    {/* ▶ 갤러리 이미지 (여러 장) */}
                     <div className="form-group">
                         <label>갤러리 이미지 (최대 5장)</label>
+
                         <input
                             type="file"
                             accept="image/*"
@@ -194,13 +170,9 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                         />
 
                         {studioImages.STUDIO?.length > 0 && (
-                            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                            <div style={{ display: 'flex', gap: '10px', marginTop: 10 }}>
                                 {studioImages.STUDIO.map((file, idx) => (
-                                    <img
-                                        key={idx}
-                                        src={URL.createObjectURL(file)}
-                                        style={{ width: 120, borderRadius: 8 }}
-                                    />
+                                    <img key={idx} src={URL.createObjectURL(file)} style={{ width: 120 }} />
                                 ))}
                             </div>
                         )}
