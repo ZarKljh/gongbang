@@ -71,7 +71,7 @@ export default function MyPage() {
     // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
     const [orderItem, setOrderItem] = useState<any[]>([])
-    const [deliveryDetail, setDeliveryDetail] = useState<any>(null)
+    const [deliveryDetail, setDeliveryDetail] = useState<DeliveryResponse | null>(null)
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
@@ -450,7 +450,6 @@ export default function MyPage() {
     }
 
     // ================= 주문 취소 / 반품 / 교환 =================
-
     // 주문 취소 (배송 준비중일 때만 가능)
     const handleCancelOrder = async (orderId: number) => {
         const order = orders.find((o) => o.orderId === orderId);
@@ -839,7 +838,6 @@ export default function MyPage() {
         }
     }
     // ================= 리뷰 수정 / 삭제 =================
-
     // 리뷰 이미지 업로드 핸들러
     const handleUploadReviewImage = async (reviewId: number, file: File) => {
         const formData = new FormData();
@@ -868,7 +866,6 @@ export default function MyPage() {
     }
 
     // ================= Q&A 기능 =================
-
     // 문의 작성
     const handleCreateQna = async (newQna: { title: string; content: string; productId?: number }) => {
         try {
@@ -1219,7 +1216,7 @@ export default function MyPage() {
                                             <p>
                                                 주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
                                             </p>
-                                            <span>{order.deliveryStatus}</span>
+                                            <span>{deliveryDetail.deliveryStatus}</span>
                                         </div>
 
                                         {(orderItem || []).map((orderItem) => (
@@ -1229,7 +1226,6 @@ export default function MyPage() {
                                         ))}
 
                                         <div className="order-footer">
-                                            {deliveryDetail.trackingNumber && <p>운송장: {deliveryDetail.trackingNumber}</p>}
                                             <p>총 {order.totalPrice?.toLocaleString()}원</p>
                                         </div>
                                     </div>
@@ -1702,17 +1698,17 @@ export default function MyPage() {
                         ) : (
                             orders
                                 .filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)))
-                                .map((order) => (
+                                .map((order, orderItem) => (
                                     <div key={order.orderId} className="order-card">
                                         <div className="order-header">
                                             <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
                                             <span>{order.deliveryStatus}</span>
                                         </div>
 
-                                        {(order.items || []).map((item, idx) => (
-                                            <div key={idx} className="order-item">
-                                                <p>{item.productName}</p>
-                                                <p>{item.price?.toLocaleString()}원 / {item.quantity}개</p>
+                                        {(orderItem || []).map((orderItem) => (
+                                            <div key={orderItem.orderItemId} className="order-item">
+                                                <p>{orderItem.productName}</p>
+                                                <p>{orderItem.price?.toLocaleString()}원 / {orderItem.quantity}개</p>
                                             </div>
                                         ))}
 
