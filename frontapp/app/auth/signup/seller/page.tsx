@@ -18,7 +18,8 @@ export default function SellerSignupPage() {
         birth: '',
         nickName: '',
         mobilePhone: '',
-        imageUrl: '',
+        profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
+        profileImageName: '', // 이미지 파일명
     })
 
     const [studioInfo, setStudioInfo] = useState<StudioInfo>({
@@ -41,6 +42,8 @@ export default function SellerSignupPage() {
         studioGalleryImageNames: [],
     })
 
+    const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
+
     const [previewMainImage, setPreviewMainImage] = useState<string | null>(null)
     const [previewLogoImage, setPreviewLogoImage] = useState<string | null>(null)
     const [previewGalleryImages, setPreviewGalleryImages] = useState<string[]>([])
@@ -49,6 +52,21 @@ export default function SellerSignupPage() {
         const { name, value } = e.target
         setUserInfo({ ...userInfo, [name]: value })
         //setUserInfo((prev) => ({ ...prev, [name]: value }));
+    }
+
+    // 🔥 유저 프로필 이미지 처리
+    const handleUserImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        const previewUrl = URL.createObjectURL(file)
+        setPreviewProfileImage(previewUrl)
+
+        setUserInfo((prev) => ({
+            ...prev,
+            profileImageUrl: previewUrl, // 서버 업로드 전 로컬 미리보기 URL
+            profileImageName: file.name, // 파일명 저장
+        }))
     }
 
     const handleStudioChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -131,7 +149,15 @@ export default function SellerSignupPage() {
     return (
         <section className="signup-container">
             <h3 className="signup-title">셀러 회원가입페이지</h3>
-            {step === 1 && <UserForm userInfo={userInfo} onChange={handleUserChange} onNext={handleNext} />}
+            {step === 1 && (
+                <UserForm
+                    userInfo={userInfo}
+                    onChange={handleUserChange}
+                    onNext={handleNext}
+                    onImagePreview={handleUserImagePreview}
+                    previewProfileImage={previewProfileImage}
+                />
+            )}
             {step === 2 && (
                 <StudioForm
                     studioInfo={studioInfo}

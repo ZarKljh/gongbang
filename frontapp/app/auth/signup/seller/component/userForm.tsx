@@ -6,9 +6,11 @@ interface Props {
     userInfo: UserInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onNext: () => void
+    onImagePreview: (e: React.ChangeEvent<HTMLInputElement>) => void // 🔥 추가
+    previewProfileImage: string | null // 🔥 추가
 }
 
-export default function UserForm({ userInfo, onChange, onNext }: Props) {
+export default function UserForm({ userInfo, onChange, onNext, onImagePreview, previewProfileImage }: Props) {
     return (
         <div className="form-container">
             <h4 className="form-title">사용자 정보 입력</h4>
@@ -100,6 +102,28 @@ export default function UserForm({ userInfo, onChange, onNext }: Props) {
                     placeholder="번호만적어주세요"
                 />
             </div>
+            {/* 🔥 프로필 이미지 업로드 */}
+            <div className="form-group">
+                <label className="form-label">프로필 이미지</label>
+                <input
+                    type="file"
+                    name="profileImage"
+                    accept="image/*"
+                    className="form-input"
+                    onChange={onImagePreview}
+                />
+            </div>
+            {/* 🔥 미리보기 UI */}
+            {previewProfileImage && (
+                <div className="image-preview">
+                    <p className="preview-title">이미지 미리보기</p>
+                    <img
+                        src={previewProfileImage}
+                        alt="프로필 미리보기"
+                        style={{ maxWidth: '200px', marginTop: '10px', borderRadius: '6px' }}
+                    />
+                </div>
+            )}
             <div className="button-group"></div>
             <button className="btn btn-primary" type="button" onClick={onNext}>
                 다음 단계
