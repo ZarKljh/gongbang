@@ -3,48 +3,48 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
-import Link from 'next/link';
+import Link from 'next/link'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
     // =============== 타입 정의 ===============
     interface OrderItemResponse {
-        orderItemId: number;
-        orderId: number;
-        productId: number;
-        productName: string;
-        quantity: number;
-        price: number;
+        orderItemId: number
+        orderId: number
+        productId: number
+        productName: string
+        quantity: number
+        price: number
     }
 
     interface OrdersResponse {
-        orderId: number;
-        userId: number;
-        orderCode: string;
-        totalPrice: number;
-        createdDate: string;
-        deliveryStatus: string;
-        completedAt?: string;
-        items: OrderItemResponse[];
-        deliveries?: DeliveryResponse[];
+        orderId: number
+        userId: number
+        orderCode: string
+        totalPrice: number
+        createdDate: string
+        deliveryStatus: string
+        completedAt?: string
+        items: OrderItemResponse[]
+        deliveries?: DeliveryResponse[]
     }
 
     interface DeliveryResponse {
-        deliveryId: number;
-        orderId: number;
-        addressId: number;
-        trackingNumber: string | null;
-        deliveryStatus: string;
-        completedAt: string | null; // 백엔드에서 String으로 내려주는 것
-        createdDate: string | null;
-        modifiedDate: string | null;
+        deliveryId: number
+        orderId: number
+        addressId: number
+        trackingNumber: string | null
+        deliveryStatus: string
+        completedAt: string | null // 백엔드에서 String으로 내려주는 것
+        createdDate: string | null
+        modifiedDate: string | null
 
         // 배송지 정보
-        recipientName: string | null;
-        baseAddress: string | null;
-        detailAddress: string | null;
-        zipcode: string | null;
+        recipientName: string | null
+        baseAddress: string | null
+        detailAddress: string | null
+        zipcode: string | null
     }
 
     // =============== State 관리 ===============
@@ -76,8 +76,8 @@ export default function MyPage() {
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
     const [isOrderDetailModal, setIsOrderDetailModal] = useState(false)
-    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null);
-    const [activeFilter, setActiveFilter] = useState('전체');
+    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null)
+    const [activeFilter, setActiveFilter] = useState('전체')
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -125,7 +125,7 @@ export default function MyPage() {
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
-            setLoading(true);
+            setLoading(true)
             try {
                 const user = await fetchUser()
                 if (!user || !user.id) return
@@ -134,7 +134,7 @@ export default function MyPage() {
             } catch (error) {
                 console.error('초기 데이터 로딩 실패:', error)
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
         }
 
@@ -192,19 +192,19 @@ export default function MyPage() {
     }
 
     const filteredOrders = orders.filter((order) => {
-        if (activeFilter === "전체") return true;
-        if (activeFilter === "취소") return order.deliveryStatus === "주문취소";
-        if (activeFilter === "반품") return order.deliveryStatus === "반품완료";
-        if (activeFilter === "교환") return order.deliveryStatus === "교환완료";
-        return true;
+        if (activeFilter === '전체') return true
+        if (activeFilter === '취소') return order.deliveryStatus === '주문취소'
+        if (activeFilter === '반품') return order.deliveryStatus === '반품완료'
+        if (activeFilter === '교환') return order.deliveryStatus === '교환완료'
+        return true
     })
 
     const fetchOrders = async (id?: number) => {
         if (!id) return
 
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
-            console.log('orders axios data:', data);
+            const { data } = await axios.get(`${API_BASE_URL}/orders`, { withCredentials: true })
+            console.log('orders axios data:', data)
             setOrders(data.data || [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
@@ -216,7 +216,7 @@ export default function MyPage() {
         if (!orderId) return
 
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {withCredentials: true,})
+            const { data } = await axios.get(`${API_BASE_URL}/orders/${orderId}`, { withCredentials: true })
             setOrderItem(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('주문 상세 내역 조회 실패:', error)
@@ -232,7 +232,7 @@ export default function MyPage() {
     const fetchCart = async (id?: number) => {
         if (!id) return
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
+            const { data } = await axios.get(`${API_BASE_URL}/cart`, { withCredentials: true })
             setCart(Array.isArray(data.data) ? data.data : data)
         } catch (error) {
             console.error('장바구니 목록 조회 실패:', error)
@@ -278,9 +278,9 @@ export default function MyPage() {
     }
 
     const fetchWishList = async (id?: number) => {
-        if (!id) return;
+        if (!id) return
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true, })
+            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true })
             setWishList(Array.isArray(data.data) ? data.data : data)
         } catch (error) {
             console.error('위시 목록 조회 실패:', error)
@@ -289,7 +289,7 @@ export default function MyPage() {
     }
 
     const fetchFollowList = async (id?: number) => {
-        if (!id) return;
+        if (!id) return
         try {
             const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
                 withCredentials: true,
@@ -332,8 +332,8 @@ export default function MyPage() {
     const fetchQna = async (id?: number) => {
         const userId = id || userData?.id
         console.log('fetchQna 호출 - userId:', userId)
-        if (!userId) return;
-        
+        if (!userId) return
+
         try {
             const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
                 withCredentials: true,
@@ -426,122 +426,123 @@ export default function MyPage() {
     }
 
     const handleOrderAction = async (order: any, action: 'cancel' | 'return' | 'exchange') => {
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
+        if (!order) return alert('주문 정보를 찾을 수 없습니다.')
 
         // 상태 체크
         if (action === 'cancel' && order.deliveryStatus !== '배송준비중') {
-            return alert('배송 준비중일 때만 주문 취소가 가능합니다.');
+            return alert('배송 준비중일 때만 주문 취소가 가능합니다.')
         }
         if ((action === 'return' || action === 'exchange') && order.deliveryStatus !== '배송완료') {
-            return alert('배송 완료된 주문만 반품/교환 신청이 가능합니다.');
+            return alert('배송 완료된 주문만 반품/교환 신청이 가능합니다.')
         }
 
-        if (!confirm(`정말 ${action === 'cancel' ? '취소' : action === 'return' ? '반품' : '교환'}하시겠습니까?`)) return;
+        if (!confirm(`정말 ${action === 'cancel' ? '취소' : action === 'return' ? '반품' : '교환'}하시겠습니까?`))
+            return
 
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${order.orderId}/${action}`,
                 {},
-                { withCredentials: true }
-            );
+                { withCredentials: true },
+            )
 
             if (data.resultCode === '200') {
-                alert(`${action === 'cancel' ? '주문 취소' : action === 'return' ? '반품 신청' : '교환 신청'} 완료`);
-                await fetchOrders(userData.id); // OrdersResponse 기반으로 다시 가져오기
+                alert(`${action === 'cancel' ? '주문 취소' : action === 'return' ? '반품 신청' : '교환 신청'} 완료`)
+                await fetchOrders(userData.id) // OrdersResponse 기반으로 다시 가져오기
             } else {
-                alert(`실패: ${data.msg}`);
+                alert(`실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error(`${action} 실패:`, error);
-            alert(`${action} 중 오류가 발생했습니다.`);
+            console.error(`${action} 실패:`, error)
+            alert(`${action} 중 오류가 발생했습니다.`)
         }
     }
 
     // ================= 주문 취소 / 반품 / 교환 =================
     // 주문 취소 (배송 준비중일 때만 가능)
     const handleCancelOrder = async (orderId: number) => {
-        const order = orders.find((o) => o.orderId === orderId);
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
-        if (order.deliveryStatus !== "배송준비중") {
-            return alert("배송 준비중 상태일 때만 주문 취소가 가능합니다.");
+        const order = orders.find((o) => o.orderId === orderId)
+        if (!order) return alert('주문 정보를 찾을 수 없습니다.')
+        if (order.deliveryStatus !== '배송준비중') {
+            return alert('배송 준비중 상태일 때만 주문 취소가 가능합니다.')
         }
 
-        if (!confirm("정말 주문을 취소하시겠습니까?")) return;
+        if (!confirm('정말 주문을 취소하시겠습니까?')) return
 
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/cancel`,
                 {},
-                { withCredentials: true }
-            );
+                { withCredentials: true },
+            )
 
-            if (data.resultCode === "200") {
-                alert("주문이 취소되었습니다.");
-                await fetchOrders(userData.id);
+            if (data.resultCode === '200') {
+                alert('주문이 취소되었습니다.')
+                await fetchOrders(userData.id)
             } else {
-                alert(`취소 실패: ${data.msg}`);
+                alert(`취소 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("주문 취소 실패:", error);
-            alert("주문 취소 중 오류가 발생했습니다.");
+            console.error('주문 취소 실패:', error)
+            alert('주문 취소 중 오류가 발생했습니다.')
         }
     }
 
     // 반품 신청 (배송 완료 상태)
     const handleReturnOrder = async (orderId: number) => {
-        const order = orders.find((o) => o.orderId === orderId);
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
-        if (order.deliveryStatus !== "배송완료") {
-            return alert("배송 완료된 주문만 반품 신청이 가능합니다.");
+        const order = orders.find((o) => o.orderId === orderId)
+        if (!order) return alert('주문 정보를 찾을 수 없습니다.')
+        if (order.deliveryStatus !== '배송완료') {
+            return alert('배송 완료된 주문만 반품 신청이 가능합니다.')
         }
 
-        if (!confirm("이 주문을 반품 신청하시겠습니까?")) return;
+        if (!confirm('이 주문을 반품 신청하시겠습니까?')) return
 
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/return`,
                 {},
-                { withCredentials: true }
-            );
+                { withCredentials: true },
+            )
 
-            if (data.resultCode === "200") {
-                alert("반품 신청이 완료되었습니다.");
-                await fetchOrders(userData.id);
+            if (data.resultCode === '200') {
+                alert('반품 신청이 완료되었습니다.')
+                await fetchOrders(userData.id)
             } else {
-                alert(`반품 실패: ${data.msg}`);
+                alert(`반품 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("반품 신청 실패:", error);
-            alert("반품 신청 중 오류가 발생했습니다.");
+            console.error('반품 신청 실패:', error)
+            alert('반품 신청 중 오류가 발생했습니다.')
         }
     }
 
     // 교환 신청
     const handleExchangeOrder = async (orderId: number) => {
-        const order = orders.find((o) => o.orderId === orderId);
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
-        if (order.deliveryStatus !== "배송완료") {
-            return alert("배송 완료된 주문만 교환 신청이 가능합니다.");
+        const order = orders.find((o) => o.orderId === orderId)
+        if (!order) return alert('주문 정보를 찾을 수 없습니다.')
+        if (order.deliveryStatus !== '배송완료') {
+            return alert('배송 완료된 주문만 교환 신청이 가능합니다.')
         }
 
-        if (!confirm("이 주문을 교환 신청하시겠습니까?")) return;
+        if (!confirm('이 주문을 교환 신청하시겠습니까?')) return
 
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/exchange`,
                 {},
-                { withCredentials: true }
-            );
+                { withCredentials: true },
+            )
 
-            if (data.resultCode === "200") {
-                alert("교환 신청이 완료되었습니다.");
-                await fetchOrders(userData.id);
+            if (data.resultCode === '200') {
+                alert('교환 신청이 완료되었습니다.')
+                await fetchOrders(userData.id)
             } else {
-                alert(`교환 실패: ${data.msg}`);
+                alert(`교환 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("교환 신청 실패:", error);
-            alert("교환 신청 중 오류가 발생했습니다.");
+            console.error('교환 신청 실패:', error)
+            alert('교환 신청 중 오류가 발생했습니다.')
         }
     }
 
@@ -845,32 +846,28 @@ export default function MyPage() {
             alert('리뷰 삭제 중 오류가 발생했습니다.')
         }
     }
-    
+
     // ================= 리뷰 수정 / 삭제 =================
     // 리뷰 이미지 업로드 핸들러
     const handleUploadReviewImage = async (reviewId: number, file: File) => {
-        const formData = new FormData();
-        formData.append("image", file);
+        const formData = new FormData()
+        formData.append('image', file)
 
         try {
-            const { data } = await axios.post(
-                `http://localhost:8090/api/v1/reviews/${reviewId}/image`,
-                formData,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                    withCredentials: true,
-                }
-            );
+            const { data } = await axios.post(`http://localhost:8090/api/v1/reviews/${reviewId}/image`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                withCredentials: true,
+            })
 
-            if (data.resultCode === "200") {
-                alert("이미지가 업로드되었습니다.");
-                await fetchMyReviews();
+            if (data.resultCode === '200') {
+                alert('이미지가 업로드되었습니다.')
+                await fetchMyReviews()
             } else {
-                alert(`업로드 실패: ${data.msg}`);
+                alert(`업로드 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("리뷰 이미지 업로드 실패:", error);
-            alert("이미지 업로드 중 오류가 발생했습니다.");
+            console.error('리뷰 이미지 업로드 실패:', error)
+            alert('이미지 업로드 중 오류가 발생했습니다.')
         }
     }
 
@@ -878,53 +875,53 @@ export default function MyPage() {
     // 문의 작성
     const handleCreateQna = async (newQna: { title: string; content: string; productId?: number }) => {
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/qna`, newQna, { withCredentials: true });
+            const { data } = await axios.post(`${API_BASE_URL}/qna`, newQna, { withCredentials: true })
 
-            if (data.resultCode === "200") {
-                alert("문의가 등록되었습니다.");
-                await fetchQna(userData.id);
+            if (data.resultCode === '200') {
+                alert('문의가 등록되었습니다.')
+                await fetchQna(userData.id)
             } else {
-                alert(`등록 실패: ${data.msg}`);
+                alert(`등록 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("문의 등록 실패:", error);
-            alert("문의 등록 중 오류가 발생했습니다.");
+            console.error('문의 등록 실패:', error)
+            alert('문의 등록 중 오류가 발생했습니다.')
         }
     }
 
     // 문의 수정
     const handleEditQna = async (qnaId: number, updated: { title: string; content: string }) => {
         try {
-            const { data } = await axios.patch(`${API_BASE_URL}/qna/${qnaId}`, updated, { withCredentials: true });
+            const { data } = await axios.patch(`${API_BASE_URL}/qna/${qnaId}`, updated, { withCredentials: true })
 
-            if (data.resultCode === "200") {
-                alert("문의가 수정되었습니다.");
-                await fetchQna(userData.id);
+            if (data.resultCode === '200') {
+                alert('문의가 수정되었습니다.')
+                await fetchQna(userData.id)
             } else {
-                alert(`수정 실패: ${data.msg}`);
+                alert(`수정 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("문의 수정 실패:", error);
-            alert("문의 수정 중 오류가 발생했습니다.");
+            console.error('문의 수정 실패:', error)
+            alert('문의 수정 중 오류가 발생했습니다.')
         }
     }
 
     // 문의 삭제
     const handleDeleteQna = async (qnaId: number) => {
-        if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return;
+        if (!confirm('정말 이 문의를 삭제하시겠습니까?')) return
 
         try {
-            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, { withCredentials: true });
+            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, { withCredentials: true })
 
-            if (data.resultCode === "200") {
-                alert("문의가 삭제되었습니다.");
-                await fetchQna(userData.id);
+            if (data.resultCode === '200') {
+                alert('문의가 삭제되었습니다.')
+                await fetchQna(userData.id)
             } else {
-                alert(`삭제 실패: ${data.msg}`);
+                alert(`삭제 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("문의 삭제 실패:", error);
-            alert("문의 삭제 중 오류가 발생했습니다.");
+            console.error('문의 삭제 실패:', error)
+            alert('문의 삭제 중 오류가 발생했습니다.')
         }
     }
 
@@ -986,15 +983,15 @@ export default function MyPage() {
     const handleAddToCart = async (productId: number, quantity: number = 1) => {
         try {
             const request = { productId, quantity }
-            const { data } = await axios.post(`${API_BASE_URL}/cart`, request, {withCredentials: true,})
-            console.log('장바구니 담기 성공:', data);
+            const { data } = await axios.post(`${API_BASE_URL}/cart`, request, { withCredentials: true })
+            console.log('장바구니 담기 성공:', data)
 
-            setCart((prev) => [...prev, data.data]);
+            setCart((prev) => [...prev, data.data])
 
-            alert('장바구니에 담겼습니다!');
+            alert('장바구니에 담겼습니다!')
         } catch (error) {
-            console.error('장바구니 담기 실패:', error);
-            alert('장바구니 담기에 실패했습니다.');
+            console.error('장바구니 담기 실패:', error)
+            alert('장바구니 담기에 실패했습니다.')
         }
     }
 
@@ -1003,15 +1000,13 @@ export default function MyPage() {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/cart/${cartId}?quantity=${quantity}`,
                 {},
-                { withCredentials: true }
+                { withCredentials: true },
             )
 
             console.log('수량 수정 성공:', data)
 
             setCart((prev) =>
-                prev.map((item) =>
-                    item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item
-                )
+                prev.map((item) => (item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item)),
             )
         } catch (error) {
             console.error('장바구니 수량 수정 실패:', error)
@@ -1021,7 +1016,7 @@ export default function MyPage() {
 
     const handleDeleteCart = async (cartId: number) => {
         try {
-            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
+            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true })
 
             console.log('삭제 성공:', data)
 
@@ -1047,10 +1042,10 @@ export default function MyPage() {
     const handleOrderClick = async (order: any) => {
         try {
             setSelectedOrder(order)
-            
+
             const detail = await fetchDeliveryDetail(order.orderId)
             setDeliveryDetail(detail)
-            
+
             setIsOrderDetailModal(true)
         } catch (error) {
             console.error('배송 상세 조회 실패:', error)
@@ -1065,7 +1060,7 @@ export default function MyPage() {
 
     if (!userData) {
         return (
-            <div className='need-login'>
+            <div className="need-login">
                 로그인이 필요합니다.
                 <button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>
             </div>
@@ -1170,7 +1165,9 @@ export default function MyPage() {
                         </ul>
                     </div>
                 </nav>
-                <a href="#" className='link-btn'>공방 페이지로 이동</a>
+                <Link href="/personal/seller" className="link-btn">
+                    공방 페이지로 이동
+                </Link>
             </div>
 
             {/* 오른쪽 콘텐츠 */}
@@ -1209,10 +1206,17 @@ export default function MyPage() {
                                         onClick={() => {
                                             handleStatusClick(status)
                                             setIsStatusModal(true)
-                                        }}>
+                                        }}
+                                    >
                                         <p>{status}</p>
                                         <p>
-                                            {orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}
+                                            {
+                                                orders.filter(
+                                                    (o) =>
+                                                        o.deliveryStatus?.replace(/\s/g, '') ===
+                                                        status.replace(/\s/g, ''),
+                                                ).length
+                                            }
                                         </p>
                                     </div>
                                 ))}
@@ -1226,7 +1230,9 @@ export default function MyPage() {
                                 <p>주문 내역이 없습니다.</p>
                             ) : (
                                 orders.map((order, deliveryDetail, orderItem) => (
-                                    <div key={order.orderId} className="order-card"
+                                    <div
+                                        key={order.orderId}
+                                        className="order-card"
                                         onClick={() => setIsOrdersModal(order)}
                                     >
                                         <div className="order-header">
@@ -1238,7 +1244,10 @@ export default function MyPage() {
 
                                         {(orderItem || []).map((orderItem) => (
                                             <div key={orderItem.orderItemId} className="order-item">
-                                                <p>주문 상품: {orderItem.productName} {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}</p>
+                                                <p>
+                                                    주문 상품: {orderItem.productName}{' '}
+                                                    {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}
+                                                </p>
                                             </div>
                                         ))}
 
@@ -1276,79 +1285,93 @@ export default function MyPage() {
                                     <p>해당 주문 내역이 없습니다.</p>
                                 ) : (
                                     filteredOrders
-                                        .filter(order => activeFilter === '전체' || order.status === activeFilter)
+                                        .filter((order) => activeFilter === '전체' || order.status === activeFilter)
                                         .map((order, orderItem) => (
-                                        <div key={order.orderId} className="order-card">
-                                            <div className="order-header">
-                                                <p>주문번호: {order.orderCode}</p>
-                                                <p>주문일: {order.createdDate}</p>
-                                                <span className={`badge ${order.status}`}>{order.status}</span>
-                                            </div>
+                                            <div key={order.orderId} className="order-card">
+                                                <div className="order-header">
+                                                    <p>주문번호: {order.orderCode}</p>
+                                                    <p>주문일: {order.createdDate}</p>
+                                                    <span className={`badge ${order.status}`}>{order.status}</span>
+                                                </div>
 
-                                            <div className="order-items">
-                                                {orderItem
-                                                    .filter(item => item.orderId === order.orderId)   // ⭐ 각 주문에 맞는 orderItem만 표시
-                                                    .map(orderItem => (
-                                                        <div key={orderItem.orderItemId} className="order-item">
-                                                            <div className="order-item-image"></div>
-                                                            <div className="order-item-info">
-                                                                <p className="product-name">{orderItem.productName}</p>
-                                                                <p className="product-quantity">수량: {orderItem.quantity}</p>
-                                                                <p className="product-price">
-                                                                    {orderItem.price?.toLocaleString()}원
-                                                                </p>
+                                                <div className="order-items">
+                                                    {orderItem
+                                                        .filter((item) => item.orderId === order.orderId) // ⭐ 각 주문에 맞는 orderItem만 표시
+                                                        .map((orderItem) => (
+                                                            <div key={orderItem.orderItemId} className="order-item">
+                                                                <div className="order-item-image"></div>
+                                                                <div className="order-item-info">
+                                                                    <p className="product-name">
+                                                                        {orderItem.productName}
+                                                                    </p>
+                                                                    <p className="product-quantity">
+                                                                        수량: {orderItem.quantity}
+                                                                    </p>
+                                                                    <p className="product-price">
+                                                                        {orderItem.price?.toLocaleString()}원
+                                                                    </p>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
-                                            </div>
+                                                        ))}
+                                                </div>
 
-                                            <div className="order-footer">
-                                                <p>총 {order.totalPrice?.toLocaleString()}원</p>
-                                                <div className="order-actions"></div>
+                                                <div className="order-footer">
+                                                    <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                                    <div className="order-actions"></div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
-                                
+                                        ))
                                 )}
-
                             </div>
                         </div>
                     )}
 
                     {/* 장바구니 */}
                     {activeTab === 'cart' && (
-                        <div className='tab-content'>
-                            <div className='section-header'>
+                        <div className="tab-content">
+                            <div className="section-header">
                                 <h2>장바구니</h2>
                             </div>
 
                             {cart.length === 0 ? (
-                                    <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
+                                <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
                             ) : (
                                 <div className="cart-list">
                                     {cart.map((item) => (
                                         <div key={item.cartId} className="cart-product">
                                             <div className="cart-image"></div>
-                                            <div className='cart-text'>
-                                                <Link href={`http://localhost:3000/product/list/detail/${item.productId}`} className="product-name">
+                                            <div className="cart-text">
+                                                <Link
+                                                    href={`http://localhost:3000/product/list/detail/${item.productId}`}
+                                                    className="product-name"
+                                                >
                                                     {item.productName}
                                                 </Link>
-                                                <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
+                                                <p>
+                                                    {item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}
+                                                </p>
                                             </div>
                                             <div className="quantity-control">
-                                                <button className="btn-primary"
+                                                <button
+                                                    className="btn-primary"
                                                     onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
                                                     disabled={item.quantity <= 1}
                                                 >
                                                     -
                                                 </button>
                                                 <span>{item.quantity}개</span>
-                                                <button className="btn-primary"
+                                                <button
+                                                    className="btn-primary"
                                                     onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
                                                 >
                                                     +
                                                 </button>
-                                                <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
+                                                <button
+                                                    className="link-btn delete"
+                                                    onClick={() => handleDeleteCart(item.cartId)}
+                                                >
+                                                    삭제
+                                                </button>
                                             </div>
                                         </div>
                                     ))}
@@ -1367,7 +1390,7 @@ export default function MyPage() {
                             {!isAuthenticated ? (
                                 <div className="auth-banner">
                                     <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
-                                    <div className='auth-banner-input'>
+                                    <div className="auth-banner-input">
                                         <input
                                             type="password"
                                             placeholder="현재 비밀번호 입력"
@@ -1376,7 +1399,6 @@ export default function MyPage() {
                                         />
                                         <button onClick={handleVerifyPassword}>인증 확인</button>
                                     </div>
-                                    
                                 </div>
                             ) : (
                                 <div className="auth-banner success">인증 완료</div>
@@ -1624,7 +1646,9 @@ export default function MyPage() {
                                                     <div className="wishlist-image"></div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
-                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                                        <p className="price">
+                                                            {item.price ? `${item.price}원` : '가격 정보 없음'}
+                                                        </p>
                                                         <button
                                                             className="link-btn delete"
                                                             onClick={() => handleRemoveWish(item.wishlistId)}
@@ -1674,7 +1698,10 @@ export default function MyPage() {
                                     {myReviews.map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
-                                                <Link href={`http://localhost:3000/product/list/detail/${review.productId}`} className="my-review-product-name">
+                                                <Link
+                                                    href={`http://localhost:3000/product/list/detail/${review.productId}`}
+                                                    className="my-review-product-name"
+                                                >
                                                     {review.productName}
                                                 </Link>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
@@ -1693,10 +1720,7 @@ export default function MyPage() {
                                                 <span>작성일: {review.createdDate}</span>
                                                 {review.modifiedDate && <span> · 수정일: {review.modifiedDate}</span>}
                                                 <span className="my-review-like-count">👍 {review.reviewLike}</span>
-                                                <button
-                                                    onClick={() => handleEditClick(review)}
-                                                    className="link-btn"
-                                                >
+                                                <button onClick={() => handleEditClick(review)} className="link-btn">
                                                     수정
                                                 </button>
                                                 <button
@@ -1742,7 +1766,8 @@ export default function MyPage() {
                                             <div className="qna-content">{item.content}</div>
 
                                             <div className="qna-footer">
-                                                <span>작성일: {' '}
+                                                <span>
+                                                    작성일:{' '}
                                                     {new Date(item.createdAt).toLocaleDateString('ko-KR', {
                                                         year: 'numeric',
                                                         month: '2-digit',
@@ -1774,27 +1799,41 @@ export default function MyPage() {
                         </button>
                         <h2>{selectedStatus}</h2>
 
-                        {orders.filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))).length === 0 ? (
+                        {orders.filter(
+                            (o) =>
+                                o.deliveryStatus === selectedStatus &&
+                                (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)),
+                        ).length === 0 ? (
                             <p>주문 내역이 없습니다.</p>
                         ) : (
                             orders
-                                .filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)))
+                                .filter(
+                                    (o) =>
+                                        o.deliveryStatus === selectedStatus &&
+                                        (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)),
+                                )
                                 .map((order, orderItem) => (
                                     <div key={order.orderId} className="order-card">
                                         <div className="order-header">
-                                            <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
+                                            <p>
+                                                {order.createdDate} | 주문번호: {order.orderCode}
+                                            </p>
                                             <span>{order.deliveryStatus}</span>
                                         </div>
 
                                         {(orderItem || []).map((orderItem) => (
                                             <div key={orderItem.orderItemId} className="order-item">
                                                 <p>{orderItem.productName}</p>
-                                                <p>{orderItem.price?.toLocaleString()}원 / {orderItem.quantity}개</p>
+                                                <p>
+                                                    {orderItem.price?.toLocaleString()}원 / {orderItem.quantity}개
+                                                </p>
                                             </div>
                                         ))}
 
                                         <div className="order-footer">
-                                            {order.deliveries.trackingNumber && <p>운송장: {order.deliveries.trackingNumber}</p>}
+                                            {order.deliveries.trackingNumber && (
+                                                <p>운송장: {order.deliveries.trackingNumber}</p>
+                                            )}
                                             <p>총 {order.totalPrice?.toLocaleString()}원</p>
                                         </div>
                                     </div>
@@ -1819,18 +1858,22 @@ export default function MyPage() {
                             <p>주문번호: {isOrdersModal.orderCode}</p>
                             <p>배송상태: {isOrdersModal.deliveryStatus}</p>
 
-                            {isOrdersModal.deliveries?.length > 0 && (() => {
-                                const deliveryDetail = isOrdersModal.deliveries[0];
-                                return (
-                                    <>
-                                    <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
-                                    <p>배송상태: {deliveryDetail.deliveryStatus || '정보 없음'}</p>
-                                    <p>수령인: {deliveryDetail.recipientName || '정보 없음'}</p>
-                                    <p>주소: {deliveryDetail.baseAddress || ''} {deliveryDetail.detailAddress || ''}</p>
-                                    <p>우편번호: {deliveryDetail.zipcode || ''}</p>
-                                    </>
-                                );
-                            })()}
+                            {isOrdersModal.deliveries?.length > 0 &&
+                                (() => {
+                                    const deliveryDetail = isOrdersModal.deliveries[0]
+                                    return (
+                                        <>
+                                            <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
+                                            <p>배송상태: {deliveryDetail.deliveryStatus || '정보 없음'}</p>
+                                            <p>수령인: {deliveryDetail.recipientName || '정보 없음'}</p>
+                                            <p>
+                                                주소: {deliveryDetail.baseAddress || ''}{' '}
+                                                {deliveryDetail.detailAddress || ''}
+                                            </p>
+                                            <p>우편번호: {deliveryDetail.zipcode || ''}</p>
+                                        </>
+                                    )
+                                })()}
 
                             {/* 배송완료일 표시 (배송완료 상태일 때만) */}
                             {isOrdersModal.deliveryStatus === '배송완료' && isOrdersModal.completedAt && (
@@ -2098,27 +2141,22 @@ export default function MyPage() {
                         <button className="review-modal-close" onClick={() => setIsEditReviewModal(false)}>
                             &times;
                         </button>
-
                         <h2>리뷰 수정</h2>
-
                         <label>별점:</label>
-                        <select
-                            value={editReviewRating}
-                            onChange={(e) => setEditReviewRating(Number(e.target.value))}
-                        >
+                        <select value={editReviewRating} onChange={(e) => setEditReviewRating(Number(e.target.value))}>
                             {[1, 2, 3, 4, 5].map((num) => (
                                 <option key={num} value={num}>
                                     {num}
                                 </option>
                             ))}
-                        </select><br />
-
+                        </select>
+                        <br />
                         <label>리뷰 내용:</label>
                         <textarea
                             value={editReviewContent}
                             onChange={(e) => setEditReviewContent(e.target.value)}
-                        /> <br />
-
+                        />{' '}
+                        <br />
                         <button className="btn-primary" onClick={handleSaveEdit}>
                             저장
                         </button>
