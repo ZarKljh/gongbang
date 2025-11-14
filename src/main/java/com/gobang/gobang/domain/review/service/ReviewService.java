@@ -200,13 +200,14 @@ public class ReviewService {
 
 
     @Transactional
-    public RsData<Review> deleteReview(Long reviewId, Long currentUserId) {
+    public RsData<Review> deleteReview(Long reviewId, Long currentUserId, String role) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
 
         // 작성자 검증
-        if (!review.getSiteUser().getId().equals(currentUserId)) {
-            return RsData.of("403", "본인만 리뷰를 삭제할 수 있습니다.");
+        if (!review.getSiteUser().getId().equals(currentUserId)
+                && !role.contains("ADMIN")) {
+            return RsData.of("403", "삭제 권한이 없습니다.");
         }
 
         // 이미지 삭제
@@ -227,7 +228,7 @@ public class ReviewService {
         return reviewRepository.findByContentContainingIgnoreCase(keyword, pageable);
     }
 
-    //    상품 상세 만들어지면 사용.
+    //  평균 별점
     public Map<String, Object> getAverageRating(Long productId) {
         List<Object[]> resultList = reviewRepository.findAverageRatingAndCountByProductId(productId);
 
@@ -245,6 +246,26 @@ public class ReviewService {
         response.put("avgRating", Math.round(avg * 10) / 10.0); // 소수점 1자리
         response.put("totalCount", count);
         return response;
+    }
+
+    // 별점 분포 그래프
+    public Map<Integer, Long> getRatingGroup(Long productId) {
+        List<Object[]> result = reviewRepository.countRatingGroup(productId);
+
+        Map<Integer, Long> map = new HashMap<>();
+
+        // 기본값 0 넣기 (5~1점)
+        for (int i = 1; i <= 5; i++) {
+            map.put(i, 0L);
+        }
+
+        for (Object[] row : result) {
+            Integer rating = (Integer) row[0];
+            Long count = (Long) row[1];
+            map.put(rating, count);
+        }
+
+        return map;
     }
 
 }

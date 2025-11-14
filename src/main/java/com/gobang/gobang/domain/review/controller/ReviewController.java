@@ -17,8 +17,11 @@ import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Map;
 
 @RestController
@@ -52,12 +55,13 @@ public class ReviewController {
         return RsData.of("200", "평균 별점 조회 성공", avgData);
     }
 
-    // (평균 별점)상세 만들어지기 전 임시 사용
-//    @GetMapping("/stats/average")
-//    public RsData<Map<String, Object>> getAverageRating() {
-//        Map<String, Object> avgData = reviewLikeService.getAverageRatingAndCount();
-//        return RsData.of("200", "전체 리뷰 평균 조회 성공", avgData);
-//    }
+    // 별점 분포 그래프
+    @GetMapping("/rating-group/{productId}")
+    public RsData<Map<Integer, Long>> getRatingGroup(@PathVariable Long productId) {
+        Map<Integer, Long> data = reviewService.getRatingGroup(productId);
+        return RsData.of("200", "별점 분포 조회 성공", data);
+    }
+
 
 
     @GetMapping
@@ -148,7 +152,14 @@ public class ReviewController {
     public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
         SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
-        RsData<Review> deleteRs = reviewService.deleteReview(reviewId, currentUser.getId());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+
+        RsData<Review> deleteRs = reviewService.deleteReview(
+                reviewId,
+                currentUser.getId(),
+                role
+        );
 
         if (deleteRs.isFail()) {
             return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
