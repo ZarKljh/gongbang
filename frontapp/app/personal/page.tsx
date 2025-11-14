@@ -77,7 +77,7 @@ export default function MyPage() {
     const [isStatusModal, setIsStatusModal] = useState(false)
     const [isOrderDetailModal, setIsOrderDetailModal] = useState(false)
     const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null);
-
+    const [activeFilter, setActiveFilter] = useState('전체');
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -190,6 +190,14 @@ export default function MyPage() {
             return null
         }
     }
+
+    const filteredOrders = orders.filter((order) => {
+        if (activeFilter === "전체") return true;
+        if (activeFilter === "취소") return order.deliveryStatus === "주문취소";
+        if (activeFilter === "반품") return order.deliveryStatus === "반품완료";
+        if (activeFilter === "교환") return order.deliveryStatus === "교환완료";
+        return true;
+    })
 
     const fetchOrders = async (id?: number) => {
         if (!id) return
@@ -837,6 +845,7 @@ export default function MyPage() {
             alert('리뷰 삭제 중 오류가 발생했습니다.')
         }
     }
+    
     // ================= 리뷰 수정 / 삭제 =================
     // 리뷰 이미지 업로드 핸들러
     const handleUploadReviewImage = async (reviewId: number, file: File) => {
@@ -1084,6 +1093,14 @@ export default function MyPage() {
                             </li>
                             <li>
                                 <button
+                                    className={`nav-btn ${activeTab === 'ordersManage' ? 'active' : ''}`}
+                                    onClick={() => handleTabClick('ordersManage')}
+                                >
+                                    주문 취소 / 반품 / 교환
+                                </button>
+                            </li>
+                            <li>
+                                <button
                                     className={`nav-btn ${activeTab === 'cart' ? 'active' : ''}`}
                                     onClick={() => handleTabClick('cart')}
                                 >
@@ -1221,7 +1238,7 @@ export default function MyPage() {
 
                                         {(orderItem || []).map((orderItem) => (
                                             <div key={orderItem.orderItemId} className="order-item">
-                                                <p>주문 상품: {orderItem.productName} 이거 이미지로 수정</p>
+                                                <p>주문 상품: {orderItem.productName} {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}</p>
                                             </div>
                                         ))}
 
@@ -1231,6 +1248,70 @@ export default function MyPage() {
                                     </div>
                                 ))
                             )}
+                        </div>
+                    )}
+
+                    {/* 주문 취소 / 반품 / 교환 */}
+                    {activeTab === 'ordersManage' && (
+                        <div className="tab-content">
+                            <div className="section-header">
+                                <h2>주문 관리</h2>
+                            </div>
+
+                            <div className="filter-select-box">
+                                <select
+                                    value={activeFilter}
+                                    onChange={(e) => setActiveFilter(e.target.value)}
+                                    className="filter-select"
+                                >
+                                    <option value="전체">전체</option>
+                                    <option value="취소">취소</option>
+                                    <option value="반품">반품</option>
+                                    <option value="교환">교환</option>
+                                </select>
+                            </div>
+
+                            <div className="orders-list">
+                                {filteredOrders.length === 0 ? (
+                                    <p>해당 주문 내역이 없습니다.</p>
+                                ) : (
+                                    filteredOrders
+                                        .filter(order => activeFilter === '전체' || order.status === activeFilter)
+                                        .map((order, orderItem) => (
+                                        <div key={order.orderId} className="order-card">
+                                            <div className="order-header">
+                                                <p>주문번호: {order.orderCode}</p>
+                                                <p>주문일: {order.createdDate}</p>
+                                                <span className={`badge ${order.status}`}>{order.status}</span>
+                                            </div>
+
+                                            <div className="order-items">
+                                                {orderItem
+                                                    .filter(item => item.orderId === order.orderId)   // ⭐ 각 주문에 맞는 orderItem만 표시
+                                                    .map(orderItem => (
+                                                        <div key={orderItem.orderItemId} className="order-item">
+                                                            <div className="order-item-image"></div>
+                                                            <div className="order-item-info">
+                                                                <p className="product-name">{orderItem.productName}</p>
+                                                                <p className="product-quantity">수량: {orderItem.quantity}</p>
+                                                                <p className="product-price">
+                                                                    {orderItem.price?.toLocaleString()}원
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                            </div>
+
+                                            <div className="order-footer">
+                                                <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                                <div className="order-actions"></div>
+                                            </div>
+                                        </div>
+                                    ))
+                                
+                                )}
+
+                            </div>
                         </div>
                     )}
 
@@ -1593,9 +1674,9 @@ export default function MyPage() {
                                     {myReviews.map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
-                                                <span className="my-review-product-name">
-                                                    상품명: {review.productName}
-                                                </span>
+                                                <Link href={`http://localhost:3000/product/list/detail/${review.productId}`} className="my-review-product-name">
+                                                    {review.productName}
+                                                </Link>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
                                             </div>
 
@@ -1603,7 +1684,7 @@ export default function MyPage() {
                                                 {review.images?.map((imgUrl, idx) => (
                                                     <img key={idx} src={imgUrl} alt={`리뷰 이미지 ${idx + 1}`} />
                                                 ))}
-                                                <p>⭐이미지 꼭 확인해볼 것⭐</p>
+                                                {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}
                                             </div>
 
                                             <div className="my-review-content">{review.content}</div>
