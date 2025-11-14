@@ -147,7 +147,7 @@ export default function MyPage() {
         if (!id) return
 
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
+            const { data } = await axios.get(`${API_BASE_URL}/orders`, { withCredentials: true })
             setOrders(Array.isArray(data.data) ? data.data : [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
@@ -158,7 +158,7 @@ export default function MyPage() {
     const fetchCart = async (id?: number) => {
         if (!id) return
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
+            const { data } = await axios.get(`${API_BASE_URL}/cart`, { withCredentials: true })
             setCart(Array.isArray(data.data) ? data.data : data)
         } catch (error) {
             console.error('장바구니 목록 조회 실패:', error)
@@ -204,9 +204,9 @@ export default function MyPage() {
     }
 
     const fetchWishList = async (id?: number) => {
-        if (!id) return;
+        if (!id) return
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true, })
+            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true })
             setWishList(Array.isArray(data.data) ? data.data : data)
         } catch (error) {
             console.error('위시 목록 조회 실패:', error)
@@ -215,7 +215,7 @@ export default function MyPage() {
     }
 
     const fetchFollowList = async (id?: number) => {
-        if (!id) return;
+        if (!id) return
         try {
             const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
                 withCredentials: true,
@@ -228,7 +228,7 @@ export default function MyPage() {
     }
 
     const fetchQna = async (id?: number) => {
-        if (!id) return;
+        if (!id) return
         try {
             const { data } = await axios.get(`${API_BASE_URL}/qna?userId=${id}`, {
                 withCredentials: true,
@@ -271,7 +271,7 @@ export default function MyPage() {
     const fetchStats = async () => {
         const userId = id || userData?.id
         if (!userId) return
-        
+
         try {
             const response = await axios.get(`${API_BASE_URL}/stats?userId=${userId}`, { withCredentials: true })
             if (response.data.resultCode === '200') {
@@ -712,15 +712,15 @@ export default function MyPage() {
     const handleAddToCart = async (productId: number, quantity: number = 1) => {
         try {
             const request = { productId, quantity }
-            const { data } = await axios.post(`${API_BASE_URL}/cart`, request, {withCredentials: true,})
-            console.log('장바구니 담기 성공:', data);
+            const { data } = await axios.post(`${API_BASE_URL}/cart`, request, { withCredentials: true })
+            console.log('장바구니 담기 성공:', data)
 
-            setCart((prev) => [...prev, data.data]);
+            setCart((prev) => [...prev, data.data])
 
-            alert('장바구니에 담겼습니다!');
+            alert('장바구니에 담겼습니다!')
         } catch (error) {
-            console.error('장바구니 담기 실패:', error);
-            alert('장바구니 담기에 실패했습니다.');
+            console.error('장바구니 담기 실패:', error)
+            alert('장바구니 담기에 실패했습니다.')
         }
     }
 
@@ -729,15 +729,13 @@ export default function MyPage() {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/cart/${cartId}?quantity=${quantity}`,
                 {},
-                { withCredentials: true }
+                { withCredentials: true },
             )
 
             console.log('수량 수정 성공:', data)
 
             setCart((prev) =>
-                prev.map((item) =>
-                    item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item
-                )
+                prev.map((item) => (item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item)),
             )
         } catch (error) {
             console.error('장바구니 수량 수정 실패:', error)
@@ -747,7 +745,7 @@ export default function MyPage() {
 
     const handleDeleteCart = async (cartId: number) => {
         try {
-            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
+            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true })
 
             console.log('삭제 성공:', data)
 
@@ -879,7 +877,7 @@ export default function MyPage() {
                         </ul>
                     </div>
                 </nav>
-                <a href="#" className='link-btn'>공방 페이지로 이동</a>
+                <Link href="/personal/seller">셀러 페이지로 이동</Link>
             </div>
 
             {/* 오른쪽 콘텐츠 */}
@@ -914,7 +912,15 @@ export default function MyPage() {
                                 {['배송준비중', '배송중', '배송완료'].map((status) => (
                                     <div key={status} className="status-card" onClick={() => handleStatusClick(status)}>
                                         <p>{status}</p>
-                                        <p>{orders.filter((o) => o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')).length}</p>
+                                        <p>
+                                            {
+                                                orders.filter(
+                                                    (o) =>
+                                                        o.deliveryStatus?.replace(/\s/g, '') ===
+                                                        status.replace(/\s/g, ''),
+                                                ).length
+                                            }
+                                        </p>
                                     </div>
                                 ))}
                             </div>
@@ -965,34 +971,41 @@ export default function MyPage() {
 
                     {/* 장바구니 */}
                     {activeTab === 'cart' && (
-                        <div className='tab-content'>
-                            <div className='section-header'>
+                        <div className="tab-content">
+                            <div className="section-header">
                                 <h2>장바구니</h2>
                             </div>
 
                             {cart.length === 0 ? (
-                                    <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
+                                <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
                             ) : (
                                 <div className="cart-list">
                                     {cart.map((item) => (
                                         <div key={item.cartId} className="cart-product">
                                             <p>{item.productName}</p>
                                             <p>{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
-                                            
+
                                             <div className="quantity-control">
-                                            <button className="btn-primary"
-                                                onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
-                                                disabled={item.quantity <= 1}
-                                            >
-                                                -
-                                            </button>
-                                            <span>{item.quantity}개</span>
-                                            <button className="btn-primary"
-                                                onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
-                                            >
-                                                +
-                                            </button>
-                                            <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
+                                                <button
+                                                    className="btn-primary"
+                                                    onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
+                                                    disabled={item.quantity <= 1}
+                                                >
+                                                    -
+                                                </button>
+                                                <span>{item.quantity}개</span>
+                                                <button
+                                                    className="btn-primary"
+                                                    onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
+                                                >
+                                                    +
+                                                </button>
+                                                <button
+                                                    className="link-btn delete"
+                                                    onClick={() => handleDeleteCart(item.cartId)}
+                                                >
+                                                    삭제
+                                                </button>
                                             </div>
                                         </div>
                                     ))}
@@ -1011,7 +1024,7 @@ export default function MyPage() {
                             {!isAuthenticated ? (
                                 <div className="auth-banner">
                                     <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
-                                    <div className='auth-banner-input'>
+                                    <div className="auth-banner-input">
                                         <input
                                             type="password"
                                             placeholder="현재 비밀번호 입력"
@@ -1020,7 +1033,6 @@ export default function MyPage() {
                                         />
                                         <button onClick={handleVerifyPassword}>인증 확인</button>
                                     </div>
-                                    
                                 </div>
                             ) : (
                                 <div className="auth-banner success">인증 완료</div>
@@ -1268,7 +1280,9 @@ export default function MyPage() {
                                                     <div className="wishlist-image"></div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
-                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                                        <p className="price">
+                                                            {item.price ? `${item.price}원` : '가격 정보 없음'}
+                                                        </p>
                                                         <button
                                                             className="link-btn delete"
                                                             onClick={() => handleRemoveWish(item.wishlistId)}
@@ -1330,10 +1344,7 @@ export default function MyPage() {
                                                 <span>작성일: {review.createdDate}</span>
                                                 {review.modifiedDate && <span> · 수정일: {review.modifiedDate}</span>}
                                                 <span className="my-review-like-count">👍 {review.reviewLike}</span>
-                                                <button
-                                                    onClick={() => handleEditClick(review)}
-                                                    className="link-btn"
-                                                >
+                                                <button onClick={() => handleEditClick(review)} className="link-btn">
                                                     수정
                                                 </button>
                                                 <button
@@ -1698,27 +1709,22 @@ export default function MyPage() {
                         <button className="review-modal-close" onClick={() => setIsEditReviewModal(false)}>
                             &times;
                         </button>
-
                         <h2>리뷰 수정</h2>
-
                         <label>별점:</label>
-                        <select
-                            value={editReviewRating}
-                            onChange={(e) => setEditReviewRating(Number(e.target.value))}
-                        >
+                        <select value={editReviewRating} onChange={(e) => setEditReviewRating(Number(e.target.value))}>
                             {[1, 2, 3, 4, 5].map((num) => (
                                 <option key={num} value={num}>
                                     {num}
                                 </option>
                             ))}
-                        </select><br />
-
+                        </select>
+                        <br />
                         <label>리뷰 내용:</label>
                         <textarea
                             value={editReviewContent}
                             onChange={(e) => setEditReviewContent(e.target.value)}
-                        /> <br />
-
+                        />{' '}
+                        <br />
                         <button className="btn-primary" onClick={handleSaveEdit}>
                             저장
                         </button>
