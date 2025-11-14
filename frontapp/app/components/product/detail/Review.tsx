@@ -457,7 +457,7 @@ export default function detail() {
                 // fetchReviews()
                 return
             } else if (data.resultCode === '403') {
-                alert('본인만 리뷰를 삭제할 수 있습니다.')
+                alert('삭제 권한이 없습니다.')
             } else if (data.resultCode === '400') {
                 alert('리뷰가 존재하지 않습니다.')
             } else {
@@ -654,7 +654,7 @@ export default function detail() {
 
                                             {/* 좋아요 / 삭제 버튼 */}
                                             <div className="review-actions">
-                                                {(roleType === 'USER' || roleType === 'SELLER') && (
+                                                {/* {(roleType === 'USER' || roleType === 'SELLER') && ( */}
                                                     <button
                                                         className="review-like-btn"
                                                         onClick={() => handleLikeClick(review.reviewId)}
@@ -662,7 +662,7 @@ export default function detail() {
                                                         <FaRegThumbsUp />
                                                         도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                     </button>
-                                                )}
+                                                {/* )} */}
                                                 {Number(currentUserId) === Number(review.userId) ||
                                                     (roleType === 'ADMIN' && (
                                                         <button

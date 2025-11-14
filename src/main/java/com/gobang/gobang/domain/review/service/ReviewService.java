@@ -200,13 +200,14 @@ public class ReviewService {
 
 
     @Transactional
-    public RsData<Review> deleteReview(Long reviewId, Long currentUserId) {
+    public RsData<Review> deleteReview(Long reviewId, Long currentUserId, String role) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
 
         // 작성자 검증
-        if (!review.getSiteUser().getId().equals(currentUserId)) {
-            return RsData.of("403", "본인만 리뷰를 삭제할 수 있습니다.");
+        if (!review.getSiteUser().getId().equals(currentUserId)
+                && !role.contains("ADMIN")) {
+            return RsData.of("403", "삭제 권한이 없습니다.");
         }
 
         // 이미지 삭제
