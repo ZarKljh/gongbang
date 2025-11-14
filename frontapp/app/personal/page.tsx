@@ -9,15 +9,6 @@ const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
     // =============== 타입 정의 ===============
-    interface OrderItemResponse {
-        orderItemId: number;
-        orderId: number;
-        productId: number;
-        productName: string;
-        quantity: number;
-        price: number;
-    }
-
     interface OrdersResponse {
         orderId: number;
         userId: number;
@@ -28,6 +19,15 @@ export default function MyPage() {
         completedAt?: string;
         items: OrderItemResponse[];
         deliveries?: DeliveryResponse[];
+    }
+
+    interface OrderItemResponse {
+        orderItemId: number;
+        orderId: number;
+        productId: number;
+        productName: string;
+        quantity: number;
+        price: number;
     }
 
     interface DeliveryResponse {
@@ -70,14 +70,14 @@ export default function MyPage() {
 
     // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
-    const [orderItem, setOrderItem] = useState<any[]>([])
-    const [deliveryDetail, setDeliveryDetail] = useState<DeliveryResponse | null>(null)
     const [selectedStatus, setSelectedStatus] = useState(null)
-    const [selectedOrder, setSelectedOrder] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
-    const [isOrderDetailModal, setIsOrderDetailModal] = useState(false)
-    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null);
-    const [activeFilter, setActiveFilter] = useState('전체');
+    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null)
+    const [activeFilter, setActiveFilter] = useState('전체')
+    const [isCancelModal, setIsCancelModal] = useState(false)
+    const [isReturnModal, setIsReturnModal] = useState(false)
+    const [isExchangeModal, setIsExchangeModal] = useState(false)
+    const [actionReason, setActionReason] = useState('')
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -212,19 +212,7 @@ export default function MyPage() {
         }
     }
 
-    const fetchOrderItem = async (orderId?: number) => {
-        if (!orderId) return
-
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {withCredentials: true,})
-            setOrderItem(Array.isArray(data.data) ? data.data : [])
-        } catch (error) {
-            console.error('주문 상세 내역 조회 실패:', error)
-            setOrderItem([])
-        }
-    }
-
-    const fetchDeliveryDetail = async (orderId: number) => {
+    const fetchDelivery = async (orderId: number) => {
         const res = await axios.get(`${API_BASE_URL}/orders/${orderId}/delivery`)
         return res.data.data
     }
@@ -425,53 +413,18 @@ export default function MyPage() {
         return diffDays <= 7
     }
 
-    const handleOrderAction = async (order: any, action: 'cancel' | 'return' | 'exchange') => {
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.");
-
-        // 상태 체크
-        if (action === 'cancel' && order.deliveryStatus !== '배송준비중') {
-            return alert('배송 준비중일 때만 주문 취소가 가능합니다.');
-        }
-        if ((action === 'return' || action === 'exchange') && order.deliveryStatus !== '배송완료') {
-            return alert('배송 완료된 주문만 반품/교환 신청이 가능합니다.');
-        }
-
-        if (!confirm(`정말 ${action === 'cancel' ? '취소' : action === 'return' ? '반품' : '교환'}하시겠습니까?`)) return;
-
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/orders/${order.orderId}/${action}`,
-                {},
-                { withCredentials: true }
-            );
-
-            if (data.resultCode === '200') {
-                alert(`${action === 'cancel' ? '주문 취소' : action === 'return' ? '반품 신청' : '교환 신청'} 완료`);
-                await fetchOrders(userData.id); // OrdersResponse 기반으로 다시 가져오기
-            } else {
-                alert(`실패: ${data.msg}`);
-            }
-        } catch (error) {
-            console.error(`${action} 실패:`, error);
-            alert(`${action} 중 오류가 발생했습니다.`);
-        }
-    }
-
     // ================= 주문 취소 / 반품 / 교환 =================
-    // 주문 취소 (배송 준비중일 때만 가능)
-    const handleCancelOrder = async (orderId: number) => {
+    const handleCancelOrder = async (orderId: number, reason: string) => {
         const order = orders.find((o) => o.orderId === orderId);
         if (!order) return alert("주문 정보를 찾을 수 없습니다.");
         if (order.deliveryStatus !== "배송준비중") {
             return alert("배송 준비중 상태일 때만 주문 취소가 가능합니다.");
         }
 
-        if (!confirm("정말 주문을 취소하시겠습니까?")) return;
-
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/cancel`,
-                {},
+                { reason },
                 { withCredentials: true }
             );
 
@@ -487,20 +440,17 @@ export default function MyPage() {
         }
     }
 
-    // 반품 신청 (배송 완료 상태)
-    const handleReturnOrder = async (orderId: number) => {
+    const handleReturnOrder = async (orderId: number, reason: string) => {
         const order = orders.find((o) => o.orderId === orderId);
         if (!order) return alert("주문 정보를 찾을 수 없습니다.");
         if (order.deliveryStatus !== "배송완료") {
             return alert("배송 완료된 주문만 반품 신청이 가능합니다.");
         }
 
-        if (!confirm("이 주문을 반품 신청하시겠습니까?")) return;
-
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/return`,
-                {},
+                { reason },
                 { withCredentials: true }
             );
 
@@ -516,20 +466,17 @@ export default function MyPage() {
         }
     }
 
-    // 교환 신청
-    const handleExchangeOrder = async (orderId: number) => {
+    const handleExchangeOrder = async (orderId: number, reason: string) => {
         const order = orders.find((o) => o.orderId === orderId);
         if (!order) return alert("주문 정보를 찾을 수 없습니다.");
         if (order.deliveryStatus !== "배송완료") {
             return alert("배송 완료된 주문만 교환 신청이 가능합니다.");
         }
 
-        if (!confirm("이 주문을 교환 신청하시겠습니까?")) return;
-
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/exchange`,
-                {},
+                { reason },
                 { withCredentials: true }
             );
 
@@ -845,8 +792,8 @@ export default function MyPage() {
             alert('리뷰 삭제 중 오류가 발생했습니다.')
         }
     }
-    
-    // ================= 리뷰 수정 / 삭제 =================
+
+    // ================= 리뷰 =================
     // 리뷰 이미지 업로드 핸들러
     const handleUploadReviewImage = async (reviewId: number, file: File) => {
         const formData = new FormData();
@@ -1044,20 +991,6 @@ export default function MyPage() {
         setIsStatusModal(true)
     }
 
-    const handleOrderClick = async (order: any) => {
-        try {
-            setSelectedOrder(order)
-            
-            const detail = await fetchDeliveryDetail(order.orderId)
-            setDeliveryDetail(detail)
-            
-            setIsOrderDetailModal(true)
-        } catch (error) {
-            console.error('배송 상세 조회 실패:', error)
-            setIsOrderDetailModal(true)
-        }
-    }
-
     // =============== 렌더링 조건 ===============
     if (loading) {
         return <div>로딩중...</div>
@@ -1225,7 +1158,7 @@ export default function MyPage() {
                             {orders.length === 0 ? (
                                 <p>주문 내역이 없습니다.</p>
                             ) : (
-                                orders.map((order, deliveryDetail, orderItem) => (
+                                orders.map((order) => (
                                     <div key={order.orderId} className="order-card"
                                         onClick={() => setIsOrdersModal(order)}
                                     >
@@ -1233,21 +1166,47 @@ export default function MyPage() {
                                             <p>
                                                 주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
                                             </p>
-                                            <span>{deliveryDetail.deliveryStatus}</span>
+                                            <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
                                         </div>
 
-                                        {(orderItem || []).map((orderItem) => (
-                                            <div key={orderItem.orderItemId} className="order-item">
-                                                <p>주문 상품: {orderItem.productName} {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}</p>
+                                        {(order.items || []).map((item) => (
+                                            <div key={item.orderItemId} className="order-item">
+                                                <p>주문 상품: {item.productName} {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}</p>
                                             </div>
                                         ))}
 
-                                        <div className="order-footer">
-                                            <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                            <div className="order-footer">
+                                                <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                                <div className="order-actions">
+                                                    {/* 배송준비중일 때만 주문 취소 버튼 표시 */}
+                                                    {order.deliveries?.some(d => order.deliveryStatus === '배송준비중') && (
+                                                        <button className="btn-primary" onClick={() => {
+                                                            handleCancelOrder(order.orderId, '취소')
+                                                            setActionReason('취소')
+                                                            }}>
+                                                            주문 취소
+                                                        </button>
+                                                    )}
+
+                                                    {/* 배송완료된 주문이면 반품/교환 버튼 표시 */}
+                                                    {order.deliveries?.some(d =>
+                                                        d.deliveryStatus === '배송완료' && isWithinSevenDays(d.completedAt)
+                                                    ) && (
+                                                        <>
+                                                            <button className="btn-primary" onClick={() => handleReturnOrder(order.orderId, '반품')}>
+                                                                반품 신청
+                                                            </button>
+                                                            <button className="btn-primary" onClick={() => handleExchangeOrder(order.orderId, '교환')}>
+                                                                교환 신청
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )
                                 ))
-                            )}
+                            }
                         </div>
                     )}
 
@@ -1275,42 +1234,38 @@ export default function MyPage() {
                                 {filteredOrders.length === 0 ? (
                                     <p>해당 주문 내역이 없습니다.</p>
                                 ) : (
-                                    filteredOrders
-                                        .filter(order => activeFilter === '전체' || order.status === activeFilter)
-                                        .map((order, orderItem) => (
-                                        <div key={order.orderId} className="order-card">
-                                            <div className="order-header">
-                                                <p>주문번호: {order.orderCode}</p>
-                                                <p>주문일: {order.createdDate}</p>
-                                                <span className={`badge ${order.status}`}>{order.status}</span>
-                                            </div>
+                                    filteredOrders.map((order) => {
+                                        const items = order.orderItems || []
+                                        const latestDelivery = order.deliveries
+                                            ?.slice()
+                                            .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())[0]
+                                        const status = latestDelivery?.deliveryStatus || order.deliveryStatus
 
-                                            <div className="order-items">
-                                                {orderItem
-                                                    .filter(item => item.orderId === order.orderId)   // ⭐ 각 주문에 맞는 orderItem만 표시
-                                                    .map(orderItem => (
-                                                        <div key={orderItem.orderItemId} className="order-item">
-                                                            <div className="order-item-image"></div>
-                                                            <div className="order-item-info">
-                                                                <p className="product-name">{orderItem.productName}</p>
-                                                                <p className="product-quantity">수량: {orderItem.quantity}</p>
-                                                                <p className="product-price">
-                                                                    {orderItem.price?.toLocaleString()}원
-                                                                </p>
-                                                            </div>
+                                        return (
+                                            <div key={order.orderId} className="order-card">
+                                                <div className="order-header">
+                                                    <p>주문번호: {order.orderCode}</p>
+                                                    <p>주문일: {order.createdDate}</p>
+                                                    <span className={`badge ${status}`}>{status}</span>
+                                                </div>
+
+                                                <div className="order-items">
+                                                    {items.map((item) => (
+                                                        <div key={item.orderItemId} className="order-item">
+                                                            <p className="product-name">{item.productName}</p>
+                                                            <p className="product-quantity">수량: {item.quantity}</p>
+                                                            <p className="product-price">{item.price?.toLocaleString()}원</p>
                                                         </div>
                                                     ))}
-                                            </div>
+                                                </div>
 
-                                            <div className="order-footer">
-                                                <p>총 {order.totalPrice?.toLocaleString()}원</p>
-                                                <div className="order-actions"></div>
+                                                <div className="order-footer">
+                                                    <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
-                                
+                                        );
+                                    })
                                 )}
-
                             </div>
                         </div>
                     )}
@@ -1774,31 +1729,28 @@ export default function MyPage() {
                         </button>
                         <h2>{selectedStatus}</h2>
 
-                        {orders.filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))).length === 0 ? (
+                        {orders.filter(o =>
+                            o.deliveryStatus === selectedStatus &&
+                            (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
+                            ).length === 0 ? (
                             <p>주문 내역이 없습니다.</p>
                         ) : (
                             orders
-                                .filter(o => o.deliveryStatus === selectedStatus && (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)))
-                                .map((order, orderItem) => (
-                                    <div key={order.orderId} className="order-card">
-                                        <div className="order-header">
-                                            <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
-                                            <span>{order.deliveryStatus}</span>
-                                        </div>
-
-                                        {(orderItem || []).map((orderItem) => (
-                                            <div key={orderItem.orderItemId} className="order-item">
-                                                <p>{orderItem.productName}</p>
-                                                <p>{orderItem.price?.toLocaleString()}원 / {orderItem.quantity}개</p>
-                                            </div>
-                                        ))}
-
-                                        <div className="order-footer">
-                                            {order.deliveries.trackingNumber && <p>운송장: {order.deliveries.trackingNumber}</p>}
-                                            <p>총 {order.totalPrice?.toLocaleString()}원</p>
-                                        </div>
-                                    </div>
-                                ))
+                            .filter(o =>
+                                o.deliveryStatus === selectedStatus &&
+                                (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
+                            )
+                            .map((order) => (
+                                <div key={order.orderId} className="order-card">
+                                <div className="order-header">
+                                    <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
+                                    <span>{order.deliveryStatus}</span>
+                                </div>
+                                <div className="order-footer">
+                                    <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                </div>
+                                </div>
+                            ))
                         )}
                     </div>
                 </div>
@@ -1820,14 +1772,13 @@ export default function MyPage() {
                             <p>배송상태: {isOrdersModal.deliveryStatus}</p>
 
                             {isOrdersModal.deliveries?.length > 0 && (() => {
-                                const deliveryDetail = isOrdersModal.deliveries[0];
+                                const delivery = isOrdersModal.deliveries[0];
                                 return (
                                     <>
-                                    <p>운송장번호: {deliveryDetail.trackingNumber || '없음'}</p>
-                                    <p>배송상태: {deliveryDetail.deliveryStatus || '정보 없음'}</p>
-                                    <p>수령인: {deliveryDetail.recipientName || '정보 없음'}</p>
-                                    <p>주소: {deliveryDetail.baseAddress || ''} {deliveryDetail.detailAddress || ''}</p>
-                                    <p>우편번호: {deliveryDetail.zipcode || ''}</p>
+                                    <p>운송장번호: {delivery.trackingNumber || '없음'}</p>
+                                    <p>수령인: {delivery.recipientName || '정보 없음'}</p>
+                                    <p>주소: {delivery.baseAddress || ''} {delivery.detailAddress || ''}</p>
+                                    <p>우편번호: {delivery.zipcode || ''}</p>
                                     </>
                                 );
                             })()}
@@ -1847,7 +1798,7 @@ export default function MyPage() {
 
                         <h3 style={{ marginTop: '15px' }}>상품 내역</h3>
                         {(isOrdersModal.items || []).map((item, idx) => (
-                            <div key={idx} className="order-item">
+                            <div key={`${item.orderId}-${idx}`} className="order-item">
                                 <p>{item.productName}</p>
                                 <p>
                                     {item.price?.toLocaleString()}원 / {item.quantity}개

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -24,35 +25,39 @@ public class OrdersResponse {
     private String createdDate;
     private String deliveryStatus;
     private String completedAt; // String으로 변경
+    private String status;
+    private String cancelReason;
+    private String returnReason;
+    private String exchangeReason;
     private List<OrderItemResponse> items;
     private List<DeliveryResponse> deliveries;
 
     public static OrdersResponse from(Orders orders) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        // createdDate null 방어
         String createdDateStr = orders.getCreatedDate() != null
                 ? orders.getCreatedDate().format(formatter)
                 : LocalDateTime.now().format(formatter);
 
-        // orderItems null 방어
         List<OrderItemResponse> items = orders.getOrderItems() != null
                 ? orders.getOrderItems().stream().map(OrderItemResponse::from).toList()
                 : Collections.emptyList();
 
-        // deliveries null 방어
         List<DeliveryResponse> deliveries = orders.getDeliveries() != null
                 ? orders.getDeliveries().stream().map(DeliveryResponse::from).toList()
                 : Collections.emptyList();
 
-        // 대표 배송 상태/완료일
-        String deliveryStatus = deliveries.isEmpty()
-                ? "배송준비중"
-                : deliveries.get(0).getDeliveryStatus();
+        // OrdersResponse.from
+        String deliveryStatus = orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()
+                ? orders.getDeliveries().stream()
+                .max(Comparator.comparing(Delivery::getCreatedDate))
+                .get()
+                .getDeliveryStatus()
+                : "배송준비중";
 
-        String completedAt = deliveries.isEmpty() || deliveries.get(0).getCompletedAt() == null
+        String completedAt = deliveries.isEmpty() || deliveries.get(deliveries.size() - 1).getCompletedAt() == null
                 ? null
-                : deliveries.get(0).getCompletedAt();
+                : deliveries.get(deliveries.size() - 1).getCompletedAt();
 
         return OrdersResponse.builder()
                 .orderId(orders.getOrderId())
@@ -62,6 +67,10 @@ public class OrdersResponse {
                 .createdDate(createdDateStr)
                 .deliveryStatus(deliveryStatus)
                 .completedAt(completedAt)
+                .status(orders.getStatus())
+                .cancelReason(orders.getCancelReason())
+                .returnReason(orders.getReturnReason())
+                .exchangeReason(orders.getExchangeReason())
                 .items(items)
                 .deliveries(deliveries)
                 .build();
