@@ -121,6 +121,7 @@ export default function MyPage() {
 
     //문의
     const [qna, setQna] = useState<any[]>([])
+    const [openQnaId, setOpenQnaId] = useState(null);
 
     // =============== Effects ===============
     useEffect(() => {
@@ -159,7 +160,6 @@ export default function MyPage() {
         try {
             await Promise.all([
                 fetchOrders(userId),
-                fetchOrderItem(),
                 fetchAddresses(userId),
                 fetchPaymentMethods(userId),
                 fetchWishList(userId),
@@ -873,6 +873,10 @@ export default function MyPage() {
             console.error("문의 삭제 실패:", error);
             alert("문의 삭제 중 오류가 발생했습니다.");
         }
+    }
+
+    const toggleQna = (id) => {
+        setOpenQnaId(prev => (prev === id ? null : id))
     }
 
     // =============== 팔로우 ===============
@@ -1680,7 +1684,11 @@ export default function MyPage() {
                             ) : (
                                 <div className="qna-list">
                                     {qna.map((item) => (
-                                        <div key={item.qnaId} className="qna-card">
+                                        <div
+                                            key={item.qnaId}
+                                            className="qna-card"
+                                            onClick={() => toggleQna(item.qnaId)}
+                                        >
                                             <div className="qna-header">
                                                 <div className="qna-title">{item.title}</div>
                                                 <span className="qna-type">{item.type}</span>
@@ -1697,7 +1705,8 @@ export default function MyPage() {
                                             <div className="qna-content">{item.content}</div>
 
                                             <div className="qna-footer">
-                                                <span>작성일: {' '}
+                                                <span>
+                                                    작성일:{' '}
                                                     {new Date(item.createdAt).toLocaleDateString('ko-KR', {
                                                         year: 'numeric',
                                                         month: '2-digit',
@@ -1705,18 +1714,30 @@ export default function MyPage() {
                                                     })}
                                                 </span>
                                                 <button
-                                                    onClick={() => handleDeleteClick(item)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // 카드 클릭 이벤트 막기
+                                                        handleDeleteClick(item);
+                                                    }}
                                                     className="link-btn delete"
                                                 >
                                                     삭제
                                                 </button>
                                             </div>
+
+                                            {/* ▼▼▼ 클릭 시 열리는 답변 영역 ▼▼▼ */}
+                                            {openQnaId === item.qnaId && (
+                                                <div className="qna-answer">
+                                                    <h4>답변 내용</h4>
+                                                    <p>{item.answer || '아직 답변이 등록되지 않았습니다.'}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
                     )}
+
                 </div>
             </div>
 
