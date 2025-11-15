@@ -449,11 +449,11 @@ export default function Product() {
                                                 className={styles.cardLink}
                                                 aria-label="카드 1 자세히 보기"
                                             >
-                                                <figure className={styles.cardMedia}>
+                                                <div className={styles.cardMedia}>
                                                     {p.images && p.images.length > 0 && (
                                                         <img src={p.images[0].imageUrl} alt={p.name} />
                                                     )}
-                                                </figure>
+                                                </div>
                                                 <h3 className={styles.cardTitle}>{p.name}</h3>
                                                 <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
                                             </Link>

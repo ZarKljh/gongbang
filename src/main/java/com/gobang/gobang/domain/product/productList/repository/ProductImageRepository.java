@@ -9,10 +9,11 @@ import java.util.List;
 
 public interface ProductImageRepository extends JpaRepository<Image, Long> {
     @Query("""
-        select i
-        from Image i
-        where i.refId in :ids
-        order by i.refId asc, i.sortOrder asc, i.id asc
-    """)
+                       select i
+                       from Image i
+                       where i.refId in :ids
+                         and i.refType = 'PRODUCT'
+                       order by i.refId asc, i.sortOrder asc, i.id asc
+            """)
     List<Image> findAllByRefIdInOrderBySort(@Param("ids") List<Long> ids);
 }
