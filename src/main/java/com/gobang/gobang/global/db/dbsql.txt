@@ -1990,17 +1990,16 @@ VALUES
 (180, 'LIGHT_TONE', NULL, '밝은빛'),
 (180, 'CATEGORY', NULL, '마사지기');
 
-
 INSERT INTO image (
     created_date, modified_date, image_url, ref_id, ref_type, sort_order, image_file_name
 ) VALUES
---('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini3.jfif', 1, 'PRODUCT', 1, 'moodlightMini3.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm1.jfif', 2, 'PRODUCT', 1, 'moodlightWarm1.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini1.jfif', 3, 'PRODUCT', 1, 'moodlightMini1.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm5.jfif', 4, 'PRODUCT', 1, 'moodlightWarm5.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini4.jfif', 5, 'PRODUCT', 1, 'moodlightMini4.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm3.jfif', 6, 'PRODUCT', 1, 'moodlightWarm3.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini2.jfif', 7, 'PRODUCT', 1, 'moodlightMini2.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm4.jfif', 8, 'PRODUCT', 1, 'moodlightWarm4.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini5.jfif', 9, 'PRODUCT', 1, 'moodlightMini5.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm2.jfif', 10, 'PRODUCT', 1, 'moodlightWarm2.jfif');
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm3.jfif', 1, 'PRODUCT', 1, 'moodlightWarm3.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini1.jfif', 2, 'PRODUCT', 1, 'moodlightMini1.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm1.jfif', 3, 'PRODUCT', 1, 'moodlightWarm1.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini5.jfif', 4, 'PRODUCT', 1, 'moodlightMini5.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm4.jfif', 5, 'PRODUCT', 1, 'moodlightWarm4.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini3.jfif', 6, 'PRODUCT', 1, 'moodlightMini3.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm2.jfif', 7, 'PRODUCT', 1, 'moodlightWarm2.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini4.jfif', 8, 'PRODUCT', 1, 'moodlightMini4.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm5.jfif', 9, 'PRODUCT', 1, 'moodlightWarm5.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini2.jfif', 10, 'PRODUCT', 1, 'moodlightMini2.jfif');

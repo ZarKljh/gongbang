@@ -20,9 +20,11 @@ type Product = {
     name: string
     imageUrl: string
     summary?: string
+    subtitle: string
     description?: string
     basePrice: number
     stockQuantity: number
+    seoTitle: string
     images?: ProductImageDto[]
 }
 
@@ -450,12 +452,19 @@ export default function Product() {
                                                 aria-label="카드 1 자세히 보기"
                                             >
                                                 <div className={styles.cardMedia}>
-                                                    {p.images && p.images.length > 0 && (
-                                                        <img src={p.images[0].imageUrl} alt={p.name} />
-                                                    )}
+                                                    <img
+                                                        src={
+                                                            p.images && p.images.length > 0
+                                                                ? p.images[0].imageUrl
+                                                                : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                        }
+                                                        alt={p.name}
+                                                    />
                                                 </div>
                                                 <h3 className={styles.cardTitle}>{p.name}</h3>
-                                                <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
+
+                                                <p className={styles.cardDesc}>{p.seoTitle}</p>
+                                                <p className={styles.cardDesc}>{p.basePrice.toLocaleString()}원</p>
                                             </Link>
 
                                             <footer className={styles.cardActions}>
