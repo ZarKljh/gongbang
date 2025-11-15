@@ -268,28 +268,76 @@ body {
     border: 1px solid #e5e7eb;
     padding: 24px;
     margin-bottom: 16px;
+    border-radius: 8px;
+    background: #fff;
 }
 
+/* 주문 헤더 (이미지 + 요약) */
 .order-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     margin-bottom: 16px;
+    cursor: pointer;
 }
 
-.order-date {
-    font-size: 12px;
-    color: #6b7280;
-    margin-bottom: 4px;
+/* 주문 제목 영역 (번호 + 상태) */
+.order-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
-.order-status {
+.order-title p {
+    margin: 0;
+    font-weight: 500;
+    font-size: 14px;
+    color: #111827;
+}
+
+.badge {
     font-size: 12px;
     padding: 4px 12px;
+    border-radius: 12px;
     background: #f3f4f6;
+    color: #374151;
+    text-transform: uppercase;
 }
 
+/* 상품 이미지 영역 */
+.order-img {
+    display: flex;
+    gap: 8px;
+}
+
+.order-img img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+/* 아코디언 상세 영역 */
+.order-accordion {
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* 주문 상세 정보 */
+.order-info p {
+    margin: 4px 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* 주문 상품 내역 */
 .order-item {
     margin-bottom: 8px;
+}
+
+.order-item p {
+    margin: 2px 0;
 }
 
 .order-item-name {
@@ -301,6 +349,50 @@ body {
     color: #6b7280;
 }
 
+/* 아코디언 상품 내역 */
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.order-item-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.order-item-text {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 버튼 영역 */
+.order-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+}
+
+.order-actions .btn-primary {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    background-color: #3b82f6;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.order-actions .btn-primary:hover {
+    background-color: #2563eb;
+}
+
+/* 아코디언 하단 금액 */
 .order-footer {
     margin-top: 16px;
     padding-top: 16px;
@@ -312,7 +404,9 @@ body {
 
 .order-total {
     font-weight: bold;
+    font-size: 14px;
 }
+
 
 /* 폼 필드 */
 .form-group {
