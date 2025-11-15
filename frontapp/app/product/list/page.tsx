@@ -18,7 +18,6 @@ type Category = {
 type Product = {
     id: number
     name: string
-    imageUrl: string
     summary?: string
     subtitle: string
     description?: string
@@ -26,6 +25,8 @@ type Product = {
     stockQuantity: number
     seoTitle: string
     images?: ProductImageDto[]
+    avgRating?: string
+    ratingCount?: string
 }
 
 type SubCategory = {
@@ -56,6 +57,12 @@ type ProductImageDto = {
     imageUrl: string
     imageOrder?: number
 }
+
+// type FilterProductResponse = {
+//     productFilterList: Product[]
+//     imageMapList: Record<number, ProductImageDto[]>
+//     reviewMapList: ReviewRatingDto[] // 🔹 배열임! (지금 응답 구조)
+// }
 //
 
 export default function Product() {
@@ -208,7 +215,7 @@ export default function Product() {
 
             api.get(`product/${selectedSubCategoryId}/search`, { params: payload })
                 .then((res) => {
-                    const { productFilterList, imageMapList } = res.data.data
+                    const { productFilterList, imageMapList, reviewMapList } = res.data.data
 
                     const merged = productFilterList.map((p: any) => {
                         const images =
@@ -217,13 +224,16 @@ export default function Product() {
                                 // ❗ 여기가 핵심: 절대경로 보정
                                 imageUrl: img.imageUrl.startsWith('http') ? img.imageUrl : `${BASE_URL}${img.imageUrl}`,
                             })) ?? []
-
+                        const review = reviewMapList?.[p.id] ?? null
                         return {
                             ...p,
                             images,
+                            avgRating: review?.avgRating ?? 0,
+                            ratingCount: review?.ratingCount ?? 0,
                         }
                     })
                     console.log(merged)
+                    console.log('💬 reviewMapList raw:', reviewMapList)
                     setProducts(merged)
                 })
                 .catch((err) => console.error('상품 검색 실패:', err))
@@ -468,9 +478,9 @@ export default function Product() {
                                             </Link>
 
                                             <footer className={styles.cardActions}>
-                                                <a href="#" className={styles.btnRead}>
-                                                    자세히
-                                                </a>
+                                                <span>
+                                                    ⭐{p.avgRating}.0({p.ratingCount})
+                                                </span>
                                             </footer>
                                         </article>
                                     </li>

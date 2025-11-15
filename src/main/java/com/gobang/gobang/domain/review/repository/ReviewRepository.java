@@ -1,11 +1,12 @@
 package com.gobang.gobang.domain.review.repository;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,6 +23,21 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
 
     Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
+
     Page<Review> findByIsActiveTrue(Pageable pageable);
+
+
+    //목록 평균별점용 - hyo
+    @Query("""
+        SELECT new com.gobang.gobang.domain.product.dto.ReviewRatingDto(
+            r.productId,
+            AVG(r.rating),
+            COUNT(r)
+        )
+        FROM Review r
+        WHERE r.productId IN :ids
+        GROUP BY r.productId
+    """)
+    List<ReviewRatingDto> findRatingStatsByProductIds(@Param("ids") List<Long> ids);
 
 }

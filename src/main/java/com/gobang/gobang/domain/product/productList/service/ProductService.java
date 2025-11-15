@@ -4,10 +4,12 @@ import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.ProductImageDto;
+import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductImageRepository;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
+import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +29,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
+    private final ReviewRepository reviewRepository;
 
     public List<ProductDto> getProductList(Long subCategoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
@@ -82,14 +85,14 @@ public class ProductService {
                 .map(ProductDto::new)   // ✅ Product → ProductDto 생성자 변환
                 .toList();
 
-        // 2) ids 뽑기
+        // ids 뽑기
         List<Long> ids = list.stream().map(Product::getId).toList();
 
-        // 3) ids로 이미지/속성 벌크 조회 → 그룹핑
-        List<Image> rows = productImageRepository.findAllByRefIdInOrderBySort(ids);
+        // ids로 이미지/속성 벌크 조회 → 그룹핑
+        List<Image> imageRows = productImageRepository.findAllByRefIdInOrderBySort(ids);
 
         Map<Long, List<ProductImageDto>> imageMap =
-                rows.stream()
+                imageRows.stream()
                         .map(ProductImageDto::new) // ✅ 먼저 엔티티 → DTO 변환
                         .collect(Collectors.groupingBy(
                                 ProductImageDto::getRefId,     // 상품(refId) 기준 그룹핑
@@ -98,31 +101,29 @@ public class ProductService {
                         ));
 
 
-//        return list.stream()
-//                .map(t -> ProductDto.builder()
-//                        .id(t.getId())
-//                        .name(t.getName())
-//                        .subtitle(t.getSubtitle())
-//                        .summary(t.getSummary())
-//                        .description(t.getDescription())
-//                        .basePrice(t.getBasePrice())
-//                        .stockQuantity(t.getStockQuantity())
-//                        .slug(t.getSlug())
-//                        .status(t.getStatus())
-//                        .active(t.getActive())
-//                        .categoryId(t.getCategoryId())
-//                        .themeId(t.getThemeId())
-//                        .subcategoryId(t.getSubcategory() != null ? t.getSubcategory().getId() : null)
-//                        .seoTitle(t.getSeoTitle())
-//                        .seoDescription(t.getSeoDescription())
-//                        .build()
-//                )
-//                .toList();
+
+        //ids로 상품 여러 개에 대한 별점 평균/개수 한번에 조회
+        List<ReviewRatingDto> ratingRows = reviewRepository.findRatingStatsByProductIds(ids);
+
+        Map<Long, ReviewRatingDto> ratingMap =
+                ratingRows.stream()
+                        .collect(Collectors.toMap(
+                                ReviewRatingDto::getProductId, // key
+                                dto -> dto,                    // value
+                                (a, b) -> a,                   // 중복 키 있을 때 첫 번째 유지
+                                LinkedHashMap::new
+                        ));
+
+
+
+
+
 
 
         return FilterProductResponse.builder()
                 .productFilterList(productDtoList)
                 .imageMapList(imageMap)
+                .reviewMapList(ratingMap)
                 .build();
     }
 
