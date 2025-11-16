@@ -813,7 +813,7 @@ export default function detail() {
                                 key={index}
                                 className={`pagination-btn page-number ${currentPage === index ? 'active' : ''}`}
                                 onClick={() => {
-                                    fetchReviews(index)
+                                    fetchReviews(productId, index)
                                     scrollToTop()
                                 }}
                             >
