@@ -79,6 +79,7 @@ export default function MyPage() {
     const [isReturnModal, setIsReturnModal] = useState(false)
     const [isExchangeModal, setIsExchangeModal] = useState(false)
     const [actionReason, setActionReason] = useState('')
+    const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -315,24 +316,34 @@ export default function MyPage() {
             }))
         } catch (error) {
             console.error('리뷰 조회 실패:', error)
+            setStats((prev) => ({
+                ...prev,
+                totalReviews: 0,
+            }))
         }
     }
 
     const fetchQna = async (id?: number) => {
         const userId = id || userData?.id
-        console.log('fetchQna 호출 - userId:', userId)
         if (!userId) return
         
         try {
             const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
                 withCredentials: true,
             })
-            console.log('전체 응답:', response)
-            console.log('data.data:', response.data.data)
-            setQna(Array.isArray(response.data.data) ? response.data.data : [])
+            const list = Array.isArray(response.data.data) ? response.data.data : []
+            setQna(list)
+            setStats((prev) => ({
+                ...prev,
+                totalQna: list.length,
+            }))
         } catch (error) {
             console.error('문의 목록 조회 실패:', error)
             setQna([])
+            setStats((prev) => ({
+                ...prev,
+                totalQna: 0,
+            }))
         }
     }
 
@@ -495,6 +506,20 @@ export default function MyPage() {
             console.error("교환 신청 실패:", error)
             alert("교환 신청 중 오류가 발생했습니다.")
         }
+    }
+
+    const toggleManageOrder = (orderId: number) => {
+        setOpenedOrderId((prev) => (prev === orderId ? null : orderId))
+    }
+
+    const handleDeleteOrder = (orderId: number) => {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        axios.delete(`/api/orders/${orderId}`)
+            .then(() => {
+                setFilteredOrders(prev => prev.filter(o => o.orderId !== orderId));
+            })
+            .catch(err => console.error(err));
     }
 
     // =============== 회원정보 ===============
@@ -827,40 +852,6 @@ export default function MyPage() {
     }
 
     // ================= Q&A 기능 =================
-    // 문의 작성
-    const handleCreateQna = async (newQna: { title: string, content: string, productId?: number }) => {
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/qna`, newQna, { withCredentials: true })
-
-            if (data.resultCode === "200") {
-                alert("문의가 등록되었습니다.")
-                await fetchQna(userData.id)
-            } else {
-                alert(`등록 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error("문의 등록 실패:", error)
-            alert("문의 등록 중 오류가 발생했습니다.")
-        }
-    }
-
-    // 문의 수정
-    const handleEditQna = async (qnaId: number, updated: { title: string, content: string }) => {
-        try {
-            const { data } = await axios.patch(`${API_BASE_URL}/qna/${qnaId}`, updated, { withCredentials: true })
-
-            if (data.resultCode === "200") {
-                alert("문의가 수정되었습니다.")
-                await fetchQna(userData.id)
-            } else {
-                alert(`수정 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error("문의 수정 실패:", error)
-            alert("문의 수정 중 오류가 발생했습니다.")
-        }
-    }
-
     // 문의 삭제
     const handleDeleteQna = async (qnaId: number) => {
         if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return
@@ -885,22 +876,6 @@ export default function MyPage() {
     }
 
     // =============== 팔로우 ===============
-    const handleFollow = async (studioId: number) => {
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/follow`, { studioId }, { withCredentials: true })
-
-            if (data.resultCode === '200') {
-                alert('팔로우 성공')
-                await fetchFollowList(userData.id)
-            } else {
-                alert(`팔로우 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('팔로우 실패:', error)
-            alert('팔로우 요청 중 오류가 발생했습니다.')
-        }
-    }
-
     const handleUnfollow = async (studioId: number) => {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/follow`, {
@@ -939,21 +914,6 @@ export default function MyPage() {
     }
 
     // =============== 장바구니 ===============
-    const handleAddToCart = async (productId: number, quantity: number = 1) => {
-        try {
-            const request = { productId, quantity }
-            const { data } = await axios.post(`${API_BASE_URL}/cart`, request, {withCredentials: true,})
-            console.log('장바구니 담기 성공:', data)
-
-            setCart((prev) => [...prev, data.data])
-
-            alert('장바구니에 담겼습니다!')
-        } catch (error) {
-            console.error('장바구니 담기 실패:', error)
-            alert('장바구니 담기에 실패했습니다.')
-        }
-    }
-
     const handleUpdateCart = async (cartId: number, quantity: number) => {
         try {
             const { data } = await axios.patch(
@@ -1282,6 +1242,18 @@ export default function MyPage() {
                                         )}
                                     </div>
 
+                                    <div className="order-actions" style={{ marginTop: 15 }}>
+                                        <button
+                                            className="link-btn delete"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteOrder(order.orderId);
+                                            }}
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
+
                                     {/* 아코디언 하단 금액 */}
                                     <div className="order-footer">
                                         <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
@@ -1298,7 +1270,7 @@ export default function MyPage() {
                     {activeTab === 'ordersManage' && (
                         <div className="tab-content">
                             <div className="section-header">
-                                <h2>주문 관리</h2>
+                                <h2>취소 / 반품 / 교환 내역</h2>
                             </div>
 
                             <div className="filter-select-box">
@@ -1319,33 +1291,71 @@ export default function MyPage() {
                                     <p>해당 주문 내역이 없습니다.</p>
                                 ) : (
                                     filteredOrders.map((order) => {
-                                        const items = order.orderItems || []
+                                        const items = order.orderItems || [];
+
+                                        // 최신 배송 상태
                                         const latestDelivery = order.deliveries
                                             ?.slice()
-                                            .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())[0]
-                                        const status = latestDelivery?.deliveryStatus || order.deliveryStatus
+                                            .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0];
+
+                                        const status = latestDelivery?.deliveryStatus || order.deliveryStatus;
 
                                         return (
                                             <div key={order.orderId} className="order-card">
-                                                <div className="order-header">
+
+                                                {/* --- 주문 요약 (아코디언 열기) --- */}
+                                                <div
+                                                    className="order-header"
+                                                    onClick={() => toggleManageOrder(order.orderId)}
+                                                >
                                                     <p>주문번호: {order.orderCode}</p>
                                                     <p>주문일: {order.createdDate}</p>
                                                     <span className={`badge ${status}`}>{status}</span>
                                                 </div>
 
-                                                <div className="order-items">
-                                                    {items.map((item) => (
-                                                        <div key={item.orderItemId} className="order-item">
-                                                            <p className="product-name">{item.productName}</p>
-                                                            <p className="product-quantity">수량: {item.quantity}</p>
-                                                            <p className="product-price">{item.price?.toLocaleString()}원</p>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                {/* --- 아코디언 상세 영역 --- */}
+                                                {openedOrderId === order.orderId && (
+                                                    <div className="order-accordion">
 
-                                                <div className="order-footer">
-                                                    <p>총 {order.totalPrice?.toLocaleString()}원</p>
-                                                </div>
+                                                        <h3>상품 내역</h3>
+                                                        {items.map((item) => (
+                                                            <div key={item.orderItemId} className="order-item">
+                                                                <div className="order-item-text">
+                                                                    <p className="order-item-name">{item.productName}</p>
+                                                                    <p className="order-item-detail">
+                                                                        {item.price?.toLocaleString()}원 / {item.quantity}개
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+
+                                                        {/* 주문 상세 정보 */}
+                                                        <div className="order-info">
+                                                            <p>주문일자: {order.createdDate}</p>
+                                                            <p>주문번호: {order.orderCode}</p>
+                                                            <p>배송상태: {status}</p>
+                                                            <p>사유: {order.cancelReason}{order.exchangeReason}{order.returnReason}</p>
+                                                        </div>
+
+                                                        {/* 삭제 버튼만 표시 */}
+                                                        <div className="order-actions">
+                                                            <button
+                                                                className="link-btn delete"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeleteOrder(order.orderId);
+                                                                }}
+                                                            >
+                                                                삭제
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="order-footer">
+                                                            <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
+                                                        </div>
+
+                                                    </div>
+                                                )}
                                             </div>
                                         )
                                     })
@@ -1517,11 +1527,6 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>생년월일</label>
                                     <p>{userData.birth}</p>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>성별</label>
-                                    <p>{userData.gender === 'MALE' ? '남성' : '여성'}</p>
                                 </div>
                             </div>
                         </div>
