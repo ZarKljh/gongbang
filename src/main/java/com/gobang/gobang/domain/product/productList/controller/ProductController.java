@@ -42,7 +42,18 @@ public class ProductController {
         });
         System.out.println("================================");
 
-        FilterProductResponse result = productService.getProductFilterList(subCategoryId, size, params);
+
+
+        SiteUserResponse currentUser = null;
+        try {
+            currentUser = siteUserService.getCurrentUserInfo(); // 로그인 안 되어 있으면 null 리턴 or 예외
+        } catch (RuntimeException e) {
+            // 인증 예외만 골라서 잡아도 됨 (ex. CustomAuthException)
+            currentUser = null; // 비로그인 상태로 처리
+        }
+
+
+        FilterProductResponse result = productService.getProductFilterList(subCategoryId, size, params, currentUser);
         return RsData.of("200", "상품 다건 조회 성공", result);
     }
 

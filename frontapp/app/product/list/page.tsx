@@ -218,7 +218,7 @@ export default function Product() {
 
             api.get(`product/${selectedSubCategoryId}/search`, { params: payload })
                 .then((res) => {
-                    const { productFilterList, imageMapList, reviewMapList } = res.data.data
+                    const { productFilterList, imageMapList, reviewMapList, likedMap } = res.data.data
 
                     const merged = productFilterList.map((p: any) => {
                         const images =
@@ -233,6 +233,8 @@ export default function Product() {
                             images,
                             avgRating: review?.avgRating ?? 0,
                             ratingCount: review?.ratingCount ?? 0,
+                            // ⭐ likedMap 반영
+                            liked: likedMap?.[p.id] ?? false, // 로그인 안 했으면 false
                         }
                     })
                     console.log(merged)
@@ -307,6 +309,7 @@ export default function Product() {
                 if (err.response?.status === 401) {
                     alert('로그인이 필요합니다.')
                 } else {
+                    alert('로그인이 필요합니다.')
                     console.error('좋아요 에러:', err)
                 }
             })
@@ -519,7 +522,7 @@ export default function Product() {
                                                         handleToggleLike(p.id)
                                                     }}
                                                 >
-                                                    {p.liked ? '💗' : '🤍'} {p.likeCount}
+                                                    {p.liked ? '💗' : '🤍'}
                                                 </button>
                                             </footer>
                                         </article>

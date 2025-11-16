@@ -1,6 +1,8 @@
 package com.gobang.gobang.domain.product.productList.service;
 
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.ProductImageDto;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +33,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final ReviewRepository reviewRepository;
+    private final WishListRepository wishListRepository;
 
     public List<ProductDto> getProductList(Long subCategoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
@@ -60,7 +64,7 @@ public class ProductService {
                 .toList();
     }
 
-    public FilterProductResponse getProductFilterList(Long subCategoryId, int size, MultiValueMap<String, String> params) {
+    public FilterProductResponse getProductFilterList(Long subCategoryId, int size, MultiValueMap<String, String> params, SiteUserResponse currentUser) {
         int limit = Math.max(1, Math.min(size, 50));
 //        boolean useColor = colors != null && !colors.isEmpty();
 
@@ -101,7 +105,6 @@ public class ProductService {
                         ));
 
 
-
         //ids로 상품 여러 개에 대한 별점 평균/개수 한번에 조회
         List<ReviewRatingDto> ratingRows = reviewRepository.findRatingStatsByProductIds(ids);
 
@@ -115,6 +118,21 @@ public class ProductService {
                         ));
 
 
+        Map<Long, Boolean> likedMap = new HashMap<>();
+
+        //ids로 상품 여러 개에 대한 유저에대한 좋아요 여부 && 로그인한 경우에만 좋아요 여부 조회
+        if (currentUser != null && currentUser.getId() != null) {
+            List<Long> likedIds = wishListRepository.findLikedProductIds(currentUser.getId(), ids);
+
+            // 2) Map<productId, true>
+            likedMap = likedIds.stream()
+                    .collect(Collectors.toMap(
+                            id -> id,
+                            id -> true,
+                            (a, b) -> a,
+                            LinkedHashMap::new
+                    ));
+        }
 
 
 
@@ -124,10 +142,9 @@ public class ProductService {
                 .productFilterList(productDtoList)
                 .imageMapList(imageMap)
                 .reviewMapList(ratingMap)
+                .likedMap(likedMap)
                 .build();
     }
-
-
 
 
     private static String first(MultiValueMap<String, String> p, String key) {
