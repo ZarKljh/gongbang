@@ -23,8 +23,22 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
 
     Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
-
     Page<Review> findByIsActiveTrue(Pageable pageable);
+
+    // 물품 상세페이지 만들어지면 사용(v평균)
+    @Query("SELECT AVG(r.rating), COUNT(r.reviewId) FROM Review r WHERE r.productId = :productId AND r.isActive = true")
+    List<Object[]> findAverageRatingAndCountByProductId(@Param("productId") Long productId);
+
+
+    // 별점 분포 그래프
+    @Query("""
+    SELECT r.rating, COUNT(r)
+    FROM Review r
+    WHERE r.productId = :productId AND r.isActive = true
+    GROUP BY r.rating
+""")
+    List<Object[]> countRatingGroup(@Param("productId") Long productId);
+
 
 
     //목록 평균별점용 - hyo

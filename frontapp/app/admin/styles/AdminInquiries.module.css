@@ -1,3 +1,8 @@
+.mainArea {
+    width: 100%;
+    display: block;
+}
+
 /* 페이지 상단 헤더 영역 */
 .headerSection {
     display: flex;
@@ -16,7 +21,7 @@
 
 .pageSubtitle {
     margin: 4px 0 0;
-    font-size: 13px;
+    font-size: 12px;
     color: #6b7280;
 }
 

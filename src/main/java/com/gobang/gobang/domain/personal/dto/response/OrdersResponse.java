@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.entity.Delivery;
 import com.gobang.gobang.domain.personal.entity.Orders;
 import lombok.AllArgsConstructor;
@@ -9,6 +8,9 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -17,42 +19,51 @@ public class OrdersResponse {
 
     private Long orderId;
     private Long userId;
-    private String orderCord;
+    private String orderCode;
     private BigDecimal totalPrice;
-    private LocalDateTime createdDate;
+    private String createdDate;
     private String deliveryStatus;
+    private String completedAt; // String으로 변경
+    private List<OrderItemResponse> items;
+    private List<DeliveryResponse> deliveries;
 
     public static OrdersResponse from(Orders orders) {
-        String deliveryStatus = "배송준비중"; // 기본값
-        LocalDateTime createdDate = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        if (orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()) {
-            // 최신 배송을 찾는다 (createdDate 기준 내림차순)
-            Delivery latestDelivery = orders.getDeliveries().stream()
-                    .max((a, b) -> a.getCreatedDate().compareTo(b.getCreatedDate()))
-                    .orElse(null);
+        // createdDate null 방어
+        String createdDateStr = orders.getCreatedDate() != null
+                ? orders.getCreatedDate().format(formatter)
+                : LocalDateTime.now().format(formatter);
 
-            if (latestDelivery != null) {
-                deliveryStatus = latestDelivery.getDeliveryStatus();
-                createdDate = latestDelivery.getCreatedDate();
+        // orderItems null 방어
+        List<OrderItemResponse> items = orders.getOrderItems() != null
+                ? orders.getOrderItems().stream().map(OrderItemResponse::from).toList()
+                : Collections.emptyList();
 
-                // 배송완료 후 7일이 지난 경우 표시 제외
-                if ("배송완료".equals(deliveryStatus)
-                        && latestDelivery.getCompletedAt() != null
-                        && latestDelivery.getCompletedAt().isBefore(LocalDateTime.now().minusDays(7))) {
-                    // 7일 지난 배송완료는 표시하지 않음 (null 반환)
-                    return null;
-                }
-            }
-        }
+        // deliveries null 방어
+        List<DeliveryResponse> deliveries = orders.getDeliveries() != null
+                ? orders.getDeliveries().stream().map(DeliveryResponse::from).toList()
+                : Collections.emptyList();
+
+        // 대표 배송 상태/완료일
+        String deliveryStatus = deliveries.isEmpty()
+                ? "배송준비중"
+                : deliveries.get(0).getDeliveryStatus();
+
+        String completedAt = deliveries.isEmpty() || deliveries.get(0).getCompletedAt() == null
+                ? null
+                : deliveries.get(0).getCompletedAt();
 
         return OrdersResponse.builder()
                 .orderId(orders.getOrderId())
-                .userId(orders.getSiteUser().getId())
-                .orderCord(orders.getOrderCord())
-                .totalPrice(orders.getTotalPrice())
-                .createdDate(createdDate)
+                .userId(orders.getSiteUser() != null ? orders.getSiteUser().getId() : 0L)
+                .orderCode(orders.getOrderCode() != null ? orders.getOrderCode() : "N/A")
+                .totalPrice(orders.getTotalPrice() != null ? orders.getTotalPrice() : BigDecimal.ZERO)
+                .createdDate(createdDateStr)
                 .deliveryStatus(deliveryStatus)
+                .completedAt(completedAt)
+                .items(items)
+                .deliveries(deliveries)
                 .build();
     }
 }

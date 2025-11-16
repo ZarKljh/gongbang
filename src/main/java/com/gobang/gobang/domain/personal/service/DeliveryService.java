@@ -36,7 +36,7 @@ public class DeliveryService {
             }
         }
 
-        return convertToResponse(delivery);
+        return DeliveryResponse.from(delivery);
     }
 
     // 배송 정보 조회
@@ -44,28 +44,6 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByOrder_OrderId(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("배송 정보를 찾을 수 없습니다."));
 
-        return convertToResponse(delivery);
-    }
-
-    // Entity -> Response DTO 변환
-    private DeliveryResponse convertToResponse(Delivery delivery) {
-        DeliveryResponse.DeliveryResponseBuilder builder = DeliveryResponse.builder()
-                .deliveryId(delivery.getDeliveryId())
-                .orderId(delivery.getOrder().getOrderId())
-                .trackingNumber(delivery.getTrackingNumber())
-                .deliveryStatus(delivery.getDeliveryStatus())
-                .completedAt(delivery.getCompletedAt())
-                .createdDate(delivery.getCreatedDate())
-                .modifiedDate(delivery.getModifiedDate());
-
-        if (delivery.getAddress() != null) {
-            builder.addressId(delivery.getAddress().getUserAddressId())
-                    .recipientName(delivery.getAddress().getRecipientName())
-                    .baseAddress(delivery.getAddress().getBaseAddress())
-                    .detailAddress(delivery.getAddress().getDetailAddress())
-                    .zipcode(delivery.getAddress().getZipcode());
-        }
-
-        return builder.build();
+        return DeliveryResponse.from(delivery);
     }
 }

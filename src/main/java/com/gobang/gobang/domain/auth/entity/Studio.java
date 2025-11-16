@@ -1,9 +1,12 @@
 package com.gobang.gobang.domain.auth.entity;
 
 import com.gobang.gobang.domain.personal.entity.Follow;
+import com.gobang.gobang.domain.seller.model.StudioStatus;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,10 +65,20 @@ public class Studio {
     @Column(length = 254)
     private String studioImg;
 
+
     private LocalDateTime createdDate;
 
     private LocalDateTime updatedDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private StudioStatus status = StudioStatus.PENDING;
+
+    @PreUpdate
+    void onUpdate() { this.updatedDate = LocalDateTime.now(); }
+
     @OneToMany(mappedBy = "studio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follow> follows = new ArrayList<>();
+
+
 }

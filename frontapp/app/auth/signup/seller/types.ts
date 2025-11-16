@@ -8,7 +8,8 @@ export interface UserInfo {
     birth: string
     nickName: string
     mobilePhone: string
-    imageUrl: string
+    profileImageUrl: string
+    profileImageName: string
 }
 
 export interface StudioInfo {

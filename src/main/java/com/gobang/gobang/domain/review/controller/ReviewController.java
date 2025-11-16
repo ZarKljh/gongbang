@@ -12,29 +12,23 @@ import com.gobang.gobang.domain.review.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.response.ReviewsResponse;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
-import com.gobang.gobang.domain.review.service.ReviewReportService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
-import com.gobang.gobang.global.rq.Rq;
 import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.ui.Model;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final ReviewReportService reviewReportService;
     private final ReviewCommentService reviewCommentService;
     private final ReviewService reviewService;
     private final SiteUserService siteUserService;
@@ -53,6 +47,21 @@ public class ReviewController {
 //                "목록 조회 성공",
 //                new ReviewsResponse(reviewPage)
 //        );
+
+    // (평균 별점)상품 상세 만들어지면 사용
+    @GetMapping("/average/{productId}")
+    public RsData<Map<String, Object>> getAverageRating(@PathVariable Long productId) {
+        Map<String, Object> avgData = reviewService.getAverageRating(productId);
+        return RsData.of("200", "평균 별점 조회 성공", avgData);
+    }
+
+    // 별점 분포 그래프
+    @GetMapping("/rating-group/{productId}")
+    public RsData<Map<Integer, Long>> getRatingGroup(@PathVariable Long productId) {
+        Map<Integer, Long> data = reviewService.getRatingGroup(productId);
+        return RsData.of("200", "별점 분포 조회 성공", data);
+    }
+
 
 
     @GetMapping
@@ -143,7 +152,14 @@ public class ReviewController {
     public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
         SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
-        RsData<Review> deleteRs = reviewService.deleteReview(reviewId, currentUser.getId());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+
+        RsData<Review> deleteRs = reviewService.deleteReview(
+                reviewId,
+                currentUser.getId(),
+                role
+        );
 
         if (deleteRs.isFail()) {
             return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
