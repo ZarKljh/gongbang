@@ -31,6 +31,7 @@ public class ProductDto {
     private String seoDescription;
 
 
+
     //개발하다보니까 아래의 두 가지(생성자패턴, 정적팩토리패턴) 패턴을 모두 사용하게 되었음, 추후에 리팩토링 하면 좋음
     public ProductDto(Product product) {
         this.id = product.getId();

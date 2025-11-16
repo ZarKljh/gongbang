@@ -27,6 +27,9 @@ type Product = {
     images?: ProductImageDto[]
     avgRating?: string
     ratingCount?: string
+
+    likeCount: number
+    liked: boolean
 }
 
 type SubCategory = {
@@ -282,6 +285,33 @@ export default function Product() {
         submitFilter(extra)
     }, [selectedBtn, selectedCategoryId, selectedSubCategoryId, submitFilter])
 
+    const handleToggleLike = (productId: number) => {
+        api.post(`product/${productId}/like`)
+            .then((res) => {
+                console.log('like response:', res.data)
+
+                const { resultCode, msg, data } = res.data
+
+                if (resultCode !== '200') {
+                    alert(msg)
+                    return
+                }
+
+                const targetId = Number(data.productId)
+                const liked: boolean = data.liked
+                const likeCount: number = data.likeCount
+
+                setProducts((prev) => prev.map((p) => (p.id === targetId ? { ...p, liked, likeCount } : p)))
+            })
+            .catch((err) => {
+                if (err.response?.status === 401) {
+                    alert('로그인이 필요합니다.')
+                } else {
+                    console.error('좋아요 에러:', err)
+                }
+            })
+    }
+
     return (
         <div className={styles.pageFrame}>
             <div className={styles.grid}>
@@ -481,6 +511,16 @@ export default function Product() {
                                                 <span>
                                                     ⭐{p.avgRating}.0({p.ratingCount})
                                                 </span>
+                                                <button
+                                                    type="button"
+                                                    className={`${styles.likeBtn} ${p.liked ? styles.active : ''}`}
+                                                    onClick={(e) => {
+                                                        e.preventDefault() // 링크 이동 막기
+                                                        handleToggleLike(p.id)
+                                                    }}
+                                                >
+                                                    {p.liked ? '💗' : '🤍'} {p.likeCount}
+                                                </button>
                                             </footer>
                                         </article>
                                     </li>
