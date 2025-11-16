@@ -97,6 +97,6 @@ class GobangApplicationTests {
 			reviewRepository.save(review);
 		}
 
-		System.out.println("🎉 리뷰 20개 생성 완료!");
+		System.out.println("🎉 리뷰 생성 완료!");
 	}
 }
