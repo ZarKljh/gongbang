@@ -228,10 +228,10 @@ export default function SignupUser() {
                         />
                     </div>
                     <div className="form-group">
-                        <label className="form-label">닉네임</label>
+                        <label className="form-label required">닉네임</label>
                         <input
                             type="text"
-                            name="nickName required"
+                            name="nickName"
                             className="form-input"
                             value={formData.nickName}
                             onChange={handleChange}
