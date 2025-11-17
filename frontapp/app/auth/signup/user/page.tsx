@@ -1,7 +1,10 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { useRef } from 'react'
 import './signup_user.css'
+import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
+import ErrorMessage from '@/app/auth/common/errorMessage'
 
 export default function SignupUser() {
     const router = useRouter()
@@ -21,10 +24,58 @@ export default function SignupUser() {
     })
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
+    const { errors, validate } = signupUserValidation()
+
+    // 중복검사 결과 저장
+    const [userNameCheckMsg, setUserNameCheckMsg] = useState('')
+    const [nickNameCheckMsg, setNickNameCheckMsg] = useState('')
+    const [isUserNameValid, setIsUserNameValid] = useState(false)
+    const [isNickNameValid, setIsNickNameValid] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+    const checkUserName = async () => {
+        if (!formData.userName) {
+            setUserNameCheckMsg('아이디를 입력해주세요.')
+            return
+        }
+
+        const res = await fetch(
+            `http://localhost:8090/api/v1/auth/signup/user/checkusername?userName=${formData.userName}`,
+        )
+        const body = await res.json()
+
+        setUserNameCheckMsg(body.msg)
+        setIsUserNameValid(body.data === true)
+    }
+
+    const checkNickName = async () => {
+        if (!formData.nickName) {
+            setNickNameCheckMsg('닉네임을 입력해주세요.')
+            return
+        }
+
+        const res = await fetch(
+            `http://localhost:8090/api/v1/auth/signup/user/checknickname?nickName=${formData.nickName}`,
+        )
+        const body = await res.json()
+
+        setNickNameCheckMsg(body.msg)
+        setIsNickNameValid(body.data === true)
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
+
+        // 입력값 변경하면 중복검사 초기화
+        if (name === 'userName') {
+            setIsUserNameValid(false)
+            setUserNameCheckMsg('')
+        }
+        if (name === 'nickName') {
+            setIsNickNameValid(false)
+            setNickNameCheckMsg('')
+        }
     }
 
     const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,9 +91,35 @@ export default function SignupUser() {
         }))
     }
 
+    const handleRemoveImage = () => {
+        setPreviewProfileImage(null) // 미리보기 제거
+        setFormData((prev) => ({
+            ...prev,
+            profileImageUrl: '',
+            profileImageName: '',
+        }))
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
 
+        const isValid = validate(formData)
+        if (!isValid) {
+            return
+        }
+
+        if (!isUserNameValid) {
+            alert('아이디 중복확인을 해주세요.')
+            return
+        }
+
+        if (!isNickNameValid) {
+            alert('닉네임 중복확인을 해주세요.')
+            return
+        }
         //ToDo: 입력값validate 코드 작성
         /*
     const birthDateTime = formData.birth ? `${formData.birth}T00:00:00` : null;
@@ -77,7 +154,7 @@ export default function SignupUser() {
                 <h4 className="form-title">사용자 정보 입력</h4>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label className="form-label">ID</label>
+                        <label className="form-label required">ID</label>
                         <input
                             type="text"
                             name="userName"
@@ -86,9 +163,13 @@ export default function SignupUser() {
                             value={formData.userName}
                             placeholder="로그인에 사용되는 ID입니다"
                         />
+                        <button type="button" className="btn btn-secondary" onClick={checkUserName}>
+                            중복확인
+                        </button>
                     </div>
+                    <ErrorMessage message={userNameCheckMsg || errors.userName} success={isUserNameValid} />
                     <div className="form-group">
-                        <label className="form-label">패스워드</label>
+                        <label className="form-label required">패스워드</label>
                         <input
                             type="password"
                             name="password"
@@ -98,8 +179,9 @@ export default function SignupUser() {
                             placeholder="패스워드"
                         />
                     </div>
+                    <ErrorMessage message={errors.password} />
                     <div className="form-group">
-                        <label className="form-label">패스워드확인</label>
+                        <label className="form-label required">패스워드확인</label>
                         <input
                             type="password"
                             name="confirmPassword"
@@ -109,6 +191,7 @@ export default function SignupUser() {
                             placeholder="패스워드를 다시 입력해주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.confirmPassword} />
                     <div className="form-group">
                         <label className="form-label">성명</label>
                         <input
@@ -120,7 +203,8 @@ export default function SignupUser() {
                             placeholder="성명을 한글로 적어주세요"
                         />
                     </div>
-                    <div className="form-group">
+                    <ErrorMessage message={errors.fullName} />
+                    <div className="form-group required">
                         <label className="form-label">이메일</label>
                         <input
                             type="text"
@@ -131,6 +215,7 @@ export default function SignupUser() {
                             placeholder="소문자로입력해주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.email} />
                     <div className="form-group">
                         <label className="form-label">생년월일</label>
                         <input
@@ -143,7 +228,7 @@ export default function SignupUser() {
                         />
                     </div>
                     <div className="form-group">
-                        <label className="form-label">닉네임</label>
+                        <label className="form-label required">닉네임</label>
                         <input
                             type="text"
                             name="nickName"
@@ -152,9 +237,13 @@ export default function SignupUser() {
                             onChange={handleChange}
                             placeholder="50자이내로 적어주세요"
                         />
+                        <button type="button" className="btn btn-secondary" onClick={checkNickName}>
+                            중복확인
+                        </button>
                     </div>
+                    <ErrorMessage message={nickNameCheckMsg || errors.nickName} success={isNickNameValid} />
                     <div className="form-group">
-                        <label className="form-label">휴대전화</label>
+                        <label className="form-label required">휴대전화</label>
                         <input
                             type="text"
                             name="mobilePhone"
@@ -164,6 +253,7 @@ export default function SignupUser() {
                             placeholder="번호만적어주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.mobilePhone} />
                     <div className="form-group">
                         <label className="form-label">프로필 이미지</label>
                         <input
@@ -172,6 +262,7 @@ export default function SignupUser() {
                             className="form-input"
                             accept="image/*"
                             onChange={handleImagePreview}
+                            ref={fileInputRef}
                         />
                         {previewProfileImage && (
                             <div className="image-preview">
@@ -181,6 +272,10 @@ export default function SignupUser() {
                                     alt="프로필 이미지"
                                     style={{ maxWidth: '300px', marginTop: '10px' }}
                                 />
+                                {/* 삭제 버튼 */}
+                                <button type="button" className="remove-image-btn" onClick={handleRemoveImage}>
+                                    삭제
+                                </button>
                             </div>
                         )}
                     </div>

@@ -222,7 +222,7 @@ export default function StudioTab(props: StudioTabProps) {
                         <p>{studio.studioAddDetail}</p>
                     )}
                 </div>
-                <p>{/*JSON.stringify(studio)*/}</p>
+                <p>{JSON.stringify(studio)}</p>
             </div>
         </div>
     )

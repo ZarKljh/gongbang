@@ -2,6 +2,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import './login_user.css'
+import { loginUserValidation } from '@/app/auth/hooks/loginUserValidation'
+import ErrorMessage from '@/app/auth/common/errorMessage'
 
 export default function LoginUser() {
     const router = useRouter()
@@ -12,8 +14,16 @@ export default function LoginUser() {
         role: 'USER',
     })
 
+    const { errors, validate } = loginUserValidation()
+
     const handleSubmit = async (e) => {
         e.preventDefault()
+
+        //아이디와 password검증
+        const isValid = validate(user)
+        if (!isValid) {
+            return
+        }
 
         const response = await fetch(`http://localhost:8090/api/v1/auth/login/user`, {
             method: 'POST',
@@ -62,12 +72,12 @@ export default function LoginUser() {
                         <label className="form-label">아이디</label>
                         <input type="text" name="userName" className="form-input" onChange={handleChange}></input>
                     </div>
+                    <ErrorMessage message={errors.userName} />
                     <div className="form-group">
-                        <label className="form-label">
-                            패스워드
-                        </label>
+                        <label className="form-label">패스워드</label>
                         <input type="password" name="password" className="form-input" onChange={handleChange}></input>
                     </div>
+                    <ErrorMessage message={errors.password} />
                     <div className="button-group">
                         <input type="submit" value="로그인" className="btn btn-primary" />
                         {/* <button type="submit">등록</button> */}

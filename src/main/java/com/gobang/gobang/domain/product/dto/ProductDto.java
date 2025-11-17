@@ -31,6 +31,7 @@ public class ProductDto {
     private String seoDescription;
 
 
+
     //개발하다보니까 아래의 두 가지(생성자패턴, 정적팩토리패턴) 패턴을 모두 사용하게 되었음, 추후에 리팩토링 하면 좋음
     public ProductDto(Product product) {
         this.id = product.getId();
@@ -40,6 +41,10 @@ public class ProductDto {
         this.description = product.getDescription();
         this.basePrice = product.getBasePrice();
         this.status = product.getStatus();
+        this.seoTitle = product.getSeoTitle();
+        this.seoDescription = product.getSeoDescription();
+
+
     }
 
     //private String thumbnailUrl; // 썸네일 이미지 경로 (확장 필드) 여기서 안할거임.. 이미지 테이블 만들면 그쪽 dto에서 수정해봄

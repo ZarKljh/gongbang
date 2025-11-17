@@ -48,8 +48,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   FROM Product p
   WHERE p.active = TRUE
     AND p.subcategory.id = :subId
-    AND (:priceMin IS NULL OR p.basePrice >= :priceMin)
-    AND (:priceMax IS NULL OR p.basePrice <= :priceMax)
+    AND (:priceMin IS NULL OR p.basePrice <= :priceMin)
+    AND (:priceMax IS NULL OR p.basePrice >= :priceMax)
 
     AND (:style      IS NULL OR EXISTS (
           SELECT 1 FROM ProductAttr a
