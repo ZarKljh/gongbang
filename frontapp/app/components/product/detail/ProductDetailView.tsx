@@ -14,7 +14,24 @@ type ProductDetail = {
     description?: string
     basePrice: number
     stockQuantity: number
-    images?: string[]
+    //images?: string[]
+}
+
+type ProductImage = {
+    id: number
+    imageUrl: string
+    imageFileName?: string | null
+    refId: number
+    refType: 'PRODUCT'
+    sortOrder: number
+    createdDate: string
+    modifiedDate?: string | null
+}
+
+// ⭐ 실제 API 응답의 data 형태
+type ProductDetailApiResponse = {
+    productDetailList: ProductDetail
+    detailImage: ProductImage | null
 }
 
 // type Props = { 안쓸거임 쿼리스트링에서 읽는걸로 개발해버렸음
@@ -31,29 +48,30 @@ export default function ProductDetailView({}) {
 
     const [count, setCount] = useState(1)
 
-    const {
-        data: product,
-        isLoading,
-        isError,
-        error,
-    } = useQuery<ProductDetail>({
+    const { data, isLoading, isError, error } = useQuery<ProductDetailApiResponse>({
         queryKey: ['productDetail', productId],
         queryFn: async () => {
             const res = await api.get(`/product/${productId}/detail`)
-            return res.data.data.productDetailList as ProductDetail
+            // ✅ 백엔드의 data 전체 반환
+            console.log(res.data.data)
+            return res.data.data as ProductDetailApiResponse
         },
         enabled: !!productId,
         retry: 1,
         refetchOnWindowFocus: false,
     })
+    // 구조 분해
+    const product = data?.productDetailList
+    const detailImage = data?.detailImage
+    const imageUrl = detailImage
+        ? `http://localhost:8090${detailImage.imageUrl}`
+        : 'http://localhost:8090/uploads/products/no-image-soft.png' // 기본 이미지 경로
 
     const unitPrice = useMemo(() => product?.basePrice ?? 0, [product])
     const total = unitPrice * count
 
-    if (!productId) return null
     if (isLoading) return <p>로딩 중...</p>
-    if (isError || !product) {
-        console.error('❌ 상품 상세 요청 실패:', error)
+    if (isError) {
         return <p>상품 정보를 불러오지 못했습니다.</p>
     }
 
@@ -66,20 +84,20 @@ export default function ProductDetailView({}) {
                 {/* 좌: 이미지 */}
                 <section className={styles.imagePanel}>
                     <div className={styles.imageMain}>
-                        {product.images?.length ? <img src={product.images[0]} alt="대표 이미지" /> : '상품이미지'}
+                        <img src={imageUrl} alt={product?.name} />
                     </div>
                 </section>
 
                 {/* 우: 구매 패널 */}
                 <section className={styles.purchaseSection}>
-                    <h3 className={styles.productTitle}>{product.name}</h3>
+                    <h3 className={styles.productTitle}>{product?.name}</h3>
 
                     <div className={styles.productDesc}>
-                        <p>{product.description ?? '상품 설명이 없습니다.'}</p>
+                        <p>{product?.description ?? '상품 설명이 없습니다.'}</p>
                     </div>
 
                     <div className={styles.optionRow}>
-                        <span>상품 : {product.name}</span>
+                        <span>상품 : {product?.name}</span>
 
                         <div className={styles.quantityControl}>
                             <button className={styles.qtyBtn} onClick={dec}>
@@ -101,6 +119,24 @@ export default function ProductDetailView({}) {
                         </strong>
                         {/* 재고 표시가 필요하면: */}
                         {/* <em className={styles.stock}>재고 {product.stockQuantity}개</em> */}
+                    </div>
+
+                    <div className={styles.creatorBox}>
+                        <div className={styles.creatorLeft}>
+                            <img className={styles.creatorProfile} src="profile.jpg" alt="프로필 이미지" />
+                            <div className={styles.creatorInfo}>
+                                <div className={styles.creatorName}>라비움 LAVIUM</div>
+                                <div className={styles.creatorActions}>
+                                    <button className={styles.btnFollow}>+ 팔로우</button>
+                                    <button className={styles.btnHome}>작가홈</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="creator-right">
+                            <div className="follower-label">팔로워</div>
+                            <div className="follower-count">0</div>
+                        </div>
                     </div>
 
                     <div className={styles.buttonRow}>
