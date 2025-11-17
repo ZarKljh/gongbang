@@ -51,6 +51,10 @@ public class Orders {
     @Column(name = "exchange_reason")
     private String exchangeReason;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private PaymentMethod paymentMethod;
+
 
     @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     private List<Delivery> deliveries = new ArrayList<>();

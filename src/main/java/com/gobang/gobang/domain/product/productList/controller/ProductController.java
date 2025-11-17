@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.product.productList.controller;
 
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
+import com.gobang.gobang.domain.product.dto.response.ProductDetailResponse;
 import com.gobang.gobang.domain.product.dto.response.ProductResponse;
 import com.gobang.gobang.domain.product.productList.service.ProductService;
 import com.gobang.gobang.global.RsData.RsData;
@@ -28,13 +29,6 @@ public class ProductController {
     @GetMapping("/{subCategoryId}/search")
     @Operation(summary = "상품 다건 필터 조회")
     public RsData<FilterProductResponse> categoryFilterList(@PathVariable Long subCategoryId, @RequestParam(defaultValue = "20") int size, @RequestParam MultiValueMap<String, String> params) {
-        // 단일값
-//        String RADIOGroup = params.getFirst("RADIOGroup");
-//        String CHECKBOXGroup = params.getFirst("CHECKBOXGroup");
-//        System.out.printf("✅ RADIOGroup : %s%n", RADIOGroup);
-//        System.out.printf("✅ CHECKBOXGroup : %s%n", CHECKBOXGroup);
-
-//        List<String> colors = params.get("COLOR"); // 여러 값 → List<String>
 
         System.out.println("===== 📦 받은 필터 파라미터 =====");
         params.forEach((key, values) -> {
@@ -42,14 +36,18 @@ public class ProductController {
         });
         System.out.println("================================");
 
-
-        List<ProductDto> productFilterList = productService.getProductFilterList(subCategoryId, size, params);
-        return RsData.of("200", "상품 다건 조회 성공", new FilterProductResponse(productFilterList));
+        FilterProductResponse result = productService.getProductFilterList(subCategoryId, size, params);
+        return RsData.of("200", "상품 다건 조회 성공", result);
     }
 
 
 
-
+    @GetMapping("/{productId}/detail")
+    @Operation(summary = "상품 상세 조회")
+    public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
+        ProductDto productDetailList = productService.getProductDetail(productId);
+        return RsData.of("200", "상품 다건 조회 성공", new ProductDetailResponse(productDetailList));
+    }
 
 
 
