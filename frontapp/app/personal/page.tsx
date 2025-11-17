@@ -73,12 +73,7 @@ export default function MyPage() {
     const [openOrderId, setOpenOrderId] = useState(null)
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
-    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null)
     const [activeFilter, setActiveFilter] = useState('전체')
-    const [isCancelModal, setIsCancelModal] = useState(false)
-    const [isReturnModal, setIsReturnModal] = useState(false)
-    const [isExchangeModal, setIsExchangeModal] = useState(false)
-    const [actionReason, setActionReason] = useState('')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
 
     // 배송지
@@ -513,13 +508,13 @@ export default function MyPage() {
     }
 
     const handleDeleteOrder = (orderId: number) => {
-        if (!confirm("정말 삭제하시겠습니까?")) return;
+        if (!confirm("정말 삭제하시겠습니까?")) return
 
         axios.delete(`/api/orders/${orderId}`)
             .then(() => {
-                setFilteredOrders(prev => prev.filter(o => o.orderId !== orderId));
+                setFilteredOrders(prev => prev.filter(o => o.orderId !== orderId))
             })
-            .catch(err => console.error(err));
+            .catch(err => console.error(err))
     }
 
     // =============== 회원정보 ===============
@@ -560,14 +555,66 @@ export default function MyPage() {
         setTempData({ ...userData })
     }
 
+    // state 추가
+    const [errors, setErrors] = useState({
+    nickName: '',
+    newPassword: '',
+    confirmPassword: '',
+    email: '',
+    mobilePhone: '',
+    })
+
     const handleSave = async (section: string) => {
         if (!userData?.id) return
 
-        if (newPassword && newPassword !== confirmPassword) {
-            alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.')
-            return
+        const newErrors = { nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' }
+        let hasError = false
+
+        // 닉네임 검증
+        if (tempData.nickName?.trim()) {
+            const nicknameRegex = /^[a-zA-Z0-9가-힣ㄱ-ㅎ]{2,12}$/
+            if (!nicknameRegex.test(tempData.nickName)) {
+                newErrors.nickName = '닉네임은 2~12자, 특수문자 없이 입력해주세요.'
+                hasError = true
+            }
         }
 
+        // 새 비밀번호 검증
+        if (newPassword?.trim()) {
+            const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
+            if (!pwRegex.test(newPassword)) {
+                newErrors.newPassword = '비밀번호는 8자 이상, 영문과 숫자를 포함해야 합니다.'
+                hasError = true
+            }
+            if (newPassword !== confirmPassword) {
+                newErrors.confirmPassword = '비밀번호 확인이 일치하지 않습니다.'
+                hasError = true
+            }
+        }
+
+        // 이메일 검증
+        if (tempData.email?.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            if (!emailRegex.test(tempData.email)) {
+                newErrors.email = '올바른 이메일 형식을 입력해주세요.'
+                hasError = true
+            }
+        }
+
+        // 휴대폰 검증
+        if (tempData.mobilePhone?.trim()) {
+            const phoneRegex = /^010\d{7,8}$/
+            if (!phoneRegex.test(tempData.mobilePhone)) {
+                newErrors.mobilePhone = '휴대폰 번호 형식이 올바르지 않습니다.'
+                hasError = true
+            }
+        }
+
+        setErrors(newErrors)
+
+        if (hasError) return // 오류가 있으면 서버 호출 안함
+
+        // 서버 호출
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/me/${userData.id}`,
@@ -585,13 +632,10 @@ export default function MyPage() {
                 setEditMode({ ...editMode, [section]: false })
                 setNewPassword('')
                 setConfirmPassword('')
-                alert(data.msg || '정보가 수정되었습니다.')
-            } else {
-                alert(`수정에 실패했습니다: ${data.msg || '오류가 발생했습니다.'}`)
+                setErrors({ nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' })
             }
         } catch (error: any) {
             console.error('정보 수정 실패:', error.response?.data || error.message)
-            alert('수정에 실패했습니다.')
         }
     }
 
@@ -1246,8 +1290,8 @@ export default function MyPage() {
                                         <button
                                             className="link-btn delete"
                                             onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteOrder(order.orderId);
+                                                e.stopPropagation()
+                                                handleDeleteOrder(order.orderId)
                                             }}
                                         >
                                             삭제
@@ -1291,14 +1335,14 @@ export default function MyPage() {
                                     <p>해당 주문 내역이 없습니다.</p>
                                 ) : (
                                     filteredOrders.map((order) => {
-                                        const items = order.orderItems || [];
+                                        const items = order.orderItems || []
 
                                         // 최신 배송 상태
                                         const latestDelivery = order.deliveries
                                             ?.slice()
-                                            .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0];
+                                            .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0]
 
-                                        const status = latestDelivery?.deliveryStatus || order.deliveryStatus;
+                                        const status = latestDelivery?.deliveryStatus || order.deliveryStatus
 
                                         return (
                                             <div key={order.orderId} className="order-card">
@@ -1342,8 +1386,8 @@ export default function MyPage() {
                                                             <button
                                                                 className="link-btn delete"
                                                                 onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleDeleteOrder(order.orderId);
+                                                                    e.stopPropagation()
+                                                                    handleDeleteOrder(order.orderId)
                                                                 }}
                                                             >
                                                                 삭제
@@ -1458,12 +1502,15 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>닉네임</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="text"
-                                            value={tempData.nickName || ''}
-                                            onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="text"
+                                                value={tempData.nickName || ''}
+                                                onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
+                                                className="editable"
+                                            />
+                                            {errors.nickName && <p className="error-msg">{errors.nickName}</p>}
+                                        </div>
                                     ) : (
                                         <p>{userData.nickName}</p>
                                     )}
@@ -1472,39 +1519,48 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>비밀번호</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="password"
-                                            placeholder="새 비밀번호 입력"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="password"
+                                                placeholder="새 비밀번호 입력"
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                className="editable"
+                                            />
+                                            {errors.newPassword && <p className="error-msg">{errors.newPassword}</p>}
+                                        </div>
                                     ) : (
                                         <p>********</p>
                                     )}
                                 </div>
 
-                                {editMode.profile && (
-                                    <div className="form-group">
-                                        <label>비밀번호 확인</label>
-                                        <input
-                                            type="password"
-                                            placeholder="비밀번호 재입력"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                        />
-                                    </div>
-                                )}
+                                <div className="form-group">
+                                    <label>비밀번호 확인</label>
+                                    {editMode.profile && (
+                                        <div className='profile-input'>
+                                            <input
+                                                type="password"
+                                                placeholder="비밀번호 재입력"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                            />
+                                            {errors.confirmPassword && <p className="error-msg">{errors.confirmPassword}</p>}
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="form-group">
                                     <label>이메일</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="email"
-                                            value={tempData.email || ''}
-                                            onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="email"
+                                                value={tempData.email || ''}
+                                                onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
+                                                className="editable"
+                                            />
+                                            {errors.email && <p className="error-msg">{errors.email}</p>}
+                                        </div>
                                     ) : (
                                         <p>{userData.email}</p>
                                     )}
@@ -1513,12 +1569,15 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>휴대폰</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="tel"
-                                            value={tempData.mobilePhone || ''}
-                                            onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="tel"
+                                                value={tempData.mobilePhone || ''}
+                                                onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
+                                                className="editable"
+                                            />
+                                            {errors.mobilePhone && <p className="error-msg">{errors.mobilePhone}</p>}
+                                        </div>
                                     ) : (
                                         <p>{userData.mobilePhone}</p>
                                     )}
@@ -1822,7 +1881,6 @@ export default function MyPage() {
                             )}
                         </div>
                     )}
-
                 </div>
             </div>
 
