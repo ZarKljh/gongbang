@@ -1,0 +1,212 @@
+.page {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.main {
+    padding: 24px 28px;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.headerRow {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* 필터 */
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filterGroup {
+    display: grid;
+    gap: 6px;
+}
+
+.filterLabel {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.select {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 14px;
+}
+
+.searchBox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.searchInput {
+    height: 36px;
+    width: 220px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0 10px;
+    background: #fff;
+    font-size: 14px;
+}
+
+/* 공통 카드 */
+.card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+/* 테이블 */
+.tableWrapper {
+    overflow: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.table th,
+.table td {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 12px 10px;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table th {
+    font-weight: 600;
+    color: #334155;
+    background: #f8fafc;
+}
+
+/* 배지 */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.badgeActive {
+    border-color: #22c55e33;
+    background: #22c55e1a;
+    color: #16a34a;
+}
+
+.badgeSuspended {
+    border-color: #ef444433;
+    background: #ef44441a;
+    color: #b91c1c;
+}
+
+/* 버튼들 */
+.btn {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #f8fafc;
+}
+
+.btnPrimary {
+    background: #0f172a;
+    color: #fff;
+    border-color: #0f172a;
+}
+
+.btnPrimary:hover {
+    background: #111827;
+}
+
+.btnDanger {
+    background: #b91c1c;
+    color: #fff;
+    border-color: #b91c1c;
+}
+
+.btnDanger:hover {
+    background: #991b1b;
+}
+
+.btnGhost {
+    background: #fff;
+    color: #0f172a;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 비어있음/오류 */
+.empty {
+    text-align: center;
+    color: #64748b;
+    padding: 28px 0;
+}
+
+.error {
+    color: #b91c1c;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+/* 폴링 안내 */
+.pollInfo {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* 역할 셀 내부 */
+.roleCell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.roleText {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.roleSelect {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+}

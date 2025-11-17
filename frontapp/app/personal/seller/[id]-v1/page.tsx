@@ -15,6 +15,12 @@ export default function SellerPage() {
     const router = useRouter()
     const sellerId = params?.id
 
+    // 인증
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [passwordInput, setPasswordInput] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+
     //현재 로그인 사용자 정보
     //const currentUser = useCurrentUser()
     //도메인별 변수세팅
@@ -53,6 +59,11 @@ export default function SellerPage() {
     const [activeTab, setActiveTab] = useState('seller-profile')
     //현재 선택되어진 studio의 ID값
     const [selectedStudioId, setSelectedStudioId] = useState(null)
+
+    // UI 상태
+    const [loading, setLoading] = useState(true)
+    const [activeSubTab, setActiveSubTab] = useState('product')
+    const [editMode, setEditMode] = useState({})
 
     useEffect(() => {
         if (!sellerId) {
@@ -160,9 +171,7 @@ export default function SellerPage() {
                 studio={studio}
                 studioList={studioList}
                 activeTab={activeTab}
-                setActiveTab={setActiveTab}
                 selectedStudioId={selectedStudioId}
-                handleStudioSelect={handleStudioSelect}
                 handleTabClick={handleTabClick}
             />
             <SellerPageMainContent
@@ -171,6 +180,9 @@ export default function SellerPage() {
                 studio={studio}
                 productList={productList}
                 mainImage={mainImage}
+                isAuthenticated={isAuthenticated}
+                passwordInput={passwordInput}
+                setPasswordInput={setPasswordInput}
             />
         </div>
     )

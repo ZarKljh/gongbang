@@ -93,7 +93,7 @@ export default function AdminInquiriesPage() {
     }, [selected])
 
     const handleAckAll = async () => {
-        if (!confirm('모든 미처리 문의를 "처리 완료"로 표시할까요?')) return
+        if (!confirm('모든 대기중 문의를 "처리 완료"로 표시할까요?')) return
 
         try {
             setAckLoading(true)
@@ -163,7 +163,7 @@ export default function AdminInquiriesPage() {
 
                     <div className={styles.headerRight}>
                         <div className={styles.counterBox}>
-                            <span className={styles.counterLabel}>미처리 문의</span>
+                            <span className={styles.counterLabel}>대기중 문의</span>
                             <span className={styles.counterValue}>{totalUnread}건</span>
                         </div>
                         <button
@@ -193,7 +193,7 @@ export default function AdminInquiriesPage() {
                             checked={showOnlyUnread}
                             onChange={(e) => setShowOnlyUnread(e.target.checked)}
                         />
-                        미처리 문의만 보기
+                        대기중 문의만 보기
                     </label>
 
                     {error && <div className={styles.errorBox}>{error}</div>}
@@ -234,7 +234,7 @@ export default function AdminInquiriesPage() {
                                                         inq.answered ? styles.badgeAnswered : styles.badgePending
                                                     }
                                                 >
-                                                    {inq.answered ? '처리 완료' : '미처리'}
+                                                    {inq.answered ? 'RESOLVED' : 'PENDING'}
                                                 </span>
                                             </td>
                                             <td>{inq.type}</td>

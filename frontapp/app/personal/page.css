@@ -116,6 +116,8 @@ body {
 .auth-banner-input {
     display: flex;
     justify-content: space-between;
+    width: 100%;
+    max-width: 400px;
 }
 
 .auth-banner.success {
@@ -127,6 +129,7 @@ body {
     flex: 1;
     padding: 6px 12px;
     border: 1px solid #d1d5db;
+    min-width: 0;
 }
 
 .auth-banner button {
@@ -161,6 +164,12 @@ body {
     font-weight: normal;
     color: #9ca3af;
     border-bottom: 1px solid #374151;
+}
+
+.stats-table td:first-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .stats-table td {
@@ -252,6 +261,18 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
+.status-card p:first-child {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.status-card p:last-child {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+}
+
 .status-name {
     font-size: 14px;
     color: #6b7280;
@@ -270,9 +291,13 @@ body {
     margin-bottom: 16px;
     border-radius: 8px;
     background: #fff;
+    transition: box-shadow 0.2s;
 }
 
-/* 주문 헤더 (이미지 + 요약) */
+.order-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 .order-header {
     display: flex;
     flex-direction: column;
@@ -280,7 +305,6 @@ body {
     cursor: pointer;
 }
 
-/* 주문 제목 영역 (번호 + 상태) */
 .order-title {
     display: flex;
     justify-content: space-between;
@@ -301,13 +325,13 @@ body {
     border-radius: 12px;
     background: #f3f4f6;
     color: #374151;
-    text-transform: uppercase;
+    font-weight: 500;
 }
 
-/* 상품 이미지 영역 */
 .order-img {
     display: flex;
     gap: 8px;
+    margin-top: 4px;
 }
 
 .order-img img {
@@ -318,20 +342,18 @@ body {
     border: 1px solid #e5e7eb;
 }
 
-/* 아코디언 상세 영역 */
 .order-accordion {
     padding-top: 16px;
     border-top: 1px solid #f3f4f6;
 }
 
-/* 주문 상세 정보 */
 .order-info p {
     margin: 4px 0;
     font-size: 13px;
     color: #6b7280;
+    line-height: 1.8;
 }
 
-/* 주문 상품 내역 */
 .order-item {
     margin-bottom: 8px;
 }
@@ -349,7 +371,6 @@ body {
     color: #6b7280;
 }
 
-/* 아코디언 상품 내역 */
 .order-item {
     display: flex;
     align-items: center;
@@ -370,11 +391,11 @@ body {
     flex-direction: column;
 }
 
-/* 버튼 영역 */
 .order-actions {
     margin-top: 16px;
     display: flex;
     gap: 8px;
+    margin-top: 15px;
 }
 
 .order-actions .btn-primary {
@@ -392,7 +413,10 @@ body {
     background-color: #2563eb;
 }
 
-/* 아코디언 하단 금액 */
+.order-actions + .order-actions {
+    margin-top: 8px;
+}
+
 .order-footer {
     margin-top: 16px;
     padding-top: 16px;
@@ -407,12 +431,12 @@ body {
     font-size: 14px;
 }
 
-
 /* 폼 필드 */
 .form-group {
     display: flex;
     margin-bottom: 24px;
     max-width: 800px;
+    align-items: flex-start;
 }
 
 .form-group label {
@@ -420,6 +444,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     padding-top: 8px;
+    padding-top: 10px;
 }
 
 .form-group input,
@@ -454,10 +479,17 @@ body {
     margin-bottom: 16px;
 }
 
+.payment-card .card-header {
+    align-items: center;
+}
+
+.payment-card .card-content {
+    margin-top: 0;
+}
+
 .card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
     margin-bottom: 12px;
 }
 
@@ -477,6 +509,7 @@ body {
 .card-actions {
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .link-btn {
@@ -489,6 +522,10 @@ body {
 
 .link-btn.delete {
     color: #dc2626;
+}
+
+.link-btn:hover {
+    text-decoration: underline;
 }
 
 .card-content {
@@ -542,6 +579,12 @@ body {
 
 .wishlist-item {
     border: 1px solid #e5e7eb;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wishlist-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .wishlist-image {
@@ -563,7 +606,7 @@ body {
     margin-bottom: 8px;
 }
 
-/* 브랜드 팔로우 */
+/* 팔로우 */
 .brand-item {
     display: flex;
     justify-content: space-between;
@@ -626,12 +669,15 @@ body {
 .address-modal-content,
 .payment-modal-content,
 .orders-modal-content,
-.review-modal-content {
+.review-modal-content,
+.modal {
     background: #fff;
     padding: 20px;
     border-radius: 8px;
     width: 400px;
     position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 .address-modal-close,
@@ -654,6 +700,54 @@ body {
     color: #000;
 }
 
+.modal input[type="text"],
+.modal input[type="password"],
+.modal input[type="email"],
+.modal input[type="tel"],
+.modal select,
+.modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.modal textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.modal label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.modal label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
 /* 문의 */
 .qna-list {
   display: flex;
@@ -666,6 +760,11 @@ body {
   border-radius: 8px;
   padding: 16px;
   background-color: #fff;
+  transition: all 0.2s;
+}
+
+.qna-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .qna-header {
@@ -715,6 +814,28 @@ body {
   color: #666;
 }
 
+/* QNA 답변 영역 스타일 */
+.qna-answer {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.qna-answer h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #111827;
+}
+
+.qna-answer p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+}
+
 /* 리뷰 */
 .my-review-list {
   display: flex;
@@ -747,18 +868,29 @@ body {
 }
 
 .my-review-images {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-  overflow-x: auto;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.my-review-images::-webkit-scrollbar {
+    height: 6px;
+}
+
+.my-review-images::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
 }
 
 .my-review-images img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
 }
 
 .my-review-content {
@@ -839,24 +971,34 @@ body {
 /* 장바구니 상품 */
 .cart-product {
     border: 1px solid #e5e7eb;
-    /* border-radius: 12px; */
     padding: 16px 24px;
     display: flex;
-    justify-content: space-between;
-    gap: 8px;
+    align-items: center;
+    gap: 16px;
     transition: box-shadow 0.2s;
 }
 
+.cart-product:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 .cart-text {
-    flex-grow: 1;
-    height: 100%;
-    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+}
+
+.cart-text p {
+    margin: 0;
 }
 
 .cart-image {
-    height: 150px;
-    width: 150px;
+    width: 120px;
+    height: 120px;
     background: #f3f4f6;
+    flex-shrink: 0;
 }
 
 /* 상품 이름 */
@@ -883,5 +1025,100 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 0;
+}
+
+.quantity-control button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-control span {
+    min-width: 50px;
+    text-align: center;
+}
+
+/* 필터 선택 박스 스타일 */
+.filter-select-box {
+    margin-bottom: 20px;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #000;
+}
+
+/* 주문 관리 목록 스타일 */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 팔로우 리스트 스타일 개선 */
+.follow-list {
+    list-style: none;
+    padding: 0;
+}
+
+.follow-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.follow-card p {
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.follow-card button {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.follow-card button:hover {
+    background: #f9fafb;
+    border-color: #000;
+}
+
+/* 서브탭 콘텐츠 */
+.subtab-content {
+    margin-top: 20px;
+}
+
+/* 버튼 disabled 상태 */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button.btn-primary:disabled {
+    background: #9ca3af;
+}
+
+button.btn-primary:disabled:hover {
+    background: #9ca3af;
 }
