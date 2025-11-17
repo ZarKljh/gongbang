@@ -9,6 +9,7 @@ import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,9 +40,9 @@ class GobangApplicationTests {
         // 1) 기존 DB에 있는 일반 유저 불러오기
         //    예: ID 101~200 / 혹은 ROLE_USER 만 가져오면 됨
         // ------------------------------
-        List<SiteUser> users = siteUserRepository.findAll();
+//        List<SiteUser> users = siteUserRepository.findAll();
         // 또는 조건 사용:
-        // List<SiteUser> users = siteUserRepository.findByRole(RoleType.USER);
+         List<SiteUser> users = siteUserRepository.findByRole(RoleType.USER);
 
         if (users.size() < 40) {
             throw new RuntimeException("리뷰 생성에 필요한 유저가 40명 이상 존재해야 합니다.");
@@ -102,6 +103,7 @@ class GobangApplicationTests {
                         .viewCount(viewCount)
                         .createdBy(writer.getNickName())
                         .createdDate(LocalDateTime.now())
+                        .modifiedDate(LocalDateTime.now())
                         .isActive(true)
                         .build();
 

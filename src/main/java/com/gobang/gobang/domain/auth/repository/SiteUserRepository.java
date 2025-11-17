@@ -43,4 +43,6 @@ public interface SiteUserRepository extends JpaRepository<SiteUser, Long> {
             Pageable pageable
     );
 
+    // 리뷰 테스트 데이터용
+    List<SiteUser> findByRole(RoleType roleType);
 }

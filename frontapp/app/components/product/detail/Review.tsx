@@ -35,9 +35,7 @@ export default function detail() {
     const [swiperRef, setSwiperRef] = useState<any>(null)
 
     // 포토 리뷰 가져오기
-    const [photoReviews, setPhotoReviews] = useState<
-        { id: number; img: string; title: string }[]
-    >([])
+    const [photoReviews, setPhotoReviews] = useState<{ id: number; img: string; title: string }[]>([])
 
     // 상품Id 기준 리뷰 가져오기
     const searchParams = useSearchParams()
@@ -166,26 +164,24 @@ export default function detail() {
     //     }
     // }, [reviews])
     const fetchPhotoReviews = async (productId) => {
-    try {
-        const res = await fetch(
-            `http://localhost:8090/api/v1/reviews/photo?productId=${productId}`
-        )
+        try {
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/photo?productId=${productId}`)
 
-        const data = await res.json()
+            const data = await res.json()
 
-        if (res.ok) {
-            const pr = data.data.map((r) => ({
-                id: r.reviewId,
-                img: `http://localhost:8090${r.imageUrl}`, // 백엔드 필드명 맞춰
-                title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
-            }))
+            if (res.ok) {
+                const pr = data.data.map((r) => ({
+                    id: r.reviewId,
+                    img: `http://localhost:8090${r.imageUrl}`, // 백엔드 필드명 맞춰
+                    title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
+                }))
 
-            setPhotoReviews(pr)
+                setPhotoReviews(pr)
+            }
+        } catch (e) {
+            console.error('전체 포토 리뷰 조회 실패', e)
         }
-    } catch (e) {
-        console.error('전체 포토 리뷰 조회 실패', e)
     }
-}
 
     // 포토 슬라이드 swiper 준비 된 후 네비게이션 연결
     useEffect(() => {
@@ -200,9 +196,9 @@ export default function detail() {
     }, [swiperRef])
 
     useEffect(() => {
-    if (!productId) return
-    fetchPhotoReviews(productId) // 전체 포토 리뷰 불러오기
-}, [productId])
+        if (!productId) return
+        fetchPhotoReviews(productId) // 전체 포토 리뷰 불러오기
+    }, [productId])
 
     // 평균 별점
     useEffect(() => {
@@ -397,17 +393,14 @@ export default function detail() {
         }
 
         try {
-            const res = await fetch(
-                `http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`,
-                {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        review_comment: reviewComment,
-                    }),
-                },
-            )
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    review_comment: reviewComment,
+                }),
+            })
 
             if (res.ok) {
                 alert('댓글이 수정되었습니다.')
@@ -430,13 +423,10 @@ export default function detail() {
         if (!confirm('정말 댓글을 삭제하시겠습니까?')) return
 
         try {
-            const res = await fetch(
-                `http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`,
-                {
-                    method: 'DELETE',
-                    credentials: 'include',
-                },
-            )
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            })
 
             const data = await res.json()
             if (res.ok) {
@@ -504,13 +494,12 @@ export default function detail() {
                 >
                     {/* 🎨 상단 배너 */}
                     <div className="review-banner">
-                        배너 들어갈 자리 (현재 200px) - 나중에 900px로 조정(안 할수도)
-                        <br />
-                        리뷰 이미지를 추가하고 리뷰 작성 유도 문구 삽입
+                        <h2>생생한 리뷰를 기다리고 있어요!</h2>
+                        <p>사진과 함께 리뷰를 남겨주시면 다른 분들께 큰 도움이 됩니다</p>
                     </div>
 
                     {/* 제목 + 버튼 */}
-                    <div className="review-title">
+                    <div className="review-list-title">
                         <h2>리뷰 목록</h2>
                         {roleType === 'USER' && (
                             <button className="review-write-btn" onClick={handleCreateClick}>
@@ -540,10 +529,7 @@ export default function detail() {
                         >
                             {photoReviews.map((r) => (
                                 <SwiperSlide key={r.id}>
-                                    <div
-                                        className="photoCard"
-                                        onClick={() => router.push(`/review/${r.id}`)}
-                                    >
+                                    <div className="photoCard" onClick={() => router.push(`/review/${r.id}`)}>
                                         <img src={r.img} alt={r.title} />
                                         <p>{r.title}</p>
                                     </div>
@@ -559,11 +545,12 @@ export default function detail() {
                             <ChevronRight size={26} strokeWidth={2.5} />
                         </div>
                     </section>
-                    <hr />
+                    
 
                     {/* 📜 리뷰 목록 */}
                     <div ref={reviewTopRef} aria-hidden>
-                        <h3>리뷰</h3>
+                          <hr style={{marginBottom: '20px'}}/>
+                        <h3  className="review-title">리뷰</h3>
                     </div>
 
                     {/* 평균 별점 */}
@@ -593,10 +580,7 @@ export default function detail() {
                                     <div className="review-graph-row" key={label}>
                                         <span className="review-graph-label">{label}</span>
                                         <div className="review-graph-bar-bg">
-                                            <div
-                                                className="review-graph-bar-fill"
-                                                style={{ width: `${percent}%` }}
-                                            />
+                                            <div className="review-graph-bar-fill" style={{ width: `${percent}%` }} />
                                         </div>
                                         <span className="review-graph-percent">{percent}%</span>
                                     </div>
@@ -661,11 +645,7 @@ export default function detail() {
                                                     <FaStar
                                                         key={num}
                                                         size={22}
-                                                        color={
-                                                            num <= review.rating
-                                                                ? '#FFD700'
-                                                                : '#E0E0E0'
-                                                        }
+                                                        color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
                                                         style={{ marginRight: '3px' }}
                                                     />
                                                 ))}
@@ -680,26 +660,17 @@ export default function detail() {
                                                     onClick={() => handleLikeClick(review.reviewId)}
                                                 >
                                                     {liked[review.reviewId] ? (
-                                                        <FaThumbsUp
-                                                            style={{ marginRight: '6px' }}
-                                                        />
+                                                        <FaThumbsUp style={{ marginRight: '6px' }} />
                                                     ) : (
-                                                        <FaRegThumbsUp
-                                                            style={{ marginRight: '6px' }}
-                                                        />
+                                                        <FaRegThumbsUp style={{ marginRight: '6px' }} />
                                                     )}
-                                                    도움돼요{' '}
-                                                    {likeCounts[review.reviewId] ??
-                                                        review.reviewLike}
+                                                    도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
-                                                {(Number(currentUserId) ===
-                                                    Number(review.userId) ||
+                                                {(Number(currentUserId) === Number(review.userId) ||
                                                     roleType === 'ADMIN') && (
                                                     <button
                                                         className="review-delete-btn"
-                                                        onClick={() =>
-                                                            handleDeleteClick(review.reviewId)
-                                                        }
+                                                        onClick={() => handleDeleteClick(review.reviewId)}
                                                     >
                                                         삭제
                                                     </button>
@@ -711,13 +682,9 @@ export default function detail() {
                                         <h4 className="review-content-title">📃 리뷰 내용</h4>
                                         <div
                                             className="review-content-box"
-                                            onClick={() =>
-                                                (window.location.href = `/review/${review.reviewId}`)
-                                            }
+                                            onClick={() => (window.location.href = `/review/${review.reviewId}`)}
                                         >
-                                            <p className="review-content-text">
-                                                {review.content}
-                                            </p>
+                                            <p className="review-content-text">{review.content}</p>
                                             {review.imageUrls && review.imageUrls.length > 0 && (
                                                 <img
                                                     src={`http://localhost:8090${review.imageUrls[0]}`}
@@ -744,8 +711,7 @@ export default function detail() {
                                                             className="review-comment-edit-btn"
                                                             onClick={() =>
                                                                 setActiveCommentBox(
-                                                                    activeCommentBox ===
-                                                                    `edit-${review.reviewId}`
+                                                                    activeCommentBox === `edit-${review.reviewId}`
                                                                         ? null
                                                                         : `edit-${review.reviewId}`,
                                                                 )
@@ -759,8 +725,7 @@ export default function detail() {
                                                             onClick={() =>
                                                                 handleCommentDelete(
                                                                     review.reviewId,
-                                                                    comments[review.reviewId]
-                                                                        ?.commentId,
+                                                                    comments[review.reviewId]?.commentId,
                                                                 )
                                                             }
                                                         >
@@ -768,16 +733,13 @@ export default function detail() {
                                                         </button>
 
                                                         {isLoggedIn &&
-                                                            activeCommentBox ===
-                                                                `edit-${review.reviewId}` && (
+                                                            activeCommentBox === `edit-${review.reviewId}` && (
                                                                 <div className="review-comment-editbox">
                                                                     <textarea
                                                                         placeholder="수정할 댓글 내용을 입력하세요."
                                                                         value={reviewComment}
                                                                         onChange={(e) =>
-                                                                            setReviewComment(
-                                                                                e.target.value,
-                                                                            )
+                                                                            setReviewComment(e.target.value)
                                                                         }
                                                                         className="review-comment-textarea"
                                                                     />
@@ -785,9 +747,7 @@ export default function detail() {
                                                                         onClick={() =>
                                                                             handleCommentEdit(
                                                                                 review.reviewId,
-                                                                                comments[
-                                                                                    review.reviewId
-                                                                                ]?.commentId,
+                                                                                comments[review.reviewId]?.commentId,
                                                                             )
                                                                         }
                                                                         className="review-comment-save-btn"
@@ -803,8 +763,7 @@ export default function detail() {
                                                             className="review-comment-add-btn"
                                                             onClick={() =>
                                                                 setActiveCommentBox(
-                                                                    activeCommentBox ===
-                                                                        review.reviewId
+                                                                    activeCommentBox === review.reviewId
                                                                         ? null
                                                                         : review.reviewId,
                                                                 )
@@ -813,33 +772,23 @@ export default function detail() {
                                                             💬 댓글 달기
                                                         </button>
 
-                                                        {isLoggedIn &&
-                                                            activeCommentBox ===
-                                                                review.reviewId && (
-                                                                <div className="review-comment-addbox">
-                                                                    <textarea
-                                                                        placeholder="댓글을 입력하세요."
-                                                                        maxLength={200}
-                                                                        value={reviewComment}
-                                                                        onChange={(e) =>
-                                                                            setReviewComment(
-                                                                                e.target.value,
-                                                                            )
-                                                                        }
-                                                                        className="review-comment-textarea"
-                                                                    />
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            handleCommentSubmit(
-                                                                                review.reviewId,
-                                                                            )
-                                                                        }
-                                                                        className="review-comment-save-btn"
-                                                                    >
-                                                                        댓글 등록
-                                                                    </button>
-                                                                </div>
-                                                            )}
+                                                        {isLoggedIn && activeCommentBox === review.reviewId && (
+                                                            <div className="review-comment-addbox">
+                                                                <textarea
+                                                                    placeholder="댓글을 입력하세요."
+                                                                    maxLength={200}
+                                                                    value={reviewComment}
+                                                                    onChange={(e) => setReviewComment(e.target.value)}
+                                                                    className="review-comment-textarea"
+                                                                />
+                                                                <button
+                                                                    onClick={() => handleCommentSubmit(review.reviewId)}
+                                                                    className="review-comment-save-btn"
+                                                                >
+                                                                    댓글 등록
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </>
                                                 )}
                                                 <hr className="review-divider" />
@@ -864,9 +813,7 @@ export default function detail() {
                         {[...Array(totalPages)].map((_, index) => (
                             <button
                                 key={index}
-                                className={`pagination-btn page-number ${
-                                    currentPage === index ? 'active' : ''
-                                }`}
+                                className={`pagination-btn page-number ${currentPage === index ? 'active' : ''}`}
                                 onClick={() => handlePageChange(index)}
                             >
                                 {index + 1}
