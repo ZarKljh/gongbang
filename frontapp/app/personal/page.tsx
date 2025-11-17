@@ -1935,7 +1935,7 @@ export default function MyPage() {
 
             {/* 배송지 추가 모달 */}
             {isAddressModal && (
-                <div key={editAddressData.userAddressId} className="address-modal" onClick={() => setIsAddressModal(false)}>
+                <div key="new-user-address" className="address-modal" onClick={() => setIsAddressModal(false)}>
                     <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="address-modal-close" onClick={() => setIsAddressModal(false)}>
                             X
@@ -1977,6 +1977,7 @@ export default function MyPage() {
                             id="sample6_extraAddress"
                             placeholder="참고항목"
                             value={newAddress.extraAddress}
+                            onChange={(e) =>setEditAddressData({ ...newAddress, detailAddress: e.target.value })}
                         />
                         <input
                             type="text"
@@ -2076,7 +2077,7 @@ export default function MyPage() {
                             X
                         </button>
 
-                        <h2>새 결제수단 추가</h2>
+                        <h2>새 결제수단 추가</h2> <br />
 
                         <form
                             onSubmit={async (e) => {
@@ -2085,9 +2086,9 @@ export default function MyPage() {
                             }}
                             className="space-y-4"
                         >
-                            <div>
+                            <div className='pament-w'>
                                 <label>결제수단 종류</label>
-                                <select value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
+                                <select className='payment-type' value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
                                     <option value="BANK">은행 계좌</option>
                                     <option value="CARD">신용/체크카드</option>
                                 </select>
@@ -2095,7 +2096,7 @@ export default function MyPage() {
 
                             {paymentType === 'BANK' && (
                                 <>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>은행명</label>
                                         <input
                                             type="text"
@@ -2104,7 +2105,7 @@ export default function MyPage() {
                                             placeholder="예: 신한은행"
                                         />
                                     </div>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>계좌번호</label>
                                         <input
                                             type="text"
@@ -2118,7 +2119,7 @@ export default function MyPage() {
 
                             {paymentType === 'CARD' && (
                                 <>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>카드사</label>
                                         <input
                                             type="text"
@@ -2127,7 +2128,7 @@ export default function MyPage() {
                                             placeholder="예: 현대카드"
                                         />
                                     </div>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>카드번호</label>
                                         <input
                                             type="text"
@@ -2145,7 +2146,7 @@ export default function MyPage() {
                                     checked={defaultPayment}
                                     onChange={(e) => setDefaultPayment(e.target.checked)}
                                 />
-                                <span>기본 결제수단으로 설정</span>
+                                <span> 기본 결제수단으로 설정</span>
                             </div>
 
                             <div className="modal-buttons">
