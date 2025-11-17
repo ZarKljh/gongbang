@@ -2,6 +2,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import './signup_user.css'
+import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
+import ErrorMessage from '@/app/auth/common/errorMessage'
 
 export default function SignupUser() {
     const router = useRouter()
@@ -21,6 +23,7 @@ export default function SignupUser() {
     })
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
+    const { errors, validate } = signupUserValidation()
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -40,9 +43,22 @@ export default function SignupUser() {
         }))
     }
 
+    const handleRemoveImage = () => {
+        setPreviewProfileImage(null) // 미리보기 제거
+        setFormData((prev) => ({
+            ...prev,
+            profileImageUrl: '',
+            profileImageName: '',
+        }))
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
 
+        const isValid = validate(formData)
+        if (!isValid) {
+            return
+        }
         //ToDo: 입력값validate 코드 작성
         /*
     const birthDateTime = formData.birth ? `${formData.birth}T00:00:00` : null;
@@ -87,6 +103,7 @@ export default function SignupUser() {
                             placeholder="로그인에 사용되는 ID입니다"
                         />
                     </div>
+                    <ErrorMessage message={errors.userName} />
                     <div className="form-group">
                         <label className="form-label">패스워드</label>
                         <input
@@ -98,6 +115,7 @@ export default function SignupUser() {
                             placeholder="패스워드"
                         />
                     </div>
+                    <ErrorMessage message={errors.password} />
                     <div className="form-group">
                         <label className="form-label">패스워드확인</label>
                         <input
@@ -109,6 +127,7 @@ export default function SignupUser() {
                             placeholder="패스워드를 다시 입력해주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.confirmPassword} />
                     <div className="form-group">
                         <label className="form-label">성명</label>
                         <input
@@ -120,6 +139,7 @@ export default function SignupUser() {
                             placeholder="성명을 한글로 적어주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.fullName} />
                     <div className="form-group">
                         <label className="form-label">이메일</label>
                         <input
@@ -131,6 +151,7 @@ export default function SignupUser() {
                             placeholder="소문자로입력해주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.email} />
                     <div className="form-group">
                         <label className="form-label">생년월일</label>
                         <input
@@ -153,6 +174,7 @@ export default function SignupUser() {
                             placeholder="50자이내로 적어주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.nickName} />
                     <div className="form-group">
                         <label className="form-label">휴대전화</label>
                         <input
@@ -164,6 +186,7 @@ export default function SignupUser() {
                             placeholder="번호만적어주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.mobilePhone} />
                     <div className="form-group">
                         <label className="form-label">프로필 이미지</label>
                         <input
@@ -181,6 +204,10 @@ export default function SignupUser() {
                                     alt="프로필 이미지"
                                     style={{ maxWidth: '300px', marginTop: '10px' }}
                                 />
+                                {/* 삭제 버튼 */}
+                                <button type="button" className="remove-image-btn" onClick={handleRemoveImage}>
+                                    삭제
+                                </button>
                             </div>
                         )}
                     </div>

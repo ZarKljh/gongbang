@@ -7,6 +7,7 @@ interface Props {
     studioInfo: StudioInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onSubmit: () => void
+    onPrev: () => void
     setStudioInfo: React.Dispatch<React.SetStateAction<StudioInfo>>
     previewMainImage: string | null
     previewLogoImage: string | null
@@ -23,6 +24,7 @@ export default function StudioForm({
     studioInfo,
     onChange,
     onSubmit,
+    onPrev,
     setStudioInfo,
     previewMainImage,
     previewLogoImage,
@@ -256,6 +258,9 @@ export default function StudioForm({
                 )}
             </div>
             <div className="button-group">
+                <button className="btn btn-primary" type="button" onClick={onPrev}>
+                    이전 단계
+                </button>
                 <button className="btn btn-primary" type="button" onClick={onSubmit}>
                     회원가입 완료
                 </button>

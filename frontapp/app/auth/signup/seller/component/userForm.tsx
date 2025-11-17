@@ -1,16 +1,46 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { UserInfo } from '../types'
 import './signup_seller_component.css'
+import ErrorMessage from '@/app/auth/common/errorMessage'
 
 interface Props {
     userInfo: UserInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
     onNext: () => void
-    onImagePreview: (e: React.ChangeEvent<HTMLInputElement>) => void // 🔥 추가
-    previewProfileImage: string | null // 🔥 추가
+    onImagePreview: (e: React.ChangeEvent<HTMLInputElement>) => void //
+    previewProfileImage: string | null //
+    setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>
+    setPreviewProfileImage: React.Dispatch<React.SetStateAction<string | null>>
+    errors: any
 }
 
-export default function UserForm({ userInfo, onChange, onNext, onImagePreview, previewProfileImage }: Props) {
+export default function UserForm({
+    userInfo,
+    onChange,
+    onNext,
+    onImagePreview,
+    previewProfileImage,
+    setUserInfo,
+    setPreviewProfileImage,
+    errors,
+}: Props) {
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
+    const handleRemoveProfileImage = () => {
+        setUserInfo((prev) => ({
+            ...prev,
+            profileImageUrl: '',
+            profileImageName: '',
+        }))
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
+        setPreviewProfileImage(null)
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
+    }
+
     return (
         <div className="form-container">
             <h4 className="form-title">사용자 정보 입력</h4>
@@ -25,6 +55,7 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                     placeholder="로그인에 필요한 ID입니다"
                 />
             </div>
+            <ErrorMessage message={errors.userName} />
             <div className="form-group">
                 <label className="form-label">패스워드</label>
                 <input
@@ -36,6 +67,7 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                     placeholder="패스워드"
                 />
             </div>
+            <ErrorMessage message={errors.password} />
             <div className="form-group">
                 <label className="form-label">패스워드확인</label>
                 <input
@@ -47,6 +79,7 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                     placeholder="패스워드를 다시 입력해주세요"
                 />
             </div>
+            <ErrorMessage message={errors.confirmPassword} />
             <div className="form-group">
                 <label className="form-label">성명</label>
                 <input
@@ -69,6 +102,7 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                     placeholder="소문자로입력해주세요"
                 />
             </div>
+            <ErrorMessage message={errors.email} />
             <div className="form-group">
                 <label className="form-label">생년월일</label>
                 <input
@@ -91,6 +125,7 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                     placeholder="50자이내로 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.nickName} />
             <div className="form-group">
                 <label className="form-label">휴대전화</label>
                 <input
@@ -102,10 +137,12 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                     placeholder="번호만적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.mobilePhone} />
             {/* 🔥 프로필 이미지 업로드 */}
             <div className="form-group">
                 <label className="form-label">프로필 이미지</label>
                 <input
+                    ref={fileInputRef}
                     type="file"
                     name="profileImage"
                     accept="image/*"
@@ -122,6 +159,14 @@ export default function UserForm({ userInfo, onChange, onNext, onImagePreview, p
                         alt="프로필 미리보기"
                         style={{ maxWidth: '200px', marginTop: '10px', borderRadius: '6px' }}
                     />
+                    <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={handleRemoveProfileImage}
+                        style={{ marginTop: '10px' }}
+                    >
+                        프로필 이미지 삭제
+                    </button>
                 </div>
             )}
             <div className="button-group"></div>

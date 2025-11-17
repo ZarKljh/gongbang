@@ -202,6 +202,16 @@ public class SiteUserService {
         }
     }
 
+    public boolean existsByNickName(String nickName) {
+        Optional os = siteUserRepository.findByNickName(nickName);
+        if ( os.isPresent() ) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
 
     @AllArgsConstructor
     @Getter
