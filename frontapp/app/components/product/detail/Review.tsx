@@ -446,8 +446,14 @@ export default function detail() {
                 return
             }
 
+            const token = localStorage.getItem("accessToken") // 관리자 토콘 가져오기
+
             const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
                 method: 'DELETE',
+                 headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
                 credentials: 'include',
             })
 
