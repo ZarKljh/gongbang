@@ -33,6 +33,9 @@ public class QnaService {
         List<Inquiry> inquiries = inquiryRepository.findAllByWriter(user);
         List<QnaResponse> safeList = new ArrayList<>();
 
+        System.out.println("userId = " + userId);
+        System.out.println("조회된 문의 수 = " + (inquiries != null ? inquiries.size() : "null"));
+
         for (Inquiry inquiry : inquiries) {
             try {
                 safeList.add(QnaResponse.from(inquiry));
