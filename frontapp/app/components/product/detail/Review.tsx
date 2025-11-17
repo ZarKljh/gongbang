@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { FaRegThumbsUp, FaStar, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa'
+import { FaThumbsUp, FaRegThumbsUp, FaStar, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Pagination, Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -14,9 +14,12 @@ export default function detail() {
     const [reviews, setReviews] = useState([])
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [activeCommentBox, setActiveCommentBox] = useState(null)
-    const [reviewComment, setReviewComment] = useState('') // ✅ null → ''
+    const [reviewComment, setReviewComment] = useState('') // null → ''
     const [comments, setComments] = useState({})
+    // 리뷰 좋아요
     const [likeCounts, setLikeCounts] = useState({})
+    const [liked, setLiked] = useState({}) // 좋아요 눌린 상태 체크용
+
     const [avgRating, setAvgRating] = useState(0)
     const [totalCount, setTotalCount] = useState(0)
     const [totalPages, setTotalpages] = useState(0)
@@ -92,10 +95,9 @@ export default function detail() {
         }
 
         init()
-    }, [productId, currentPage, sortType]) // ✅ 페이지·정렬 바뀔 때만 다시 실행
+    }, [productId, currentPage, sortType]) // 페이지, 정렬 바뀔 때만 다시 실행
 
-    // 페이지 버튼 클릭 시에 호출(상단 이동)
-
+    // 페이지 버튼 클릭 시 상단 이동)
     const scrollToTop = () => {
         reviewTopRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
@@ -193,8 +195,6 @@ export default function detail() {
 
     const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
 
-
-
     // 평균 별점
     useEffect(() => {
         if (!productId) return // productId가 있을 때 실행
@@ -216,7 +216,7 @@ export default function detail() {
 
     // ✅ 임시 평점 통계 데이터 (추후 연동)
     // const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
-    
+
     // 별점 그래프
     useEffect(() => {
         if (!productId) return
@@ -296,20 +296,6 @@ export default function detail() {
                 method: 'POST',
                 credentials: 'include',
             })
-            // const data = await res.json()
-
-            //     if (res.ok) {
-            //         // 리뷰별 카운트만 업데이트
-            //         setLikeCounts((prev) => ({
-            //             ...prev,
-            //             [reviewId]: (prev[reviewId] ?? 0) + (data.msg.includes('등록') ? 1 : -1),
-            //         }))
-            //     } else {
-            //         alert(data.msg)
-            //     }
-            // } catch (err) {
-            //     console.error('좋아요 요청 실패:', err)
-            // }
 
             if (!isLoggedIn) {
                 if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
@@ -317,27 +303,45 @@ export default function detail() {
                 }
             }
 
-            // 요청 실패 시 (서버 오류 등)
-            if (!res.ok) {
-                console.error('좋아요 요청 실패:', res.status)
-                return
-            }
+            // 요청 실패 시 (서버 오류등)
+            // if (!res.ok) {
+            //     console.error('좋아요 요청 실패:', res.status)
+            //     return
+            // }
 
             const data = await res.json()
 
-            // 서버에서 메시지 보고 판단
-            if (data.msg.includes('등록')) {
-                // 좋아요 추가
+            // 요청 실패 시 (서버 오류등)
+            if (!data || !data.msg) {
+                console.error('좋아요 요청 실패:', data)
+                return
+            }
+
+            // 좋아요 추가 201
+            if (data.resultCode === '201') {
                 setLikeCounts((prev) => ({
                     ...prev,
                     [reviewId]: (prev[reviewId] ?? 0) + 1,
                 }))
-            } else if (data.msg.includes('취소')) {
-                // 좋아요 취소
+                setLiked((prev) => ({
+                    ...prev,
+                    [reviewId]: true,
+                }))
+            }
+
+            // 좋아요 취소 202
+            else if (data.resultCode === '202') {
                 setLikeCounts((prev) => ({
                     ...prev,
-                    [reviewId]: Math.max(0, (prev[reviewId] ?? 1) - 1), // 음수 방지
+                    [reviewId]: Math.max(0, (prev[reviewId] ?? 1) - 1),
                 }))
+                setLiked((prev) => ({
+                    ...prev,
+                    [reviewId]: false,
+                }))
+
+                const id = Number(reviewId)
+ 
             }
         } catch (err) {
             console.error('좋아요 요청 실패:', err)
@@ -433,7 +437,6 @@ export default function detail() {
         }
     }
 
-    // 로그인 했을 때 userId와 맞는 리뷰에만 나타나게 수정해야함.
     const handleDeleteClick = async (reviewId: number) => {
         try {
             if (!isLoggedIn) {
@@ -654,24 +657,28 @@ export default function detail() {
 
                                             {/* 좋아요 / 삭제 버튼 */}
                                             <div className="review-actions">
-                                                {/* {(roleType === 'USER' || roleType === 'SELLER') && ( */}
+                                                <button
+                                                    className={`review-like-btn ${
+                                                        liked[Number(review.reviewId)] ? 'liked' : ''
+                                                    }`}
+                                                    onClick={() => handleLikeClick(review.reviewId)}
+                                                >
+                                                  {liked[review.reviewId] ? (
+        <FaThumbsUp style={{ marginRight: '6px' }} />
+    ) : (
+        <FaRegThumbsUp style={{ marginRight: '6px' }} />
+    )}
+    도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
+</button>
+                                                {(Number(currentUserId) === Number(review.userId) ||
+                                                    roleType === 'ADMIN') && (
                                                     <button
-                                                        className="review-like-btn"
-                                                        onClick={() => handleLikeClick(review.reviewId)}
+                                                        className="review-delete-btn"
+                                                        onClick={() => handleDeleteClick(review.reviewId)}
                                                     >
-                                                        <FaRegThumbsUp />
-                                                        도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
+                                                        삭제
                                                     </button>
-                                                {/* )} */}
-                                                {Number(currentUserId) === Number(review.userId) ||
-                                                    (roleType === 'ADMIN' && (
-                                                        <button
-                                                            className="review-delete-btn"
-                                                            onClick={() => handleDeleteClick(review.reviewId)}
-                                                        >
-                                                            삭제
-                                                        </button>
-                                                    ))}
+                                                )}
                                             </div>
                                         </div>
 

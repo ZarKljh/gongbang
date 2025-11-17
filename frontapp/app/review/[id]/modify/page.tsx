@@ -49,21 +49,57 @@ export default function ReviewModify() {
             return
         }
 
-        const readers = files.map(
-            (file) =>
-                new Promise((resolve) => {
-                    const reader = new FileReader()
-                    reader.onload = (ev) => resolve(ev.target.result)
-                    reader.readAsDataURL(file)
-                }),
-        )
+        const token = localStorage.getItem('accessToken')
 
-        const base64List = await Promise.all(readers)
+        const previews = []
+        const uploadedUrls = []
+
+        for (const file of files) {
+            // 1️⃣ 미리보기용 base64
+            const base64 = await toBase64(file)
+            previews.push(base64)
+
+            // 2️⃣ 서버 업로드
+            const formData = new FormData()
+            formData.append('file', file)
+
+            try {
+                const res = await fetch('http://localhost:8090/api/v1/images/upload', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                })
+                const url = await res.text()
+                uploadedUrls.push(url)
+            } catch (err) {
+                console.error('❌ 업로드 실패:', err)
+            }
+        }
+
+        // 이미지 삭제
+        const handleRemoveImage = (index) => {
+            setReview((prev) => ({
+                ...prev,
+                imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+            }))
+        }
+
+        // 3️⃣ base64 → 즉시 미리보기, url은 나중에 서버 저장용
         setReview((prev) => ({
             ...prev,
-            imageUrls: [...prev.imageUrls, ...base64List],
+            imagePreviews: [...(prev.imagePreviews || []), ...previews],
+            imageUrls: [...prev.imageUrls, ...uploadedUrls],
         }))
     }
+
+    // base64 변환 유틸
+    const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = () => resolve(reader.result)
+            reader.onerror = (error) => reject(error)
+        })
 
     // 이미지 삭제
     const handleRemoveImage = (index) => {
