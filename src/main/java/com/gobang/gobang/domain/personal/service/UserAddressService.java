@@ -60,6 +60,8 @@ public class UserAddressService {
             userAddressRepository.unsetDefaultBySiteUser(address.getSiteUser());
         }
 
+        address.setIsDefault(request.getIsDefault() != null ? request.getIsDefault() : false);
+
         address.setRecipientName(request.getRecipientName());
         address.setBaseAddress(request.getBaseAddress());
         address.setDetailAddress(request.getDetailAddress());

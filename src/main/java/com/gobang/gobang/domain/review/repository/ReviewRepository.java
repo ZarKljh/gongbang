@@ -12,17 +12,31 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-//    List<Review> findAllByOrderByCreatedDateDesc();
+    long countBySiteUser_Id(Long userId);
 
     @Query("SELECT r FROM Review r ORDER BY r.createdDate DESC")
     Page<Review> getAllReviews(Pageable pageable);
 
-//    // 기존 리뷰 찾아 수정
-//    boolean existsByOrderItemId(Long orderItemId);
-
-    long countBySiteUser_Id(Long userId);
-
     List<Review> findBySiteUser_Id(Long userId);
 
     Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
+
+    Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
+    Page<Review> findByIsActiveTrue(Pageable pageable);
+
+    // 물품 상세페이지 만들어지면 사용(v평균)
+    @Query("SELECT AVG(r.rating), COUNT(r.reviewId) FROM Review r WHERE r.productId = :productId AND r.isActive = true")
+    List<Object[]> findAverageRatingAndCountByProductId(@Param("productId") Long productId);
+
+
+    // 별점 분포 그래프
+    @Query("""
+    SELECT r.rating, COUNT(r)
+    FROM Review r
+    WHERE r.productId = :productId AND r.isActive = true
+    GROUP BY r.rating
+""")
+    List<Object[]> countRatingGroup(@Param("productId") Long productId);
+
+
 }

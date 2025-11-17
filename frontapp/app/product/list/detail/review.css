@@ -94,7 +94,7 @@
 }
 /* 포토 리뷰 슬라이드 영역 끝*/
 
-.review-banner {
+.reviewBanner {
     max-width: 1280px;
     height: 200px;
     border: 2px solid gray;

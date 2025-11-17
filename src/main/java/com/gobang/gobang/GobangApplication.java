@@ -12,6 +12,5 @@ public class GobangApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(GobangApplication.class, args);
 	}
-
 }
 

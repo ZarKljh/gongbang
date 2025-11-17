@@ -1,7 +1,9 @@
 package com.gobang.gobang.domain.review.service;
 
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
+import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import java.util.List;
 @Transactional
 public class ReviewImageService {
     private final ReviewImageRepository reviewImageRepository;
+//    private final ReviewRepository reviewRepository;
 
     // ✅ 이미지 저장
     public void saveImages(Long reviewId, List<String> imageUrls) {

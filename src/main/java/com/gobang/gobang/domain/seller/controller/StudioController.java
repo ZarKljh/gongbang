@@ -34,7 +34,7 @@ public class StudioController {
     private final Rq rq;
 
     @GetMapping("/{id}")
-    public RsData<Map<String, Object>> getStudio(@PathVariable("id") Long id){
+    public RsData<Map<String, Object>> getStudioAndStuidioList(@PathVariable("id") Long id){
         Studio studio = studioService.getStudioById(id);
         SiteUser seller = siteUserService.getSiteUserByUserName(studio.getSiteUser().getUserName());
         Image studioMainImage = studioService.getMainImage(studio.getStudioId());
@@ -57,6 +57,7 @@ public class StudioController {
 
         return  RsData.of("s-1", "해당공방의 정보와 seller 의 정보를 가져왔습니다", responseMap);
     }
+
     @GetMapping("/{id}/products")
     public RsData<Page<ProductDto>> getProductList(
             @PathVariable("id") Long studioId,
@@ -71,8 +72,24 @@ public class StudioController {
         return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
     }
 
+    //공방정보 수정
+    //studioId로 공방검색
+    @PatchMapping("/{id}")
+    public RsData<StudioResponse> studioModify(
+            @Valid @RequestBody StudioAddRequest studioAddRequest,
+            @PathVariable("id") Long studioId
+            ){
 
+        Studio studio = studioService.getStudioById(studioId);
+        if(studio == null){
+            throw new IllegalArgumentException("해당 공방의 정보를 찾을 수 없습니다.");
+        }
 
+        SiteUser siteUser = siteUserService.getSiteUserById(studio.getSiteUser().getId());
+        studio = studioService.modifyStudio(studioAddRequest, studio, siteUser);
+        StudioResponse studioResponse = new StudioResponse(siteUser, studio);
+        return  RsData.of("200", studio.getStudioName()+"의 공방정보가 수정되었습니다", studioResponse);
+    }
 
     @PostMapping("/add")
     public RsData<Map<String, Object>> studioAdd(@Valid @RequestBody StudioAddRequest studioAddRequest){

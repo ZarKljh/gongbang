@@ -29,6 +29,7 @@ public class ReviewResponse {
     private String userNickName; // ✅ siteUser 닉네임만 노출
     private Long userId;         // ✅ siteUser ID 추가 (수정/삭제 비교용)
     private final List<String> imageUrls;  // ✅ 이미지 포함
+    private Long productId;
 
     public static ReviewResponse fromEntity(Review review) {
         // review.getImages()가 LAZY라면 트랜잭션 내에서 호출되어야 함
@@ -52,6 +53,7 @@ public class ReviewResponse {
                 .userNickName(review.getSiteUser().getNickName())
                 .userId(review.getSiteUser().getId())
                 .imageUrls(imageUrls)
+                .productId(review.getProductId())
                 .build();
     }
 }

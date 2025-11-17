@@ -16,8 +16,11 @@ export default function Sidebar() {
                 <Link className={styles.navItem} href="/admin/admin_account">
                     🏠 Home
                 </Link>
-                <Link className={styles.navItem} href="/admin/partners">
+                <Link className={styles.navItem} href="/admin/business">
                     🏪 입점 신청
+                </Link>
+                <Link className={styles.navItem} href="/admin/users">
+                    📁 유저 관리
                 </Link>
                 <Link className={styles.navItem} href="/admin/admin_reports">
                     ⚠️ 신고 관리

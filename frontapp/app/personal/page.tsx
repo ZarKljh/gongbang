@@ -73,12 +73,7 @@ export default function MyPage() {
     const [openOrderId, setOpenOrderId] = useState(null)
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
-    const [isOrdersModal, setIsOrdersModal] = useState<OrdersResponse | null>(null)
     const [activeFilter, setActiveFilter] = useState('전체')
-    const [isCancelModal, setIsCancelModal] = useState(false)
-    const [isReturnModal, setIsReturnModal] = useState(false)
-    const [isExchangeModal, setIsExchangeModal] = useState(false)
-    const [actionReason, setActionReason] = useState('')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
     const [actionOrderId, setActionOrderId] = useState<number | null>(null)
     const [actionType, setActionType] = useState<'cancel' | 'return' | 'exchange' | null>(null)
@@ -183,7 +178,7 @@ export default function MyPage() {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop
             const scrollHeight = document.documentElement.scrollHeight
             const clientHeight = document.documentElement.clientHeight
-            
+
             if (scrollTop + clientHeight >= scrollHeight - 100 && !isLoadingMore) {
                 loadMoreItems()
             }
@@ -192,7 +187,7 @@ export default function MyPage() {
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [activeTab, displayCounts, isLoadingMore, orders, cart, wishList, myReviews, qna, filteredOrders])
-    
+
     // =============== API 호출 함수 ===============
     const loadAllData = async (userId: number) => {
         try {
@@ -443,16 +438,16 @@ export default function MyPage() {
         }).open()
     }
 
-    
+
 
     // ==================== 아이템 추가 로드 함수 ====================
     const loadMoreItems = () => {
         setIsLoadingMore(true)
-        
+
         setTimeout(() => {
             setDisplayCounts(prev => ({
                 ...prev,
-                [activeTab === 'ordersManage' ? 'ordersManage' : activeTab]: 
+                [activeTab === 'ordersManage' ? 'ordersManage' : activeTab]:
                     prev[activeTab === 'ordersManage' ? 'ordersManage' : activeTab] + 10
             }))
             setIsLoadingMore(false)
@@ -617,14 +612,66 @@ export default function MyPage() {
         setTempData({ ...userData })
     }
 
+    // state 추가
+    const [errors, setErrors] = useState({
+    nickName: '',
+    newPassword: '',
+    confirmPassword: '',
+    email: '',
+    mobilePhone: '',
+    })
+
     const handleSave = async (section: string) => {
         if (!userData?.id) return
 
-        if (newPassword && newPassword !== confirmPassword) {
-            alert('비밀번호와 확인 비밀번호가 일치하지 않습니다.')
-            return
+        const newErrors = { nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' }
+        let hasError = false
+
+        // 닉네임 검증
+        if (tempData.nickName?.trim()) {
+            const nicknameRegex = /^[a-zA-Z0-9가-힣ㄱ-ㅎ]{2,12}$/
+            if (!nicknameRegex.test(tempData.nickName)) {
+                newErrors.nickName = '닉네임은 2~12자, 특수문자 없이 입력해주세요.'
+                hasError = true
+            }
         }
 
+        // 새 비밀번호 검증
+        if (newPassword?.trim()) {
+            const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
+            if (!pwRegex.test(newPassword)) {
+                newErrors.newPassword = '비밀번호는 8자 이상, 영문과 숫자를 포함해야 합니다.'
+                hasError = true
+            }
+            if (newPassword !== confirmPassword) {
+                newErrors.confirmPassword = '비밀번호 확인이 일치하지 않습니다.'
+                hasError = true
+            }
+        }
+
+        // 이메일 검증
+        if (tempData.email?.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            if (!emailRegex.test(tempData.email)) {
+                newErrors.email = '올바른 이메일 형식을 입력해주세요.'
+                hasError = true
+            }
+        }
+
+        // 휴대폰 검증
+        if (tempData.mobilePhone?.trim()) {
+            const phoneRegex = /^010\d{7,8}$/
+            if (!phoneRegex.test(tempData.mobilePhone)) {
+                newErrors.mobilePhone = '휴대폰 번호 형식이 올바르지 않습니다.'
+                hasError = true
+            }
+        }
+
+        setErrors(newErrors)
+
+        if (hasError) return // 오류가 있으면 서버 호출 안함
+
+        // 서버 호출
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/me/${userData.id}`,
@@ -642,13 +689,10 @@ export default function MyPage() {
                 setEditMode({ ...editMode, [section]: false })
                 setNewPassword('')
                 setConfirmPassword('')
-                alert(data.msg || '정보가 수정되었습니다.')
-            } else {
-                alert(`수정에 실패했습니다: ${data.msg || '오류가 발생했습니다.'}`)
+                setErrors({ nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' })
             }
         } catch (error: any) {
             console.error('정보 수정 실패:', error.response?.data || error.message)
-            alert('수정에 실패했습니다.')
         }
     }
 
@@ -741,6 +785,19 @@ export default function MyPage() {
             alert('배송지 삭제 중 오류가 발생했습니다.')
         }
     }
+
+    const sample6_execDaumPostcodeForEdit = () => {
+        new window.daum.Postcode({
+            oncomplete: function (data: any) {
+                setEditAddressData(prev => ({
+                    ...prev,
+                    zipcode: data.zonecode,
+                    baseAddress: data.address,
+                    extraAddress: data.buildingName || '',
+                }));
+            },
+        }).open();
+    };
 
     // =============== 결제수단 ===============
     const handleSavePayment = async () => {
@@ -1186,7 +1243,7 @@ export default function MyPage() {
                             {orders.length === 0 ? (
                                 <p>주문 내역이 없습니다.</p>
                             ) : (
-                                
+
                                 <>
                                     {orders.slice(0, displayCounts.orders).map((order) => (
                                         <div key={order.orderId} className="order-card" >
@@ -1355,7 +1412,7 @@ export default function MyPage() {
                                     <>
                                         {filteredOrders.slice(0, displayCounts.ordersManage).map((order) => {
                                             // ... 주문 카드 렌더링 ...
-                                        
+
                                             const items = order.orderItems || []
 
                                             // 최신 배송 상태
@@ -1476,7 +1533,7 @@ export default function MyPage() {
                                             </div>
                                         ))}
                                     </div>
-                                    
+
                                     {isLoadingMore && displayCounts.cart < cart.length && (
                                         <div className="loading-more">
                                             <div className="spinner"></div>
@@ -1540,12 +1597,15 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>닉네임</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="text"
-                                            value={tempData.nickName || ''}
-                                            onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="text"
+                                                value={tempData.nickName || ''}
+                                                onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
+                                                className="editable"
+                                            />
+                                            {errors.nickName && <p className="error-msg">{errors.nickName}</p>}
+                                        </div>
                                     ) : (
                                         <p>{userData.nickName}</p>
                                     )}
@@ -1554,39 +1614,48 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>비밀번호</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="password"
-                                            placeholder="새 비밀번호 입력"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="password"
+                                                placeholder="새 비밀번호 입력"
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                className="editable"
+                                            />
+                                            {errors.newPassword && <p className="error-msg">{errors.newPassword}</p>}
+                                        </div>
                                     ) : (
                                         <p>********</p>
                                     )}
                                 </div>
 
-                                {editMode.profile && (
-                                    <div className="form-group">
-                                        <label>비밀번호 확인</label>
-                                        <input
-                                            type="password"
-                                            placeholder="비밀번호 재입력"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                        />
-                                    </div>
-                                )}
+                                <div className="form-group">
+                                    <label>비밀번호 확인</label>
+                                    {editMode.profile && (
+                                        <div className='profile-input'>
+                                            <input
+                                                type="password"
+                                                placeholder="비밀번호 재입력"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                            />
+                                            {errors.confirmPassword && <p className="error-msg">{errors.confirmPassword}</p>}
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="form-group">
                                     <label>이메일</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="email"
-                                            value={tempData.email || ''}
-                                            onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="email"
+                                                value={tempData.email || ''}
+                                                onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
+                                                className="editable"
+                                            />
+                                            {errors.email && <p className="error-msg">{errors.email}</p>}
+                                        </div>
                                     ) : (
                                         <p>{userData.email}</p>
                                     )}
@@ -1595,12 +1664,15 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>휴대폰</label>
                                     {editMode.profile ? (
-                                        <input
-                                            type="tel"
-                                            value={tempData.mobilePhone || ''}
-                                            onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
-                                            className="editable"
-                                        />
+                                        <div className='profile-input'>
+                                            <input
+                                                type="tel"
+                                                value={tempData.mobilePhone || ''}
+                                                onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
+                                                className="editable"
+                                            />
+                                            {errors.mobilePhone && <p className="error-msg">{errors.mobilePhone}</p>}
+                                        </div>
                                     ) : (
                                         <p>{userData.mobilePhone}</p>
                                     )}
@@ -1762,7 +1834,7 @@ export default function MyPage() {
                                                     </div>
                                                 ))}
                                             </div>
-                                            
+
                                             {isLoadingMore && displayCounts.wishlist < wishList.length && (
                                                 <div className="loading-more">
                                                     <div className="spinner"></div>
@@ -1846,7 +1918,7 @@ export default function MyPage() {
                                             </div>
                                         ))}
                                     </div>
-                                    
+
                                     {isLoadingMore && displayCounts.reviews < myReviews.length && (
                                         <div className="loading-more">
                                             <div className="spinner"></div>
@@ -1921,7 +1993,7 @@ export default function MyPage() {
                                             </div>
                                         ))}
                                     </div>
-                                    
+
                                     {isLoadingMore && displayCounts.qna < qna.length && (
                                         <div className="loading-more">
                                             <div className="spinner"></div>
@@ -1932,7 +2004,6 @@ export default function MyPage() {
                             )}
                         </div>
                     )}
-
                 </div>
             </div>
 
@@ -1941,7 +2012,7 @@ export default function MyPage() {
                 <div className="orders-modal" onClick={() => setIsStatusModal(false)}>
                     <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="orders-modal-close" onClick={() => setIsStatusModal(false)}>
-                            &times
+                            X
                         </button>
                         <h2>{selectedStatus}</h2>
 
@@ -1997,7 +2068,7 @@ export default function MyPage() {
                             <button
                                 onClick={async () => {
                                     if (!actionOrderId || !actionType) return
-                                    
+
                                     try {
                                         if (actionType === 'cancel') {
                                             await handleCancelOrder(actionOrderId, actionReason)
@@ -2026,10 +2097,10 @@ export default function MyPage() {
 
             {/* 배송지 추가 모달 */}
             {isAddressModal && (
-                <div className="address-modal" onClick={() => setIsAddressModal(false)}>
+                <div className="new-user-address" onClick={() => setIsAddressModal(false)}>
                     <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="address-modal-close" onClick={() => setIsAddressModal(false)}>
-                            &times
+                            X
                         </button>
 
                         <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
@@ -2068,7 +2139,7 @@ export default function MyPage() {
                             id="sample6_extraAddress"
                             placeholder="참고항목"
                             value={newAddress.extraAddress}
-                            readOnly
+                            onChange={(e) =>setEditAddressData({ ...newAddress, detailAddress: e.target.value })}
                         />
                         <input
                             type="text"
@@ -2082,7 +2153,10 @@ export default function MyPage() {
                             <input
                                 type="checkbox"
                                 checked={newAddress.isDefault}
-                                onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) =>
+                                    setNewAddress({ ...newAddress, isDefault: e.target.checked })
+                                }
                             />
                             기본 배송지로 설정
                         </label>
@@ -2097,12 +2171,9 @@ export default function MyPage() {
 
             {/* 배송지 수정 모달 */}
             {editAddressModal && editAddressData && (
-                <div className="address-modal" onClick={() => setEditAddressModal(false)}>
-                    <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="address-modal-close" onClick={() => setEditAddressModal(false)}>
-                            &times
-                        </button>
-
+                <div key={editAddressData.userAddressId} className="address-modal" onClick={() => setEditAddressModal(false)}>
+                    <div className="address-modal-content-m" onClick={(e) => e.stopPropagation()}>
+                        <button className="address-modal-close" onClick={() => setEditAddressModal(false)}>X</button>
                         <h2>배송지 수정</h2>
 
                         <input
@@ -2110,45 +2181,49 @@ export default function MyPage() {
                             placeholder="수령인 이름"
                             value={editAddressData.recipientName}
                             onChange={(e) =>
-                                setEditAddressData({
-                                    ...editAddressData,
-                                    recipientName: e.target.value,
-                                })
+                                setEditAddressData({ ...editAddressData, recipientName: e.target.value })
                             }
                         />
+
                         <input type="text" placeholder="우편번호" value={editAddressData.zipcode} readOnly />
+                        <input
+                            type="button"
+                            value="우편번호 찾기"
+                            onClick={sample6_execDaumPostcodeForEdit}
+                            className="btn-primary"
+                        />
+
                         <input type="text" placeholder="주소" value={editAddressData.baseAddress} readOnly />
+
                         <input
                             type="text"
                             placeholder="참고항목"
                             value={editAddressData.extraAddress}
-                            onChange={(e) => setEditAddressData({ ...editAddressData, extraAddress: e.target.value })}
+                            onChange={(e) =>
+                                setEditAddressData({ ...editAddressData, extraAddress: e.target.value })
+                            }
                         />
+
                         <input
                             type="text"
                             placeholder="상세주소"
                             value={editAddressData.detailAddress}
                             onChange={(e) =>
-                                setEditAddressData({
-                                    ...editAddressData,
-                                    detailAddress: e.target.value,
-                                })
+                                setEditAddressData({ ...editAddressData, detailAddress: e.target.value })
                             }
-                        />
+                        /><br />
+
                         <label>
                             <input
                                 type="checkbox"
                                 checked={editAddressData.isDefault}
+                                onClick={(e) => e.stopPropagation()}
                                 onChange={(e) =>
-                                    setEditAddressData({
-                                        ...editAddressData,
-                                        isDefault: e.target.checked,
-                                    })
+                                    setEditAddressData({ ...editAddressData, isDefault: e.target.checked })
                                 }
                             />
                             기본 배송지로 설정
-                        </label>
-
+                        </label><br />
                         <button className="btn-primary" onClick={handleUpdateAddress}>
                             저장
                         </button>
@@ -2161,10 +2236,10 @@ export default function MyPage() {
                 <div className="payment-modal" onClick={() => setIsPaymentModal(false)}>
                     <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="payment-modal-close" onClick={() => setIsPaymentModal(false)}>
-                            &times
+                            X
                         </button>
 
-                        <h2>새 결제수단 추가</h2>
+                        <h2>새 결제수단 추가</h2> <br />
 
                         <form
                             onSubmit={async (e) => {
@@ -2173,9 +2248,9 @@ export default function MyPage() {
                             }}
                             className="space-y-4"
                         >
-                            <div>
+                            <div className='pament-w'>
                                 <label>결제수단 종류</label>
-                                <select value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
+                                <select className='payment-type' value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
                                     <option value="BANK">은행 계좌</option>
                                     <option value="CARD">신용/체크카드</option>
                                 </select>
@@ -2183,7 +2258,7 @@ export default function MyPage() {
 
                             {paymentType === 'BANK' && (
                                 <>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>은행명</label>
                                         <input
                                             type="text"
@@ -2192,7 +2267,7 @@ export default function MyPage() {
                                             placeholder="예: 신한은행"
                                         />
                                     </div>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>계좌번호</label>
                                         <input
                                             type="text"
@@ -2206,7 +2281,7 @@ export default function MyPage() {
 
                             {paymentType === 'CARD' && (
                                 <>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>카드사</label>
                                         <input
                                             type="text"
@@ -2215,7 +2290,7 @@ export default function MyPage() {
                                             placeholder="예: 현대카드"
                                         />
                                     </div>
-                                    <div>
+                                    <div className='pament-w'>
                                         <label>카드번호</label>
                                         <input
                                             type="text"
@@ -2233,7 +2308,7 @@ export default function MyPage() {
                                     checked={defaultPayment}
                                     onChange={(e) => setDefaultPayment(e.target.checked)}
                                 />
-                                <span>기본 결제수단으로 설정</span>
+                                <span> 기본 결제수단으로 설정</span>
                             </div>
 
                             <div className="modal-buttons">
@@ -2258,7 +2333,7 @@ export default function MyPage() {
                 <div className="review-modal" onClick={() => setIsEditReviewModal(false)}>
                     <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="review-modal-close" onClick={() => setIsEditReviewModal(false)}>
-                            &times
+                            X
                         </button>
 
                         <h2>리뷰 수정</h2>
@@ -2293,7 +2368,7 @@ export default function MyPage() {
                 <div className="review-modal" onClick={() => setIsDeleteReviewModal(false)}>
                     <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="review-modal-close" onClick={() => setIsDeleteReviewModal(false)}>
-                            &times
+                            X
                         </button>
 
                         <h2>리뷰 삭제</h2>
