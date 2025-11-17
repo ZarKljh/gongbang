@@ -121,3 +121,38 @@
     border-color: #b91c1c !important; /* red-700 */
     box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.25); /* red-700/25 */
 }
+
+/* 에러 텍스트 */
+.error-text {
+    margin-top: 0.25rem; /* 4px */
+    font-size: 0.75rem; /* text-xs */
+    line-height: 1rem; /* line-tight */
+    color: #dc2626; /* red-600 */
+    font-weight: 500; /* 살짝 강조 */
+}
+/* 에러가 존재하는 input 스타일 */
+.form-input.error {
+    border-color: #dc2626 !important; /* red-600 */
+    background-color: #fef2f2; /* red-50 */
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15); /* red-600/15 */
+}
+
+/* 에러 input 포커스 */
+.form-input.error:focus {
+    border-color: #b91c1c !important; /* red-700 */
+    box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.25); /* red-700/25 */
+}
+
+.success-text {
+    color: green;
+    font-size: 0.9rem;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+/* 필수 입력 항목용 빨간 별표 */
+.form-label.required::after {
+    content: ' *';
+    color: #dc2626; /* red-600 */
+    font-weight: 700;
+}

@@ -1,9 +1,10 @@
 interface ErrorMessageProps {
     message?: string
+    success?: boolean
 }
 
-export default function ErrorMessage({ message }: ErrorMessageProps) {
+export default function ErrorMessage({ message, success }: ErrorMessageProps) {
     if (!message) return null
 
-    return <p className="error-text">{message}</p>
+    return <p className={success ? 'success-text' : 'error-text'}>{message}</p>
 }

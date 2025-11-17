@@ -1,17 +1,22 @@
 import React from 'react'
 import { StudioInfo } from '../types'
 import { CATEGORY_OPTIONS } from '../component/studioCategoryList'
+import ErrorMessage from '@/app/auth/common/errorMessage'
 import './signup_seller_component.css'
 
 interface Props {
     studioInfo: StudioInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+    onMainImagePreview: (e: React.ChangeEvent<HTMLInputElement>) => void
+    onLogoImagePreview: (e: React.ChangeEvent<HTMLInputElement>) => void
+    onGalleryImagesPreview: (e: React.ChangeEvent<HTMLInputElement>) => void
     onSubmit: () => void
     onPrev: () => void
     setStudioInfo: React.Dispatch<React.SetStateAction<StudioInfo>>
     previewMainImage: string | null
     previewLogoImage: string | null
     previewGalleryImages: string[]
+    errors: any
 }
 
 declare global {
@@ -26,9 +31,13 @@ export default function StudioForm({
     onSubmit,
     onPrev,
     setStudioInfo,
+    onMainImagePreview,
+    onLogoImagePreview,
+    onGalleryImagesPreview,
     previewMainImage,
     previewLogoImage,
     previewGalleryImages,
+    errors,
 }: Props) {
     const handleAddressSearch = () => {
         if (typeof window === 'undefined' || !window.daum) {
@@ -74,7 +83,7 @@ export default function StudioForm({
         <div className="form-container">
             <h4 className="form-title">매장 정보 입력</h4>
             <div className="form-group">
-                <label className="form-label">공방카테고리</label>
+                <label className="form-label required">공방카테고리</label>
                 <select name="categoryId" value={studioInfo.categoryId} onChange={onChange}>
                     <option value="" disabled>
                         공방 카테고리를 선택해주세요
@@ -86,8 +95,9 @@ export default function StudioForm({
                     ))}
                 </select>
             </div>
+            <ErrorMessage message={errors.categoryId} />
             <div className="form-group">
-                <label className="form-label">사업자 번호</label>
+                <label className="form-label required">사업자 번호</label>
                 <input
                     type="text"
                     name="studioBusinessNumber"
@@ -97,8 +107,9 @@ export default function StudioForm({
                     placeholder="사업자번호를 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioBusinessNumber} />
             <div className="form-group">
-                <label className="form-label">공방이름</label>
+                <label className="form-label required">공방이름</label>
                 <input
                     type="text"
                     name="studioName"
@@ -108,8 +119,9 @@ export default function StudioForm({
                     placeholder="공방의 이름을 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioName} />
             <div className="form-group">
-                <label className="form-label">설명</label>
+                <label className="form-label required">설명</label>
                 <input
                     type="text"
                     name="studioDescription"
@@ -119,6 +131,7 @@ export default function StudioForm({
                     placeholder="공방을 소개해주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioDescription} />
             <div className="form-group">
                 <label className="form-label">전화번호</label>
                 <input
@@ -130,6 +143,7 @@ export default function StudioForm({
                     placeholder="공방대표전화번호를 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioMobile} />
             <div className="form-group">
                 <label className="form-label">사무실 전화</label>
                 <input
@@ -141,6 +155,7 @@ export default function StudioForm({
                     placeholder="공방사무실 전화번호를 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioOfficeTell} />
             <div className="form-group">
                 <label className="form-label">팩스</label>
                 <input
@@ -152,6 +167,7 @@ export default function StudioForm({
                     placeholder="공방FAX번호를 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioFax} />
             <div className="form-group">
                 <label className="form-label">이메일</label>
                 <input
@@ -163,8 +179,9 @@ export default function StudioForm({
                     placeholder="공방의 대표 이메일을 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioEmail} />
             <div className="form-group">
-                <label className="form-label">우편번호</label>
+                <label className="form-label required">우편번호</label>
                 <div className="form-row">
                     <input
                         type="text"
@@ -179,8 +196,9 @@ export default function StudioForm({
                     </button>
                 </div>
             </div>
+            <ErrorMessage message={errors.studioAddPostNumber} />
             <div className="form-group">
-                <label className="form-label">기본주소</label>
+                <label className="form-label required">기본주소</label>
                 <input
                     type="text"
                     name="studioAddMain"
@@ -190,6 +208,7 @@ export default function StudioForm({
                     placeholder="공방소재지의 기본주소를 입력해주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioAddMain} />
             <div className="form-group">
                 <label className="form-label">상세주소</label>
                 <input
@@ -201,9 +220,16 @@ export default function StudioForm({
                     placeholder="공방소재재의 상세주소를 적어주세요"
                 />
             </div>
+            <ErrorMessage message={errors.studioAddDetail} />
             <div className="form-group">
                 <label className="form-label">대표 이미지</label>
-                <input type="file" name="studioMainImage" className="form-input" accept="image/*" onChange={onChange} />
+                <input
+                    type="file"
+                    name="studioMainImage"
+                    className="form-input"
+                    accept="image/*"
+                    onChange={onMainImagePreview}
+                />
                 {previewMainImage && (
                     <div className="image-preview">
                         <p>대표 이미지 미리보기:</p>
@@ -218,7 +244,13 @@ export default function StudioForm({
 
             <div className="form-group">
                 <label className="form-label">로고 이미지</label>
-                <input type="file" name="studioLogoImage" className="form-input" accept="image/*" onChange={onChange} />
+                <input
+                    type="file"
+                    name="studioLogoImage"
+                    className="form-input"
+                    accept="image/*"
+                    onChange={onLogoImagePreview}
+                />
                 {previewLogoImage && (
                     <div className="image-preview">
                         <p>로고 이미지 미리보기:</p>
@@ -239,7 +271,7 @@ export default function StudioForm({
                     className="form-input"
                     accept="image/*"
                     multiple
-                    onChange={onChange}
+                    onChange={onGalleryImagesPreview}
                 />
                 {previewGalleryImages.length > 0 && (
                     <div className="image-preview">

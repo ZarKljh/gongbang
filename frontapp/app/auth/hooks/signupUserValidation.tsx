@@ -28,16 +28,16 @@ export function signupUserValidation() {
 
         if (!user.userName.trim()) {
             newErrors.userName = '아이디를 입력해주세요'
-        } else if (user.userName.length < 8 || user.userName.length > 20) {
-            newErrors.userName = '아이디는 8~20자 이내여야 합니다.'
+        } else if (user.userName.length < 6 || user.userName.length > 20) {
+            newErrors.userName = '아이디는 6~20자 이내여야 합니다.'
         } else if (/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(user.userName)) {
             newErrors.userName = '아이디에는 한글을 사용할 수 없습니다.'
         } else if (!/^[A-Za-z0-9]+$/.test(user.userName)) {
             newErrors.userName = '아이디는 영문과 숫자만 사용할 수 있습니다.'
         } else {
             const onlyLetters = user.userName.match(/[A-Za-z]/g) || [] // 영문만 추출
-            if (onlyLetters.length < 8) {
-                newErrors.userName = '아이디에는 영문이 최소 8글자 이상 포함되어야 합니다.'
+            if (onlyLetters.length < 6) {
+                newErrors.userName = '아이디에는 영문이 최소 6글자 이상 포함되어야 합니다.'
             }
         }
 
@@ -59,6 +59,13 @@ export function signupUserValidation() {
             if (!hasSpecialChar) {
                 newErrors.password = '비밀번호에는 특수문자를 1개 이상 포함해야 합니다.'
             }
+        }
+
+        // ----- 비밀번호 확인 검증 추가됨 -----
+        if (!user.confirmPassword) {
+            newErrors.confirmPassword = '비밀번호 확인을 입력해주세요.'
+        } else if (user.confirmPassword !== user.password) {
+            newErrors.confirmPassword = '비밀번호와 비밀번호 확인이 일치하지 않습니다.'
         }
 
         // ----- 닉네임 형식 검증 -----

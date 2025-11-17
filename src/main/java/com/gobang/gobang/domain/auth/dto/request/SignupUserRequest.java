@@ -18,6 +18,7 @@ public class SignupUserRequest {
     @NotBlank
     private String mobilePhone;
     private String fullName;
+    @NotBlank
     private String nickName;
     private String status;
     private String gender;

@@ -4,12 +4,13 @@ import { UserForm, StudioForm } from './component/index'
 import { UserInfo, StudioInfo } from './types'
 import { useRouter } from 'next/navigation'
 import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
+import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
 
 export default function SellerSignupPage() {
     const [step, setStep] = useState(1)
     const router = useRouter()
     const { errors, validate } = signupUserValidation()
-
+    const { errors: studioErrors, validate: validateStudio } = signupSellerValidation()
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: '',
         password: '',
@@ -176,12 +177,16 @@ export default function SellerSignupPage() {
                 <StudioForm
                     studioInfo={studioInfo}
                     onChange={handleStudioChange}
+                    onMainImagePreview={handleStudioChange}
+                    onLogoImagePreview={handleStudioChange}
+                    onGalleryImagesPreview={handleStudioChange}
                     onSubmit={handleSubmit}
                     onPrev={handlePrev}
                     setStudioInfo={setStudioInfo}
                     previewMainImage={previewMainImage}
                     previewLogoImage={previewLogoImage}
                     previewGalleryImages={previewGalleryImages}
+                    errors={studioErrors}
                 />
             )}
         </section>

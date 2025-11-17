@@ -95,3 +95,17 @@
     border-color: #b91c1c !important; /* red-700 */
     box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.25); /* red-700/25 */
 }
+
+.success-text {
+    color: green;
+    font-size: 0.9rem;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+/* 필수 입력 항목용 빨간 별표 */
+.form-label.required::after {
+    content: ' *';
+    color: #dc2626; /* red-600 */
+    font-weight: 700;
+}

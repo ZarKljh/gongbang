@@ -45,7 +45,7 @@ export default function UserForm({
         <div className="form-container">
             <h4 className="form-title">사용자 정보 입력</h4>
             <div className="form-group">
-                <label className="form-label">아이디</label>
+                <label className="form-label required">아이디</label>
                 <input
                     type="text"
                     name="userName"
@@ -57,7 +57,7 @@ export default function UserForm({
             </div>
             <ErrorMessage message={errors.userName} />
             <div className="form-group">
-                <label className="form-label">패스워드</label>
+                <label className="form-label required">패스워드</label>
                 <input
                     type="password"
                     name="password"
@@ -69,7 +69,7 @@ export default function UserForm({
             </div>
             <ErrorMessage message={errors.password} />
             <div className="form-group">
-                <label className="form-label">패스워드확인</label>
+                <label className="form-label required">패스워드확인</label>
                 <input
                     type="password"
                     name="confirmPassword"
@@ -92,7 +92,7 @@ export default function UserForm({
                 />
             </div>
             <div className="form-group">
-                <label className="form-label">이메일</label>
+                <label className="form-label required">이메일</label>
                 <input
                     type="text"
                     name="email"
@@ -115,7 +115,7 @@ export default function UserForm({
                 />
             </div>
             <div className="form-group">
-                <label className="form-label">닉네임</label>
+                <label className="form-label required">닉네임</label>
                 <input
                     type="text"
                     name="nickName"
@@ -127,7 +127,7 @@ export default function UserForm({
             </div>
             <ErrorMessage message={errors.nickName} />
             <div className="form-group">
-                <label className="form-label">휴대전화</label>
+                <label className="form-label required">휴대전화</label>
                 <input
                     type="text"
                     name="mobilePhone"
