@@ -107,6 +107,7 @@ public class SiteUserService {
         if (os.isPresent()) {
             SiteUser siteUser = os.get();
             if (passwordEncoder.matches(password, siteUser.getPassword())) {
+                System.out.println("패스워드가 일치하지 않습니다");
                 return siteUser;
             }
         }
