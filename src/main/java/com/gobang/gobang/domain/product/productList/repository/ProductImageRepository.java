@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductImageRepository extends JpaRepository<Image, Long> {
     @Query("""
@@ -16,4 +17,6 @@ public interface ProductImageRepository extends JpaRepository<Image, Long> {
                        order by i.refId asc, i.sortOrder asc, i.id asc
             """)
     List<Image> findAllByRefIdInOrderBySort(@Param("ids") List<Long> ids);
+
+    Optional<Image> findFirstByRefIdAndRefTypeOrderBySortOrderAsc(Long productId, Image.RefType refType);
 }

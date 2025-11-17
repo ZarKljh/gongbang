@@ -8,6 +8,7 @@ import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.ProductImageDto;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
+import com.gobang.gobang.domain.product.dto.response.ProductDetailResponse;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductImageRepository;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
@@ -20,10 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -134,10 +132,6 @@ public class ProductService {
                     ));
         }
 
-
-
-
-
         return FilterProductResponse.builder()
                 .productFilterList(productDtoList)
                 .imageMapList(imageMap)
@@ -147,6 +141,39 @@ public class ProductService {
     }
 
 
+
+
+    
+    //상세 상품 정보 가져오기
+    public ProductDetailResponse getProductDetail(Long productId) {
+
+        Product productDetail = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다. id=" + productId));
+
+        // 2) 이미지 한 장 조회 + 없으면 throw
+        Image image = productImageRepository
+                .findFirstByRefIdAndRefTypeOrderBySortOrderAsc(productId, Image.RefType.PRODUCT)
+                .orElse(null);
+
+        // 3) DTO 변환 (생성자)
+        ProductDto productDto = new ProductDto(productDetail);
+        ProductImageDto imageDto = null;   // ⭐ 기본값은 null
+        if (image != null) {               // ⭐ null일 때만 생성자 호출 안 함
+            imageDto = new ProductImageDto(image);
+        }
+
+        // 4) Response DTO 리턴
+        return new ProductDetailResponse(productDto, imageDto);
+
+    }
+
+
+
+
+
+
+
+    //필터 파라미터용 유틸코드
     private static String first(MultiValueMap<String, String> p, String key) {
         String v = p.getFirst(key);
         return (v == null || v.isBlank()) ? null : v.trim();
@@ -162,21 +189,5 @@ public class ProductService {
             System.out.printf("⚠️ 잘못된 숫자 파라미터: %s = %s%n", key, value);
             return null;
         }
-    }
-
-    public ProductDto getProductDetail(Long productId) {
-
-        Product productDetail = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다. id=" + productId));
-        return ProductDto.builder()
-                .id(productDetail.getId())
-                .name(productDetail.getName())
-                .subtitle(productDetail.getSubtitle())
-                .summary(productDetail.getSummary())
-                .description(productDetail.getDescription())
-                .basePrice(productDetail.getBasePrice())
-                .stockQuantity(productDetail.getStockQuantity())
-                .build();
-
     }
 }

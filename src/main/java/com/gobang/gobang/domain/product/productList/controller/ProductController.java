@@ -62,14 +62,14 @@ public class ProductController {
     @GetMapping("/{productId}/detail")
     @Operation(summary = "상품 상세 조회")
     public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
-        ProductDto productDetailList = productService.getProductDetail(productId);
-        return RsData.of("200", "상품 다건 조회 성공", new ProductDetailResponse(productDetailList));
+        ProductDetailResponse productDetailList = productService.getProductDetail(productId);
+        return RsData.of("200", "상품 다건 조회 성공", productDetailList);
     }
 
 
 
     @PostMapping("/{productId}/like")
-    @Operation(summary = "상품 좋아요")
+    @Operation(summary = "목록페이지 상품 좋아요")
     public RsData<ProductLikeResponse> toggleLike(
             @PathVariable Long productId
     ) {
