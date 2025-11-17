@@ -14,4 +14,5 @@ public class ProductDetailResponse {
     private ProductImageDto detailImage;
     private StudioDto studioDetail;
     private Image gbImage;
+    private SellerFollowResponse followInfo;
 }

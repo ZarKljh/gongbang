@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/app/utils/api'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
 
@@ -51,13 +51,17 @@ type StudioDetail = {
     updatedDate?: string | null
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | string
 }
-
+type FollowInfo = {
+    followed: boolean
+    followerCount: number
+}
 // ⭐ 실제 API 응답의 data 형태
 type ProductDetailApiResponse = {
     productDetailList: ProductDetail
     detailImage: ProductImage | null
     studioDetail: StudioDetail | null
     gbImage: gongbangImage | null
+    followInfo: FollowInfo | null
 }
 
 // type Props = { 안쓸거임 쿼리스트링에서 읽는걸로 개발해버렸음
@@ -73,6 +77,8 @@ export default function ProductDetailView({}) {
     const productId = searchParams.get('productId')
 
     const [count, setCount] = useState(1)
+    const [isFollowed, setIsFollowed] = useState<boolean>(false)
+    const [followerCount, setFollowerCount] = useState<number>(0)
 
     const { data, isLoading, isError, error } = useQuery<ProductDetailApiResponse>({
         queryKey: ['productDetail', productId],
@@ -80,17 +86,42 @@ export default function ProductDetailView({}) {
             const res = await api.get(`/product/${productId}/detail`)
             // ✅ 백엔드의 data 전체 반환
             console.log(res.data.data)
+
+            // followInfo 읽기
+            const followInfo = res.data.data.followInfo
+
+            if (followInfo) {
+                setIsFollowed(followInfo.followed)
+                setFollowerCount(followInfo.followerCount)
+            } else {
+                setIsFollowed(false)
+                setFollowerCount(0)
+            }
+
             return res.data.data as ProductDetailApiResponse
         },
         enabled: !!productId,
         retry: 1,
         refetchOnWindowFocus: false,
     })
+    // followInfo를 state에 동기화
+    useEffect(() => {
+        if (!data?.followInfo) {
+            setIsFollowed(false)
+            setFollowerCount(0)
+            return
+        }
+
+        setIsFollowed(data.followInfo.followed)
+        setFollowerCount(data.followInfo.followerCount)
+    }, [data])
+
     // 구조 분해
     const product = data?.productDetailList
     const detailImage = data?.detailImage
     const sellerinfo = data?.studioDetail
     const gbLogo = data?.gbImage
+    const followRes = data?.followInfo
 
     const pdImageUrl = detailImage
         ? `http://localhost:8090${detailImage.imageUrl}`
@@ -110,6 +141,34 @@ export default function ProductDetailView({}) {
 
     const inc = () => setCount((v) => v + 1)
     const dec = () => setCount((v) => (v > 1 ? v - 1 : 1))
+
+    const handleToggleLike = (studioId: number) => {
+        api.post(`product/${studioId}/follow`)
+            .then((res) => {
+                console.log('follow response:', res.data)
+
+                const { resultCode, msg, data } = res.data
+
+                if (resultCode !== '200') {
+                    alert(msg)
+                    return
+                }
+
+                const followed: boolean = data.followed
+                const followCount: number = data.followerCount
+
+                setIsFollowed(followed)
+                setFollowerCount(followCount)
+            })
+            .catch((err) => {
+                if (err.response?.status === 401) {
+                    alert('로그인이 필요합니다.')
+                } else {
+                    alert('로그인이 필요합니다.')
+                    console.error('팔로우 에러:', err)
+                }
+            })
+    }
 
     return (
         <div className={styles.detailPage}>
@@ -161,7 +220,16 @@ export default function ProductDetailView({}) {
                                 <div className={styles.creatorInfo}>
                                     <div className={styles.creatorName}>{sellerinfo.studioName}</div>
                                     <div className={styles.creatorActions}>
-                                        <button className={styles.btnFollow}>+ 팔로우</button>
+                                        <button
+                                            type="button"
+                                            className={`${styles.btnFollow} ${isFollowed ? styles.active : ''}`}
+                                            onClick={(e) => {
+                                                e.preventDefault() // 링크 이동 막기
+                                                handleToggleLike(sellerinfo.studioId)
+                                            }}
+                                        >
+                                            {isFollowed ? '팔로잉' : '+ 팔로우'}
+                                        </button>
                                         <Link href={`/seller/studio/${sellerinfo.studioId}`} className={styles.btnHome}>
                                             작가홈
                                         </Link>
@@ -171,7 +239,7 @@ export default function ProductDetailView({}) {
 
                             <div className="creator-right">
                                 <div className="follower-label">팔로워</div>
-                                <div className="follower-count">0</div>
+                                <div className="follower-count">{followerCount}</div>
                             </div>
                         </div>
                     )}
