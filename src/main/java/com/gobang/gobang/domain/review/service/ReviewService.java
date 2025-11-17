@@ -36,7 +36,7 @@ public class ReviewService {
     private final ReviewImageRepository reviewImageRepository;
 
 
-    public Page<Review> getReviews(Long productId, int page, String sort) {
+    public Page<Review> getReviews(Long productId, int page, String sort, String keyword) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
 
         Sort sortOption = switch (sort) {
@@ -100,7 +100,7 @@ public class ReviewService {
 
         // 하나의 상품에 하나의 리뷰 허용
         if (reviewRepository.existsBySiteUserAndProductId(user, req.getProductId())) {
-            return RsData.of("400", "이미 이 상품에 작성한 리뷰가 있습니다.");
+            return RsData.of("400", "이미 리뷰를 작성했습니다.");
         }
 
         Review review = Review.builder()

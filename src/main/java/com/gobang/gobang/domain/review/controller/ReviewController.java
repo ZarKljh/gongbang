@@ -68,10 +68,11 @@ public class ReviewController {
     public RsData<ReviewsResponse> getAllReviews(
             @RequestParam(required = false) Long productId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "date_desc") String sort
+            @RequestParam(defaultValue = "date_desc") String sort,
+            @RequestParam(required = false) String keyword
     ) {
         System.out.println("🔥 sort param = " + sort);
-        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort);
+        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort, keyword);
 
 
         ReviewsResponse response = ReviewsResponse.fromPage(reviewPage);
