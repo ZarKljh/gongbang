@@ -58,4 +58,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     """)
     List<ReviewRatingDto> findRatingStatsByProductIds(@Param("ids") List<Long> ids);
 
+    List<Review> findByProductId(Long productId);
 }

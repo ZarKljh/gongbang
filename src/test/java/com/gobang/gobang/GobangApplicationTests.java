@@ -36,25 +36,21 @@ class GobangApplicationTests {
         System.out.println("🔶 테스트 리뷰 데이터 생성 시작!");
 
         // ------------------------------
-        // 1) 유저 800명 생성
+        // 1) 기존 DB에 있는 일반 유저 불러오기
+        //    예: ID 101~200 / 혹은 ROLE_USER 만 가져오면 됨
         // ------------------------------
-        List<SiteUser> users = new ArrayList<>();
+        List<SiteUser> users = siteUserRepository.findAll();
+        // 또는 조건 사용:
+        // List<SiteUser> users = siteUserRepository.findByRole(RoleType.USER);
 
-        for (int i = 1; i <= 800; i++) {
-            SiteUser u = SiteUser.builder()
-                    .email("dummy" + i + "@example.com")
-                    .password("1234")
-                    .userName("user" + i)
-                    .nickName("리뷰테스터" + i)
-                    .mobilePhone("010-1000-" + String.format("%04d", i))
-                    .role(RoleType.USER)
-                    .status("ACTIVE")
-                    .build();
-
-            users.add(siteUserRepository.save(u));
+        if (users.size() < 40) {
+            throw new RuntimeException("리뷰 생성에 필요한 유저가 40명 이상 존재해야 합니다.");
         }
 
-        System.out.println("✔ 유저 800명 생성 완료");
+        // 40명만 사용
+        users = users.subList(0, 40);
+
+        System.out.println("✔ 유저 " + users.size() + "명 로드 완료");
 
         // ------------------------------
         // 2) 이미지 파일 목록
@@ -76,7 +72,7 @@ class GobangApplicationTests {
         int userIndex = 0;
 
         // ------------------------------
-        // 3) productId = 1~20, 리뷰 40개씩 생성
+        // 3) productId = 1~20, 리뷰 40개씩 생성 (총 800개)
         // ------------------------------
         for (long productId = 1; productId <= 20; productId++) {
 
@@ -84,7 +80,8 @@ class GobangApplicationTests {
 
             for (int i = 1; i <= 40; i++) {
 
-                SiteUser writer = users.get(userIndex++);
+                SiteUser writer = users.get(userIndex % users.size());
+                userIndex++;
 
                 String content = (i % 10 == 0)
                         ? longText
@@ -111,11 +108,13 @@ class GobangApplicationTests {
                 Review savedReview = reviewRepository.save(review);
 
                 // ------------------------------
-                // 4) 홀수 리뷰에는 이미지 1개 넣기
+                // 4) 60% 확률로 이미지 1장 생성
                 // ------------------------------
-                if (i % 2 == 1) {
+                if (Math.random() < 0.6) {
 
-                    String imgUrl = catImages[i % catImages.length];
+                    int imgIndex = (int)((i + productId) % catImages.length);
+
+                    String imgUrl = catImages[imgIndex];
                     String fileName = imgUrl.substring(imgUrl.lastIndexOf("/") + 1);
 
                     Image img = Image.builder()
@@ -133,13 +132,15 @@ class GobangApplicationTests {
             System.out.println("✔ productId " + productId + " 리뷰 40개 생성 완료");
         }
 
-        System.out.println("리뷰 + 이미지 생성 완료!");
+        System.out.println("🎉 리뷰 + 이미지 생성 완료!");
     }
+
     // 테스트 돌리면 로그인 상태.
     // 테스트 종류 후 로그아웃 처리
     @AfterEach
     public void logoutAfterTest() {
         SecurityContextHolder.clearContext();
         System.out.println("테스트 종료 → SecurityContext 초기화 (로그아웃)");
+
     }
 }

@@ -1,11 +1,10 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { FaThumbsUp, FaRegThumbsUp, FaStar, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa'
+import { FaThumbsUp, FaRegThumbsUp, FaStar } from 'react-icons/fa'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Pagination, Navigation } from 'swiper/modules'
+import { Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import Router from 'next/router'
+import { useSearchParams, useRouter } from 'next/navigation'
 import 'swiper/css/navigation'
 import '@/app/components/product/detail/styles/review.css'
 
@@ -13,12 +12,12 @@ export default function detail() {
     // ================= 리뷰 =================
     const [reviews, setReviews] = useState([])
     const [isLoggedIn, setIsLoggedIn] = useState(false)
-    const [activeCommentBox, setActiveCommentBox] = useState(null)
+    const [activeCommentBox, setActiveCommentBox] = useState<string | null>(null)
     const [reviewComment, setReviewComment] = useState('') // null → ''
     const [comments, setComments] = useState({})
     // 리뷰 좋아요
-    const [likeCounts, setLikeCounts] = useState({})
-    const [liked, setLiked] = useState({}) // 좋아요 눌린 상태 체크용
+    const [likeCounts, setLikeCounts] = useState<Record<number, number>>({})
+    const [liked, setLiked] = useState<Record<number, boolean>>({}) // 좋아요 눌린 상태 체크용
 
     const [avgRating, setAvgRating] = useState(0)
     const [totalCount, setTotalCount] = useState(0)
@@ -29,33 +28,32 @@ export default function detail() {
     const [currentUserId, setCurrentUserId] = useState<number | null>(null)
     const prevRef = useRef<HTMLDivElement | null>(null)
     const nextRef = useRef<HTMLDivElement | null>(null)
-    const [sortType, setSortType] = useState('date_desc')
+    const [sortType, setSortType] = useState<'date_desc' | 'like_desc' | 'rating_desc'>('date_desc')
     const [keyword, setKeyword] = useState('')
 
-    // 포토 리뷰 가져오기
-    const [photoReviews, setPhotoReviews] = useState([])
+    // 포토 리뷰 슬라이드 인스턴스 저장
+    const [swiperRef, setSwiperRef] = useState<any>(null)
 
-    // 이미지 모달
-    const [selectedImageIndex, setSelectedImageIndex] = useState(null)
+    // 포토 리뷰 가져오기
+    const [photoReviews, setPhotoReviews] = useState<
+        { id: number; img: string; title: string }[]
+    >([])
 
     // 상품Id 기준 리뷰 가져오기
     const searchParams = useSearchParams()
-    const productIdStr = searchParams.get('productId') // 초기엔 null
     const [productId, setProductId] = useState<number | null>(null)
 
-    // 별점 그래프
-    const [ratingData, setRatingData] = useState({
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-    })
+    const router = useRouter()
 
-    // searchParams 감지해서 productId채우기
+    // searchParams 감지해서 productId 채우기 (하나로 통합)
     useEffect(() => {
-        const id = searchParams.get('productId')
-        if (id) setProductId(Number(id))
+        const productIdStr = searchParams.get('productId')
+        if (!productIdStr) return
+
+        const id = Number(productIdStr)
+        if (!Number.isFinite(id) || id <= 0) return
+
+        setProductId(id)
     }, [searchParams])
 
     // 로그인 여부 확인
@@ -78,6 +76,7 @@ export default function detail() {
             } else {
                 setIsLoggedIn(false)
                 setRoleType(null)
+                setCurrentUserId(null)
             }
         } catch (err) {
             console.error('로그인 상태 확인 실패', err)
@@ -87,47 +86,17 @@ export default function detail() {
         }
     }
 
-    // 로그인 + 리뷰 로드 통합
+    // 로그인 체크는 최초 1번만
     useEffect(() => {
-        const init = async () => {
-            await checkLoginStatus() // 로그인 먼저 확인
-            if (productId) await fetchReviews(productId, currentPage) // 로그인 완료 후 리뷰 로드
-        }
-
-        init()
-    }, [productId, currentPage, sortType]) // 페이지, 정렬 바뀔 때만 다시 실행
-
-    // 페이지 버튼 클릭 시 상단 이동)
-    const scrollToTop = () => {
-        reviewTopRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-
-    const handlePageChange = (pageNumber) => {
-        // 페이지 변경
-        if (!productId) return
-        fetchReviews(productId, pageNumber)
-
-        // 스크롤 이동 — DOM 업데이트 후 실행되도록 약간의 delay 추가
-        setTimeout(() => {
-            scrollToTop()
-        }, 100)
-    }
-
-    useEffect(() => {
-        const productIdStr = searchParams.get('productId')
-        if (!productIdStr) return
-
-        const id = Number(productIdStr)
-        if (!Number.isFinite(id) || id <= 0) return
-
-        setProductId(id)
-    }, [searchParams])
+        checkLoginStatus()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     // 리뷰 목록 조회
     const fetchReviews = async (productId: number, page = 0, sort = sortType) => {
         try {
             const res = await fetch(
-                `http://localhost:8090/api/v1/reviews?productId=${productId}&page=${page}&sort=${sortType}&keyword=${encodeURIComponent(
+                `http://localhost:8090/api/v1/reviews?productId=${productId}&page=${page}&sort=${sort}&keyword=${encodeURIComponent(
                     keyword,
                 )}`,
                 {
@@ -135,19 +104,17 @@ export default function detail() {
                     credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
                 },
             )
+
             const data = await res.json()
             const fetchedReviews = data.data.reviews || []
+
             setReviews(fetchedReviews)
             setCurrentPage(data.data.currentPage)
             setTotalpages(data.data.totalPages)
-            console.log('정렬 요청, sortType:', sortType, 'page:', page)
-
-            // if (reviewTopRef.current) {
-            //     reviewTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            // }
+            console.log('정렬 요청, sortType:', sort, 'page:', page)
 
             // 리뷰별 좋아요 카운트 초기화
-            const initialCounts = {}
+            const initialCounts: Record<number, number> = {}
             fetchedReviews.forEach((r) => {
                 initialCounts[r.reviewId] = r.reviewLike
             })
@@ -160,40 +127,82 @@ export default function detail() {
         }
     }
 
-    // 리뷰 목록 조회 후 사진이 있는 리뷰만
+    // productId / currentPage / sortType 바뀔 때마다 리뷰 재조회
     useEffect(() => {
-        if (reviews.length > 0) {
-            const pr = reviews
-                .filter((r) => r.imageUrls && r.imageUrls.length > 0)
-                .map((r) => ({
-                    id: r.reviewId,
-                    img: `http://localhost:8090${r.imageUrls[0]}`,
-                    title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
-                }))
+        if (!productId) return
+        fetchReviews(productId, currentPage, sortType)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [productId, currentPage, sortType])
+
+    // 페이지 버튼 클릭 시 상단 이동
+    const scrollToTop = () => {
+        reviewTopRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    const handlePageChange = (pageNumber: number) => {
+        if (!productId) return
+        setCurrentPage(pageNumber)
+
+        // 스크롤 이동 — DOM 업데이트 후 실행되도록 약간의 delay 추가
+        setTimeout(() => {
+            scrollToTop()
+        }, 100)
+    }
+
+    // 리뷰 목록 조회 후 사진이 있는 리뷰만 포토리뷰로
+    // useEffect(() => {
+    //     if (reviews.length > 0) {
+    //         const pr = reviews
+    //             .filter((r) => r.imageUrls && r.imageUrls.length > 0)
+    //             .map((r) => ({
+    //                 id: r.reviewId,
+    //                 img: `http://localhost:8090${r.imageUrls[0]}`,
+    //                 title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
+    //             }))
+
+    //         setPhotoReviews(pr)
+    //     } else {
+    //         setPhotoReviews([])
+    //     }
+    // }, [reviews])
+    const fetchPhotoReviews = async (productId) => {
+    try {
+        const res = await fetch(
+            `http://localhost:8090/api/v1/reviews/photo?productId=${productId}`
+        )
+
+        const data = await res.json()
+
+        if (res.ok) {
+            const pr = data.data.map((r) => ({
+                id: r.reviewId,
+                img: `http://localhost:8090${r.imageUrl}`, // 백엔드 필드명 맞춰
+                title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
+            }))
 
             setPhotoReviews(pr)
         }
-    }, [reviews])
+    } catch (e) {
+        console.error('전체 포토 리뷰 조회 실패', e)
+    }
+}
 
-    // 포토 리뷰 모달
+    // 포토 슬라이드 swiper 준비 된 후 네비게이션 연결
     useEffect(() => {
-        const handleEsc = (e) => e.key === 'Escape' && setSelectedImageIndex(null)
-        window.addEventListener('keydown', handleEsc)
-        return () => window.removeEventListener('keydown', handleEsc)
-    }, [])
+        if (!swiperRef) return
+        if (!prevRef.current || !nextRef.current) return
 
-    // 이전/다음 이미지 이동
-    const handlePrevImage = (e) => {
-        e.stopPropagation()
-        setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : review.imageUrls.length - 1))
-    }
+        swiperRef.params.navigation.prevEl = prevRef.current
+        swiperRef.params.navigation.nextEl = nextRef.current
 
-    const handleNextImage = (e) => {
-        e.stopPropagation()
-        setSelectedImageIndex((prev) => (prev < review.imageUrls.length - 1 ? prev + 1 : 0))
-    }
+        swiperRef.navigation.init()
+        swiperRef.navigation.update()
+    }, [swiperRef])
 
-    const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
+    useEffect(() => {
+    if (!productId) return
+    fetchPhotoReviews(productId) // 전체 포토 리뷰 불러오기
+}, [productId])
 
     // 평균 별점
     useEffect(() => {
@@ -201,7 +210,6 @@ export default function detail() {
 
         const fetchAverage = async () => {
             try {
-                // 상품상세 연결 후 reviewId -> productId로 변경
                 const res = await fetch(`http://localhost:8090/api/v1/reviews/average/${productId}`)
                 const data = await res.json()
                 console.log('⭐ 평균별점 응답:', data)
@@ -214,10 +222,15 @@ export default function detail() {
         fetchAverage()
     }, [productId])
 
-    // ✅ 임시 평점 통계 데이터 (추후 연동)
-    // const ratingData = { 5: 68, 4: 20, 3: 7, 2: 3, 1: 2 }
-
     // 별점 그래프
+    const [ratingData, setRatingData] = useState<Record<number, number>>({
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+    })
+
     useEffect(() => {
         if (!productId) return
 
@@ -229,10 +242,10 @@ export default function detail() {
                 if (res.ok) {
                     const counts = data.data
 
-                    const total = Object.values(counts).reduce((a, b) => a + b, 0)
+                    const total = Object.values(counts).reduce((a: number, b: number) => a + b, 0)
 
                     // 퍼센트로 변환
-                    const percentData = {}
+                    const percentData: Record<number, number> = {}
                     for (let i = 1; i <= 5; i++) {
                         percentData[i] = total === 0 ? 0 : Math.round((counts[i] / total) * 100)
                     }
@@ -248,23 +261,26 @@ export default function detail() {
     }, [productId])
 
     // 정렬 요청
-    const handleSortChange = (type) => {
+    const handleSortChange = (type: '최신순' | '추천순' | '별점순') => {
         if (!productId) return
-        let newSort = 'date_desc'
+
+        let newSort: 'date_desc' | 'like_desc' | 'rating_desc' = 'date_desc'
         if (type === '추천순') newSort = 'like_desc'
         else if (type === '별점순') newSort = 'rating_desc'
+
         setSortType(newSort)
-        fetchReviews(productId, 0, newSort)
+        setCurrentPage(0) // 정렬 바꾸면 1페이지로 이동
     }
 
-    // 검색 기능 나중에
+    // 검색
     const handleSearch = async () => {
         if (!productId) return
-        fetchReviews(productId, 0)
+        // keyword는 state로 관리되고 있으니, 여기서는 현재 sortType 그대로 0페이지부터 조회
+        fetchReviews(productId, 0, sortType)
     }
 
     // 댓글 조회
-    const fetchComment = async (reviewId) => {
+    const fetchComment = async (reviewId: number) => {
         try {
             const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments`)
             if (!res.ok) return
@@ -290,7 +306,7 @@ export default function detail() {
     }
 
     // 리뷰 좋아요 버튼
-    const handleLikeClick = async (reviewId) => {
+    const handleLikeClick = async (reviewId: number) => {
         try {
             const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/like`, {
                 method: 'POST',
@@ -302,12 +318,6 @@ export default function detail() {
                     window.location.href = '/auth/login'
                 }
             }
-
-            // 요청 실패 시 (서버 오류등)
-            // if (!res.ok) {
-            //     console.error('좋아요 요청 실패:', res.status)
-            //     return
-            // }
 
             const data = await res.json()
 
@@ -339,9 +349,6 @@ export default function detail() {
                     ...prev,
                     [reviewId]: false,
                 }))
-
-                const id = Number(reviewId)
- 
             }
         } catch (err) {
             console.error('좋아요 요청 실패:', err)
@@ -349,7 +356,7 @@ export default function detail() {
     }
 
     // 댓글 등록 버튼
-    const handleCommentSubmit = async (reviewId) => {
+    const handleCommentSubmit = async (reviewId: number) => {
         if (!reviewComment.trim()) {
             alert('댓글 내용을 입력해주세요.')
             return
@@ -383,21 +390,24 @@ export default function detail() {
     }
 
     // 댓글 수정
-    const handleCommentEdit = async (reviewId, commentId) => {
+    const handleCommentEdit = async (reviewId: number, commentId: number) => {
         if (!reviewComment.trim()) {
             alert('수정할 내용을 입력해주세요.')
             return
         }
 
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    review_comment: reviewComment,
-                }),
-            })
+            const res = await fetch(
+                `http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`,
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        review_comment: reviewComment,
+                    }),
+                },
+            )
 
             if (res.ok) {
                 alert('댓글이 수정되었습니다.')
@@ -416,14 +426,17 @@ export default function detail() {
     }
 
     // 댓글 삭제
-    const handleCommentDelete = async (reviewId: number, commentId) => {
+    const handleCommentDelete = async (reviewId: number, commentId: number) => {
         if (!confirm('정말 댓글을 삭제하시겠습니까?')) return
 
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            })
+            const res = await fetch(
+                `http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`,
+                {
+                    method: 'DELETE',
+                    credentials: 'include',
+                },
+            )
 
             const data = await res.json()
             if (res.ok) {
@@ -446,14 +459,14 @@ export default function detail() {
                 return
             }
 
-            const token = localStorage.getItem("accessToken") // 관리자 토콘 가져오기
+            const token = localStorage.getItem('accessToken') // 관리자 토큰 가져오기
 
             const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
                 method: 'DELETE',
-                 headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
                 credentials: 'include',
             })
 
@@ -463,7 +476,6 @@ export default function detail() {
             if (res.ok && data.resultCode === '200') {
                 alert('리뷰가 삭제되었습니다.')
                 setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId)) // ✅ 즉시 반영
-                // fetchReviews()
                 return
             } else if (data.resultCode === '403') {
                 alert('삭제 권한이 없습니다.')
@@ -477,6 +489,7 @@ export default function detail() {
             alert('서버 오류로 삭제 실패')
         }
     }
+
     // ========================= 리뷰 끝 =======================================
 
     return (
@@ -516,21 +529,8 @@ export default function detail() {
                             slidesPerGroup={5}
                             spaceBetween={20}
                             loop={false}
-                            centeredSlides={false}
-                            // 버튼을 초기화 전에 수동 주입
-                            onBeforeInit={(swiper) => {
-                                swiper.params.navigation = {
-                                    ...(swiper.params.navigation as object),
-                                    prevEl: prevRef.current,
-                                    nextEl: nextRef.current,
-                                }
-                            }}
-                            navigation={{
-                                prevEl: prevRef.current,
-                                nextEl: nextRef.current,
-                            }}
+                            onSwiper={setSwiperRef}
                             className="photoReview-swiper"
-                            // 화면 폭에 따른 보장 (옵션)
                             breakpoints={{
                                 1200: { slidesPerView: 5, slidesPerGroup: 5, spaceBetween: 20 },
                                 992: { slidesPerView: 4, slidesPerGroup: 4, spaceBetween: 16 },
@@ -540,7 +540,10 @@ export default function detail() {
                         >
                             {photoReviews.map((r) => (
                                 <SwiperSlide key={r.id}>
-                                    <div className="photoCard" onClick={() => router.push(`/review/${r.id}`)}>
+                                    <div
+                                        className="photoCard"
+                                        onClick={() => router.push(`/review/${r.id}`)}
+                                    >
                                         <img src={r.img} alt={r.title} />
                                         <p>{r.title}</p>
                                     </div>
@@ -562,6 +565,7 @@ export default function detail() {
                     <div ref={reviewTopRef} aria-hidden>
                         <h3>리뷰</h3>
                     </div>
+
                     {/* 평균 별점 */}
                     <div className="review-average-container">
                         {/* 왼쪽 평균 */}
@@ -589,7 +593,10 @@ export default function detail() {
                                     <div className="review-graph-row" key={label}>
                                         <span className="review-graph-label">{label}</span>
                                         <div className="review-graph-bar-bg">
-                                            <div className="review-graph-bar-fill" style={{ width: `${percent}%` }} />
+                                            <div
+                                                className="review-graph-bar-fill"
+                                                style={{ width: `${percent}%` }}
+                                            />
                                         </div>
                                         <span className="review-graph-percent">{percent}%</span>
                                     </div>
@@ -605,7 +612,7 @@ export default function detail() {
                             {['최신순', '추천순', '별점순'].map((type) => (
                                 <button
                                     key={type}
-                                    onClick={() => handleSortChange(type)}
+                                    onClick={() => handleSortChange(type as any)}
                                     className={`review-sort-btn ${
                                         (type === '최신순' && sortType === 'date_desc') ||
                                         (type === '추천순' && sortType === 'like_desc') ||
@@ -654,11 +661,14 @@ export default function detail() {
                                                     <FaStar
                                                         key={num}
                                                         size={22}
-                                                        color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
+                                                        color={
+                                                            num <= review.rating
+                                                                ? '#FFD700'
+                                                                : '#E0E0E0'
+                                                        }
                                                         style={{ marginRight: '3px' }}
                                                     />
                                                 ))}
-                                                <strong style={{ marginLeft: '6px', fontSize: '15px' }}></strong>
                                             </div>
 
                                             {/* 좋아요 / 삭제 버튼 */}
@@ -669,18 +679,27 @@ export default function detail() {
                                                     }`}
                                                     onClick={() => handleLikeClick(review.reviewId)}
                                                 >
-                                                  {liked[review.reviewId] ? (
-        <FaThumbsUp style={{ marginRight: '6px' }} />
-    ) : (
-        <FaRegThumbsUp style={{ marginRight: '6px' }} />
-    )}
-    도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
-</button>
-                                                {(Number(currentUserId) === Number(review.userId) ||
+                                                    {liked[review.reviewId] ? (
+                                                        <FaThumbsUp
+                                                            style={{ marginRight: '6px' }}
+                                                        />
+                                                    ) : (
+                                                        <FaRegThumbsUp
+                                                            style={{ marginRight: '6px' }}
+                                                        />
+                                                    )}
+                                                    도움돼요{' '}
+                                                    {likeCounts[review.reviewId] ??
+                                                        review.reviewLike}
+                                                </button>
+                                                {(Number(currentUserId) ===
+                                                    Number(review.userId) ||
                                                     roleType === 'ADMIN') && (
                                                     <button
                                                         className="review-delete-btn"
-                                                        onClick={() => handleDeleteClick(review.reviewId)}
+                                                        onClick={() =>
+                                                            handleDeleteClick(review.reviewId)
+                                                        }
                                                     >
                                                         삭제
                                                     </button>
@@ -692,9 +711,13 @@ export default function detail() {
                                         <h4 className="review-content-title">📃 리뷰 내용</h4>
                                         <div
                                             className="review-content-box"
-                                            onClick={() => (window.location.href = `/review/${review.reviewId}`)}
+                                            onClick={() =>
+                                                (window.location.href = `/review/${review.reviewId}`)
+                                            }
                                         >
-                                            <p className="review-content-text">{review.content}</p>
+                                            <p className="review-content-text">
+                                                {review.content}
+                                            </p>
                                             {review.imageUrls && review.imageUrls.length > 0 && (
                                                 <img
                                                     src={`http://localhost:8090${review.imageUrls[0]}`}
@@ -712,7 +735,7 @@ export default function detail() {
                                         )}
 
                                         {/* SELLER만 댓글 조작 
-                                    현재 ADMIN도 가능. 추후 삭제만 가능하도록 변경*/}
+                                            현재 ADMIN도 가능. 추후 삭제만 가능하도록 변경 */}
                                         {roleType === 'SELLER' && (
                                             <>
                                                 {comments[review.reviewId]?.reviewComment ? (
@@ -721,7 +744,8 @@ export default function detail() {
                                                             className="review-comment-edit-btn"
                                                             onClick={() =>
                                                                 setActiveCommentBox(
-                                                                    activeCommentBox === `edit-${review.reviewId}`
+                                                                    activeCommentBox ===
+                                                                    `edit-${review.reviewId}`
                                                                         ? null
                                                                         : `edit-${review.reviewId}`,
                                                                 )
@@ -730,13 +754,13 @@ export default function detail() {
                                                             ✏️ 댓글 수정
                                                         </button>
 
-                                                        {}
                                                         <button
                                                             className="review-comment-delete-btn"
                                                             onClick={() =>
                                                                 handleCommentDelete(
                                                                     review.reviewId,
-                                                                    comments[review.reviewId]?.commentId,
+                                                                    comments[review.reviewId]
+                                                                        ?.commentId,
                                                                 )
                                                             }
                                                         >
@@ -744,13 +768,16 @@ export default function detail() {
                                                         </button>
 
                                                         {isLoggedIn &&
-                                                            activeCommentBox === `edit-${review.reviewId}` && (
+                                                            activeCommentBox ===
+                                                                `edit-${review.reviewId}` && (
                                                                 <div className="review-comment-editbox">
                                                                     <textarea
                                                                         placeholder="수정할 댓글 내용을 입력하세요."
                                                                         value={reviewComment}
                                                                         onChange={(e) =>
-                                                                            setReviewComment(e.target.value)
+                                                                            setReviewComment(
+                                                                                e.target.value,
+                                                                            )
                                                                         }
                                                                         className="review-comment-textarea"
                                                                     />
@@ -758,7 +785,9 @@ export default function detail() {
                                                                         onClick={() =>
                                                                             handleCommentEdit(
                                                                                 review.reviewId,
-                                                                                comments[review.reviewId]?.commentId,
+                                                                                comments[
+                                                                                    review.reviewId
+                                                                                ]?.commentId,
                                                                             )
                                                                         }
                                                                         className="review-comment-save-btn"
@@ -774,7 +803,8 @@ export default function detail() {
                                                             className="review-comment-add-btn"
                                                             onClick={() =>
                                                                 setActiveCommentBox(
-                                                                    activeCommentBox === review.reviewId
+                                                                    activeCommentBox ===
+                                                                        review.reviewId
                                                                         ? null
                                                                         : review.reviewId,
                                                                 )
@@ -783,23 +813,33 @@ export default function detail() {
                                                             💬 댓글 달기
                                                         </button>
 
-                                                        {isLoggedIn && activeCommentBox === review.reviewId && (
-                                                            <div className="review-comment-addbox">
-                                                                <textarea
-                                                                    placeholder="댓글을 입력하세요."
-                                                                    maxLength={200}
-                                                                    value={reviewComment}
-                                                                    onChange={(e) => setReviewComment(e.target.value)}
-                                                                    className="review-comment-textarea"
-                                                                />
-                                                                <button
-                                                                    onClick={() => handleCommentSubmit(review.reviewId)}
-                                                                    className="review-comment-save-btn"
-                                                                >
-                                                                    댓글 등록
-                                                                </button>
-                                                            </div>
-                                                        )}
+                                                        {isLoggedIn &&
+                                                            activeCommentBox ===
+                                                                review.reviewId && (
+                                                                <div className="review-comment-addbox">
+                                                                    <textarea
+                                                                        placeholder="댓글을 입력하세요."
+                                                                        maxLength={200}
+                                                                        value={reviewComment}
+                                                                        onChange={(e) =>
+                                                                            setReviewComment(
+                                                                                e.target.value,
+                                                                            )
+                                                                        }
+                                                                        className="review-comment-textarea"
+                                                                    />
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            handleCommentSubmit(
+                                                                                review.reviewId,
+                                                                            )
+                                                                        }
+                                                                        className="review-comment-save-btn"
+                                                                    >
+                                                                        댓글 등록
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                     </>
                                                 )}
                                                 <hr className="review-divider" />
@@ -824,11 +864,10 @@ export default function detail() {
                         {[...Array(totalPages)].map((_, index) => (
                             <button
                                 key={index}
-                                className={`pagination-btn page-number ${currentPage === index ? 'active' : ''}`}
-                                onClick={() => {
-                                    fetchReviews(productId, index)
-                                    scrollToTop()
-                                }}
+                                className={`pagination-btn page-number ${
+                                    currentPage === index ? 'active' : ''
+                                }`}
+                                onClick={() => handlePageChange(index)}
                             >
                                 {index + 1}
                             </button>
@@ -843,117 +882,6 @@ export default function detail() {
                         </button>
                     </div>
                 </div>
-                {/* =============================== 리뷰 영역 끝 ===================================== */}
-
-                {selectedImageIndex !== null && (
-                    <div
-                        onClick={() => setSelectedImageIndex(null)}
-                        style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            background: 'rgba(0,0,0,0.8)',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            zIndex: 1000,
-                            cursor: 'zoom-out',
-                        }}
-                    >
-                        <div
-                            style={{
-                                position: 'relative',
-                                maxWidth: '70%',
-                                maxHeight: '80%',
-                            }}
-                        >
-                            <img
-                                src={
-                                    currentImage?.startsWith('data:')
-                                        ? currentImage
-                                        : `http://localhost:8090${currentImage}`
-                                }
-                                alt="확대 이미지"
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'contain',
-                                    borderRadius: '8px',
-                                }}
-                            />
-
-                            {/* 닫기 버튼 */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    setSelectedImageIndex(null)
-                                }}
-                                style={{
-                                    position: 'absolute',
-                                    top: '10px',
-                                    right: '10px',
-                                    background: 'rgba(0,0,0,0.6)',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '32px',
-                                    height: '32px',
-                                    cursor: 'pointer',
-                                    fontSize: '16px',
-                                }}
-                            >
-                                <FaTimes />
-                            </button>
-
-                            {/* 이전 / 다음 버튼 */}
-                            {review.imageUrls.length > 1 && (
-                                <>
-                                    <button
-                                        onClick={handlePrevImage}
-                                        style={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            left: '-60px',
-                                            transform: 'translateY(-50%)',
-                                            background: 'rgba(0,0,0,0.5)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '50%',
-                                            width: '40px',
-                                            height: '40px',
-                                            cursor: 'pointer',
-                                            fontSize: '18px',
-                                        }}
-                                    >
-                                        <FaChevronLeft />
-                                    </button>
-
-                                    <button
-                                        onClick={handleNextImage}
-                                        style={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            right: '-60px',
-                                            transform: 'translateY(-50%)',
-                                            background: 'rgba(0,0,0,0.5)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '50%',
-                                            width: '40px',
-                                            height: '40px',
-                                            cursor: 'pointer',
-                                            fontSize: '18px',
-                                        }}
-                                    >
-                                        <FaChevronRight />
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )}
             </div>
         </>
     )
