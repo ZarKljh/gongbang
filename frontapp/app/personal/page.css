@@ -670,6 +670,7 @@ body {
 .payment-modal-content,
 .orders-modal-content,
 .review-modal-content,
+.address-modal-content-m,
 .modal {
     background: #fff;
     padding: 20px;
@@ -694,10 +695,28 @@ body {
 }
 
 .address-modal-close:hover,
+.address-modal-content-m:hover,
 .payment-modal-close:hover,
 .orders-modal-close:hover,
 .review-modal-close:hover {
     color: #000;
+}
+
+.address-modal-content input,
+.address-modal-content-m input{
+    border: 1px solid  #d1d5db;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.address-modal-content-m input:nth-child(6),
+.address-modal-content-m input:nth-child(7),
+.address-modal-content-m input:nth-child(8),
+.address-modal-content input:nth-child(8),
+.address-modal-content input:nth-child(9),
+.address-modal-content input:nth-child(10){
+    width: 100%;
 }
 
 .modal input[type="text"],

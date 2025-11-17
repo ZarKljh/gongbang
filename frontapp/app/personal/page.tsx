@@ -729,6 +729,19 @@ export default function MyPage() {
         }
     }
 
+    const sample6_execDaumPostcodeForEdit = () => {
+        new window.daum.Postcode({
+            oncomplete: function (data: any) {
+                setEditAddressData(prev => ({
+                    ...prev,
+                    zipcode: data.zonecode,
+                    baseAddress: data.address,
+                    extraAddress: data.buildingName || '',
+                }));
+            },
+        }).open();
+    };
+
     // =============== 결제수단 ===============
     const handleSavePayment = async () => {
         if (paymentType === 'BANK' && (!bankName || !accountNumber)) {
@@ -1889,7 +1902,7 @@ export default function MyPage() {
                 <div className="orders-modal" onClick={() => setIsStatusModal(false)}>
                     <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="orders-modal-close" onClick={() => setIsStatusModal(false)}>
-                            &times
+                            X
                         </button>
                         <h2>{selectedStatus}</h2>
 
@@ -1922,10 +1935,10 @@ export default function MyPage() {
 
             {/* 배송지 추가 모달 */}
             {isAddressModal && (
-                <div className="address-modal" onClick={() => setIsAddressModal(false)}>
+                <div key={editAddressData.userAddressId} className="address-modal" onClick={() => setIsAddressModal(false)}>
                     <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="address-modal-close" onClick={() => setIsAddressModal(false)}>
-                            &times
+                            X
                         </button>
 
                         <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
@@ -1964,7 +1977,6 @@ export default function MyPage() {
                             id="sample6_extraAddress"
                             placeholder="참고항목"
                             value={newAddress.extraAddress}
-                            readOnly
                         />
                         <input
                             type="text"
@@ -1978,7 +1990,10 @@ export default function MyPage() {
                             <input
                                 type="checkbox"
                                 checked={newAddress.isDefault}
-                                onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) =>
+                                    setNewAddress({ ...newAddress, isDefault: e.target.checked })
+                                }
                             />
                             기본 배송지로 설정
                         </label>
@@ -1993,12 +2008,9 @@ export default function MyPage() {
 
             {/* 배송지 수정 모달 */}
             {editAddressModal && editAddressData && (
-                <div className="address-modal" onClick={() => setEditAddressModal(false)}>
-                    <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="address-modal-close" onClick={() => setEditAddressModal(false)}>
-                            &times
-                        </button>
-
+                <div key={editAddressData.userAddressId} className="address-modal" onClick={() => setEditAddressModal(false)}>
+                    <div className="address-modal-content-m" onClick={(e) => e.stopPropagation()}>
+                        <button className="address-modal-close" onClick={() => setEditAddressModal(false)}>X</button>
                         <h2>배송지 수정</h2>
 
                         <input
@@ -2006,45 +2018,49 @@ export default function MyPage() {
                             placeholder="수령인 이름"
                             value={editAddressData.recipientName}
                             onChange={(e) =>
-                                setEditAddressData({
-                                    ...editAddressData,
-                                    recipientName: e.target.value,
-                                })
+                                setEditAddressData({ ...editAddressData, recipientName: e.target.value })
                             }
                         />
+
                         <input type="text" placeholder="우편번호" value={editAddressData.zipcode} readOnly />
+                        <input
+                            type="button"
+                            value="우편번호 찾기"
+                            onClick={sample6_execDaumPostcodeForEdit}
+                            className="btn-primary"
+                        />
+
                         <input type="text" placeholder="주소" value={editAddressData.baseAddress} readOnly />
+
                         <input
                             type="text"
                             placeholder="참고항목"
                             value={editAddressData.extraAddress}
-                            onChange={(e) => setEditAddressData({ ...editAddressData, extraAddress: e.target.value })}
+                            onChange={(e) =>
+                                setEditAddressData({ ...editAddressData, extraAddress: e.target.value })
+                            }
                         />
+
                         <input
                             type="text"
                             placeholder="상세주소"
                             value={editAddressData.detailAddress}
                             onChange={(e) =>
-                                setEditAddressData({
-                                    ...editAddressData,
-                                    detailAddress: e.target.value,
-                                })
+                                setEditAddressData({ ...editAddressData, detailAddress: e.target.value })
                             }
-                        />
+                        /><br />
+
                         <label>
                             <input
                                 type="checkbox"
                                 checked={editAddressData.isDefault}
+                                onClick={(e) => e.stopPropagation()}
                                 onChange={(e) =>
-                                    setEditAddressData({
-                                        ...editAddressData,
-                                        isDefault: e.target.checked,
-                                    })
+                                    setEditAddressData({ ...editAddressData, isDefault: e.target.checked })
                                 }
                             />
                             기본 배송지로 설정
-                        </label>
-
+                        </label><br />
                         <button className="btn-primary" onClick={handleUpdateAddress}>
                             저장
                         </button>
@@ -2057,7 +2073,7 @@ export default function MyPage() {
                 <div className="payment-modal" onClick={() => setIsPaymentModal(false)}>
                     <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="payment-modal-close" onClick={() => setIsPaymentModal(false)}>
-                            &times
+                            X
                         </button>
 
                         <h2>새 결제수단 추가</h2>
@@ -2154,7 +2170,7 @@ export default function MyPage() {
                 <div className="review-modal" onClick={() => setIsEditReviewModal(false)}>
                     <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="review-modal-close" onClick={() => setIsEditReviewModal(false)}>
-                            &times
+                            X
                         </button>
 
                         <h2>리뷰 수정</h2>
@@ -2189,7 +2205,7 @@ export default function MyPage() {
                 <div className="review-modal" onClick={() => setIsDeleteReviewModal(false)}>
                     <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="review-modal-close" onClick={() => setIsDeleteReviewModal(false)}>
-                            &times
+                            X
                         </button>
 
                         <h2>리뷰 삭제</h2>
