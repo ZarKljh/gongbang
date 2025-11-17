@@ -4,6 +4,7 @@
     margin: 0 auto; /* 가운데 정렬 */
     padding: 24px 0;
     box-sizing: border-box;
+    
 }
 
 .photoReview-container {
@@ -43,6 +44,7 @@
     transition: all 0.3s ease;
     gap: 5px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        font-family: 'P-Regular';
 }
 
 .photoCard:hover {

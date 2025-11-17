@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.review.repository;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     // 물품 상세페이지 만들어지면 사용(v평균)
     @Query("SELECT AVG(r.rating), COUNT(r.reviewId) FROM Review r WHERE r.productId = :productId AND r.isActive = true")
     List<Object[]> findAverageRatingAndCountByProductId(@Param("productId") Long productId);
+
+    // userId기준 상품 하나당 리뷰 하나
+    boolean existsBySiteUserAndProductId(SiteUser user, Long productId);
 
 
     // 별점 분포 그래프
