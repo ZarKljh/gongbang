@@ -43,7 +43,17 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                     </ul>
                 </div>
-                <div className="nav-section">
+            </nav>
+
+            <Link href="/personal" className="link-btn">
+                마이페이지로 이동
+            </Link>
+        </div>
+    )
+}
+
+/*
+<div className="nav-section">
                     <h2>나의 쇼핑정보</h2>
                     <ul>
                         <li>
@@ -124,11 +134,4 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                     </ul>
                 </div>
-            </nav>
-
-            <Link href="/personal" className="link-btn">
-                마이페이지로 이동
-            </Link>
-        </div>
-    )
-}
+*/

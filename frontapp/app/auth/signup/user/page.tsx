@@ -167,7 +167,8 @@ export default function SignupUser() {
                             중복확인
                         </button>
                     </div>
-                    <ErrorMessage message={userNameCheckMsg || errors.userName} success={isUserNameValid} />
+                    <ErrorMessage message={errors.userName} />
+                    <ErrorMessage message={userNameCheckMsg} success={isUserNameValid} />
                     <div className="form-group">
                         <label className="form-label required">패스워드</label>
                         <input
@@ -241,7 +242,8 @@ export default function SignupUser() {
                             중복확인
                         </button>
                     </div>
-                    <ErrorMessage message={nickNameCheckMsg || errors.nickName} success={isNickNameValid} />
+                    <ErrorMessage message={errors.nickName} />
+                    <ErrorMessage message={nickNameCheckMsg} success={isNickNameValid} />
                     <div className="form-group">
                         <label className="form-label required">휴대전화</label>
                         <input

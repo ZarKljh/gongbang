@@ -17,6 +17,21 @@ body {
     margin-right: auto;
 }
 
+.need-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* min-height: 100vh; */
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; */
+    color: #000;
+    font-size: 24px;
+    font-weight: 600;
+    gap: 30px;
+    padding: 20px;
+}
+
 /* 사이드바 */
 .mypage-sidebar {
     width: 256px;

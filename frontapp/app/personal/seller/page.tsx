@@ -13,7 +13,7 @@ export default function MyPage() {
     // userData---> seller 데이터 대체
     const [userData, setUserData] = useState<any>(null)
     const [stats, setStats] = useState<any>({ totalQna: 0, totalReviews: 0 })
-    const [activeTab, setActiveTab] = useState('profile')
+    const [activeTab, setActiveTab] = useState('studio')
     const [activeSubTab, setActiveSubTab] = useState('studio')
     const [loading, setLoading] = useState(true)
 
@@ -125,9 +125,14 @@ export default function MyPage() {
     }
     //공방 전체 리스트중 최초 등록 공방 fetch
     const fetchStudio = async (id: number) => {
-        const { data } = await axios.get(`${API_BASE_URL}/personal/seller/studio/${id}`, { withCredentials: true })
-        //console.log('📌 fetchStudio 응답:', data.data)
-        setStudio(data.data.studio)
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/personal/seller/studio/${id}`, { withCredentials: true })
+            //console.log('📌 fetchStudio 응답:', data.data)
+            setStudio(data.data.studio)
+        } catch (err: any) {
+            console.warn('📌 스튜디오 정보 없음 또는 오류:', err?.response?.status)
+            setStudio(null) // 스튜디오 없음으로 처리
+        }
     }
 
     // =============== 🔐 회원정보 관련 함수 ===============
@@ -398,7 +403,9 @@ export default function MyPage() {
 
     // =============== 렌더링 조건 ===============
     if (loading) return <div>로딩중...</div>
-    if (!userData) return <div>로그인이 필요합니다.</div>
+    if (!studio) return <div className="need-login">등록된 공방이 없습니다</div>
+
+    /*<button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>*/
 
     return (
         <div className="mypage-container">
