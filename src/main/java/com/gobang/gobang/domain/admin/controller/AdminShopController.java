@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.admin.dto.AdminShopListDto;
 import com.gobang.gobang.domain.admin.repository.request.AdminShopStatusUpdateRequest;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
+import com.gobang.gobang.domain.inquiry.service.InquiryService;
 import com.gobang.gobang.domain.seller.model.StudioStatus;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,9 @@ import java.util.Map;
 public class AdminShopController {
 
     private final StudioRepository studioRepository;
+
+
+
 
     public AdminShopController(StudioRepository studioRepository) {
         this.studioRepository = studioRepository;
@@ -80,4 +84,6 @@ public class AdminShopController {
         studioRepository.save(s);
         return ResponseEntity.ok(Map.of("ok", true, "id", s.getStudioId(), "status", s.getStatus().name()));
     }
+
+
 }

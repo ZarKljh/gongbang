@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
-import layoutStyles from '@/app/admin/styles/MySection.module.css'
-import styles from '@/app/admin/styles/AdminInquiries.module.css'
+import styles from '@/app/admin/styles/AdminReports.module.css'
 import Modal from '@/app/admin/components/Modal'
 
 type Inquiry = {
@@ -58,7 +57,6 @@ export default function AdminInquiriesPage() {
             setList(inquiries)
             setTotalUnread(countRes.data?.count ?? 0)
         } catch (e: any) {
-            // 폴링 중 에러는 조용히 무시하고, 수동 로딩/첫 로딩에서만 표시되는 느낌으로 갈 수도 있음
             if (!opts?.silent) {
                 setError(e?.message ?? '문의 목록을 불러오는 중 오류가 발생했습니다.')
             }
@@ -91,20 +89,6 @@ export default function AdminInquiriesPage() {
             setReplyText('')
         }
     }, [selected])
-
-    const handleAckAll = async () => {
-        if (!confirm('모든 대기중 문의를 "처리 완료"로 표시할까요?')) return
-
-        try {
-            setAckLoading(true)
-            await api.post('/api/admin/v1/inquiries/ack')
-            await fetchData()
-        } catch (e: any) {
-            alert(e?.message ?? '처리 중 오류가 발생했습니다.')
-        } finally {
-            setAckLoading(false)
-        }
-    }
 
     const handleSubmitReply = async () => {
         if (!selected) return
@@ -150,57 +134,32 @@ export default function AdminInquiriesPage() {
     const filteredList = showOnlyUnread ? list.filter((item) => !item.answered) : list
 
     return (
-        <div className={layoutStyles.dashboardLayout}>
+        <div className={styles.page}>
             <Sidebar />
 
-            <main className={layoutStyles.mainArea}>
+            <main className={styles.main}>
                 {/* 상단 헤더 */}
-                <section className={styles.headerSection}>
+                <section className={styles.headerRow}>
                     <div>
-                        <h1 className={styles.pageTitle}>문의 관리</h1>
+                        <h1 className={styles.title}>문의 관리</h1>
                         <p className={styles.pageSubtitle}>고객이 남긴 1:1 문의를 확인하고 처리 상태를 관리합니다.</p>
                     </div>
 
-                    <div className={styles.headerRight}>
+                    <div className={styles.filterGroup}>
                         <div className={styles.counterBox}>
-                            <span className={styles.counterLabel}>대기중 문의</span>
+                            <span className={styles.counterLabel}>미처리 건 수</span>
                             <span className={styles.counterValue}>{totalUnread}건</span>
                         </div>
-                        <button
-                            type="button"
-                            className={styles.secondaryButton}
-                            onClick={() => fetchData()}
-                            disabled={loading}
-                        >
-                            새로고침
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.primaryButton}
-                            onClick={handleAckAll}
-                            disabled={ackLoading || totalUnread === 0}
-                        >
-                            {ackLoading ? '처리 중...' : '전체 처리 완료'}
-                        </button>
                     </div>
                 </section>
 
                 {/* 필터/에러 표시 */}
                 <section className={styles.controlSection}>
-                    <label className={styles.checkboxLabel}>
-                        <input
-                            type="checkbox"
-                            checked={showOnlyUnread}
-                            onChange={(e) => setShowOnlyUnread(e.target.checked)}
-                        />
-                        대기중 문의만 보기
-                    </label>
-
                     {error && <div className={styles.errorBox}>{error}</div>}
                 </section>
 
                 {/* 테이블 */}
-                <section className={styles.tableSection}>
+                <section className={styles.card}>
                     {loading && <div className={styles.infoText}>불러오는 중...</div>}
 
                     {!loading && filteredList.length === 0 && (
@@ -212,7 +171,6 @@ export default function AdminInquiriesPage() {
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
                                         <th>상태</th>
                                         <th>유형</th>
                                         <th>제목</th>
@@ -227,14 +185,13 @@ export default function AdminInquiriesPage() {
                                             className={inq.answered ? styles.rowAnswered : styles.rowUnread}
                                             onClick={() => setSelected(inq)}
                                         >
-                                            <td>{inq.id}</td>
                                             <td>
                                                 <span
                                                     className={
                                                         inq.answered ? styles.badgeAnswered : styles.badgePending
                                                     }
                                                 >
-                                                    {inq.answered ? 'RESOLVED' : 'PENDING'}
+                                                    {inq.answered ? '처리 완료' : '대기'}
                                                 </span>
                                             </td>
                                             <td>{inq.type}</td>

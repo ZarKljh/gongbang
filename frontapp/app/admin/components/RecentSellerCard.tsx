@@ -8,7 +8,7 @@ type RecentStudio = {
     id: number
     studioName: string
     studioEmail?: string
-    createdDate: string
+    createdAt: string
 }
 
 type Props = {
@@ -71,7 +71,7 @@ export default function RecentSellerCard({ title = '최근 입점 신청', limit
                             </div>
 
                             <div className={styles.recentUsersDate}>
-                                {s.createdDate ? new Date(s.createdDate).toLocaleDateString() : '-'}
+                                {s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '-'}
                             </div>
                         </li>
                     ))}

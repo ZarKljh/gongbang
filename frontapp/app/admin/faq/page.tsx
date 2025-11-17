@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import api from '@/app/utils/api' // axios 인스턴스 (baseURL, withCredentials 설정)
-import styles from '@/app/admin/styles/AdminFAQ.module.css'
+import api from '@/app/utils/api'
+import styles from '@/app/admin/styles/AdminReports.module.css'
 import Sidebar from '@/app/admin/components/Sidebar'
 
 type Id = string
@@ -68,7 +68,6 @@ export default function AdminFaqPage() {
         )
         const list = Array.isArray(data) ? data : data.content ?? []
         setCategories(list)
-        if (list.length && selectedCatId === 'all') setSelectedCatId(list[0].id)
     }
 
     async function loadFaqs() {
@@ -105,7 +104,7 @@ export default function AdminFaqPage() {
         if (!loading) {
             loadFaqs().catch((e) => setErr(e?.message ?? '로드 실패'))
         }
-    }, [selectedCatId])
+    }, [selectedCatId, q])
 
     const selectedCat = useMemo(() => categories.find((c) => c.id === selectedCatId), [categories, selectedCatId])
 
@@ -193,21 +192,47 @@ export default function AdminFaqPage() {
 
     // -------- UI --------
     return (
-        <section className={styles.section}>
+        <section className={styles.page}>
             {/* 사이드바 */}
             <Sidebar />
-            <div>
-                <header className="mb-5 flex items-center justify-between">
+            <div className={styles.main}>
+                <header className={styles.headerRow}>
                     <div>
-                        <h1 className="text-xl font-semibold">FAQ 관리</h1>
-                        <p className="text-sm text-slate-500">카테고리와 FAQ를 추가/수정/삭제할 수 있습니다.</p>
+                        <h1 className={styles.title}>FAQ 관리</h1>
+                        <p className={styles.pageSubtitle}>카테고리와 FAQ를 추가/수정/삭제할 수 있습니다.</p>
                     </div>
-                    <div className="flex gap-2">
-                        <button className="h-9 rounded-lg border px-3" onClick={() => setCatManagerOpen(true)}>
+
+                    <div className={styles.filterGroup}>
+                        <select
+                            className={styles.select}
+                            value={selectedCatId}
+                            onChange={(e) => setSelectedCatId(e.target.value as any)}
+                        >
+                            <option value="all">전체</option>
+                            {categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.active ? '' : '[비활성] '}
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
+                        <div className={styles.searchBox}>
+                            <input
+                                className={styles.searchInput}
+                                placeholder="검색: 질문/답변"
+                                value={q}
+                                onChange={(e) => setQ(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') loadFaqs()
+                                }}
+                            />
+                        </div>
+
+                        <button className={styles.btn} onClick={() => setCatManagerOpen(true)}>
                             카테고리 관리
                         </button>
                         <button
-                            className="h-9 rounded-lg border px-3 disabled:opacity-50"
+                            className={styles.btn}
                             onClick={() => setEditing({ categoryId: selectedCat?.id })}
                             disabled={categories.length === 0}
                             title={categories.length === 0 ? '먼저 카테고리를 추가하세요' : ''}
@@ -217,94 +242,62 @@ export default function AdminFaqPage() {
                     </div>
                 </header>
 
-                {err && (
-                    <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-700 text-sm">
-                        {err}
-                    </div>
-                )}
+                {err && <div className={styles.errorBox}>{err}</div>}
 
                 {/* Filters */}
-                <div className="mb-4 flex flex-wrap items-center gap-3">
-                    <select
-                        className="h-9 rounded-lg border bg-white px-3"
-                        value={selectedCatId}
-                        onChange={(e) => setSelectedCatId(e.target.value as any)}
-                    >
-                        <option value="all">(전체)</option>
-                        {categories.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.active ? '' : '[비활성] '}
-                                {c.name}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="relative">
-                        <input
-                            className="h-9 rounded-lg border pl-9 pr-3"
-                            placeholder="검색: 질문/답변"
-                            value={q}
-                            onChange={(e) => setQ(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') loadFaqs()
-                            }}
-                        />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
-                    </div>
-                    <button className="h-9 rounded-lg border px-3" onClick={loadFaqs}>
-                        검색
-                    </button>
-                </div>
+                <div className={styles.filters}></div>
 
                 {/* FAQ 테이블 */}
-                <div className="overflow-hidden rounded-2xl border">
-                    <table className="w-full text-sm">
-                        <thead className="bg-slate-50">
+                <div className={styles.card}>
+                    <table className={styles.table}>
+                        <thead className={styles.tableWrapper}>
                             <tr>
-                                <th className="p-2 text-left">카테고리</th>
-                                <th className="p-2 text-left">질문</th>
-                                <th className="p-2">정렬</th>
-                                <th className="p-2">공개</th>
-                                <th className="w-36 p-2"></th>
+                                <th className={styles.colCategory}>카테고리</th>
+                                <th className={styles.colQuestion}>질문</th>
+                                <th className={styles.colOrder}>정렬</th>
+                                <th className={styles.colPublish}>공개</th>
+                                <th className={styles.colActions}></th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td className="p-4 text-center text-slate-500" colSpan={5}>
+                                    <td className={styles.tableLoadingCell} colSpan={5}>
                                         로딩 중…
                                     </td>
                                 </tr>
                             ) : rows.length === 0 ? (
                                 <tr>
-                                    <td className="p-6 text-center text-slate-500" colSpan={5}>
+                                    <td className={styles.tableEmptyCell} colSpan={5}>
                                         항목이 없습니다.
                                     </td>
                                 </tr>
                             ) : (
                                 rows.map((r) => (
-                                    <tr key={r.id} className="border-t">
-                                        <td className="whitespace-nowrap p-2">{r.categoryName}</td>
-                                        <td className="p-2">
-                                            <div className="line-clamp-2">{r.question}</div>
+                                    <tr key={r.id} className={styles.tableRow}>
+                                        <td className={styles.cellCategory}>{r.categoryName}</td>
+                                        <td className={styles.cellQuestion}>
+                                            <div className={styles.questionText}>{r.question}</div>
                                         </td>
-                                        <td className="p-2 text-center">{r.orderNo}</td>
-                                        <td className="p-2 text-center">
+                                        <td className={styles.cellOrder}>{r.orderNo}</td>
+                                        <td className={styles.cellPublish}>
                                             <button
-                                                className={`h-7 rounded-full px-3 text-xs border ${
-                                                    r.published
-                                                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                                                        : 'border-slate-300 bg-slate-50 text-slate-600'
+                                                className={`${styles.btn} ${
+                                                    r.published ? styles.publishOn : styles.publishOff
                                                 }`}
                                                 onClick={() => onTogglePublish(r)}
                                             >
                                                 {r.published ? '공개' : '비공개'}
                                             </button>
                                         </td>
-                                        <td className="p-2 text-right">
-                                            <button className="px-2" onClick={() => setEditing(r)}>
+                                        <td className={styles.cellActions}>
+                                            <button className={styles.btn} onClick={() => setEditing(r)}>
                                                 수정
                                             </button>
-                                            <button className="px-2 text-rose-600" onClick={() => onDeleteFaq(r.id)}>
+                                            <button
+                                                className={`${styles.btn} ${styles.actionDanger}`}
+                                                onClick={() => onDeleteFaq(r.id)}
+                                            >
                                                 삭제
                                             </button>
                                         </td>
@@ -361,74 +354,69 @@ function CategoryManagerModal({
 }) {
     if (!open) return null
     return (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-black/40 p-4">
-            <div
-                className="w-full max-w-2xl rounded-2xl bg-white shadow-xl ring-1 ring-black/10"
-                role="dialog"
-                aria-modal="true"
-            >
-                <div className="flex items-center justify-between border-b px-5 py-4">
-                    <h2 className="text-base font-semibold">카테고리 관리</h2>
-                    <div className="flex items-center gap-2">
+        <div className={styles.modalOverlay}>
+            <div className={styles.modalCategoryManager} role="dialog" aria-modal="true">
+                <div className={styles.modalHeader}>
+                    <h2 className={styles.modalTitleSmall}>카테고리 관리</h2>
+                    <div className={styles.modalHeaderRight}>
                         <button
-                            className="h-8 rounded-lg border px-3 text-sm"
+                            className={styles.buttonSecondarySmall}
                             onClick={() => onEdit({})}
                             title="카테고리 추가"
                         >
                             + 추가
                         </button>
-                        <button
-                            className="grid h-8 w-8 place-items-center rounded-lg border hover:bg-slate-50"
-                            onClick={onClose}
-                            aria-label="닫기"
-                        >
+                        <button className={styles.iconButton} onClick={onClose} aria-label="닫기">
                             ✕
                         </button>
                     </div>
                 </div>
 
-                <div className="max-h-[70vh] overflow-auto">
-                    <table className="w-full text-sm">
-                        <thead className="bg-slate-50">
+                <div className={styles.modalBodyScrollable}>
+                    <table className={styles.table}>
+                        <thead className={styles.tableHead}>
                             <tr>
-                                <th className="w-[44%] p-2 text-left">이름</th>
-                                <th className="p-2 text-left">슬러그</th>
-                                <th className="w-20 p-2 text-center">정렬</th>
-                                <th className="w-24 p-2 text-center">상태</th>
-                                <th className="w-36 p-2 text-right">작업</th>
+                                <th className={styles.colCatName}>이름</th>
+                                <th className={styles.colCatSlug}>슬러그</th>
+                                <th className={styles.colCatOrder}>정렬</th>
+                                <th className={styles.colCatStatus}>상태</th>
+                                <th className={styles.colActions}>작업</th>
                             </tr>
                         </thead>
                         <tbody>
                             {categories.length === 0 ? (
                                 <tr>
-                                    <td className="p-4 text-center text-slate-500" colSpan={5}>
+                                    <td className={styles.tableEmptyCell} colSpan={5}>
                                         등록된 카테고리가 없습니다. “+ 추가”를 눌러 생성하세요.
                                     </td>
                                 </tr>
                             ) : (
                                 categories.map((c) => (
-                                    <tr key={c.id} className="border-t">
-                                        <td className="p-2">
-                                            <div className="font-medium">{c.name}</div>
+                                    <tr key={c.id} className={styles.tableRow}>
+                                        <td className={styles.cellCategoryManagerName}>
+                                            <div className={styles.categoryNameText}>{c.name}</div>
                                         </td>
-                                        <td className="p-2 text-slate-600">{c.slug}</td>
-                                        <td className="p-2 text-center">{c.orderNo}</td>
-                                        <td className="p-2 text-center">
+                                        <td className={styles.cellCategorySlug}>{c.slug}</td>
+                                        <td className={styles.cellOrder}>{c.orderNo}</td>
+                                        <td className={styles.cellStatus}>
                                             <span
-                                                className={`inline-flex h-6 items-center rounded-full border px-2 text-xs ${
+                                                className={`${styles.categoryStatus} ${
                                                     c.active
-                                                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                                                        : 'border-slate-300 bg-slate-50 text-slate-600'
+                                                        ? styles.categoryStatusActive
+                                                        : styles.categoryStatusInactive
                                                 }`}
                                             >
                                                 {c.active ? '활성' : '비활성'}
                                             </span>
                                         </td>
-                                        <td className="p-2 text-right">
-                                            <button className="px-2" onClick={() => onEdit(c)}>
+                                        <td className={styles.cellActions}>
+                                            <button className={styles.actionButton} onClick={() => onEdit(c)}>
                                                 수정
                                             </button>
-                                            <button className="px-2 text-rose-600" onClick={() => onDelete(c.id)}>
+                                            <button
+                                                className={`${styles.actionButton} ${styles.actionDanger}`}
+                                                onClick={() => onDelete(c.id)}
+                                            >
                                                 삭제
                                             </button>
                                         </td>
@@ -439,8 +427,8 @@ function CategoryManagerModal({
                     </table>
                 </div>
 
-                <div className="flex justify-end gap-2 border-t px-5 py-3">
-                    <button className="h-9 rounded-lg border px-3" onClick={onClose}>
+                <div className={styles.modalFooter}>
+                    <button className={styles.buttonSecondary} onClick={onClose}>
                         닫기
                     </button>
                 </div>
@@ -480,39 +468,39 @@ function CategoryEditor({
     }
 
     return (
-        <div className="fixed inset-0 z-[110] grid place-items-center bg-black/40 p-4">
-            <div className="w-full max-w-xl rounded-2xl bg-white p-5 shadow-xl">
-                <h2 className="mb-4 text-lg font-semibold">{form.id ? '카테고리 수정' : '카테고리 추가'}</h2>
-                <div className="grid gap-3">
-                    <div className="grid gap-1">
-                        <label className="text-xs text-slate-500">이름</label>
+        <div className={styles.modalOverlay}>
+            <div className={styles.modalCategoryEditor}>
+                <h2 className={styles.modalTitle}>{form.id ? '카테고리 수정' : '카테고리 추가'}</h2>
+                <div className={styles.formGrid}>
+                    <div className={styles.formField}>
+                        <label className={styles.fieldLabel}>이름</label>
                         <input
-                            className="h-10 rounded-lg border px-3"
+                            className={styles.inputText}
                             value={form.name}
                             onChange={(e) => setForm({ ...form, name: e.target.value })}
                             placeholder="예: 결제"
                         />
                     </div>
-                    <div className="grid gap-1">
-                        <label className="text-xs text-slate-500">슬러그</label>
+                    <div className={styles.formField}>
+                        <label className={styles.fieldLabel}>슬러그</label>
                         <input
-                            className="h-10 rounded-lg border px-3"
+                            className={styles.inputText}
                             value={form.slug}
                             onChange={(e) => setForm({ ...form, slug: e.target.value })}
                             placeholder="예: payment"
                         />
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="grid gap-1">
-                            <label className="text-xs text-slate-500">정렬</label>
+                    <div className={styles.formRow}>
+                        <div className={styles.formField}>
+                            <label className={styles.fieldLabel}>정렬</label>
                             <input
                                 type="number"
-                                className="h-9 w-28 rounded-lg border px-2"
+                                className={styles.inputNumberSmall}
                                 value={form.orderNo as number}
                                 onChange={(e) => setForm({ ...form, orderNo: Number(e.target.value) || 0 })}
                             />
                         </div>
-                        <label className="inline-flex select-none items-center gap-2 text-sm">
+                        <label className={styles.checkboxLabel}>
                             <input
                                 type="checkbox"
                                 checked={!!form.active}
@@ -522,11 +510,11 @@ function CategoryEditor({
                         </label>
                     </div>
                 </div>
-                <div className="mt-5 flex justify-end gap-2">
-                    <button className="h-9 rounded-lg border px-3" onClick={onClose}>
+                <div className={styles.modalFooter}>
+                    <button className={styles.buttonSecondary} onClick={onClose}>
                         취소
                     </button>
-                    <button className="h-9 rounded-lg bg-indigo-600 px-3 text-white" onClick={save}>
+                    <button className={styles.buttonPrimary} onClick={save}>
                         저장
                     </button>
                 </div>
@@ -573,14 +561,14 @@ function FaqEditor({
     }
 
     return (
-        <div className="fixed inset-0 z-[110] grid place-items-center bg-black/40 p-4">
-            <div className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-xl">
-                <h2 className="mb-4 text-lg font-semibold">{form.id ? 'FAQ 수정' : 'FAQ 추가'}</h2>
-                <div className="grid gap-3">
-                    <div className="grid gap-1">
-                        <label className="text-xs text-slate-500">카테고리</label>
+        <div className={styles.modalOverlay}>
+            <div className={styles.modalFaqEditor}>
+                <h2 className={styles.modalTitle}>{form.id ? 'FAQ 수정' : 'FAQ 추가'}</h2>
+                <div className={styles.formGrid}>
+                    <div className={styles.formField}>
+                        <label className={styles.fieldLabel}>카테고리</label>
                         <select
-                            className="h-9 rounded-lg border bg-white px-3"
+                            className={styles.select}
                             value={form.categoryId as string}
                             onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                         >
@@ -591,35 +579,35 @@ function FaqEditor({
                             ))}
                         </select>
                     </div>
-                    <div className="grid gap-1">
-                        <label className="text-xs text-slate-500">질문</label>
+                    <div className={styles.formField}>
+                        <label className={styles.fieldLabel}>질문</label>
                         <input
-                            className="h-10 rounded-lg border px-3"
+                            className={styles.inputText}
                             value={form.question}
                             onChange={(e) => setForm({ ...form, question: e.target.value })}
                             placeholder="질문을 입력하세요"
                         />
                     </div>
-                    <div className="grid gap-1">
-                        <label className="text-xs text-slate-500">답변</label>
+                    <div className={styles.formField}>
+                        <label className={styles.fieldLabel}>답변</label>
                         <textarea
-                            className="min-h-[140px] rounded-lg border p-3"
+                            className={styles.textarea}
                             value={form.answer}
                             onChange={(e) => setForm({ ...form, answer: e.target.value })}
                             placeholder="답변을 입력하세요"
                         />
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="grid gap-1">
-                            <label className="text-xs text-slate-500">정렬</label>
+                    <div className={styles.formRow}>
+                        <div className={styles.formField}>
+                            <label className={styles.fieldLabel}>정렬</label>
                             <input
                                 type="number"
-                                className="h-9 w-28 rounded-lg border px-2"
+                                className={styles.inputNumberSmall}
                                 value={form.orderNo as number}
                                 onChange={(e) => setForm({ ...form, orderNo: Number(e.target.value) || 0 })}
                             />
                         </div>
-                        <label className="inline-flex select-none items-center gap-2 text-sm">
+                        <label className={styles.checkboxLabel}>
                             <input
                                 type="checkbox"
                                 checked={!!form.published}
@@ -629,11 +617,11 @@ function FaqEditor({
                         </label>
                     </div>
                 </div>
-                <div className="mt-5 flex justify-end gap-2">
-                    <button className="h-9 rounded-lg border px-3" onClick={onClose}>
+                <div className={styles.modalFooter}>
+                    <button className={styles.buttonSecondary} onClick={onClose}>
                         취소
                     </button>
-                    <button className="h-9 rounded-lg bg-indigo-600 px-3 text-white" onClick={save}>
+                    <button className={styles.buttonPrimary} onClick={save}>
                         저장
                     </button>
                 </div>
