@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.product.productList.service;
 
+import com.gobang.gobang.domain.auth.entity.Studio;
+import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.personal.repository.WishListRepository;
@@ -7,6 +9,7 @@ import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.ProductImageDto;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
+import com.gobang.gobang.domain.product.dto.StudioDto;
 import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
 import com.gobang.gobang.domain.product.dto.response.ProductDetailResponse;
 import com.gobang.gobang.domain.product.entity.Product;
@@ -32,6 +35,7 @@ public class ProductService {
     private final ProductImageRepository productImageRepository;
     private final ReviewRepository reviewRepository;
     private final WishListRepository wishListRepository;
+    private final StudioRepository studioRepository;
 
     public List<ProductDto> getProductList(Long subCategoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
@@ -150,20 +154,43 @@ public class ProductService {
         Product productDetail = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다. id=" + productId));
 
-        // 2) 이미지 한 장 조회 + 없으면 throw
-        Image image = productImageRepository
+        Long studioId = productDetail.getStudioId();
+
+        // 2) 상품 이미지 한 장 조회 + 없으면 throw
+        Image pdImage = productImageRepository
                 .findFirstByRefIdAndRefTypeOrderBySortOrderAsc(productId, Image.RefType.PRODUCT)
+                .orElse(null);
+
+        // 3) studioId로 공방(Studio) 조회
+        Studio studio = studioRepository.findById(studioId)
+                .orElse(null);
+
+        // 2) 공방 프로필 이미지 한 장 조회 + 없으면 throw
+        Image gbImage = productImageRepository
+                .findFirstByRefIdAndRefTypeOrderBySortOrderAsc(studioId, Image.RefType.STUDIO_LOGO)
                 .orElse(null);
 
         // 3) DTO 변환 (생성자)
         ProductDto productDto = new ProductDto(productDetail);
-        ProductImageDto imageDto = null;   // ⭐ 기본값은 null
-        if (image != null) {               // ⭐ null일 때만 생성자 호출 안 함
-            imageDto = new ProductImageDto(image);
+
+        ProductImageDto pdImageDto = null;   // ⭐ 기본값은 null
+        if (pdImage != null) {               // ⭐ null일 때만 생성자 호출 안 함
+            pdImageDto = new ProductImageDto(pdImage);
         }
 
+        StudioDto studioDto  = null;   // ⭐ 기본값은 null
+        if (studio != null) {               // ⭐ null일 때만 생성자 호출 안 함
+            studioDto = StudioDto.fromEntity(studio); //팩토리 메서드 방식도 한번 써봄
+        }
+
+        Image gbImageEntity  = null;   // ⭐ 기본값은 null
+        if (gbImage != null) {               // ⭐ null일 때만 생성자 호출 안 함
+            gbImageEntity = gbImage; //팩토리 메서드 방식도 한번 써봄
+        }
+
+
         // 4) Response DTO 리턴
-        return new ProductDetailResponse(productDto, imageDto);
+        return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity);
 
     }
 

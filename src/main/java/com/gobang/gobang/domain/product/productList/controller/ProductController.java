@@ -60,7 +60,7 @@ public class ProductController {
 
 
     @GetMapping("/{productId}/detail")
-    @Operation(summary = "상품 상세 조회")
+    @Operation(summary = "상품 상세 조회 (상세+이미지+셀러 상세)")
     public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
         ProductDetailResponse productDetailList = productService.getProductDetail(productId);
         return RsData.of("200", "상품 다건 조회 성공", productDetailList);

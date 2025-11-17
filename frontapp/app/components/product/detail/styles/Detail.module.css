@@ -213,6 +213,7 @@
     height: 70px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1.5px solid #333;
 }
 
 .creatorInfo {
