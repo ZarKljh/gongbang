@@ -70,52 +70,5 @@ public class ApiV1AdminController {
 
 
 
-    // 입점 신청 목록
-    @GetMapping("/applications")
-    public ResponseEntity<Map<String, Object>> listApplications(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String status // PENDING|NEEDS_REVISION|APPROVED|REJECTED
-    ) {
-        // 더미 데이터
-        var content = List.of(
-                Map.of(
-                        "id", 9001,
-                        "storeName", "무지리 공방",
-                        "category", "WOOD",
-                        "status", status == null ? "PENDING" : status,
-                        "submittedAt", Instant.now().minusSeconds(7200).toString()
-                )
-        );
-        return ResponseEntity.ok(Map.of(
-                "content", content,
-                "page", page,
-                "size", size,
-                "total", 1
-        ));
-    }
 
-    // 입점 심사 결정
-    @PostMapping("/applications/{id}/decision")
-    public ResponseEntity<Map<String, Object>> decideApplication(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> body, // { "decision": "APPROVE|REQUEST_CHANGES|REJECT", "reason": "..." }
-            @RequestHeader(value = "Idempotency-Key", required = false) String idemKey
-    ) {
-        String decision = String.valueOf(body.getOrDefault("decision", "REQUEST_CHANGES"));
-        String newStatus = switch (decision) {
-            case "APPROVE"         -> "APPROVED";
-            case "REQUEST_CHANGES" -> "NEEDS_REVISION";
-            case "REJECT"          -> "REJECTED";
-            default                -> "PENDING";
-        };
-        return ResponseEntity.ok(Map.of(
-                "applicationId", id,
-                "status", newStatus,
-                "decision", decision,
-                "auditId", 55510,
-                "notificationId", 99010,
-                "idemKey", idemKey
-        ));
-    }
 }
