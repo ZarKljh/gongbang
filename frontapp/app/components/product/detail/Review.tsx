@@ -91,7 +91,7 @@ export default function detail() {
     }, [])
 
     // 리뷰 목록 조회
-    const fetchReviews = async (productId: number, page = 0, sort = sortType) => {
+    const fetchReviews = async (productId: number, page = 0, sort: string) => {
         try {
             const res = await fetch(
                 `http://localhost:8090/api/v1/reviews?productId=${productId}&page=${page}&sort=${sort}&keyword=${encodeURIComponent(
@@ -107,8 +107,8 @@ export default function detail() {
             const fetchedReviews = data.data.reviews || []
 
             setReviews(fetchedReviews)
-            setCurrentPage(data.data.currentPage)
-            setTotalpages(data.data.totalPages)
+            setCurrentPage(data.data.currentPage ?? 0)
+            setTotalpages(data.data.totalPages ?? 0)
             console.log('정렬 요청, sortType:', sort, 'page:', page)
 
             // 리뷰별 좋아요 카운트 초기화
@@ -147,22 +147,6 @@ export default function detail() {
         }, 100)
     }
 
-    // 리뷰 목록 조회 후 사진이 있는 리뷰만 포토리뷰로
-    // useEffect(() => {
-    //     if (reviews.length > 0) {
-    //         const pr = reviews
-    //             .filter((r) => r.imageUrls && r.imageUrls.length > 0)
-    //             .map((r) => ({
-    //                 id: r.reviewId,
-    //                 img: `http://localhost:8090${r.imageUrls[0]}`,
-    //                 title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
-    //             }))
-
-    //         setPhotoReviews(pr)
-    //     } else {
-    //         setPhotoReviews([])
-    //     }
-    // }, [reviews])
     const fetchPhotoReviews = async (productId) => {
         try {
             const res = await fetch(`http://localhost:8090/api/v1/reviews/photo?productId=${productId}`)
@@ -271,7 +255,12 @@ export default function detail() {
     // 검색
     const handleSearch = async () => {
         if (!productId) return
+
+        console.log('검색 버튼 클릭, keyword =', keyword)
         // keyword는 state로 관리되고 있으니, 여기서는 현재 sortType 그대로 0페이지부터 조회
+
+        setCurrentPage(0)
+
         fetchReviews(productId, 0, sortType)
     }
 
@@ -545,12 +534,11 @@ export default function detail() {
                             <ChevronRight size={26} strokeWidth={2.5} />
                         </div>
                     </section>
-                    
 
                     {/* 📜 리뷰 목록 */}
                     <div ref={reviewTopRef} aria-hidden>
-                          <hr style={{marginBottom: '20px'}}/>
-                        <h3  className="review-title">리뷰</h3>
+                        <hr style={{ marginBottom: '20px' }} />
+                        <h3 className="review-title">리뷰</h3>
                     </div>
 
                     {/* 평균 별점 */}
@@ -611,13 +599,19 @@ export default function detail() {
                         </div>
 
                         {/* 검색 */}
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className="search" style={{ display: 'flex', alignItems: 'center' }}>
                             <input
                                 type="text"
                                 className="review-search-input"
                                 placeholder="키워드 검색"
                                 value={keyword}
                                 onChange={(e) => setKeyword(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault()
+                                        handleSearch()
+                                    }
+                                }}
                             />
                             <button className="review-search-btn" onClick={handleSearch}>
                                 검색

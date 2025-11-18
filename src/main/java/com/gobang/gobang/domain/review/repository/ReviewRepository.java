@@ -59,4 +59,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<ReviewRatingDto> findRatingStatsByProductIds(@Param("ids") List<Long> ids);
 
     List<Review> findByProductId(Long productId);
+
+    // 상품, 내용 검색용
+    Page<Review> findByProductIdAndContentContainingIgnoreCase(Long productId, String keyword, Pageable pageable);
 }
