@@ -573,7 +573,7 @@ export default function detail() {
 
                         {/* 오른쪽 그래프 */}
                         <div className="review-average-graph">
-                            {['최고', '좋음', '보통', '별로', '나쁨'].map((label, i) => {
+                            {['5', '4', '3', '2', '1'].map((label, i) => {
                                 const score = 5 - i
                                 const percent = ratingData[score] || 0
                                 return (

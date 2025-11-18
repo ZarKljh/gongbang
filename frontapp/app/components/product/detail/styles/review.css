@@ -511,12 +511,13 @@
 .review-pagination {
   margin-top: 20px;
   text-align: center;
+  margin-bottom: 100px;
 }
 
 /* 기본 버튼 스타일 */
 .pagination-btn {
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   border: 1px solid #ccc;
   background-color: white;
   color: black;
