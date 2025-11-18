@@ -57,12 +57,12 @@ class GobangApplicationTests {
         // 2) 이미지 파일 목록
         // ------------------------------
         String[] catImages = {
-                "/uploads/reviews/고냥이1.jfif",
-                "/uploads/reviews/고냥이2.jfif",
-                "/uploads/reviews/고냥이3.webp",
-                "/uploads/reviews/고냥이4.jfif",
-                "/uploads/reviews/고냥이5.jfif",
-                "/uploads/reviews/고냥이6.jfif"
+                "/uploads/reviews/공방1.jfif",
+                "/uploads/reviews/공방2.jfif",
+                "/uploads/reviews/공방3.jfif",
+                "/uploads/reviews/공방4.jfif",
+                "/uploads/reviews/공방5.jfif",
+                "/uploads/reviews/공방6.jfif"
         };
 
         String longText = "이 제품은 정말 만족스러웠습니다. 디자인도 고급스럽고 사용감도 훌륭했습니다. "
