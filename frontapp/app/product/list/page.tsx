@@ -7,6 +7,7 @@ import api from '@/app/utils/api'
 import styles from './Cards.module.css'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useQuery } from '@tanstack/react-query'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
@@ -17,6 +18,18 @@ type Category = {
 type Product = {
     id: number
     name: string
+    summary?: string
+    subtitle: string
+    description?: string
+    basePrice: number
+    stockQuantity: number
+    seoTitle: string
+    images?: ProductImageDto[]
+    avgRating?: string
+    ratingCount?: string
+
+    likeCount: number
+    liked: boolean
 }
 
 type SubCategory = {
@@ -41,6 +54,18 @@ type FilterOptionDto = {
     sortOrder: number
     colorHex: string
 }
+
+type ProductImageDto = {
+    id: number
+    imageUrl: string
+    imageOrder?: number
+}
+
+// type FilterProductResponse = {
+//     productFilterList: Product[]
+//     imageMapList: Record<number, ProductImageDto[]>
+//     reviewMapList: ReviewRatingDto[] // 🔹 배열임! (지금 응답 구조)
+// }
 //
 
 export default function Product() {
@@ -66,6 +91,7 @@ export default function Product() {
         PRICE_MIN: ['PRICE_MAX'],
         PRICE_MAX: ['PRICE_MIN'],
     }
+    const BASE_URL = 'http://localhost:8090'
 
     const onClickSubCategory = (catId: number, subId: number) => {
         // 2️⃣ 이전 필터·선택 상태·결과 초기화
@@ -192,9 +218,28 @@ export default function Product() {
 
             api.get(`product/${selectedSubCategoryId}/search`, { params: payload })
                 .then((res) => {
-                    const productFilterList = res.data.data.productFilterList
-                    //console.log(productFilterList)
-                    setProducts(productFilterList)
+                    const { productFilterList, imageMapList, reviewMapList, likedMap } = res.data.data
+
+                    const merged = productFilterList.map((p: any) => {
+                        const images =
+                            imageMapList?.[p.id]?.map((img: any) => ({
+                                ...img,
+                                // ❗ 여기가 핵심: 절대경로 보정
+                                imageUrl: img.imageUrl.startsWith('http') ? img.imageUrl : `${BASE_URL}${img.imageUrl}`,
+                            })) ?? []
+                        const review = reviewMapList?.[p.id] ?? null
+                        return {
+                            ...p,
+                            images,
+                            avgRating: review?.avgRating ?? 0,
+                            ratingCount: review?.ratingCount ?? 0,
+                            // ⭐ likedMap 반영
+                            liked: likedMap?.[p.id] ?? false, // 로그인 안 했으면 false
+                        }
+                    })
+                    console.log(merged)
+                    console.log('💬 reviewMapList raw:', reviewMapList)
+                    setProducts(merged)
                 })
                 .catch((err) => console.error('상품 검색 실패:', err))
         },
@@ -241,6 +286,34 @@ export default function Product() {
         const extra = buildExtra(selectedBtn)
         submitFilter(extra)
     }, [selectedBtn, selectedCategoryId, selectedSubCategoryId, submitFilter])
+
+    const handleToggleLike = (productId: number) => {
+        api.post(`product/${productId}/like`)
+            .then((res) => {
+                console.log('like response:', res.data)
+
+                const { resultCode, msg, data } = res.data
+
+                if (resultCode !== '200') {
+                    alert(msg)
+                    return
+                }
+
+                const targetId = Number(data.productId)
+                const liked: boolean = data.liked
+                const likeCount: number = data.likeCount
+
+                setProducts((prev) => prev.map((p) => (p.id === targetId ? { ...p, liked, likeCount } : p)))
+            })
+            .catch((err) => {
+                if (err.response?.status === 401) {
+                    alert('로그인이 필요합니다.')
+                } else {
+                    alert('로그인이 필요합니다.')
+                    console.error('좋아요 에러:', err)
+                }
+            })
+    }
 
     return (
         <div className={styles.pageFrame}>
@@ -421,17 +494,36 @@ export default function Product() {
                                                 className={styles.cardLink}
                                                 aria-label="카드 1 자세히 보기"
                                             >
-                                                <figure className={styles.cardMedia}>
-                                                    <img alt="카드 대표 이미지" loading="lazy" />
-                                                </figure>
+                                                <div className={styles.cardMedia}>
+                                                    <img
+                                                        src={
+                                                            p.images && p.images.length > 0
+                                                                ? p.images[0].imageUrl
+                                                                : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                        }
+                                                        alt={p.name}
+                                                    />
+                                                </div>
                                                 <h3 className={styles.cardTitle}>{p.name}</h3>
-                                                <p className={styles.cardDesc}>간단한 설명 문구가 들어갑니다.</p>
+
+                                                <p className={styles.cardDesc}>{p.seoTitle}</p>
+                                                <p className={styles.cardDesc}>{p.basePrice.toLocaleString()}원</p>
                                             </Link>
 
                                             <footer className={styles.cardActions}>
-                                                <a href="#" className={styles.btnRead}>
-                                                    자세히
-                                                </a>
+                                                <span>
+                                                    ⭐{p.avgRating}.0({p.ratingCount})
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    className={`${styles.likeBtn} ${p.liked ? styles.active : ''}`}
+                                                    onClick={(e) => {
+                                                        e.preventDefault() // 링크 이동 막기
+                                                        handleToggleLike(p.id)
+                                                    }}
+                                                >
+                                                    {p.liked ? '💗' : '🤍'}
+                                                </button>
                                             </footer>
                                         </article>
                                     </li>

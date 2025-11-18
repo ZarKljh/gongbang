@@ -2,9 +2,10 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { FaStar, FaPlus } from 'react-icons/fa'
+import { FaStar, FaPlus, FaTimes } from 'react-icons/fa'
 import api from '@/app/utils/api'
 import Link from 'next/link'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 
 export default function ReviewCreate() {
     const router = useRouter()
@@ -31,6 +32,15 @@ export default function ReviewCreate() {
             ...prev,
             [name]: name === 'rating' ? Number(value) : value,
         }))
+    }
+
+    // 드래그앤드롭 정렬
+    const handleDragEnd = (result) => {
+        if (!result.destination) return
+        const reordered = Array.from(review.imageUrls)
+        const [moved] = reordered.splice(result.source.index, 1)
+        reordered.splice(result.destination.index, 0, moved)
+        setReview((prev) => ({ ...prev, imageUrls: reordered }))
     }
 
     useEffect(() => {
@@ -61,20 +71,23 @@ export default function ReviewCreate() {
             ...nextIds,
         }
 
-        try {
-            const res = await api.post('/reviews', review)
-            if (res.status === 200 || res.status === 201) {
-                alert('리뷰가 등록되었습니다.')
-                router.push(`/product/list/detail?productId=${review.productId}`)
-            }
-        } catch (err) {
-            alert('리뷰 등록 실패')
+        const res = await api.post('/reviews', reviewToSend)
+
+        if (res.data?.resultCode?.startsWith('200')) {
+            alert('리뷰가 등록되었습니다.')
+            router.push(`/product/list/detail?productId=${review.productId}`)
+        } else {
+            alert(res.data?.msg || '리뷰 등록 실패')
         }
     }
 
-
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files)
+        if (review.imageUrls.length + files.length > 5) {
+            alert('이미지는 최대 5장까지 등록할 수 있습니다.')
+            return
+        }
+
         const token = localStorage.getItem('accessToken')
 
         const previews = []
@@ -102,6 +115,14 @@ export default function ReviewCreate() {
             }
         }
 
+        // 이미지 삭제
+        const handleRemoveImage = (index) => {
+            setReview((prev) => ({
+                ...prev,
+                imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+            }))
+        }
+
         // 3️⃣ base64 → 즉시 미리보기, url은 나중에 서버 저장용
         setReview((prev) => ({
             ...prev,
@@ -122,6 +143,7 @@ export default function ReviewCreate() {
     return (
         <div
             style={{
+                fontFamily: 'P-Regular',
                 maxWidth: '1280px',
                 margin: '0 auto',
                 padding: '40px 20px',
@@ -135,12 +157,15 @@ export default function ReviewCreate() {
 
                 <form onSubmit={handleSubmit}>
                     {/* 별점 */}
+
                     <div style={{ marginBottom: '20px' }}>
                         <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
                             상품은 만족하셨나요? 별점을 선택해주세요.
                         </p>
+
                         <div
                             style={{
+                                display: 'flex',
                                 borderBottom: '1px solid #ccc',
                                 paddingBottom: '10px',
                                 marginBottom: '20px',
@@ -164,6 +189,23 @@ export default function ReviewCreate() {
                                     }
                                 />
                             ))}
+                            <input
+                                type="submit"
+                                value="리뷰 등록하기"
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    marginLeft: 'auto',
+                                    backgroundColor: '#AD9263',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '10px 20px',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold',
+                                    marginRight: '10px',
+                                }}
+                            />
                         </div>
                     </div>
 
@@ -199,55 +241,124 @@ export default function ReviewCreate() {
                             paddingTop: '20px',
                         }}
                     >
-                        <label
-                            htmlFor="imageUpload"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    border: '2px solid #bfbfbf',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    fontSize: '24px',
-                                    borderRadius: '6px',
-                                    marginRight: '10px',
-                                    color: '#666',
-                                }}
-                            >
-                                <FaPlus />
-                            </div>
-                            <span style={{ fontSize: '16px' }}>파일을 첨부해주세요</span>
-                        </label>
-                        <input
-                            id="imageUpload"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            style={{ display: 'none' }}
-                            onChange={handleFileChange}
-                        />
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="images" direction="horizontal">
+                                {(provided) => (
+                                    <div
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '10px',
+                                            marginBottom: '20px',
+                                        }}
+                                    >
+                                        {review.imageUrls.map((url, index) => (
+                                            <Draggable key={url} draggableId={url} index={index}>
+                                                {(provided, snapshot) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        style={{
+                                                            position: 'relative',
+                                                            width: '120px',
+                                                            height: '120px',
+                                                            borderRadius: '8px',
+                                                            overflow: 'hidden',
+                                                            border: '1px solid #ccc',
+                                                            boxShadow: snapshot.isDragging
+                                                                ? '0 4px 12px rgba(0,0,0,0.3)'
+                                                                : '0 2px 6px rgba(0,0,0,0.1)',
+                                                            transform: snapshot.isDragging ? 'scale(1.05)' : 'scale(1)',
+                                                            transition: 'all 0.2s ease',
+                                                            backgroundColor: '#fff',
+                                                            ...provided.draggableProps.style,
+                                                        }}
+                                                    >
+                                                        <img
+                                                            src={
+                                                                url.startsWith('data:')
+                                                                    ? url
+                                                                    : `http://localhost:8090${url}`
+                                                            }
+                                                            alt={`리뷰 이미지 ${index + 1}`}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                objectFit: 'cover',
+                                                            }}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveImage(index)}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: '6px',
+                                                                right: '6px',
+                                                                background: 'rgba(0,0,0,0.6)',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: '50%',
+                                                                width: '22px',
+                                                                height: '22px',
+                                                                cursor: 'pointer',
+                                                                transition: '0.2s',
+                                                            }}
+                                                            onMouseEnter={(e) =>
+                                                                (e.currentTarget.style.background = 'rgba(0,0,0,0.8)')
+                                                            }
+                                                            onMouseLeave={(e) =>
+                                                                (e.currentTarget.style.background = 'rgba(0,0,0,0.6)')
+                                                            }
+                                                        >
+                                                            <FaTimes size={10} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
 
-                        <input
-                            type="submit"
-                            value="리뷰 등록하기"
-                            style={{
-                                backgroundColor: '#AD9263',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '10px 20px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                marginRight: '10px',
-                            }}
-                        />
+                                        {/* 추가 버튼 */}
+                                        {review.imageUrls.length < 5 && (
+                                            <label
+                                                htmlFor="fileUpload"
+                                                style={{
+                                                    width: '120px',
+                                                    height: '120px',
+                                                    border: '2px dashed #bbb',
+                                                    borderRadius: '8px',
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    color: '#777',
+                                                    cursor: 'pointer',
+                                                    fontSize: '20px',
+                                                    backgroundColor: '#fafafa',
+                                                    transition: '0.2s',
+                                                }}
+                                                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#AD9263')}
+                                                onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#bbb')}
+                                            >
+                                                <FaPlus />
+                                                <input
+                                                    id="fileUpload"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    multiple
+                                                    style={{ display: 'none' }}
+                                                    onChange={handleFileChange}
+                                                />
+                                            </label>
+                                        )}
+
+                                        <p>이미지를 등록해주세요.( 최대 5장 )</p>
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
                     </div>
 
                     {/* ✅ 현재 추가된 이미지 미리보기 */}
@@ -272,6 +383,24 @@ export default function ReviewCreate() {
                             </div>
                         </div>
                     )}
+                    <Link
+                        href={{
+                            pathname: '/product/list/detail',
+                            query: { productId: review?.productId },
+                        }}
+                        style={{
+                            display: 'inline-block',
+                            backgroundColor: '#ddd',
+                            color: '#333',
+                            textDecoration: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            fontWeight: 'bold',
+                            marginTop: '10px',
+                        }}
+                    >
+                        ← 목록으로 돌아가기
+                    </Link>
                 </form>
             </div>
 

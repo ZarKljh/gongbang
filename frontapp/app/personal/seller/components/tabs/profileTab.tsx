@@ -175,7 +175,7 @@ export default function ProfileTab(props: ProfileTabProps) {
                     <label>성별</label>
                     <p>{userData.gender === 'MALE' ? '남성' : '여성'}</p>
                 </div>
-                <p>{JSON.stringify(userData)}</p>
+                <p>{/*JSON.stringify(userData)*/}</p>
             </div>
         </div>
     )

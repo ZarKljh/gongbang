@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
-import styles from '@/app/admin/styles/AdminReports.module.css' // 디자인 동일하게 재사용
+import styles from '@/app/admin/styles/AdminReports.module.css' // 신고랑 동일 스타일 재사용
 
 type SellerStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | string
 
@@ -12,10 +12,25 @@ type Shop = {
     studioName: string
     studioEmail?: string
     categoryId?: number
+    categoryLabel?: string
     ownerUserName?: string
     ownerEmail?: string
     status: SellerStatus
     createdAt?: string
+}
+
+// 🔹 enum → 한글 라벨 매핑
+const statusKoreanLabel = (status: SellerStatus) => {
+    switch (status) {
+        case 'PENDING':
+            return '대기'
+        case 'APPROVED':
+            return '승인'
+        case 'REJECTED':
+            return '반려'
+        default:
+            return status
+    }
 }
 
 export default function AdminBusinessPage() {
@@ -31,7 +46,6 @@ export default function AdminBusinessPage() {
             const params: any = {}
             if (statusFilter !== 'ALL') params.status = statusFilter
 
-            // 백엔드 목록 API 경로
             const res = await api.get('/admin/shops', { params })
             const list: Shop[] = Array.isArray(res.data) ? res.data : res.data?.data ?? []
             setShops(list)
@@ -56,7 +70,7 @@ export default function AdminBusinessPage() {
             case 'PENDING':
                 return `${styles.badge} ${styles.badgePending}`
             case 'APPROVED':
-                return `${styles.badge} ${styles.badgeResolved}` // 초록색 계열 재사용
+                return `${styles.badge} ${styles.badgeResolved}`
             case 'REJECTED':
                 return `${styles.badge} ${styles.badgeRejected}`
             default:
@@ -66,7 +80,6 @@ export default function AdminBusinessPage() {
 
     const changeStatus = async (id: number, status: SellerStatus) => {
         try {
-            // 상태 변경 API (필요 시 adminMemo 등 추가 가능)
             await api.patch(`/admin/shops/${id}/status`, { status })
             await loadShops()
         } catch (e: any) {
@@ -80,7 +93,10 @@ export default function AdminBusinessPage() {
 
             <main className={styles.main}>
                 <div className={styles.headerRow}>
-                    <h1 className={styles.title}>입점 신청</h1>
+                    <div>
+                        <h1 className={styles.title}>입점 신청</h1>
+                        <p className={styles.pageSubtitle}>사업주들의 입점 신청을 확인하고 처리 상태를 관리합니다.</p>
+                    </div>
 
                     <div className={styles.filterGroup}>
                         <span style={{ fontSize: 12, color: '#6b7280' }}>상태 필터</span>
@@ -121,7 +137,9 @@ export default function AdminBusinessPage() {
                                     {shops.map((s) => (
                                         <tr key={s.id}>
                                             <td>
-                                                <span className={statusBadgeClass(s.status)}>{s.status}</span>
+                                                <span className={statusBadgeClass(s.status)}>
+                                                    {statusKoreanLabel(s.status)}
+                                                </span>
                                             </td>
                                             <td>
                                                 <div className={styles.target}>
@@ -133,12 +151,14 @@ export default function AdminBusinessPage() {
                                             </td>
                                             <td>
                                                 <div className={styles.meta}>
-                                                    {s.ownerUserName ?? '-'} {s.ownerEmail ? `(${s.ownerEmail})` : ''}
+                                                    {s.ownerUserName ?? '-'}
+                                                    {s.ownerEmail ? ` (${s.ownerEmail})` : ''}
                                                 </div>
                                             </td>
                                             <td>
                                                 <div className={styles.meta}>
-                                                    {s.categoryId != null ? `#${s.categoryId}` : '-'}
+                                                    {s.categoryLabel ??
+                                                        (s.categoryId ? `카테고리 #${s.categoryId}` : '-')}
                                                 </div>
                                             </td>
                                             <td>

@@ -60,7 +60,7 @@ export default function StudioAddTab(props: StudioAddTabProps) {
 
             {/* 헤더 */}
             <div className="section-header">
-                <h2>공방 관리</h2>
+                <h2>신규공방등록</h2>
 
                 {!editMode.studioAdd ? (
                     <button className="btn-primary" onClick={() => onEdit('studioAdd')}>
@@ -89,7 +89,7 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                         studioList.map((studio) => (
                             <div key={studio.studioId} className="studio-item">
                                 <img
-                                    src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
+                                    src={'/*`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`*/'}
                                     alt="logo"
                                     width={80}
                                     height={80}
@@ -110,6 +110,15 @@ export default function StudioAddTab(props: StudioAddTabProps) {
             {/* ================================ */}
             {editMode.studioAdd && (
                 <div className="studio-add-form">
+                    <div className="form-group">
+                        <label>사업자번호</label>
+                        <input
+                            type="text"
+                            className="editable"
+                            value={tempData.studioBusinessNumber || ''}
+                            onChange={(e) => onTempChange('studioBusinessNumber', e.target.value)}
+                        />
+                    </div>
                     {/* 카테고리 */}
                     <div className="form-group">
                         <label>카테고리</label>
@@ -148,7 +157,46 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                             onChange={(e) => onTempChange('studioDescription', e.target.value)}
                         />
                     </div>
-
+                    {/* 대표 번호 */}
+                    <div className="form-group">
+                        <label>공방 대표번호</label>
+                        <input
+                            type="text"
+                            className="editable"
+                            value={tempData.studioMobile || ''}
+                            onChange={(e) => onTempChange('studioMobile', e.target.value)}
+                        />
+                    </div>
+                    {/* 사무실전화번호 */}
+                    <div className="form-group">
+                        <label>사무실전화번호</label>
+                        <input
+                            type="text"
+                            className="editable"
+                            value={tempData.studioOfficeTell || ''}
+                            onChange={(e) => onTempChange('studioOfficeTell', e.target.value)}
+                        />
+                    </div>
+                    {/* 팩스 */}
+                    <div className="form-group">
+                        <label>팩스</label>
+                        <input
+                            type="text"
+                            className="editable"
+                            value={tempData.studioFax || ''}
+                            onChange={(e) => onTempChange('studioFax', e.target.value)}
+                        />
+                    </div>
+                    {/* 이메일 */}
+                    <div className="form-group">
+                        <label>이메일</label>
+                        <input
+                            type="text"
+                            className="editable"
+                            value={tempData.studioEmail || ''}
+                            onChange={(e) => onTempChange('studioEmail', e.target.value)}
+                        />
+                    </div>
                     {/* 대표 이미지 */}
                     <div className="form-group">
                         <label>대표 이미지</label>
@@ -180,7 +228,44 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                             />
                         )}
                     </div>
+                    <div className="form-group">
+                        <label>주소</label>
 
+                        {/* 우편번호 + 검색 버튼 */}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                type="text"
+                                className="editable"
+                                placeholder="우편번호"
+                                value={tempData.studioAddPostNumber || ''}
+                                onChange={(e) => onTempChange('studioAddPostNumber', e.target.value)}
+                                style={{ width: '140px' }}
+                            />
+                            <button type="button" className="btn-secondary" onClick={onAddressSearch}>
+                                주소 검색
+                            </button>
+                        </div>
+
+                        {/* 기본주소 */}
+                        <input
+                            type="text"
+                            className="editable"
+                            placeholder="기본주소"
+                            style={{ marginTop: 8 }}
+                            value={tempData.studioAddMain || ''}
+                            onChange={(e) => onTempChange('studioAddMain', e.target.value)}
+                        />
+
+                        {/* 상세주소 */}
+                        <input
+                            type="text"
+                            className="editable"
+                            placeholder="상세주소"
+                            style={{ marginTop: 8 }}
+                            value={tempData.studioAddDetail || ''}
+                            onChange={(e) => onTempChange('studioAddDetail', e.target.value)}
+                        />
+                    </div>
                     {/* 갤러리 이미지 */}
                     <div className="form-group">
                         <label>갤러리 이미지 (최대 5장)</label>

@@ -3,11 +3,14 @@ import React, { useState } from 'react'
 import { UserForm, StudioForm } from './component/index'
 import { UserInfo, StudioInfo } from './types'
 import { useRouter } from 'next/navigation'
+import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
+import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
 
 export default function SellerSignupPage() {
     const [step, setStep] = useState(1)
     const router = useRouter()
-
+    const { errors, validate } = signupUserValidation()
+    const { errors: studioErrors, validate: validateStudio } = signupSellerValidation()
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: '',
         password: '',
@@ -113,7 +116,16 @@ export default function SellerSignupPage() {
     }
 
     const handleNext = function () {
+        const isValid = validate(userInfo)
+
+        if (!isValid) {
+            // 검증 실패 → UserForm에서 ErrorMessage 컴포넌트가 에러 표시함
+            return
+        }
         setStep(2)
+    }
+    const handlePrev = () => {
+        setStep(1)
     }
 
     const handleSubmit = async () => {
@@ -156,17 +168,25 @@ export default function SellerSignupPage() {
                     onNext={handleNext}
                     onImagePreview={handleUserImagePreview}
                     previewProfileImage={previewProfileImage}
+                    setUserInfo={setUserInfo}
+                    setPreviewProfileImage={setPreviewProfileImage}
+                    errors={errors}
                 />
             )}
             {step === 2 && (
                 <StudioForm
                     studioInfo={studioInfo}
                     onChange={handleStudioChange}
+                    onMainImagePreview={handleStudioChange}
+                    onLogoImagePreview={handleStudioChange}
+                    onGalleryImagesPreview={handleStudioChange}
                     onSubmit={handleSubmit}
+                    onPrev={handlePrev}
                     setStudioInfo={setStudioInfo}
                     previewMainImage={previewMainImage}
                     previewLogoImage={previewLogoImage}
                     previewGalleryImages={previewGalleryImages}
+                    errors={studioErrors}
                 />
             )}
         </section>

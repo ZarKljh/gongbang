@@ -36,7 +36,7 @@ public class ReviewService {
     private final ReviewImageRepository reviewImageRepository;
 
 
-    public Page<Review> getReviews(Long productId, int page, String sort) {
+    public Page<Review> getReviews(Long productId, int page, String sort, String keyword) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
 
         Sort sortOption = switch (sort) {
@@ -87,6 +87,9 @@ public class ReviewService {
         return optionalReview;
     }
 
+
+
+
     // 리뷰 등록
     @Transactional
     public RsData<Review> createReview(ReviewCreateRequest req, String nickName) {
@@ -94,6 +97,11 @@ public class ReviewService {
 
         SiteUser user = siteUserRepository.findByNickName(nickName)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+
+        // 하나의 상품에 하나의 리뷰 허용
+        if (reviewRepository.existsBySiteUserAndProductId(user, req.getProductId())) {
+            return RsData.of("400", "이미 리뷰를 작성했습니다.");
+        }
 
         Review review = Review.builder()
                 .orderId(req.getOrderId())
@@ -119,6 +127,9 @@ public class ReviewService {
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
+
+
+
 
 
     public Optional<Review> findById(Long reviewId) {
