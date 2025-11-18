@@ -52,7 +52,7 @@ export default function UserForm({
                     className="form-input"
                     value={userInfo.userName}
                     onChange={onChange}
-                    placeholder="로그인에 필요한 ID입니다"
+                    placeholder="아이디에는 영문6자가 이상 포함되어야합니다"
                 />
             </div>
             <ErrorMessage message={errors.userName} />
@@ -64,7 +64,7 @@ export default function UserForm({
                     className="form-input"
                     value={userInfo.password}
                     onChange={onChange}
-                    placeholder="패스워드"
+                    placeholder="패스워드에는 6자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
                 />
             </div>
             <ErrorMessage message={errors.password} />

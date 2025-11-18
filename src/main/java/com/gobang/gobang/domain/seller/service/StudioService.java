@@ -8,6 +8,7 @@ import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
+import com.gobang.gobang.domain.seller.model.StudioStatus;
 import com.gobang.gobang.domain.seller.repository.ProductOfStudioRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -72,6 +73,7 @@ public class StudioService {
                 .studioDescription(studioAddRequest.getStudioDescription())
                 .studioMobile(studioAddRequest.getStudioMobile())
                 .studioOfficeTell(studioAddRequest.getStudioOfficeTell())
+                .status(StudioStatus.PENDING)
                 .studioFax(studioAddRequest.getStudioFax())
                 .studioEmail(studioAddRequest.getStudioEmail())
                 .studioBusinessNumber(studioAddRequest.getStudioBusinessNumber())
