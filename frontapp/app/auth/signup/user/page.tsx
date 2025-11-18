@@ -161,7 +161,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.userName}
-                            placeholder="로그인에 사용되는 ID입니다"
+                            placeholder="아이디에는 영문6자가 이상 포함되어야합니다"
                         />
                         <button type="button" className="btn btn-secondary" onClick={checkUserName}>
                             중복확인
@@ -177,7 +177,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.password}
-                            placeholder="패스워드"
+                            placeholder="패스워드에는 6자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
                         />
                     </div>
                     <ErrorMessage message={errors.password} />
