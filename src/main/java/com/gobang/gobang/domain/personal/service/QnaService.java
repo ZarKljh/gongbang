@@ -24,7 +24,7 @@ public class QnaService {
     private final SiteUserRepository siteUserRepository;
     private static final Logger log = LoggerFactory.getLogger(QnaService.class);
 
-    // 전체 내 문의 조회git add .
+    // 전체 내 문의 조회
     @Transactional(readOnly = true)
     public List<QnaResponse> getMyInquiries(Long userId) {
         SiteUser user = siteUserRepository.findById(userId)

@@ -81,13 +81,13 @@ export default function MyPage() {
     const [isAddressModal, setIsAddressModal] = useState(false)
     const [editAddressModal, setEditAddressModal] = useState(false)
     const [editAddressData, setEditAddressData] = useState<any>(null)
+    const [defaultAddress, setDefaultAddress] = useState(false)
     const [newAddress, setNewAddress] = useState({
         recipientName: '',
         zipcode: '',
         baseAddress: '',
         detailAddress: '',
         extraAddress: '',
-        isDefault: false,
     })
 
     // 결제수단
@@ -189,10 +189,10 @@ export default function MyPage() {
     }
 
     const filteredOrders = orders.filter((order) => {
-        if (activeFilter === "전체") return ["주문취소", "반품완료", "교환완료"].includes(order.deliveryStatus)
-        if (activeFilter === "취소") return order.deliveryStatus === "주문취소"
-        if (activeFilter === "반품") return order.deliveryStatus === "반품완료"
-        if (activeFilter === "교환") return order.deliveryStatus === "교환완료"
+        if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
+        if (activeFilter === "취소") return order.deliveryStatus === "취소"
+        if (activeFilter === "반품") return order.deliveryStatus === "반품"
+        if (activeFilter === "교환") return order.deliveryStatus === "교환"
         return true
     })
 
@@ -207,11 +207,6 @@ export default function MyPage() {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
         }
-    }
-
-    const fetchDelivery = async (orderId: number) => {
-        const res = await axios.get(`${API_BASE_URL}/orders/${orderId}/delivery`)
-        return res.data.data
     }
 
     const fetchCart = async (id?: number) => {
@@ -319,13 +314,14 @@ export default function MyPage() {
     }
 
     const fetchQna = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
+        if (!id) return
         
         try {
-            const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
+            const response = await axios.get(`${API_BASE_URL}/qna?userId=${id}`, {
                 withCredentials: true,
             })
+            console.log('전체 응답:', response)
+            console.log('data.data:', response.data.data)
             const list = Array.isArray(response.data.data) ? response.data.data : []
             setQna(list)
             setStats((prev) => ({
@@ -651,20 +647,14 @@ export default function MyPage() {
             return
         }
 
+        const addressToSave = { ...newAddress, isDefault: defaultAddress }
+
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/addresses`, newAddress, {
+            const { data } = await axios.post(`${API_BASE_URL}/addresses`, addressToSave, {
                 withCredentials: true,
             })
 
             if (data.resultCode === '200') {
-                if (newAddress.isDefault) {
-                    await axios.patch(
-                        `${API_BASE_URL}/addresses/${data.data.userAddressId}/default`,
-                        {},
-                        { withCredentials: true },
-                    )
-                }
-
                 alert('배송지 등록 성공')
                 await fetchAddresses(userData.id)
                 setIsAddressModal(false)
@@ -681,22 +671,16 @@ export default function MyPage() {
     const handleUpdateAddress = async () => {
         if (!editAddressData) return
 
+        const addressToSave = { ...editAddressData, isDefault: defaultAddress }
+
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/addresses/${editAddressData.userAddressId}`,
-                editAddressData,
+                addressToSave,
                 { withCredentials: true },
             )
 
             if (data.resultCode === '200') {
-                if (editAddressData.isDefault) {
-                    await axios.patch(
-                        `${API_BASE_URL}/addresses/${editAddressData.userAddressId}/default`,
-                        {},
-                        { withCredentials: true },
-                    )
-                }
-
                 alert('배송지 수정 성공')
                 await fetchAddresses(userData.id)
                 setEditAddressModal(false)
@@ -1365,8 +1349,10 @@ export default function MyPage() {
                                                     className="order-header"
                                                     onClick={() => toggleManageOrder(order.orderId)}
                                                 >
-                                                    <p>주문번호: {order.orderCode}</p>
-                                                    <p>주문일: {order.createdDate}</p>
+                                                    <div>
+                                                        <p>주문번호: {order.orderCode}</p>
+                                                        <p>주문일: {order.createdDate}</p>
+                                                    </div>
                                                     <span className={`badge ${status}`}>{status}</span>
                                                 </div>
 
@@ -1841,11 +1827,7 @@ export default function MyPage() {
                             ) : (
                                 <div className="qna-list">
                                     {qna.map((item) => (
-                                        <div
-                                            key={item.qnaId}
-                                            className="qna-card"
-                                            onClick={() => toggleQna(item.qnaId)}
-                                        >
+                                        <div key={item.qnaId} className="qna-card">
                                             <div className="qna-header">
                                                 <div className="qna-title">{item.title}</div>
                                                 <span className="qna-type">{item.type}</span>
@@ -1862,8 +1844,7 @@ export default function MyPage() {
                                             <div className="qna-content">{item.content}</div>
 
                                             <div className="qna-footer">
-                                                <span>
-                                                    작성일:{' '}
+                                                <span>작성일: {' '}
                                                     {new Date(item.createdAt).toLocaleDateString('ko-KR', {
                                                         year: 'numeric',
                                                         month: '2-digit',
@@ -1871,23 +1852,12 @@ export default function MyPage() {
                                                     })}
                                                 </span>
                                                 <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation() // 카드 클릭 이벤트 막기
-                                                        handleDeleteClick(item)
-                                                    }}
+                                                    onClick={() => handleDeleteClick(item)}
                                                     className="link-btn delete"
                                                 >
                                                     삭제
                                                 </button>
                                             </div>
-
-                                            {/* ▼▼▼ 클릭 시 열리는 답변 영역 ▼▼▼ */}
-                                            {openQnaId === item.qnaId && (
-                                                <div className="qna-answer">
-                                                    <h4>답변 내용</h4>
-                                                    <p>{item.answer || '아직 답변이 등록되지 않았습니다.'}</p>
-                                                </div>
-                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -1990,11 +1960,8 @@ export default function MyPage() {
                         <label>
                             <input
                                 type="checkbox"
-                                checked={newAddress.isDefault}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) =>
-                                    setNewAddress({ ...newAddress, isDefault: e.target.checked })
-                                }
+                                checked={defaultAddress}
+                                onChange={(e) => setDefaultAddress(e.target.checked)}
                             />
                             기본 배송지로 설정
                         </label>
@@ -2054,11 +2021,8 @@ export default function MyPage() {
                         <label>
                             <input
                                 type="checkbox"
-                                checked={editAddressData.isDefault}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) =>
-                                    setEditAddressData({ ...editAddressData, isDefault: e.target.checked })
-                                }
+                                checked={defaultAddress}
+                                onChange={(e) => setDefaultAddress(e.target.checked)}
                             />
                             기본 배송지로 설정
                         </label><br />

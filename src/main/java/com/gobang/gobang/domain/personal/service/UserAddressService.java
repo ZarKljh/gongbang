@@ -25,24 +25,36 @@ public class UserAddressService {
 
         return addresses.stream()
                 .map(UserAddressResponse::from)
+                .sorted((a, b) -> {
+                    // 기본 배송지가 가장 위
+                    if (Boolean.TRUE.equals(a.getIsDefault()) && !Boolean.TRUE.equals(b.getIsDefault())) return -1;
+                    if (!Boolean.TRUE.equals(a.getIsDefault()) && Boolean.TRUE.equals(b.getIsDefault())) return 1;
+                    // 기본 배송지가 같으면 최근 등록 순
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
                 .collect(Collectors.toList());
     }
 
     // 배송지 등록
     @Transactional
     public UserAddressResponse createAddress(UserAddressRequest request) {
+        SiteUser siteUser = request.getSiteUser();
+
         // 기본 배송지로 설정하는 경우, 기존 기본 배송지 해제
-        if (request.getIsDefault() != null && request.getIsDefault()) {
-            userAddressRepository.unsetDefaultBySiteUser(request.getSiteUser());
+        if (Boolean.TRUE.equals(request.getIsDefault())) {
+            List<UserAddress> existing = userAddressRepository.findBySiteUser(siteUser);
+            existing.stream()
+                    .filter(UserAddress::getIsDefault)
+                    .forEach(addr -> addr.setIsDefault(false)); // 변경 감지로 업데이트 가능
         }
 
         UserAddress address = UserAddress.builder()
-                .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
+                .siteUser(request.getSiteUser())
                 .recipientName(request.getRecipientName())
                 .baseAddress(request.getBaseAddress())
                 .detailAddress(request.getDetailAddress())
                 .zipcode(request.getZipcode())
-                .isDefault(request.getIsDefault() != null ? request.getIsDefault() : false)
+                .isDefault(Boolean.TRUE.equals(request.getIsDefault()))
                 .build();
 
         UserAddress savedAddress = userAddressRepository.save(address);
@@ -56,20 +68,20 @@ public class UserAddressService {
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
 
         // 기본 배송지로 변경하는 경우
-        if (request.getIsDefault() != null && request.getIsDefault() && !address.getIsDefault()) {
-            userAddressRepository.unsetDefaultBySiteUser(address.getSiteUser());
+        if (Boolean.TRUE.equals(request.getIsDefault()) && !Boolean.TRUE.equals(address.getIsDefault())) {
+            List<UserAddress> existing = userAddressRepository.findBySiteUser(address.getSiteUser());
+            existing.forEach(addr -> {
+                if (Boolean.TRUE.equals(addr.getIsDefault())) {
+                    addr.setIsDefault(false);
+                }
+            });
         }
-
-        address.setIsDefault(request.getIsDefault() != null ? request.getIsDefault() : false);
 
         address.setRecipientName(request.getRecipientName());
         address.setBaseAddress(request.getBaseAddress());
         address.setDetailAddress(request.getDetailAddress());
         address.setZipcode(request.getZipcode());
-
-        if (request.getIsDefault() != null) {
-            address.setIsDefault(request.getIsDefault());
-        }
+        address.setIsDefault(Boolean.TRUE.equals(request.getIsDefault()));
 
         return UserAddressResponse.from(address);
     }

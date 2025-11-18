@@ -26,7 +26,7 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     @Query("update Inquiry i set i.answered = true where i.answered = false and i.type = :type")
     int markAllAnsweredByType(@Param("type") InquiryType type);
 
-    List<Inquiry> findByWriterId(Long writerId);
+    List<Inquiry> findByWriter_Id(Long writerId);
 
     List<Inquiry> findAllByWriter(SiteUser writer);
 
@@ -38,5 +38,5 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
 
     List<Inquiry> findByWriterAndTypeAndAnswered(SiteUser writer, InquiryType type, boolean answered);
 
-    long countByWriterId(Long writerId);
+    long countByWriter_Id(Long writerId);
 }

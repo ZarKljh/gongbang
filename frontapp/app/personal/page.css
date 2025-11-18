@@ -300,9 +300,14 @@ body {
 
 .order-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     margin-bottom: 16px;
     cursor: pointer;
+}
+
+.order-header div {
+    display: flex;
+    gap: 10px;
 }
 
 .order-title {
