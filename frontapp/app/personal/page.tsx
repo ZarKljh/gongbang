@@ -140,10 +140,6 @@ export default function MyPage() {
     }, [])
 
     useEffect(() => {
-        console.log('orders state:', orders)
-    }, [orders])
-
-    useEffect(() => {
         if (isAddressModal && !window.daum) {
             const script = document.createElement('script')
             script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
@@ -201,7 +197,6 @@ export default function MyPage() {
 
         try {
             const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
-            console.log('orders axios data:', data)
             setOrders(data.data || [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
@@ -289,9 +284,13 @@ export default function MyPage() {
             const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${userId}`, {
                 withCredentials: true,
             })
-            setStats(data)
+            setStats({
+                totalQna: data.totalQna ?? 0,
+                totalReviews: data.totalReviews ?? 0,
+            })
         } catch (error) {
             console.error('통계 조회 실패:', error)
+            setStats({ totalQna: 0, totalReviews: 0 })
         }
     }
 
@@ -302,39 +301,28 @@ export default function MyPage() {
             setMyReviews(list)
             setStats((prev) => ({
                 ...prev,
-                totalReviews: Array.isArray(list) ? list.length : 0,
+                totalReviews: list.length,
             }))
         } catch (error) {
             console.error('리뷰 조회 실패:', error)
-            setStats((prev) => ({
-                ...prev,
-                totalReviews: 0,
-            }))
+            setStats([])
         }
     }
 
     const fetchQna = async (id?: number) => {
-        if (!id) return
-        
         try {
-            const response = await axios.get(`${API_BASE_URL}/qna?userId=${id}`, {
+            const response = await axios.get(`${API_BASE_URL}/qna`, {
                 withCredentials: true,
             })
-            console.log('전체 응답:', response)
-            console.log('data.data:', response.data.data)
             const list = Array.isArray(response.data.data) ? response.data.data : []
             setQna(list)
             setStats((prev) => ({
                 ...prev,
-                totalQna: list.length,
+                totalReviews: list.length,
             }))
         } catch (error) {
             console.error('문의 목록 조회 실패:', error)
             setQna([])
-            setStats((prev) => ({
-                ...prev,
-                totalQna: 0,
-            }))
         }
     }
 
@@ -979,8 +967,6 @@ export default function MyPage() {
     const handleDeleteCart = async (cartId: number) => {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
-
-            console.log('삭제 성공:', data)
 
             setCart((prev) => prev.filter((item) => item.cartId !== cartId))
         } catch (error) {
