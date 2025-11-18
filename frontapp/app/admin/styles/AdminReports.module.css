@@ -302,3 +302,46 @@
     background-color: #f9fafb;
     color: #111827;
 }
+
+.tableRowClickable {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.tableRowClickable:hover {
+    background-color: #f8fafc;
+}
+
+.detailRow {
+    background: transparent;
+}
+
+.detailCell {
+    padding: 0;
+    border-top: none;
+}
+
+.slidePanel {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: max-height 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* 열렸을 때 */
+.slidePanelOpen {
+    max-height: 600px; /* 폼 높이보다 넉넉하게 */
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slidePanel > div,
+.slidePanel > * {
+    margin: 8px 12px 12px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0; /* slate-200 계열 */
+    background: #f9fafb;
+    padding: 16px 16px 12px;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
