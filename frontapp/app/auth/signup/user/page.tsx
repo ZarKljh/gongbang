@@ -218,7 +218,7 @@ export default function SignupUser() {
                     </div>
                     <ErrorMessage message={errors.email} />
                     <div className="form-group">
-                        <label className="form-label">생년월일</label>
+                        <label className="form-label required">생년월일</label>
                         <input
                             type="date"
                             name="birth"

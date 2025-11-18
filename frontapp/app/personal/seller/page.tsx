@@ -290,7 +290,7 @@ export default function MyPage() {
                 }
             }
 
-            // 3️⃣ 공방정보 저장
+            // 3️⃣ 공방정보 수정
             else if (section === 'studio' || section === 'studioDesc') {
                 response = await axios.patch(
                     `${API_BASE_URL}/studio/${studio.studioId}`,
@@ -316,7 +316,53 @@ export default function MyPage() {
                     alert('공방 정보가 수정되었습니다.')
                 }
             }
+            // 3) ⭐ 신규 공방 등록
+            else if (section === 'studioAdd') {
+                // 1) 스튜디오 기본 정보 저장
+                response = await axios.post(
+                    `${API_BASE_URL}/studio/add`,
+                    {
+                        siteUserId: userData.id,
+                        studioBusinessNumber: tempData.studioBusinessNumber,
+                        categoryId: tempData.categoryId,
+                        studioName: tempData.studioName,
+                        studioDescription: tempData.studioDescription,
+                        studioMobile: tempData.studioMobile,
+                        studioOfficeTell: tempData.studioOfficeTell,
+                        studioFax: tempData.studioFax,
+                        studioEmail: tempData.studioEmail,
+                        studioAddPostNumber: tempData.studioAddPostNumber,
+                        studioAddMain: tempData.studioAddMain,
+                        studioAddDetail: tempData.studioAddDetail,
+                    },
+                    { withCredentials: true },
+                )
 
+                if (response.data.resultCode !== '200') {
+                    alert('공방 등록 실패')
+                    return
+                }
+
+                const newStudioId = response.data.data.studioId
+
+                // 2) 이미지 업로드
+                await uploadStudioImages(newStudioId)
+
+                // 3) 리스트 재로드
+                await fetchStudioList(userData.id)
+                await fetchStudio(userData.id)
+
+                // 4) 입력값 초기화
+                setTempData({})
+                setStudioImages({
+                    STUDIO_MAIN: null,
+                    STUDIO_LOGO: null,
+                    STUDIO: [],
+                })
+
+                setEditMode((prev) => ({ ...prev, studioAdd: false }))
+                alert('새 공방이 성공적으로 등록되었습니다.')
+            }
             /*
                 // 1️추후 Tabs 추가시 여기에 다른 섹션 저장 로직 추가 가능
                 else if (section === 'address') {
