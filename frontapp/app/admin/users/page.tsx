@@ -106,7 +106,7 @@ export default function AdminUsersPage() {
                     </div>
 
                     {/* 필터 그룹 */}
-                    <div className={styles.filters}>
+                    <div className={styles.filterGroup}>
                         <select
                             className={styles.select}
                             value={statusFilter}

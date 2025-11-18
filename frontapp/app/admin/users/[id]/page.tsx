@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
-import styles from '@/app/admin/styles/AdminUsers.module.css'
+import styles from '@/app/admin/styles/AdminReports.module.css'
 
 type Role = 'USER' | 'SELLER' | 'ADMIN'
 type UserStatus = 'ACTIVE' | 'BAN' | string

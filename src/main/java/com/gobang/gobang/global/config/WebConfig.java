@@ -1,17 +1,24 @@
 package com.gobang.gobang.global.config;
 
+import com.gobang.gobang.domain.metrics.interceptor.VisitorLogInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
+    private final VisitorLogInterceptor visitorLogInterceptor;
+
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -40,5 +47,21 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath);
  
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(visitorLogInterceptor)
+                // 방문 기록을 남길 URL 패턴
+                .addPathPatterns("/**")
+                // 여기서 다시 한 번 제외 패턴 지정해도 됨
+                .excludePathPatterns(
+                        "/api/v1/admin/**",
+                        "/api/v1/admin/metrics/**",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/webjars/**"
+                );
     }
 }
