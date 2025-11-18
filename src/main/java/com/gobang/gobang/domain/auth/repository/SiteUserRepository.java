@@ -24,20 +24,36 @@ public interface SiteUserRepository extends JpaRepository<SiteUser, Long> {
     List<SiteUser> findAllByOrderByCreatedDateDesc(Pageable pageable);
 
     // 관리자용 유저 관리 리스트 검색 / 필터 용도 - 상진
-    @Query("""
-        select u
-        from SiteUser u
-        where (:role is null or u.role = :role)
-          and (:status is null or u.status = :status)
-          and (
-               :q is null
-               or lower(u.userName) like lower(concat('%', :q, '%'))
-               or lower(u.email)    like lower(concat('%', :q, '%'))
-          )
-        order by u.createdDate desc
-        """)
+    @Query(
+            value = """
+            SELECT u.*
+            FROM site_user u
+            WHERE u.role <> 'ADMIN'
+              AND (:role IS NULL   OR u.role   = :role)
+              AND (:status IS NULL OR u.status = :status)
+              AND (
+                    :q IS NULL
+                    OR u.user_name ILIKE CONCAT('%', :q, '%')
+                    OR u.email      ILIKE CONCAT('%', :q, '%')
+              )
+            ORDER BY u.created_date DESC
+            """,
+            countQuery = """
+            SELECT COUNT(*)
+            FROM site_user u
+            WHERE  u.role <> 'ADMIN'
+              AND (:role IS NULL   OR u.role   = :role)
+              AND (:status IS NULL OR u.status = :status)
+              AND (
+                    :q IS NULL
+                    OR u.user_name ILIKE CONCAT('%', :q, '%')
+                    OR u.email      ILIKE CONCAT('%', :q, '%')
+              )
+            """,
+            nativeQuery = true
+    )
     Page<SiteUser> searchForAdmin(
-            @Param("role") RoleType role,
+            @Param("role") String role,
             @Param("status") String status,
             @Param("q") String q,
             Pageable pageable
