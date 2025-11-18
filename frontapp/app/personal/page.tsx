@@ -115,6 +115,7 @@ export default function MyPage() {
 
     // 장바구니
     const [cart, setCart] = useState<any[]>([])
+    const [selectedItems, setSelectedItems] = useState<number[]>([])
 
     //문의
     const [qna, setQna] = useState<any[]>([])
@@ -975,6 +976,39 @@ export default function MyPage() {
         }
     }
 
+    const handleSelectItem = (cartId: number, isChecked: boolean) => {
+        setSelectedItems(prev => 
+            isChecked ? [...prev, cartId] : prev.filter(id => id !== cartId)
+        )
+    }
+
+    // 전체 상품 구매
+    const handlePurchaseAll = () => {
+        console.log("전체 상품 구매:", cart)
+        // 전체 구매 프로세스 진행
+    }
+
+    // 선택 상품 구매
+    const handlePurchaseSelected = () => {
+        const itemsToPurchase = cart.filter(item => selectedItems.includes(item.cartId))
+        console.log('구매할 상품:', itemsToPurchase)
+        // 여기서 실제 결제 로직/페이지 이동 처리
+    }
+
+    // 전체 선택
+    const handleToggleSelectAll = () => {
+        if (selectedItems.length === cart.length) {
+            setSelectedItems([]) // 전체 해제
+        } else {
+            setSelectedItems(cart.map(item => item.cartId)) // 전체 선택
+        }
+    }
+
+    // 전체 선택 해제 버튼
+    const handleClearSelection = () => {
+        setSelectedItems([])
+    }
+
     // =============== UI ===============
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
@@ -1398,47 +1432,106 @@ export default function MyPage() {
                     {activeTab === 'cart' && (
                         <div className='tab-content'>
                             <div className='section-header'>
-                                <h2>장바구니</h2>
+                            <h2>장바구니</h2>
                             </div>
 
                             {cart.length === 0 ? (
-                                    <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
+                            <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
                             ) : (
-                                <div className="cart-list">
-                                    {cart.map((item) => (
-                                        <div key={item.cartId} className="cart-product">
-                                            <div className="cart-image"></div>
-                                            <div className='cart-text'>
-                                                <Link href={`http://localhost:3000/product/list/detail/${item.productId}`} className="product-name">
-                                                    {item.productName}
-                                                </Link>
-                                                <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
-                                            </div>
-                                            <div className="quantity-control">
-                                                <button className="btn-primary"
-                                                    onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
-                                                    disabled={item.quantity <= 1}
-                                                >
-                                                    -
-                                                </button>
-                                                <span>{item.quantity}개</span>
-                                                <button className="btn-primary"
-                                                    onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
-                                                >
-                                                    +
-                                                </button>
-                                                <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
-                                            </div>
-                                        </div>
-                                    ))}
+                            <>
+                                {/* 전체 선택 영역 */}
+                                <div className="cart-header">
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={selectedItems.length === cart.length}
+                                    onChange={handleToggleSelectAll}
+                                    />
+                                    전체 선택
+                                </label>
+
+                                <button className="link-btn" onClick={handleClearSelection}>
+                                    선택 해제
+                                </button>
+
+                                <button 
+                                    className="btn-primary"
+                                    onClick={handlePurchaseAll}
+                                    disabled={cart.length === 0}
+                                >
+                                    전체 구매
+                                </button>
                                 </div>
+
+                                <div className="cart-list">
+                                {cart.map((item) => (
+                                    <div key={item.cartId} className="cart-product">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedItems.includes(item.cartId)}
+                                        onChange={(e) => handleSelectItem(item.cartId, e.target.checked)}
+                                    />
+
+                                    <div className="cart-image"></div>
+
+                                    <div className='cart-text'>
+                                        <Link href={`/product/list/detail/${item.productId}`} className="product-name">
+                                        {item.productName}
+                                        </Link>
+                                        <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
+                                    </div>
+
+                                    <div className="quantity-control">
+                                        <button className="btn-primary"
+                                        onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
+                                        disabled={item.quantity <= 1}
+                                        >
+                                        -
+                                        </button>
+
+                                        <span>{item.quantity}개</span>
+
+                                        <button className="btn-primary"
+                                        onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
+                                        >
+                                        +
+                                        </button>
+
+                                        <button
+                                        className="link-btn delete"
+                                        onClick={() => handleDeleteCart(item.cartId)}
+                                        >
+                                        삭제
+                                        </button>
+                                    </div>
+                                    </div>
+                                ))}
+                                </div>
+
+                                {/* 총액 + 선택 상품 구매 버튼 */}
+                                <div className="cart-footer">
+                                <p>
+                                    총 금액: 
+                                    {selectedItems.length === 0
+                                    ? 0
+                                    : cart
+                                        .filter(item => selectedItems.includes(item.cartId))
+                                        .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)}
+                                    원
+                                </p>
+
+                                <button
+                                    className="btn-primary"
+                                    disabled={selectedItems.length === 0}
+                                    onClick={handlePurchaseSelected}
+                                >
+                                    선택 상품 구매
+                                </button>
+                                </div>
+                            </>
                             )}
                         </div>
                     )}
-                    {/* 장바구니 담기 버튼 */}
-                    {/* <button onClick={() => handleAddToCart(item.productId, 1)}>
-                        장바구니 담기
-                    </button> */}
 
                     {/* 회원정보수정 */}
                     {activeTab === 'profile' && (
