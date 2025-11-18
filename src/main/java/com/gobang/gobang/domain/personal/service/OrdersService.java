@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,8 +25,9 @@ public class OrdersService {
     // 사용자별 주문 목록 조회
     public List<OrdersResponse> getOrdersByUserId(SiteUser siteUser) {
         List<Orders> orders = ordersRepository.findBySiteUserWithDelivery(siteUser);
+        List<Orders> distinctOrders = new ArrayList<>(new LinkedHashSet<>(orders)); //중복제거
 
-        return orders.stream()
+        return distinctOrders.stream()
                 .map(OrdersResponse::from)
                 .collect(Collectors.toList());
     }
@@ -44,5 +47,66 @@ public class OrdersService {
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         ordersRepository.delete(order);
+    }
+
+    // 주문 취소
+    @Transactional
+    public OrdersResponse cancelOrder(Long orderId) {
+        Orders order = ordersRepository.findByIdWithDelivery(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        // 배송 상태 확인
+        order.getDeliveries().stream()
+                .findFirst()
+                .ifPresent(delivery -> {
+                    if (!"배송준비중".equals(delivery.getDeliveryStatus())) {
+                        throw new IllegalStateException("배송 준비중 상태일 때만 주문 취소가 가능합니다.");
+                    }
+                });
+
+        order.setStatus("취소");
+        ordersRepository.save(order);
+
+        return OrdersResponse.from(order);
+    }
+
+    // 반품 신청
+    @Transactional
+    public OrdersResponse returnOrder(Long orderId) {
+        Orders order = ordersRepository.findByIdWithDelivery(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        order.getDeliveries().stream()
+                .findFirst()
+                .ifPresent(delivery -> {
+                    if (!"배송완료".equals(delivery.getDeliveryStatus())) {
+                        throw new IllegalStateException("배송 완료된 주문만 반품 신청이 가능합니다.");
+                    }
+                });
+
+        order.setStatus("반품");
+        ordersRepository.save(order);
+
+        return OrdersResponse.from(order);
+    }
+
+    // 교환 신청
+    @Transactional
+    public OrdersResponse exchangeOrder(Long orderId) {
+        Orders order = ordersRepository.findByIdWithDelivery(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        order.getDeliveries().stream()
+                .findFirst()
+                .ifPresent(delivery -> {
+                    if (!"배송완료".equals(delivery.getDeliveryStatus())) {
+                        throw new IllegalStateException("배송 완료된 주문만 교환 신청이 가능합니다.");
+                    }
+                });
+
+        order.setStatus("교환");
+        ordersRepository.save(order);
+
+        return OrdersResponse.from(order);
     }
 }

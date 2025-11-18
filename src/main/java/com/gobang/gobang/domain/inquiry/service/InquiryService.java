@@ -43,7 +43,7 @@ public class InquiryService {
 
     @Transactional(readOnly = true)
     public List<Inquiry> findByUserId(Long userId) {
-        return inquiryRepository.findByWriterId(userId);
+        return inquiryRepository.findByWriter_Id(userId);
     }
 
     @Transactional(readOnly = true)
