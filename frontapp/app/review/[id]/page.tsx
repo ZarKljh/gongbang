@@ -105,6 +105,7 @@ export default function ReviewDetail() {
     return (
         <div
             style={{
+                fontFamily: 'P-Regular',
                 maxWidth: '1280px',
                 margin: '0 auto',
                 padding: '40px 20px',
