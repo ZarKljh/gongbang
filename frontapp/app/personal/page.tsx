@@ -1144,7 +1144,8 @@ export default function MyPage() {
                                 >
                                 <p>{status}</p>
                                 <p>{orders.filter((o) =>
-                                    o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')
+                                    o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '') &&
+                                    isWithinSevenDays(o.completedAt)
                                 ).length}</p>
                                 </div>
                             ))}
