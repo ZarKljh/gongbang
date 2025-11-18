@@ -1,293 +1,277 @@
-/* 버튼 공통 스타일 */
-.edit-button {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background-color: #3182ce;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease;
-}
-
-.edit-button:hover {
-    background-color: #2b6cb0;
-}
-
-/* 크기별 버튼 */
-.edit-button.large {
-    font-size: 16px;
-    padding: 10px 20px;
-}
-
-.edit-button.medium {
-    font-size: 14px;
-    padding: 8px 16px;
-}
-
-.edit-button.small {
-    font-size: 12px;
-    padding: 8px 16px;
-}
-
+/* =========================================
+   전체 페이지 레이아웃 (1920px 화면 + 좌우 margin 120px)
+========================================= */
 .studio-page {
-    width: 100vw;
-    min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding: 2rem;
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto,
-        'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    width: 100%;
+    padding-top: 40px;
+    padding-bottom: 60px;
+    background: #fff;
 }
 
 .studio-wrapper {
-    width: 1280px;
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    padding: 10px 20px;
+    width: 1680px; /* 1920 - 120 - 120 */
+    display: flex;
+    justify-content: center;
 }
 
+/* =========================================
+   메인 레이아웃 — Left(고정 폭) + Right(유동 폭)
+========================================= */
 .studio-layout {
     display: flex;
-    flex-direction: row;
-    gap: 20px;
+    width: 100%;
+    gap: 80px; /* 29CM 스타일의 넓은 여백 */
 }
 
-.studio-left,
-.studio-right {
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    padding: 10px 20px;
-}
-
+/* =========================================
+   LEFT SIDE (당신이 만든 영역)
+   - 280px 메인 이미지 기준으로 전체 UI 구성
+========================================= */
 .studio-left {
-    flex: 1;
+    width: 360px; /* 280px + 내부 패딩 고려 */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    /* 전체 너비의 1 비율 */
-    /*min-width: 0; /* flex 아이템이 축소될 수 있도록 설정 */
+    gap: 48px;
 }
 
-.studio-main-img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border: 1px solid #e2e8f0;
+/* =========================================
+   대표 이미지 (280 × 280 유지)
+========================================= */
+.studio-main-img img {
+    width: 280px;
+    height: 280px;
+    object-fit: cover;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
-    position: relative; /* 버튼 위치 기준 */
+    background: #f3f3f3;
 }
 
+/* =========================================
+   공방 기본 정보 (로고 + 이름 + 카테고리)
+========================================= */
 .studio-info-main {
-    width: 100%;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    gap: 5px;
-    padding: 10px 20px;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .studio-info-header {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 30px;
-    padding: 20px 0px;
-    /*
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    border: 1px solid black;
-    */
-    position: relative; /* 버튼 위치 기준 */
+    gap: 16px;
 }
 
-.studio-logo-img {
-    width: 100px;
-    height: 100px;
-    border: 1px solid #e2e8f0;
-    border-radius: 50%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    /*
-    margin-right: 20px;
-    */
-}
-.studio-logo-img > img {
-    width: 100%;
-    height: 100%;
-}
-
-.studio-info-header-studioName {
-    display: flex;
-    flex-direction: column;
-}
-
-.studio-info-header-studioName > h3 {
-    font-size: 18px;
-}
-
-.studio-info-header-studioName > .studio-category {
-    margin-left: auto;
-}
-
-/* 공방 소개 영역 */
-.studio-info-description {
-    padding: 20px;
-    border: 1px solid #ccc;
+.studio-logo-img img {
+    width: 60px;
+    height: 60px;
     border-radius: 8px;
-    margin-bottom: 30px;
-}
-
-.studio-info-description > h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-
-.studio-info-description > p {
-    font-size: 16px;
-    line-height: 1.6;
-}
-
-/* 셀러 정보 전체 영역 */
-.seller-info {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 40px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-}
-
-/* 셀러 이름 영역 */
-.seller-name {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 180px;
-}
-
-.seller-name > h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-
-/* 프로필 이미지 */
-.seller-info-profileImage > img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
     object-fit: cover;
-    border: 1px solid #aaa;
+    background: #eee;
 }
 
-/* 셀러 상세 정보 */
-.seller-info-detail {
+.studio-info-header-studioName h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.studio-category span {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* =========================================
+   상세 연락처 정보
+========================================= */
+.studio-info-detail ul {
     list-style: none;
-    padding: 0;
-    margin-top: 10px;
-    font-size: 16px;
-    text-align: center;
-}
-
-.seller-info-detail > li {
-    margin: 6px 0;
-}
-
-/* 공방 리스트 영역 */
-.studio-list {
-    flex: 1;
-}
-
-.studio-list > h2 {
-    font-size: 18px;
-    margin-bottom: 15px;
-}
-
-/* 공방 로고 리스트 */
-.sutdio-logo-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    list-style: none;
-    padding: 0;
-}
-
-.sutdio-logo-list > li {
-    width: 80px;
-    height: 80px;
-    border: 1px solid #aaa;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sutdio-logo-list > li > a > img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-/* 오른쪽 상품관련 세션 */
-
-.studio-right {
-    flex: 3; /* 전체 너비의 3 비율 */
-    display: flex;
-    flex-direction: column;
-    /*min-width: 0;*/
-}
-
-.product-list {
-    width: 100%;
-    height: 1000px; /* 원하는 높이로 고정 */
-    overflow-y: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    gap: 5px;
-    padding: 10px 20px;
-    margin-bottom: 30px;
-
-    /* ✅ Chrome, Safari, Edge */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE 10+ */
-}
-
-.product-list::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Edge */
-}
-
-.product-list > ul {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 0px 20px;
     padding: 0;
     margin: 0;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #444;
+}
+
+.studio-info-detail li {
+    margin-bottom: 4px;
+}
+
+/* =========================================
+   공방 소개
+========================================= */
+.studio-info-description {
+    width: 280px;
+}
+
+.studio-info-description h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.studio-info-description p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #444;
+}
+
+/* =========================================
+   셀러 정보
+========================================= */
+.seller-info {
+    width: 280px;
+    padding-top: 32px;
+    border-top: 1px solid #e6e6e6;
+}
+
+.seller-name h2 {
+    font-size: 20px;
+    margin-bottom: 14px;
+}
+
+.seller-info-profileImage img {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #e5e5e5;
+    margin-bottom: 14px;
+}
+
+.seller-info-detail li {
+    font-size: 15px;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+/* =========================================
+   셀러의 공방 리스트
+========================================= */
+.studio-list h2 {
+    font-size: 20px;
+    margin-bottom: 14px;
+}
+
+.sutdio-logo-list {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 0;
     list-style: none;
 }
 
-.product-list img {
-    border: 1px solid black;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover; /* 이미지가 영역을 꽉 채우도록 */
+.sutdio-logo-list li img {
+    width: 58px;
+    height: 58px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 10px;
+    object-fit: cover;
+    background: #f0f0f0;
+    transition: opacity 0.2s ease;
+}
+
+.sutdio-logo-list li img:hover {
+    opacity: 0.85;
+}
+
+/* =========================================
+   RIGHT SECTION (상품 영역)
+   29CM의 우측 스크롤형 + 유동 폭
+========================================= */
+.studio-right {
+    flex: 1;
+    min-width: 900px; /* 1680px에서 안정감 확보 */
+    padding-top: 10px;
+}
+
+/* ===========================
+   상품 리스트 타이틀
+=========================== */
+.product-list-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: #222;
+}
+
+/* ===========================
+   상품 그리드 (한 줄 5개)
+=========================== */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 가로 5개 */
+    gap: 28px; /* 카드 간 간격 */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* ===========================
+   상품 카드
+=========================== */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+/*
+.product-card:hover {
+    transform: translateY(-4px);
+    opacity: 0.92;
+}
+*/
+/* ===========================
+   상품 이미지
+=========================== */
+.product-image {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* 1:1 정사각형 */
+    object-fit: cover;
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    background: #eee;
+    margin-bottom: 12px;
+}
+
+/* ===========================
+   상품 정보 텍스트
+=========================== */
+
+.product-info {
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* 간격 조절 */
+}
+
+.product-category {
+    font-size: 11px;
+    color: #9a9a9a;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.product-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #222;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+}
+
+.product-stock {
+    font-size: 12px;
+    color: #aaa;
 }
