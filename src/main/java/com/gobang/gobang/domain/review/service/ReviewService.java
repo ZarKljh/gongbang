@@ -129,7 +129,7 @@ public class ReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
 
         // 하나의 상품에 하나의 리뷰 허용
-        if (reviewRepository.existsBySiteUserAndProductId(user, req.getProductId())) {
+        if (reviewRepository.existsBySiteUserAndProductIdAndIsActiveTrue(user, req.getProductId())) {
             return RsData.of("400", "이미 리뷰를 작성했습니다.");
         }
 

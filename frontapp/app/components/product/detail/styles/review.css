@@ -43,13 +43,13 @@
     align-items: center;
     transition: all 0.3s ease;
     gap: 5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); */
     font-family: 'P-Regular';
 }
 
 .photoCard:hover {
     transform: scale(1.03);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    /* box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15); */
     cursor: pointer;
 }
 

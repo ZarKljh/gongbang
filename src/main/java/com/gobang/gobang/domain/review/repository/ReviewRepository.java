@@ -31,7 +31,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Object[]> findAverageRatingAndCountByProductId(@Param("productId") Long productId);
 
     // userId기준 상품 하나당 리뷰 하나
-    boolean existsBySiteUserAndProductId(SiteUser user, Long productId);
+    boolean existsBySiteUserAndProductIdAndIsActiveTrue(SiteUser user, Long productId);
 
 
     // 별점 분포 그래프
