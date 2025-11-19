@@ -30,7 +30,8 @@ public class ProfileImageService {
 
     // ---------------- 업로드 ----------------
     public RsData<Void> uploadProfileImage(Long userId, MultipartFile file) {
-        SiteUser user = siteUserRepository.findById(userId).orElseThrow();
+        SiteUser user = siteUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
 
         if (file == null || file.isEmpty()) {
             return RsData.of("F-1", "이미지가 없습니다.");
@@ -39,25 +40,50 @@ public class ProfileImageService {
         try {
             // 기존 이미지 삭제
             imageRepository.findByRefTypeAndRefId(Image.RefType.USER_PROFILE, userId)
-                    .ifPresent(existing -> deleteFile(existing.getImageFileName()));
+                    .ifPresent(existing -> {
+                        deleteFile(existing.getImageFileName());
+                        imageRepository.delete(existing);
+                    });
 
             String fileName = saveFile(file);
 
+            // Image 엔티티 저장
             Image image = Image.builder()
                     .refType(Image.RefType.USER_PROFILE)
                     .refId(userId)
-                    .imageUrl(fileName)
                     .imageFileName(fileName)
+                    .imageUrl(fileName) // 로컬 경로 또는 URL 형태로 저장
                     .sortOrder(0)
                     .build();
+
             imageRepository.save(image);
 
+            // SiteUser에 프로필 이미지 이름 기록
             user.setProfileImg(fileName);
             siteUserRepository.save(user);
 
-            return RsData.of("S-1", null); // 성공 메시지는 컨트롤러에서 넣음
+            return RsData.of("S-1", "프로필 업로드 성공");
         } catch (Exception e) {
             return RsData.of("F-2", "프로필 업로드 실패: " + e.getMessage());
+        }
+    }
+
+    /** 로컬에 파일 저장 */
+    private String saveFile(MultipartFile file) throws IOException {
+        Files.createDirectories(Paths.get(uploadPath));
+        String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
+        Path targetPath = Paths.get(uploadPath, fileName);
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        return fileName;
+    }
+
+    /** 로컬 파일 삭제 */
+    private void deleteFile(String fileName) {
+        try {
+            Path path = Paths.get(uploadPath, fileName);
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 삭제 실패: " + fileName, e);
         }
     }
 
@@ -98,22 +124,22 @@ public class ProfileImageService {
         }
     }
 
-    // ---------------- 파일 저장 ----------------
-    private String saveFile(MultipartFile file) throws IOException {
-        Files.createDirectories(Paths.get(uploadPath));
-        String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
-        Path path = Paths.get(uploadPath, fileName);
-        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-        return fileName;
-    }
-
-    // ---------------- 파일 삭제 ----------------
-    private void deleteFile(String fileName) {
-        try {
-            Path path = Paths.get(uploadPath, fileName);
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            throw new RuntimeException("파일 삭제 실패", e);
-        }
-    }
+//    // ---------------- 파일 저장 ----------------
+//    private String saveFile(MultipartFile file) throws IOException {
+//        Files.createDirectories(Paths.get(uploadPath));
+//        String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
+//        Path path = Paths.get(uploadPath, fileName);
+//        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+//        return fileName;
+//    }
+//
+//    // ---------------- 파일 삭제 ----------------
+//    private void deleteFile(String fileName) {
+//        try {
+//            Path path = Paths.get(uploadPath, fileName);
+//            Files.deleteIfExists(path);
+//        } catch (IOException e) {
+//            throw new RuntimeException("파일 삭제 실패", e);
+//        }
+//    }
 }

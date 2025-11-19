@@ -40,7 +40,7 @@ public class SiteUserController {
     private final ProfileImageService profileImageService;
 
     @PostMapping("/signup/user")
-    public RsData<SignupUserResponse> joinUser (@ModelAttribute SignupUserRequest signupUserRequest, @RequestParam(value = "file", required = false) MultipartFile file) {
+    public RsData<SignupUserResponse> joinUser (@RequestPart("data") @Valid SignupUserRequest signupUserRequest, @RequestPart(value = "file", required = false) MultipartFile file) {
         if (!signupUserRequest.getPassword().equals(signupUserRequest.getConfirmPassword())) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         } else if (siteUserService.existsByUserName(signupUserRequest.getUserName())){
