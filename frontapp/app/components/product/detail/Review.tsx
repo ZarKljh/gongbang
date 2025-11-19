@@ -665,7 +665,7 @@ export default function detail() {
                                                     )}
                                                     도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
-                                                
+
                                                 {(Number(currentUserId) === Number(review.userId) ||
                                                     roleType === 'ADMIN') && (
                                                     <button
@@ -791,9 +791,9 @@ export default function detail() {
                                                         )}
                                                     </>
                                                 )}
-                                                <hr className="review-divider" />
                                             </>
                                         )}
+                                        <hr className="review-divider" />
                                     </li>
                                 ))}
                             </ul>
