@@ -55,6 +55,13 @@ export default function MyPage() {
         totalQna: 0,
         totalReviews: 0,
     })
+    const [errors, setErrors] = useState({
+        nickName: '',
+        newPassword: '',
+        confirmPassword: '',
+        email: '',
+        mobilePhone: '',
+    })
 
     // UI 상태
     const [loading, setLoading] = useState(true)
@@ -75,6 +82,7 @@ export default function MyPage() {
     const [isStatusModal, setIsStatusModal] = useState(false)
     const [activeFilter, setActiveFilter] = useState('전체')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
+    const [filteredOrder, setFilteredOrders] = useState<any[]>([])
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -119,8 +127,11 @@ export default function MyPage() {
 
     //문의
     const [qna, setQna] = useState<any[]>([])
-    const [openQnaId, setOpenQnaId] = useState(null)
+    const [openQnaId, setOpenQnaId] = useState(null)// state 추가
 
+    //이미지
+    const [profileImage, setProfileImage] = useState(null)
+    
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
@@ -540,15 +551,6 @@ export default function MyPage() {
         setTempData({ ...userData })
     }
 
-    // state 추가
-    const [errors, setErrors] = useState({
-    nickName: '',
-    newPassword: '',
-    confirmPassword: '',
-    email: '',
-    mobilePhone: '',
-    })
-
     const handleSave = async (section: string) => {
         if (!userData?.id) return
 
@@ -713,7 +715,7 @@ export default function MyPage() {
                 }));
             },
         }).open();
-    };
+    }
 
     // =============== 결제수단 ===============
     const handleSavePayment = async () => {
@@ -1152,7 +1154,9 @@ export default function MyPage() {
                             <tbody>
                                 <tr>
                                     <td>
-                                        <div className="profile-image"></div>
+                                        <div className="profile-image">
+                                            
+                                        </div>
                                     </td>
                                     <td>{stats.totalQna}</td>
                                     <td>{stats.totalReviews}</td>

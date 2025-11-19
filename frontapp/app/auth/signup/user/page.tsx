@@ -19,11 +19,11 @@ export default function SignupUser() {
         birth: '',
         nickName: '',
         mobilePhone: '',
-        profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
-        profileImageName: '', // 이미지 파일명
+        profileImageFile: null, // 실제 파일
     })
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
+    const [profileImageFile, setProfileFile] = useState<File | null>(null)
     const { errors, validate } = signupUserValidation()
 
     // 중복검사 결과 저장
@@ -81,26 +81,14 @@ export default function SignupUser() {
     const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-
-        const previewUrl = URL.createObjectURL(file)
-        setPreviewProfileImage(previewUrl)
-        setFormData((prev) => ({
-            ...prev,
-            profileImageUrl: previewUrl, // 실제 서버 업로드 후 URL로 교체 가능
-            profileImageName: file.name, // 파일명 저장
-        }))
+        setProfileFile(file)
+        setPreviewProfileImage(URL.createObjectURL(file))
     }
 
     const handleRemoveImage = () => {
-        setPreviewProfileImage(null) // 미리보기 제거
-        setFormData((prev) => ({
-            ...prev,
-            profileImageUrl: '',
-            profileImageName: '',
-        }))
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-        }
+        setProfileFile(null)
+        setPreviewProfileImage(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
     const handleSubmit = async (e) => {
@@ -129,21 +117,38 @@ export default function SignupUser() {
       birth: birthDateTime,
     };
     */
-        const response = await fetch(`http://localhost:8090/api/v1/auth/signup/user`, {
-            method: 'POST',
-            //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            //무엇을 json으로 할지 선언한것
-            body: JSON.stringify(formData),
-        })
 
-        if (response.ok) {
-            alert('회원가입 성공하였습니다. 로그인을 해주세요')
-            router.push('/')
-        } else {
-            alert('회원가입에 실패하였습니다')
+        try {
+            const submitData = new FormData()
+            Object.entries(formData).forEach(([key, value]) => {
+                if (key !== 'profileImageUrl' && key !== 'profileImageName') {
+                    submitData.append(key, value as string)
+                }
+            })
+            
+            if (profileImageFile) {
+                submitData.append('file', profileImageFile)
+            }
+
+            const response = await fetch(`http://localhost:8090/api/v1/auth/signup/user`, {
+                method: 'POST',
+                // //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
+                // headers: {
+                //     'Content-Type': 'application/json',
+                // },
+                // //무엇을 json으로 할지 선언한것
+                body: submitData,
+            })
+
+            if (response.ok) {
+                alert('회원가입 성공하였습니다. 로그인을 해주세요')
+                router.push('/')
+            } else {
+                alert('회원가입에 실패하였습니다')
+            }
+        } catch (err) {
+            console.error(err)
+            alert("회원가입 에러")
         }
     }
 
