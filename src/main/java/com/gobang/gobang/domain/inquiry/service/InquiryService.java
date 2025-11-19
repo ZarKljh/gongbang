@@ -29,7 +29,7 @@ public class InquiryService {
         Inquiry inquiry = new Inquiry();
         inquiry.setTitle(req.getTitle());
         inquiry.setContent(req.getContent());
-        inquiry.setType(req.getType());    // ACCOUNT / PAYMENT / CONTENT... 등
+        inquiry.setType(req.getType());
         inquiry.setAnswered(false);
         inquiry.setWriter(user);           // 작성자
 
