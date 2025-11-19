@@ -8,10 +8,8 @@ export type PendingCounts = {
 
 export async function fetchPendingCounts(): Promise<PendingCounts> {
     const [reportRes, inquiryRes] = await Promise.all([
-        // 신고 미처리
         api.get('/admin/reports/count/pending'),
 
-        // 입점 신청 관련 문의 (사업자/셀러 문의 타입)
         api.get('/admin/inquiries/count'),
     ])
 

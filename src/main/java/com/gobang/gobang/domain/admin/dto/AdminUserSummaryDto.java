@@ -12,6 +12,7 @@ public class AdminUserSummaryDto {
 
     private Long id;
     private String userName;
+    private String fullName;
     private String email;
     private String role;
     private String status;
@@ -21,6 +22,7 @@ public class AdminUserSummaryDto {
         return new AdminUserSummaryDto(
                 u.getId(),
                 u.getUserName(),
+                u.getFullName(),
                 u.getEmail(),
                 u.getRole() != null ? u.getRole().name() : null,
                 u.getStatus(),

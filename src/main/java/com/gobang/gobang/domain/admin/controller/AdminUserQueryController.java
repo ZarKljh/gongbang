@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.admin.controller;
 
+import com.gobang.gobang.domain.admin.dto.AdminUserDetailDto;
 import com.gobang.gobang.domain.admin.dto.AdminUserSummaryDto;
 import com.gobang.gobang.domain.admin.repository.request.AdminUserStatusUpdateRequest;
 import com.gobang.gobang.domain.auth.entity.RoleType;
@@ -51,19 +52,26 @@ public class AdminUserQueryController {
         int s = Math.max(1, Math.min(size, 100));
         Pageable pageable = PageRequest.of(p, s);
 
-        RoleType roleType = null;
+        String roleFilter = null;
         if (role != null && !role.isBlank() && !"ALL".equalsIgnoreCase(role)) {
-            roleType = RoleType.valueOf(role.toUpperCase()); // USER / SELLER / ADMIN …
+            String upper = role.toUpperCase();
+            if ("USER".equals(upper) || "SELLER".equals(upper)) {
+                roleFilter = upper;
+            }
         }
 
         String statusFilter = null;
         if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
-            statusFilter = status.toUpperCase(); // ACTIVE / BLOCKED …
+            String normalized = status.toUpperCase();
+            if (!normalized.equals("ACTIVE") && !normalized.equals("BAN")) {
+                throw new IllegalArgumentException("status는 ACTIVE 또는 BAN만 허용됩니다.");
+            }
+            statusFilter = normalized;
         }
 
         String q = (query != null && !query.isBlank()) ? query : null;
 
-        Page<SiteUser> pageResult = siteUserRepository.searchForAdmin(roleType, statusFilter, q, pageable);
+        Page<SiteUser> pageResult = siteUserRepository.searchForAdmin(roleFilter, statusFilter, q, pageable);
 
         var data = pageResult.getContent().stream()
                 .map(AdminUserSummaryDto::of)
@@ -78,10 +86,7 @@ public class AdminUserQueryController {
         ));
     }
 
-    /**
-     * 유저 상태 변경 (예: ACTIVE -> BLOCKED)
-     * PATCH /api/v1/admin/users/{id}/status
-     */
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateStatus(
@@ -95,12 +100,33 @@ public class AdminUserQueryController {
             throw new IllegalArgumentException("status 값이 필요합니다.");
         }
 
-        user.setStatus(req.getStatus().toUpperCase());
+        // 대문자로 정규화
+        String newStatus = req.getStatus().toUpperCase();
 
+        // 우리 프로젝트 규칙: ACTIVE / BAN 만 허용
+        if (!"ACTIVE".equals(newStatus) && !"BAN".equals(newStatus)) {
+            throw new IllegalArgumentException("status 는 ACTIVE 또는 BAN 만 가능합니다.");
+        }
+
+        user.setStatus(newStatus);
         SiteUser saved = siteUserRepository.save(user);
 
-        return ResponseEntity.ok(Map.of(
-                "data", AdminUserSummaryDto.of(saved)
-        ));
+        return ResponseEntity.ok(
+                java.util.Map.of("data", AdminUserSummaryDto.of(saved))
+        );
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> detail(@PathVariable Long id) {
+
+        SiteUser user = siteUserRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. id=" + id));
+
+        return  ResponseEntity.ok(
+                java.util.Map.of("data", AdminUserDetailDto.of(user))
+        );
+
+
     }
 }

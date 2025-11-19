@@ -22,7 +22,7 @@ public class StatsService {
         Map<String, Object> stats = new HashMap<>();
 
         long postCount = reviewRepository.countBySiteUser_Id(user.getId());
-        long qnaCount = inquiryRepository.countByWriterId(user.getId());
+        long qnaCount = inquiryRepository.countByWriter_Id(user.getId());
         long wishCount = wishListRepository.countBySiteUser_Id(user.getId());
 
         stats.put("postCount", postCount);
