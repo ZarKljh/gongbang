@@ -1,6 +1,5 @@
 package com.gobang.gobang.global.config;
 
-import com.gobang.gobang.domain.metrics.interceptor.VisitorLogInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +16,6 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-    private final VisitorLogInterceptor visitorLogInterceptor;
 
     @Value("${custom.genFileDirPath}")
     private String uploadPath;
@@ -52,19 +50,4 @@ public class WebConfig implements WebMvcConfigurer {
  
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(visitorLogInterceptor)
-                // 방문 기록을 남길 URL 패턴
-                .addPathPatterns("/**")
-                // 여기서 다시 한 번 제외 패턴 지정해도 됨
-                .excludePathPatterns(
-                        "/api/v1/admin/**",
-                        "/api/v1/admin/metrics/**",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**",
-                        "/webjars/**"
-                );
-    }
 }
