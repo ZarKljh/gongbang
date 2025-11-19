@@ -55,6 +55,13 @@ export default function MyPage() {
         totalQna: 0,
         totalReviews: 0,
     })
+    const [errors, setErrors] = useState({
+        nickName: '',
+        newPassword: '',
+        confirmPassword: '',
+        email: '',
+        mobilePhone: '',
+    })
 
     // UI 상태
     const [loading, setLoading] = useState(true)
@@ -75,22 +82,20 @@ export default function MyPage() {
     const [isStatusModal, setIsStatusModal] = useState(false)
     const [activeFilter, setActiveFilter] = useState('전체')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
-    const [actionOrderId, setActionOrderId] = useState<number | null>(null)
-    const [actionType, setActionType] = useState<'cancel' | 'return' | 'exchange' | null>(null)
-    const [isActionModalOpen, setIsActionModalOpen] = useState(false)
+    const [filteredOrder, setFilteredOrders] = useState<any[]>([])
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
     const [isAddressModal, setIsAddressModal] = useState(false)
     const [editAddressModal, setEditAddressModal] = useState(false)
     const [editAddressData, setEditAddressData] = useState<any>(null)
+    const [defaultAddress, setDefaultAddress] = useState(false)
     const [newAddress, setNewAddress] = useState({
         recipientName: '',
         zipcode: '',
         baseAddress: '',
         detailAddress: '',
         extraAddress: '',
-        isDefault: false,
     })
 
     // 결제수단
@@ -118,29 +123,15 @@ export default function MyPage() {
 
     // 장바구니
     const [cart, setCart] = useState<any[]>([])
+    const [selectedItems, setSelectedItems] = useState<number[]>([])
 
     //문의
     const [qna, setQna] = useState<any[]>([])
-    const [openQnaId, setOpenQnaId] = useState(null)
+    const [openQnaId, setOpenQnaId] = useState(null)// state 추가
 
-    //로딩 상태
-    const [isLoadingMore, setIsLoadingMore] = useState(false)
-    const [displayCounts, setDisplayCounts] = useState({
-        orders: 10,
-        ordersManage: 10,
-        cart: 10,
-        wishlist: 10,
-        reviews: 10,
-        qna: 10
-    })
-    const filteredOrders = orders.filter((order) => {
-        if (activeFilter === "전체") return ["주문취소", "반품완료", "교환완료"].includes(order.deliveryStatus)
-        if (activeFilter === "취소") return order.deliveryStatus === "주문취소"
-        if (activeFilter === "반품") return order.deliveryStatus === "반품완료"
-        if (activeFilter === "교환") return order.deliveryStatus === "교환완료"
-        return true
-    })
-
+    //이미지
+    const [profileImage, setProfileImage] = useState(null)
+    
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
@@ -161,10 +152,6 @@ export default function MyPage() {
     }, [])
 
     useEffect(() => {
-        console.log('orders state:', orders)
-    }, [orders])
-
-    useEffect(() => {
         if (isAddressModal && !window.daum) {
             const script = document.createElement('script')
             script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
@@ -172,21 +159,6 @@ export default function MyPage() {
             document.body.appendChild(script)
         }
     }, [isAddressModal])
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-            const scrollHeight = document.documentElement.scrollHeight
-            const clientHeight = document.documentElement.clientHeight
-
-            if (scrollTop + clientHeight >= scrollHeight - 100 && !isLoadingMore) {
-                loadMoreItems()
-            }
-        }
-
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [activeTab, displayCounts, isLoadingMore, orders, cart, wishList, myReviews, qna, filteredOrders])
 
     // =============== API 호출 함수 ===============
     const loadAllData = async (userId: number) => {
@@ -224,22 +196,24 @@ export default function MyPage() {
         }
     }
 
+    const filteredOrders = orders.filter((order) => {
+        if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
+        if (activeFilter === "취소") return order.deliveryStatus === "취소"
+        if (activeFilter === "반품") return order.deliveryStatus === "반품"
+        if (activeFilter === "교환") return order.deliveryStatus === "교환"
+        return true
+    })
+
     const fetchOrders = async (id?: number) => {
         if (!id) return
 
         try {
             const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
-            console.log('orders axios data:', data)
             setOrders(data.data || [])
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
         }
-    }
-
-    const fetchDelivery = async (orderId: number) => {
-        const res = await axios.get(`${API_BASE_URL}/orders/${orderId}/delivery`)
-        return res.data.data
     }
 
     const fetchCart = async (id?: number) => {
@@ -322,9 +296,13 @@ export default function MyPage() {
             const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${userId}`, {
                 withCredentials: true,
             })
-            setStats(data)
+            setStats({
+                totalQna: data.totalQna ?? 0,
+                totalReviews: data.totalReviews ?? 0,
+            })
         } catch (error) {
             console.error('통계 조회 실패:', error)
+            setStats({ totalQna: 0, totalReviews: 0 })
         }
     }
 
@@ -335,38 +313,28 @@ export default function MyPage() {
             setMyReviews(list)
             setStats((prev) => ({
                 ...prev,
-                totalReviews: Array.isArray(list) ? list.length : 0,
+                totalReviews: list.length,
             }))
         } catch (error) {
             console.error('리뷰 조회 실패:', error)
-            setStats((prev) => ({
-                ...prev,
-                totalReviews: 0,
-            }))
+            setStats([])
         }
     }
 
     const fetchQna = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-        
         try {
-            const response = await axios.get(`${API_BASE_URL}/qna?userId=${userId}`, {
+            const response = await axios.get(`${API_BASE_URL}/qna`, {
                 withCredentials: true,
             })
             const list = Array.isArray(response.data.data) ? response.data.data : []
             setQna(list)
             setStats((prev) => ({
                 ...prev,
-                totalQna: list.length,
+                totalReviews: list.length,
             }))
         } catch (error) {
             console.error('문의 목록 조회 실패:', error)
             setQna([])
-            setStats((prev) => ({
-                ...prev,
-                totalQna: 0,
-            }))
         }
     }
 
@@ -436,35 +404,6 @@ export default function MyPage() {
                 }))
             },
         }).open()
-    }
-
-
-
-    // ==================== 아이템 추가 로드 함수 ====================
-    const loadMoreItems = () => {
-        setIsLoadingMore(true)
-
-        setTimeout(() => {
-            setDisplayCounts(prev => ({
-                ...prev,
-                [activeTab === 'ordersManage' ? 'ordersManage' : activeTab]:
-                    prev[activeTab === 'ordersManage' ? 'ordersManage' : activeTab] + 10
-            }))
-            setIsLoadingMore(false)
-        }, 500)
-    }
-
-    // ==================== 탭 변경 시 카운트 초기화 ====================
-    // 기존 탭 변경 함수 수정 또는 추가
-    const handleTabChange = (tab) => {
-        setActiveTab(tab)
-        // 탭 변경 시 해당 탭의 표시 개수 초기화
-        setDisplayCounts(prev => ({
-            ...prev,
-            [tab]: 10
-        }))
-        // 스크롤 최상단으로
-        window.scrollTo(0, 0)
     }
 
     // =============== 주문, 배송정보 ===============
@@ -612,15 +551,6 @@ export default function MyPage() {
         setTempData({ ...userData })
     }
 
-    // state 추가
-    const [errors, setErrors] = useState({
-    nickName: '',
-    newPassword: '',
-    confirmPassword: '',
-    email: '',
-    mobilePhone: '',
-    })
-
     const handleSave = async (section: string) => {
         if (!userData?.id) return
 
@@ -708,20 +638,14 @@ export default function MyPage() {
             return
         }
 
+        const addressToSave = { ...newAddress, isDefault: defaultAddress }
+
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/addresses`, newAddress, {
+            const { data } = await axios.post(`${API_BASE_URL}/addresses`, addressToSave, {
                 withCredentials: true,
             })
 
             if (data.resultCode === '200') {
-                if (newAddress.isDefault) {
-                    await axios.patch(
-                        `${API_BASE_URL}/addresses/${data.data.userAddressId}/default`,
-                        {},
-                        { withCredentials: true },
-                    )
-                }
-
                 alert('배송지 등록 성공')
                 await fetchAddresses(userData.id)
                 setIsAddressModal(false)
@@ -738,22 +662,16 @@ export default function MyPage() {
     const handleUpdateAddress = async () => {
         if (!editAddressData) return
 
+        const addressToSave = { ...editAddressData, isDefault: defaultAddress }
+
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/addresses/${editAddressData.userAddressId}`,
-                editAddressData,
+                addressToSave,
                 { withCredentials: true },
             )
 
             if (data.resultCode === '200') {
-                if (editAddressData.isDefault) {
-                    await axios.patch(
-                        `${API_BASE_URL}/addresses/${editAddressData.userAddressId}/default`,
-                        {},
-                        { withCredentials: true },
-                    )
-                }
-
                 alert('배송지 수정 성공')
                 await fetchAddresses(userData.id)
                 setEditAddressModal(false)
@@ -797,7 +715,7 @@ export default function MyPage() {
                 }));
             },
         }).open();
-    };
+    }
 
     // =============== 결제수단 ===============
     const handleSavePayment = async () => {
@@ -1053,13 +971,44 @@ export default function MyPage() {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
 
-            console.log('삭제 성공:', data)
-
             setCart((prev) => prev.filter((item) => item.cartId !== cartId))
         } catch (error) {
             console.error('장바구니 삭제 실패:', error)
             alert('삭제에 실패했습니다.')
         }
+    }
+
+    const handleSelectItem = (cartId: number, isChecked: boolean) => {
+        setSelectedItems(prev => 
+            isChecked ? [...prev, cartId] : prev.filter(id => id !== cartId)
+        )
+    }
+
+    // 전체 상품 구매
+    const handlePurchaseAll = () => {
+        console.log("전체 상품 구매:", cart)
+        // 전체 구매 프로세스 진행
+    }
+
+    // 선택 상품 구매
+    const handlePurchaseSelected = () => {
+        const itemsToPurchase = cart.filter(item => selectedItems.includes(item.cartId))
+        console.log('구매할 상품:', itemsToPurchase)
+        // 여기서 실제 결제 로직/페이지 이동 처리
+    }
+
+    // 전체 선택
+    const handleToggleSelectAll = () => {
+        if (selectedItems.length === cart.length) {
+            setSelectedItems([]) // 전체 해제
+        } else {
+            setSelectedItems(cart.map(item => item.cartId)) // 전체 선택
+        }
+    }
+
+    // 전체 선택 해제 버튼
+    const handleClearSelection = () => {
+        setSelectedItems([])
     }
 
     // =============== UI ===============
@@ -1205,7 +1154,9 @@ export default function MyPage() {
                             <tbody>
                                 <tr>
                                     <td>
-                                        <div className="profile-image"></div>
+                                        <div className="profile-image">
+                                            
+                                        </div>
                                     </td>
                                     <td>{stats.totalQna}</td>
                                     <td>{stats.totalReviews}</td>
@@ -1218,6 +1169,7 @@ export default function MyPage() {
                     {activeTab === 'orders' && (
                         <div className="tab-content">
 
+                            {/* ================= 배송 상태 요약 ================= */}
                             <div className="delivery-status-summary">
                             {['배송준비중', '배송중', '배송완료'].map((status) => (
                                 <div
@@ -1230,157 +1182,152 @@ export default function MyPage() {
                                 >
                                 <p>{status}</p>
                                 <p>{orders.filter((o) =>
-                                    o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '')
+                                    o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '') &&
+                                    isWithinSevenDays(o.completedAt)
                                 ).length}</p>
                                 </div>
                             ))}
                             </div>
 
+                            {/* ================= 주문 내역 ================= */}
                             <div className="section-header">
                             <h2>주문 내역</h2>
                             </div>
 
                             {orders.length === 0 ? (
-                                <p>주문 내역이 없습니다.</p>
+                            <p>주문 내역이 없습니다.</p>
                             ) : (
+                            orders.map((order) => (
+                                <div
+                                key={order.orderId}
+                                className="order-card"
+                                >
+                                {/* 주문 요약 (클릭해서 아코디언 열기) */}
+                                <div
+                                    className="order-header"
+                                    onClick={() => toggleOrder(order.orderId)}
+                                >
+                                    <div className='order-title'>
+                                        <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
+                                        <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
+                                    </div>
+                                    <div className='order-img'>
+                                        {(order.items || []).slice(0, 4).map((item, idx) => (
+                                            <img
+                                                key={idx}
+                                                src={item.imageUrl}
+                                                alt={item.productName}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
 
-                                <>
-                                    {orders.slice(0, displayCounts.orders).map((order) => (
-                                        <div key={order.orderId} className="order-card" >
-                                            <div
-                                                className="order-header"
-                                                onClick={() => toggleOrder(order.orderId)}
-                                            >
-                                                <div className='order-title'>
-                                                    <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
-                                                    <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
-                                                </div>
-                                                <div className='order-img'>
-                                                    {(order.items || []).slice(0, 4).map((item, idx) => (
-                                                        <img
-                                                            key={idx}
-                                                            src={item.imageUrl}
-                                                            alt={item.productName}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
+                                {/* 아코디언 상세 영역 */}
+                                {openOrderId === order.orderId && (
+                                    <div className="order-accordion">
 
-                                            {/* 아코디언 상세 */}
-                                            {openOrderId === order.orderId && (
-                                                <div className="order-accordion">
-
-                                                <h3>상품 내역</h3>
-                                                {(order.items || []).map((item, idx) => (
-                                                    <div key={`${item.orderItemId}-${idx}`} className="order-item">
-                                                        {item.imageUrl && (
-                                                        <img
-                                                            src={item.imageUrl}
-                                                            alt={item.productName}
-                                                            className="order-item-img"
-                                                        />
-                                                        )}
-                                                        <div className="order-item-text">
-                                                        <p className="order-item-name">{item.productName}</p>
-                                                        <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-
-                                                <div className="order-info">
-                                                    <p>주문일자: {order.createdDate}</p>
-                                                    <p>주문번호: {order.orderCode}</p>
-                                                    <p>배송상태: {order.deliveryStatus}</p>
-
-                                                    {order.deliveries?.length > 0 && (() => {
-                                                    const d = order.deliveries[0]
-                                                    return (
-                                                        <>
-                                                        <p>운송장번호: {d.trackingNumber || '없음'}</p>
-                                                        <p>수령인: {d.recipientName || '정보 없음'}</p>
-                                                        <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
-                                                        <p>우편번호: {d.zipcode || ''}</p>
-                                                        </>
-                                                    )
-                                                    })()}
-
-                                                    {order.deliveryStatus === '배송완료' && order.completedAt && (
-                                                    <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
-                                                    )}
-                                                </div>
-
-                                                <div className="order-actions" style={{ marginTop: 15 }}>
-                                                    {order.deliveryStatus === "배송준비중" && (
-                                                        <button
-                                                            className="btn-primary"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation()
-                                                                setActionOrderId(order.orderId)
-                                                                setActionType('cancel')
-                                                                setIsActionModalOpen(true)
-                                                            }}
-                                                        >
-                                                            주문 취소
-                                                        </button>
-                                                    )}
-
-                                                    {order.deliveryStatus === "배송완료" && isWithinSevenDays(order.completedAt) && (
-                                                        <>
-                                                            <button
-                                                                className="btn-primary"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation()
-                                                                    setActionOrderId(order.orderId)
-                                                                    setActionType('return')
-                                                                    setIsActionModalOpen(true)
-                                                                }}
-                                                            >
-                                                                반품 신청
-                                                            </button>
-                                                            <button
-                                                                className="btn-primary"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation()
-                                                                    setActionOrderId(order.orderId)
-                                                                    setActionType('exchange')
-                                                                    setIsActionModalOpen(true)
-                                                                }}
-                                                            >
-                                                                교환 신청
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-
-                                                <div className="order-actions" style={{ marginTop: 15 }}>
-                                                    <button
-                                                        className="link-btn delete"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            handleDeleteOrder(order.orderId)
-                                                        }}
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
-
-                                                {/* 아코디언 하단 금액 */}
-                                                <div className="order-footer">
-                                                    <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
-                                                </div>
-                                                </div>
+                                        {/* 상품 내역 */}
+                                    <h3>상품 내역</h3>
+                                    {(order.items || []).map((item, idx) => (
+                                        <div key={`${item.orderItemId}-${idx}`} className="order-item">
+                                            {/* 상품 이미지 */}
+                                            {item.imageUrl && (
+                                            <img
+                                                src={item.imageUrl}
+                                                alt={item.productName}
+                                                className="order-item-img"
+                                            />
                                             )}
+                                            <div className="order-item-text">
+                                            <p className="order-item-name">{item.productName}</p>
+                                            <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
                                             </div>
-                                        )
-                                    )}
-
-                                    {isLoadingMore && displayCounts.orders < orders.length && (
-                                        <div className="loading-more">
-                                            <div className="spinner"></div>
-                                            <p>로딩 중...</p>
                                         </div>
-                                    )}
-                                </>
+                                    ))}
+
+                                    {/* 주문 상세 정보 */}
+                                    <div className="order-info">
+                                        <p>주문일자: {order.createdDate}</p>
+                                        <p>주문번호: {order.orderCode}</p>
+                                        <p>배송상태: {order.deliveryStatus}</p>
+
+                                        {order.deliveries?.length > 0 && (() => {
+                                        const d = order.deliveries[0]
+                                        return (
+                                            <>
+                                            <p>운송장번호: {d.trackingNumber || '없음'}</p>
+                                            <p>수령인: {d.recipientName || '정보 없음'}</p>
+                                            <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
+                                            <p>우편번호: {d.zipcode || ''}</p>
+                                            </>
+                                        )
+                                        })()}
+
+                                        {order.deliveryStatus === '배송완료' && order.completedAt && (
+                                        <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
+                                        )}
+                                    </div>
+
+                                    {/* 버튼 영역 */}
+                                    <div className="order-actions" style={{ marginTop: 15 }}>
+                                        {order.deliveryStatus === "배송준비중" && (
+                                        <button
+                                            className="btn-primary"
+                                            onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleCancelOrder(order.orderId, "주문취소")
+                                            }}
+                                        >
+                                            주문 취소
+                                        </button>
+                                        )}
+
+                                        {order.deliveryStatus === "배송완료" &&
+                                        isWithinSevenDays(order.completedAt) && (
+                                            <>
+                                            <button
+                                                className="btn-primary"
+                                                onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleReturnOrder(order.orderId, "반품")
+                                                }}
+                                            >
+                                                반품 신청
+                                            </button>
+
+                                            <button
+                                                className="btn-primary"
+                                                onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleExchangeOrder(order.orderId, "교환")
+                                                }}
+                                            >
+                                                교환 신청
+                                            </button>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <div className="order-actions" style={{ marginTop: 15 }}>
+                                        <button
+                                            className="link-btn delete"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleDeleteOrder(order.orderId)
+                                            }}
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
+
+                                    {/* 아코디언 하단 금액 */}
+                                    <div className="order-footer">
+                                        <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
+                                    </div>
+                                    </div>
+                                )}
+                                </div>
+                            ))
                             )}
                         </div>
                     )}
@@ -1409,86 +1356,77 @@ export default function MyPage() {
                                 {filteredOrders.length === 0 ? (
                                     <p>해당 주문 내역이 없습니다.</p>
                                 ) : (
-                                    <>
-                                        {filteredOrders.slice(0, displayCounts.ordersManage).map((order) => {
-                                            // ... 주문 카드 렌더링 ...
+                                    filteredOrders.map((order) => {
+                                        const items = order.orderItems || []
 
-                                            const items = order.orderItems || []
+                                        // 최신 배송 상태
+                                        const latestDelivery = order.deliveries
+                                            ?.slice()
+                                            .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0]
 
-                                            // 최신 배송 상태
-                                            const latestDelivery = order.deliveries
-                                                ?.slice()
-                                                .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0]
+                                        const status = latestDelivery?.deliveryStatus || order.deliveryStatus
 
-                                            const status = latestDelivery?.deliveryStatus || order.deliveryStatus
+                                        return (
+                                            <div key={order.orderId} className="order-card">
 
-                                            return (
-                                                <div key={order.orderId} className="order-card">
-
-                                                    {/* --- 주문 요약 (아코디언 열기) --- */}
-                                                    <div
-                                                        className="order-header"
-                                                        onClick={() => toggleManageOrder(order.orderId)}
-                                                    >
+                                                {/* --- 주문 요약 (아코디언 열기) --- */}
+                                                <div
+                                                    className="order-header"
+                                                    onClick={() => toggleManageOrder(order.orderId)}
+                                                >
+                                                    <div>
                                                         <p>주문번호: {order.orderCode}</p>
                                                         <p>주문일: {order.createdDate}</p>
-                                                        <span className={`badge ${status}`}>{status}</span>
                                                     </div>
-
-                                                    {/* --- 아코디언 상세 영역 --- */}
-                                                    {openedOrderId === order.orderId && (
-                                                        <div className="order-accordion">
-
-                                                            <h3>상품 내역</h3>
-                                                            {items.map((item) => (
-                                                                <div key={item.orderItemId} className="order-item">
-                                                                    <div className="order-item-text">
-                                                                        <p className="order-item-name">{item.productName}</p>
-                                                                        <p className="order-item-detail">
-                                                                            {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-
-                                                            {/* 주문 상세 정보 */}
-                                                            <div className="order-info">
-                                                                <p>주문일자: {order.createdDate}</p>
-                                                                <p>주문번호: {order.orderCode}</p>
-                                                                <p>배송상태: {status}</p>
-                                                                <p>사유: {order.cancelReason}{order.exchangeReason}{order.returnReason}</p>
-                                                            </div>
-
-                                                            {/* 삭제 버튼만 표시 */}
-                                                            <div className="order-actions">
-                                                                <button
-                                                                    className="link-btn delete"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation()
-                                                                        handleDeleteOrder(order.orderId)
-                                                                    }}
-                                                                >
-                                                                    삭제
-                                                                </button>
-                                                            </div>
-
-                                                            <div className="order-footer">
-                                                                <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
-                                                            </div>
-
-                                                        </div>
-                                                    )}
+                                                    <span className={`badge ${status}`}>{status}</span>
                                                 </div>
-                                            )
-                                        })}
 
-                                        {isLoadingMore && displayCounts.ordersManage < filteredOrders.length && (
-                                            <div className="loading-more">
-                                                <div className="spinner"></div>
-                                                <p>로딩 중...</p>
+                                                {/* --- 아코디언 상세 영역 --- */}
+                                                {openedOrderId === order.orderId && (
+                                                    <div className="order-accordion">
+
+                                                        <h3>상품 내역</h3>
+                                                        {items.map((item) => (
+                                                            <div key={item.orderItemId} className="order-item">
+                                                                <div className="order-item-text">
+                                                                    <p className="order-item-name">{item.productName}</p>
+                                                                    <p className="order-item-detail">
+                                                                        {item.price?.toLocaleString()}원 / {item.quantity}개
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+
+                                                        {/* 주문 상세 정보 */}
+                                                        <div className="order-info">
+                                                            <p>주문일자: {order.createdDate}</p>
+                                                            <p>주문번호: {order.orderCode}</p>
+                                                            <p>배송상태: {status}</p>
+                                                            <p>사유: {order.cancelReason}{order.exchangeReason}{order.returnReason}</p>
+                                                        </div>
+
+                                                        {/* 삭제 버튼만 표시 */}
+                                                        <div className="order-actions">
+                                                            <button
+                                                                className="link-btn delete"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    handleDeleteOrder(order.orderId)
+                                                                }}
+                                                            >
+                                                                삭제
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="order-footer">
+                                                            <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
+                                                        </div>
+
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </>
+                                        )
+                                    })
                                 )}
                             </div>
                         </div>
@@ -1498,56 +1436,106 @@ export default function MyPage() {
                     {activeTab === 'cart' && (
                         <div className='tab-content'>
                             <div className='section-header'>
-                                <h2>장바구니</h2>
+                            <h2>장바구니</h2>
                             </div>
 
                             {cart.length === 0 ? (
-                                    <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
+                            <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
                             ) : (
-                                <>
-                                    <div className="cart-list">
-                                        {cart.slice(0, displayCounts.cart).map((item) => (
-                                            <div key={item.cartId} className="cart-product">
-                                                <div className="cart-image"></div>
-                                                <div className='cart-text'>
-                                                    <Link href={`http://localhost:3000/product/list/detail/${item.productId}`} className="product-name">
-                                                        {item.productName}
-                                                    </Link>
-                                                    <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
-                                                </div>
-                                                <div className="quantity-control">
-                                                    <button className="btn-primary"
-                                                        onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
-                                                        disabled={item.quantity <= 1}
-                                                    >
-                                                        -
-                                                    </button>
-                                                    <span>{item.quantity}개</span>
-                                                    <button className="btn-primary"
-                                                        onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
-                                                    >
-                                                        +
-                                                    </button>
-                                                    <button className="link-btn delete" onClick={() => handleDeleteCart(item.cartId)}>삭제</button>
-                                                </div>
-                                            </div>
-                                        ))}
+                            <>
+                                {/* 전체 선택 영역 */}
+                                <div className="cart-header">
+                                <label>
+                                    <input
+                                    type="checkbox"
+                                    checked={selectedItems.length === cart.length}
+                                    onChange={handleToggleSelectAll}
+                                    />
+                                    전체 선택
+                                </label>
+
+                                <button className="link-btn" onClick={handleClearSelection}>
+                                    선택 해제
+                                </button>
+
+                                <button 
+                                    className="btn-primary"
+                                    onClick={handlePurchaseAll}
+                                    disabled={cart.length === 0}
+                                >
+                                    전체 구매
+                                </button>
+                                </div>
+
+                                <div className="cart-list">
+                                {cart.map((item) => (
+                                    <div key={item.cartId} className="cart-product">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedItems.includes(item.cartId)}
+                                        onChange={(e) => handleSelectItem(item.cartId, e.target.checked)}
+                                    />
+
+                                    <div className="cart-image"></div>
+
+                                    <div className='cart-text'>
+                                        <Link href={`/product/list/detail/${item.productId}`} className="product-name">
+                                        {item.productName}
+                                        </Link>
+                                        <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
                                     </div>
 
-                                    {isLoadingMore && displayCounts.cart < cart.length && (
-                                        <div className="loading-more">
-                                            <div className="spinner"></div>
-                                            <p>로딩 중...</p>
-                                        </div>
-                                    )}
-                                </>
+                                    <div className="quantity-control">
+                                        <button className="btn-primary"
+                                        onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
+                                        disabled={item.quantity <= 1}
+                                        >
+                                        -
+                                        </button>
+
+                                        <span>{item.quantity}개</span>
+
+                                        <button className="btn-primary"
+                                        onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
+                                        >
+                                        +
+                                        </button>
+
+                                        <button
+                                        className="link-btn delete"
+                                        onClick={() => handleDeleteCart(item.cartId)}
+                                        >
+                                        삭제
+                                        </button>
+                                    </div>
+                                    </div>
+                                ))}
+                                </div>
+
+                                {/* 총액 + 선택 상품 구매 버튼 */}
+                                <div className="cart-footer">
+                                <p>
+                                    총 금액: 
+                                    {selectedItems.length === 0
+                                    ? 0
+                                    : cart
+                                        .filter(item => selectedItems.includes(item.cartId))
+                                        .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)}
+                                    원
+                                </p>
+
+                                <button
+                                    className="btn-primary"
+                                    disabled={selectedItems.length === 0}
+                                    onClick={handlePurchaseSelected}
+                                >
+                                    선택 상품 구매
+                                </button>
+                                </div>
+                            </>
                             )}
                         </div>
                     )}
-                    {/* 장바구니 담기 버튼 */}
-                    {/* <button onClick={() => handleAddToCart(item.productId, 1)}>
-                        장바구니 담기
-                    </button> */}
 
                     {/* 회원정보수정 */}
                     {activeTab === 'profile' && (
@@ -1816,32 +1804,23 @@ export default function MyPage() {
                                     {wishList.length === 0 ? (
                                         <div className="empty-state">좋아요한 상품이 없습니다.</div>
                                     ) : (
-                                        <>
-                                            <div className="wishlist-grid">
-                                                {wishList.slice(0, displayCounts.wishlist).map((item) => (
-                                                    <div key={item.wishlistId} className="wishlist-item">
-                                                        <div className="wishlist-image"></div>
-                                                        <div className="wishlist-info">
-                                                            <p>{item.productName}</p>
-                                                            <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
-                                                            <button
-                                                                className="link-btn delete"
-                                                                onClick={() => handleRemoveWish(item.wishlistId)}
-                                                            >
-                                                                삭제
-                                                            </button>
-                                                        </div>
+                                        <div className="wishlist-grid">
+                                            {wishList.map((item) => (
+                                                <div key={item.wishlistId} className="wishlist-item">
+                                                    <div className="wishlist-image"></div>
+                                                    <div className="wishlist-info">
+                                                        <p>{item.productName}</p>
+                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                                        <button
+                                                            className="link-btn delete"
+                                                            onClick={() => handleRemoveWish(item.wishlistId)}
+                                                        >
+                                                            삭제
+                                                        </button>
                                                     </div>
-                                                ))}
-                                            </div>
-
-                                            {isLoadingMore && displayCounts.wishlist < wishList.length && (
-                                                <div className="loading-more">
-                                                    <div className="spinner"></div>
-                                                    <p>로딩 중...</p>
                                                 </div>
-                                            )}
-                                        </>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -1854,7 +1833,6 @@ export default function MyPage() {
                                         <ul className="follow-list">
                                             {followList.map((follow) => (
                                                 <li key={follow.studioId} className="follow-card">
-                                                    <p>이미지</p>
                                                     <p>{follow.studioName}</p>
                                                     <button onClick={() => handleUnfollow(follow.studioId)}>
                                                         언팔로우
@@ -1878,54 +1856,45 @@ export default function MyPage() {
                             {myReviews.length === 0 ? (
                                 <div className="empty-state">작성한 리뷰가 없습니다.</div>
                             ) : (
-                                <>
-                                    <div className="my-review-list">
-                                        {myReviews.slice(0, displayCounts.reviews).map((review) => (
-                                            <div key={review.reviewId} className="my-review-card">
-                                                <div className="my-review-header">
-                                                    <Link href={`http://localhost:3000/product/list/detail/${review.productId}`} className="my-review-product-name">
-                                                        {review.productName}
-                                                    </Link>
-                                                    <span className="my-review-rating">⭐ {review.rating} / 5</span>
-                                                </div>
-
-                                                <div className="my-review-images">
-                                                    {review.images?.map((imgUrl, idx) => (
-                                                        <img key={idx} src={imgUrl} alt={`리뷰 이미지 ${idx + 1}`} />
-                                                    ))}
-                                                    {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}
-                                                </div>
-
-                                                <div className="my-review-content">{review.content}</div>
-
-                                                <div className="my-review-footer">
-                                                    <span>작성일: {review.createdDate}</span>
-                                                    {review.modifiedDate && <span> · 수정일: {review.modifiedDate}</span>}
-                                                    <span className="my-review-like-count">👍 {review.reviewLike}</span>
-                                                    <button
-                                                        onClick={() => handleEditClick(review)}
-                                                        className="link-btn"
-                                                    >
-                                                        수정
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteClick(review)}
-                                                        className="link-btn delete"
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
+                                <div className="my-review-list">
+                                    {myReviews.map((review) => (
+                                        <div key={review.reviewId} className="my-review-card">
+                                            <div className="my-review-header">
+                                                <Link href={`http://localhost:3000/product/list/detail/${review.productId}`} className="my-review-product-name">
+                                                    {review.productName}
+                                                </Link>
+                                                <span className="my-review-rating">⭐ {review.rating} / 5</span>
                                             </div>
-                                        ))}
-                                    </div>
 
-                                    {isLoadingMore && displayCounts.reviews < myReviews.length && (
-                                        <div className="loading-more">
-                                            <div className="spinner"></div>
-                                            <p>로딩 중...</p>
+                                            <div className="my-review-images">
+                                                {review.images?.map((imgUrl, idx) => (
+                                                    <img key={idx} src={imgUrl} alt={`리뷰 이미지 ${idx + 1}`} />
+                                                ))}
+                                                {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}
+                                            </div>
+
+                                            <div className="my-review-content">{review.content}</div>
+
+                                            <div className="my-review-footer">
+                                                <span>작성일: {review.createdDate}</span>
+                                                {review.modifiedDate && <span> · 수정일: {review.modifiedDate}</span>}
+                                                <span className="my-review-like-count">👍 {review.reviewLike}</span>
+                                                <button
+                                                    onClick={() => handleEditClick(review)}
+                                                    className="link-btn"
+                                                >
+                                                    수정
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(review)}
+                                                    className="link-btn delete"
+                                                >
+                                                    삭제
+                                                </button>
+                                            </div>
                                         </div>
-                                    )}
-                                </>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     )}
@@ -1940,67 +1909,42 @@ export default function MyPage() {
                             {qna.length === 0 ? (
                                 <div className="empty-state">작성한 문의가 없습니다.</div>
                             ) : (
-                                <>
-                                    <div className="qna-list">
-                                        {qna.slice(0, displayCounts.qna).map((item) => (
-                                            <div
-                                            key={item.qnaId}
-                                            className="qna-card"
-                                            onClick={() => toggleQna(item.qnaId)}
-                                        >
-                                                <div className="qna-header">
-                                                    <div className="qna-title">{item.title}</div>
-                                                    <span className="qna-type">{item.type}</span>
-                                                </div>
+                                <div className="qna-list">
+                                    {qna.map((item) => (
+                                        <div key={item.qnaId} className="qna-card">
+                                            <div className="qna-header">
+                                                <div className="qna-title">{item.title}</div>
+                                                <span className="qna-type">{item.type}</span>
+                                            </div>
 
-                                                <div className="qna-status">
-                                                    {item.answered ? (
-                                                        <span className="answered">답변 완료</span>
-                                                    ) : (
-                                                        <span className="waiting">답변 대기 중</span>
-                                                    )}
-                                                </div>
-
-                                                <div className="qna-content">{item.content}</div>
-
-                                                <div className="qna-footer">
-                                                    <span>
-                                                        작성일:{' '}
-                                                        {new Date(item.createdAt).toLocaleDateString('ko-KR', {
-                                                            year: 'numeric',
-                                                            month: '2-digit',
-                                                            day: '2-digit',
-                                                        })}
-                                                    </span>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation() // 카드 클릭 이벤트 막기
-                                                            handleDeleteClick(item)
-                                                        }}
-                                                        className="link-btn delete"
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
-
-                                                {/* ▼▼▼ 클릭 시 열리는 답변 영역 ▼▼▼ */}
-                                                {openQnaId === item.qnaId && (
-                                                    <div className="qna-answer">
-                                                        <h4>답변 내용</h4>
-                                                        <p>{item.answer || '아직 답변이 등록되지 않았습니다.'}</p>
-                                                    </div>
+                                            <div className="qna-status">
+                                                {item.answered ? (
+                                                    <span className="answered">답변 완료</span>
+                                                ) : (
+                                                    <span className="waiting">답변 대기 중</span>
                                                 )}
                                             </div>
-                                        ))}
-                                    </div>
 
-                                    {isLoadingMore && displayCounts.qna < qna.length && (
-                                        <div className="loading-more">
-                                            <div className="spinner"></div>
-                                            <p>로딩 중...</p>
+                                            <div className="qna-content">{item.content}</div>
+
+                                            <div className="qna-footer">
+                                                <span>작성일: {' '}
+                                                    {new Date(item.createdAt).toLocaleDateString('ko-KR', {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                    })}
+                                                </span>
+                                                <button
+                                                    onClick={() => handleDeleteClick(item)}
+                                                    className="link-btn delete"
+                                                >
+                                                    삭제
+                                                </button>
+                                            </div>
                                         </div>
-                                    )}
-                                </>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     )}
@@ -2043,61 +1987,9 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* 취소 / 반품 / 교환 사유 작성 모달 */}
-            {isActionModalOpen && (
-                <div className="modal-backdrop">
-                    <div className="modal">
-                        <h3>
-                            {actionType === 'cancel' && '주문 취소'}
-                            {actionType === 'return' && '반품 신청'}
-                            {actionType === 'exchange' && '교환 신청'}
-                        </h3>
-                        <textarea
-                            placeholder="사유를 작성해주세요"
-                            value={actionReason}
-                            onChange={(e) => setActionReason(e.target.value)}
-                            style={{ width: '100%', minHeight: '100px', marginBottom: '16px' }}
-                        />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                            <button
-                                onClick={() => setIsActionModalOpen(false)}
-                                className="btn-secondary"
-                            >
-                                취소
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    if (!actionOrderId || !actionType) return
-
-                                    try {
-                                        if (actionType === 'cancel') {
-                                            await handleCancelOrder(actionOrderId, actionReason)
-                                        } else if (actionType === 'return') {
-                                            await handleReturnOrder(actionOrderId, actionReason)
-                                        } else if (actionType === 'exchange') {
-                                            await handleExchangeOrder(actionOrderId, actionReason)
-                                        }
-                                    } catch (error) {
-                                        console.error(error)
-                                    } finally {
-                                        setIsActionModalOpen(false)
-                                        setActionReason('')
-                                        setActionOrderId(null)
-                                        setActionType(null)
-                                    }
-                                }}
-                                className="btn-primary"
-                            >
-                                확인
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* 배송지 추가 모달 */}
             {isAddressModal && (
-                <div className="new-user-address" onClick={() => setIsAddressModal(false)}>
+                <div key="new-user-address" className="address-modal" onClick={() => setIsAddressModal(false)}>
                     <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="address-modal-close" onClick={() => setIsAddressModal(false)}>
                             X
@@ -2152,11 +2044,8 @@ export default function MyPage() {
                         <label>
                             <input
                                 type="checkbox"
-                                checked={newAddress.isDefault}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) =>
-                                    setNewAddress({ ...newAddress, isDefault: e.target.checked })
-                                }
+                                checked={defaultAddress}
+                                onChange={(e) => setDefaultAddress(e.target.checked)}
                             />
                             기본 배송지로 설정
                         </label>
@@ -2216,11 +2105,8 @@ export default function MyPage() {
                         <label>
                             <input
                                 type="checkbox"
-                                checked={editAddressData.isDefault}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) =>
-                                    setEditAddressData({ ...editAddressData, isDefault: e.target.checked })
-                                }
+                                checked={defaultAddress}
+                                onChange={(e) => setDefaultAddress(e.target.checked)}
                             />
                             기본 배송지로 설정
                         </label><br />

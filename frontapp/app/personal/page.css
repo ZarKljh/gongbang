@@ -298,15 +298,18 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* 주문 헤더 (이미지 + 요약) */
 .order-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     margin-bottom: 16px;
     cursor: pointer;
 }
 
-/* 주문 제목 영역 (번호 + 상태) */
+.order-header div {
+    display: flex;
+    gap: 10px;
+}
+
 .order-title {
     display: flex;
     justify-content: space-between;
@@ -330,7 +333,6 @@ body {
     font-weight: 500;
 }
 
-/* 상품 이미지 영역 */
 .order-img {
     display: flex;
     gap: 8px;
@@ -345,13 +347,11 @@ body {
     border: 1px solid #e5e7eb;
 }
 
-/* 아코디언 상세 영역 */
 .order-accordion {
     padding-top: 16px;
     border-top: 1px solid #f3f4f6;
 }
 
-/* 주문 상세 정보 */
 .order-info p {
     margin: 4px 0;
     font-size: 13px;
@@ -359,7 +359,6 @@ body {
     line-height: 1.8;
 }
 
-/* 주문 상품 내역 */
 .order-item {
     margin-bottom: 8px;
 }
@@ -377,7 +376,6 @@ body {
     color: #6b7280;
 }
 
-/* 아코디언 상품 내역 */
 .order-item {
     display: flex;
     align-items: center;
@@ -398,7 +396,6 @@ body {
     flex-direction: column;
 }
 
-/* 버튼 영역 */
 .order-actions {
     margin-top: 16px;
     display: flex;
@@ -438,7 +435,6 @@ body {
     font-weight: bold;
     font-size: 14px;
 }
-
 
 /* 폼 필드 */
 .form-group {
@@ -687,7 +683,7 @@ body {
     width: 400px;
     position: relative;
     max-height: 85vh;
-        overflow-y: auto;
+    overflow-y: auto;
 }
 
 .address-modal-close,
@@ -709,54 +705,6 @@ body {
 .orders-modal-close:hover,
 .review-modal-close:hover {
     color: #000;
-}
-
-.modal input[type="text"],
-.modal input[type="password"],
-.modal input[type="email"],
-.modal input[type="tel"],
-.modal select,
-.modal textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 10px;
-}
-
-.modal input:focus,
-.modal select:focus,
-.modal textarea:focus {
-    outline: none;
-    border-color: #000;
-}
-
-.modal textarea {
-    min-height: 100px;
-    resize: vertical;
-    font-family: inherit;
-}
-
-.modal label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    margin-bottom: 12px;
-    cursor: pointer;
-}
-
-.modal label input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-top: 20px;
 }
 
 .address-modal-content input,
@@ -1062,7 +1010,6 @@ body {
 /* 장바구니 상품 */
 .cart-product {
     border: 1px solid #e5e7eb;
-    /* border-radius: 12px; */
     padding: 16px 24px;
     display: flex;
     align-items: center;

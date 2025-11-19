@@ -41,7 +41,7 @@ public class ReviewLikeService {
             reviewLikeRepository.deleteByReviewAndSiteUser_Id(review, user.getId());
             review.setReviewLike(review.getReviewLike() - 1);
             reviewRepository.save(review);
-            return RsData.of("200", "좋아요 취소됨", review.getReviewLike());
+            return RsData.of("202", "좋아요 취소됨", review.getReviewLike());
         } else {
             // 처음 누른 경우
             ReviewLike newLike = ReviewLike.builder()
@@ -51,7 +51,7 @@ public class ReviewLikeService {
             reviewLikeRepository.save(newLike);
             review.setReviewLike(review.getReviewLike() + 1);
             reviewRepository.save(review);
-            return RsData.of("200", "좋아요 등록됨", review.getReviewLike());
+            return RsData.of("201", "좋아요 등록됨", review.getReviewLike());
         }
     }
 

@@ -2,6 +2,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import './login_seller.css'
+import { loginUserValidation } from '@/app/auth/hooks/loginUserValidation'
+import ErrorMessage from '@/app/auth/common/errorMessage'
 
 export default function LoginSeller() {
     const router = useRouter()
@@ -12,8 +14,16 @@ export default function LoginSeller() {
         role: 'SELLER',
     })
 
+    const { errors, validate } = loginUserValidation()
+
     const handleSubmit = async (e) => {
         e.preventDefault()
+
+        //아이디와 password검증
+        const isValid = validate(seller)
+        if (!isValid) {
+            return
+        }
 
         const response = await fetch(`http://localhost:8090/api/v1/auth/login/seller`, {
             method: 'POST',
@@ -49,6 +59,20 @@ export default function LoginSeller() {
 
     const handleChange = (e) => {
         const { name, value } = e.target
+        let newValue = value
+
+        // userName일 경우 자동으로 소문자 변환
+        if (name === 'userName') {
+            newValue = value.toLowerCase()
+        }
+        if (name === 'password' || name === 'confirmPassword') {
+            newValue = value.replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/g, '')
+        }
+        // 📱 mobilePhone: 숫자만 남기기
+        if (name === 'mobilePhone') {
+            newValue = value.replace(/[^0-9]/g, '') // 숫자 외 제거
+        }
+
         setSeller({ ...seller, [name]: value })
         //console.log({...article, [name]: value});
     }
@@ -62,10 +86,12 @@ export default function LoginSeller() {
                         <label className="form-label">아이디</label>
                         <input type="text" name="userName" className="form-input" onChange={handleChange}></input>
                     </div>
+                    <ErrorMessage message={errors.userName} />
                     <div className="form-group">
                         <label className="form-label">패스워드</label>
                         <input type="password" name="password" className="form-input" onChange={handleChange}></input>
                     </div>
+                    <ErrorMessage message={errors.password} />
                     <div className="button-group">
                         <input type="submit" value="로그인" className="btn btn-primary" />
                         {/* <button type="submit">등록</button> */}

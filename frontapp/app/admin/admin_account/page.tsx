@@ -38,7 +38,6 @@ export default function AdminDashboard() {
         })()
     }, [])
 
-    // ✅ 신고/문의 미처리 건수 3초 폴링
     useEffect(() => {
         let cancelled = false
 
@@ -53,7 +52,6 @@ export default function AdminDashboard() {
             }
         }
 
-        // 처음 한 번
         loadPending()
 
         // 3초마다 폴링

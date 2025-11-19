@@ -26,7 +26,7 @@ public class DevAdminUserInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         final String adminUserName = "admin";
-        final String rawPassword = "123"; // 여기서 비번 원하는 걸로 바꿔도 됨
+        final String rawPassword = "1234!"; // 여기서 비번 원하는 걸로 바꿔도 됨
 
         SiteUser admin = siteUserRepository.findByUserName(adminUserName).orElse(null);
 

@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     Optional<Image> findByRefIdAndRefType(Long studioId, Image.RefType refType);
     List<Image> findALLByRefIdAndRefType(Long studioId, Image.RefType refType);
+    Optional<Image> findByRefTypeAndRefId(Image.RefType refType, Long refId);
 }

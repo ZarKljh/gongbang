@@ -25,6 +25,13 @@ public class PaymentMethodService {
 
         return paymentMethods.stream()
                 .map(PaymentMethodResponse::from)
+                .sorted((a, b) -> {
+                    // 1. 기본 결제수단이 가장 위
+                    if (Boolean.TRUE.equals(a.getDefaultPayment()) && !Boolean.TRUE.equals(b.getDefaultPayment())) return -1;
+                    if (!Boolean.TRUE.equals(a.getDefaultPayment()) && Boolean.TRUE.equals(b.getDefaultPayment())) return 1;
+                    // 2. 기본 결제수단이 같으면 최근 등록 순
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
                 .collect(Collectors.toList());
     }
 

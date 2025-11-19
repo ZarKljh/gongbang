@@ -24,23 +24,22 @@ public class QnaService {
     private final SiteUserRepository siteUserRepository;
     private static final Logger log = LoggerFactory.getLogger(QnaService.class);
 
-    // 전체 내 문의 조회git add .
+    // 전체 내 문의 조회
     @Transactional(readOnly = true)
     public List<QnaResponse> getMyInquiries(Long userId) {
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         List<Inquiry> inquiries = inquiryRepository.findAllByWriter(user);
-        List<QnaResponse> safeList = new ArrayList<>();
+        System.out.println("[DEBUG] DB에서 조회된 문의 수: " + (inquiries != null ? inquiries.size() : "null"));
 
-        System.out.println("userId = " + userId);
-        System.out.println("조회된 문의 수 = " + (inquiries != null ? inquiries.size() : "null"));
+        List<QnaResponse> safeList = new ArrayList<>();
 
         for (Inquiry inquiry : inquiries) {
             try {
                 safeList.add(QnaResponse.from(inquiry));
             } catch (Exception e) {
-                log.warn("Inquiry 변환 실패 id={} reason={}", inquiry.getId(), e.getMessage());
+                System.out.println("[WARN] Inquiry 변환 실패 id=" + inquiry.getId() + " reason=" + e.getMessage());
             }
         }
         return safeList;
