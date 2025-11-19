@@ -717,7 +717,7 @@ export default function detail() {
                                                                 )
                                                             }
                                                         >
-                                                            ✏️ 댓글 수정
+                                                            댓글 수정
                                                         </button>
 
                                                         <button
@@ -729,7 +729,7 @@ export default function detail() {
                                                                 )
                                                             }
                                                         >
-                                                            🗑 댓글 삭제
+                                                            댓글 삭제
                                                         </button>
 
                                                         {isLoggedIn &&

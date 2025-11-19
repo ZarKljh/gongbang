@@ -26,7 +26,7 @@ INSERT INTO studio (studio_id, site_user_id, studio_name, studio_description, st
 )
 VALUES (
     1,
-    300,
+    1,
     '테스트 공방',
     '소품, 공예, 향초 클래스 전문 공방입니다.',
     '010-9999-3000',
