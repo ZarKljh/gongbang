@@ -3,22 +3,24 @@ package com.gobang.gobang.domain.review.controller;
 
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
-import com.gobang.gobang.domain.review.dto.response.ReviewDeleteResponse;
+import com.gobang.gobang.domain.review.dto.response.*;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
-import com.gobang.gobang.domain.review.dto.response.ReviewCreateResponse;
-import com.gobang.gobang.domain.review.dto.response.ReviewModifyResponse;
-import com.gobang.gobang.domain.review.dto.response.ReviewResponse;
-import com.gobang.gobang.domain.review.dto.response.ReviewsResponse;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.service.ReviewCommentService;
+import com.gobang.gobang.domain.review.service.ReviewImageService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -29,6 +31,7 @@ public class ReviewController {
     private final ReviewCommentService reviewCommentService;
     private final ReviewService reviewService;
     private final SiteUserService siteUserService;
+    private final ReviewImageService reviewImageService;
 
 
 
@@ -52,22 +55,24 @@ public class ReviewController {
         return RsData.of("200", "평균 별점 조회 성공", avgData);
     }
 
-    // (평균 별점)상세 만들어지기 전 임시 사용
-//    @GetMapping("/stats/average")
-//    public RsData<Map<String, Object>> getAverageRating() {
-//        Map<String, Object> avgData = reviewLikeService.getAverageRatingAndCount();
-//        return RsData.of("200", "전체 리뷰 평균 조회 성공", avgData);
-//    }
+    // 별점 분포 그래프
+    @GetMapping("/rating-group/{productId}")
+    public RsData<Map<Integer, Long>> getRatingGroup(@PathVariable Long productId) {
+        Map<Integer, Long> data = reviewService.getRatingGroup(productId);
+        return RsData.of("200", "별점 분포 조회 성공", data);
+    }
+
 
 
     @GetMapping
     public RsData<ReviewsResponse> getAllReviews(
             @RequestParam(required = false) Long productId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "date_desc") String sort
+            @RequestParam(defaultValue = "date_desc") String sort,
+            @RequestParam(required = false) String keyword
     ) {
         System.out.println("🔥 sort param = " + sort);
-        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort);
+        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort, keyword);
 
 
         ReviewsResponse response = ReviewsResponse.fromPage(reviewPage);
@@ -76,6 +81,17 @@ public class ReviewController {
                 "200",
                 "목록 조회 성공",
                response
+        );
+    }
+
+    // 포토 리뷰 전체 조회
+    @GetMapping("/photo")
+    public ResponseEntity<?> getPhotoReviews(@RequestParam Long productId) {
+        List<PhotoReviewResponse> result =
+                reviewImageService.getPhotoReviews(productId);
+
+        return ResponseEntity.ok(
+                RsData.of("200", "포토 리뷰 조회 성공", result)
         );
     }
 
@@ -148,7 +164,14 @@ public class ReviewController {
     public RsData<ReviewDeleteResponse> deleteReview(@PathVariable("id") Long reviewId) {
         SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
-        RsData<Review> deleteRs = reviewService.deleteReview(reviewId, currentUser.getId());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+
+        RsData<Review> deleteRs = reviewService.deleteReview(
+                reviewId,
+                currentUser.getId(),
+                role
+        );
 
         if (deleteRs.isFail()) {
             return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());

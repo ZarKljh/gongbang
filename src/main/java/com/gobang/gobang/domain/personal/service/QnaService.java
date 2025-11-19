@@ -25,16 +25,6 @@ public class QnaService {
     private static final Logger log = LoggerFactory.getLogger(QnaService.class);
 
     // 전체 내 문의 조회
-//    @Transactional(readOnly = true)
-//    public List<QnaResponse> getMyInquiries(Long userId) {
-//        SiteUser user = siteUserRepository.findById(userId)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-//        return inquiryRepository.findAllByUser(user)
-//                .stream()
-//                .filter(inquiry -> inquiry != null)
-//                .map(QnaResponse::from)
-//                .toList();
-//    }
     @Transactional(readOnly = true)
     public List<QnaResponse> getMyInquiries(Long userId) {
         SiteUser user = siteUserRepository.findById(userId)
@@ -42,6 +32,9 @@ public class QnaService {
 
         List<Inquiry> inquiries = inquiryRepository.findAllByWriter(user);
         List<QnaResponse> safeList = new ArrayList<>();
+
+        System.out.println("userId = " + userId);
+        System.out.println("조회된 문의 수 = " + (inquiries != null ? inquiries.size() : "null"));
 
         for (Inquiry inquiry : inquiries) {
             try {

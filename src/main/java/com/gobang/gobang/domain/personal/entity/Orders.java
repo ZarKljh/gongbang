@@ -38,6 +38,24 @@ public class Orders {
     @CreationTimestamp
     private LocalDateTime createdDate;
 
+    @Column(name = "status", length = 20)
+    private String status; // 취소, 반품, 교환, null
+
+    // 취소, 반품, 교환 사유
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
+    @Column(name = "return_reason")
+    private String returnReason;
+
+    @Column(name = "exchange_reason")
+    private String exchangeReason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private PaymentMethod paymentMethod;
+
+
     @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     private List<Delivery> deliveries = new ArrayList<>();
 

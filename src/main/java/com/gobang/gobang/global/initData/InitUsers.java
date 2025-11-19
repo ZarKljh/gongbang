@@ -42,6 +42,7 @@ public class InitUsers {
                         .password(passwordEncoder.encode("password")) // 공통 비밀번호
                         .userName(userName)
                         .fullName("일반유저" + i)
+                        .nickName("일반유저" + i)// 현영 추가
                         .mobilePhone("010-0000-%04d".formatted(i))
                         .role(RoleType.USER)
                         .status("ACTIVE")

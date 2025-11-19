@@ -12,6 +12,7 @@ import QnaTab from './tabs/QnaTab'
 import StudioTab from './tabs/studioTab'
 import ProfileTab from './tabs/profileTab'
 import StudioDescTab from './tabs/studioDescTab'
+import StudioAddTab from './tabs/studioAddTab'
 /*
 interface MainContentProps {
     activeTab: string
@@ -49,7 +50,7 @@ interface MainContentProps {
 
 export default function MainContent(props: MainContentProps) {
     //const { activeTab, userData, stats, studioList, studio } = props
-    const { activeTab } = props
+    const { activeTab, studio } = props
 
     return (
         <div className="main-content">
@@ -59,14 +60,23 @@ export default function MainContent(props: MainContentProps) {
                         <thead>
                             <tr>
                                 <th>프로필</th>
-                                <th>문의</th>
-                                <th>상품 리뷰</th>
+                                <th>등록공방수</th>
+                                <th>등록상품수</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>
-                                    <div className="profile-image"></div>
+                                    <div className="profile-image">
+                                        {studio?.studioLogoImage?.imageFileName ? (
+                                            <img
+                                                src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
+                                                alt="공방로고사진"
+                                            />
+                                        ) : (
+                                            <div className="no-image">No Logo</div>
+                                        )}
+                                    </div>
                                 </td>
                                 <td>{/*stats.totalQna*/}</td>
                                 <td>{/*stats.totalReviews*/}</td>
@@ -77,12 +87,13 @@ export default function MainContent(props: MainContentProps) {
                 {activeTab === 'studio' && <StudioTab {...props} />}
                 {activeTab === 'profile' && <ProfileTab {...props} />}
                 {activeTab === 'studioDesc' && <StudioDescTab {...props} />}
+                {activeTab === 'studioAdd' && <StudioAddTab {...props} />}
             </div>
         </div>
     )
 }
 /*
- {activeTab === 'orders' && <OrdersTab {...props} />}
+                {activeTab === 'orders' && <OrdersTab {...props} />}
                 {activeTab === 'cart' && <CartTab {...props} />}
                 {activeTab === 'profile' && <ProfileTab {...props} />}
                 {activeTab === 'addresses' && <AddressesTab {...props} />}
@@ -90,4 +101,5 @@ export default function MainContent(props: MainContentProps) {
                 {activeTab === 'like' && <LikeTab {...props} />}
                 {activeTab === 'reviews' && <ReviewsTab {...props} />}
                 {activeTab === 'qna' && <QnaTab {...props} />}
+                <p>{JSON.stringify(studio)}</p>
 */
