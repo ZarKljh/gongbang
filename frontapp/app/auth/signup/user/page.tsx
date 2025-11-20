@@ -1,7 +1,10 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { useRef } from 'react'
 import './signup_user.css'
+import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
+import ErrorMessage from '@/app/auth/common/errorMessage'
 
 export default function SignupUser() {
     const router = useRouter()
@@ -16,33 +19,94 @@ export default function SignupUser() {
         birth: '',
         nickName: '',
         mobilePhone: '',
-        profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
-        profileImageName: '', // 이미지 파일명
+        profileImageName: null, // 실제 파일
     })
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
+    const [profileImageFile, setProfileFile] = useState<File | null>(null)
+    const { errors, validate } = signupUserValidation()
+
+    // 중복검사 결과 저장
+    const [userNameCheckMsg, setUserNameCheckMsg] = useState('')
+    const [nickNameCheckMsg, setNickNameCheckMsg] = useState('')
+    const [isUserNameValid, setIsUserNameValid] = useState(false)
+    const [isNickNameValid, setIsNickNameValid] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+    const checkUserName = async () => {
+        if (!formData.userName) {
+            setUserNameCheckMsg('아이디를 입력해주세요.')
+            return
+        }
+
+        const res = await fetch(
+            `http://localhost:8090/api/v1/auth/signup/user/checkusername?userName=${formData.userName}`,
+        )
+        const body = await res.json()
+
+        setUserNameCheckMsg(body.msg)
+        setIsUserNameValid(body.data === true)
+    }
+
+    const checkNickName = async () => {
+        if (!formData.nickName) {
+            setNickNameCheckMsg('닉네임을 입력해주세요.')
+            return
+        }
+
+        const res = await fetch(
+            `http://localhost:8090/api/v1/auth/signup/user/checknickname?nickName=${formData.nickName}`,
+        )
+        const body = await res.json()
+
+        setNickNameCheckMsg(body.msg)
+        setIsNickNameValid(body.data === true)
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
+
+        // 입력값 변경하면 중복검사 초기화
+        if (name === 'userName') {
+            setIsUserNameValid(false)
+            setUserNameCheckMsg('')
+        }
+        if (name === 'nickName') {
+            setIsNickNameValid(false)
+            setNickNameCheckMsg('')
+        }
     }
 
     const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-
-        const previewUrl = URL.createObjectURL(file)
-        setPreviewProfileImage(previewUrl)
-        setFormData((prev) => ({
-            ...prev,
-            profileImageUrl: previewUrl, // 실제 서버 업로드 후 URL로 교체 가능
-            profileImageName: file.name, // 파일명 저장
-        }))
+        setProfileFile(file)
+        setPreviewProfileImage(URL.createObjectURL(file))
     }
 
-    const handleSubmit = async (e) => {
+    const handleRemoveImage = () => {
+        setProfileFile(null)
+        setPreviewProfileImage(null)
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
+        const isValid = validate(formData)
+        if (!isValid) {
+            return
+        }
+
+        if (!isUserNameValid) {
+            alert('아이디 중복확인을 해주세요.')
+            return
+        }
+
+        if (!isNickNameValid) {
+            alert('닉네임 중복확인을 해주세요.')
+            return
+        }
         //ToDo: 입력값validate 코드 작성
         /*
     const birthDateTime = formData.birth ? `${formData.birth}T00:00:00` : null;
@@ -52,21 +116,40 @@ export default function SignupUser() {
       birth: birthDateTime,
     };
     */
-        const response = await fetch(`http://localhost:8090/api/v1/auth/signup/user`, {
-            method: 'POST',
-            //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            //무엇을 json으로 할지 선언한것
-            body: JSON.stringify(formData),
-        })
+        try {
+            const submitData = new FormData()
 
-        if (response.ok) {
-            alert('회원가입 성공하였습니다. 로그인을 해주세요')
-            router.push('/')
-        } else {
-            alert('회원가입에 실패하였습니다')
+            // JSON Blob으로 만들어서 'data'라는 이름으로 append
+            const dataWithoutImage = {
+                ...formData,
+                profileImageName: profileImageFile ? profileImageFile.name : null,
+                birth: formData.birth || null
+            }
+            const blob = new Blob([JSON.stringify(dataWithoutImage)], { type: "application/json" })
+            submitData.append("data", blob)
+
+            // 파일이 있으면 별도 Part로 추가
+            if (profileImageFile) {
+                dataWithoutImage.profileImageName = profileImageFile.name
+                submitData.append("file", profileImageFile)
+            }
+
+            const response = await fetch("http://localhost:8090/api/v1/auth/signup/user", {
+                method: "POST",
+                body: submitData,
+            })
+
+            if (response.ok) {
+                alert('회원가입 성공하였습니다. 로그인을 해주세요')
+                router.push('/')
+            } else {
+                const error = await response.text()
+                console.error("회원가입 실패:", error)
+                alert('회원가입에 실패하였습니다')
+            }
+        } catch (err) {
+            console.error(err)
+            alert("회원가입 에러")
         }
     }
 
@@ -77,29 +160,35 @@ export default function SignupUser() {
                 <h4 className="form-title">사용자 정보 입력</h4>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label className="form-label">ID</label>
+                        <label className="form-label required">ID</label>
                         <input
                             type="text"
                             name="userName"
                             className="form-input"
                             onChange={handleChange}
                             value={formData.userName}
-                            placeholder="로그인에 사용되는 ID입니다"
+                            placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
                         />
+                        <button type="button" className="btn btn-secondary" onClick={checkUserName}>
+                            중복확인
+                        </button>
                     </div>
+                    <ErrorMessage message={errors.userName} />
+                    <ErrorMessage message={userNameCheckMsg} success={isUserNameValid} />
                     <div className="form-group">
-                        <label className="form-label">패스워드</label>
+                        <label className="form-label required">패스워드</label>
                         <input
                             type="password"
                             name="password"
                             className="form-input"
                             onChange={handleChange}
                             value={formData.password}
-                            placeholder="패스워드"
+                            placeholder="패스워드에는 3자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
                         />
                     </div>
+                    <ErrorMessage message={errors.password} />
                     <div className="form-group">
-                        <label className="form-label">패스워드확인</label>
+                        <label className="form-label required">패스워드확인</label>
                         <input
                             type="password"
                             name="confirmPassword"
@@ -109,6 +198,7 @@ export default function SignupUser() {
                             placeholder="패스워드를 다시 입력해주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.confirmPassword} />
                     <div className="form-group">
                         <label className="form-label">성명</label>
                         <input
@@ -120,7 +210,8 @@ export default function SignupUser() {
                             placeholder="성명을 한글로 적어주세요"
                         />
                     </div>
-                    <div className="form-group">
+                    <ErrorMessage message={errors.fullName} />
+                    <div className="form-group required">
                         <label className="form-label">이메일</label>
                         <input
                             type="text"
@@ -131,8 +222,9 @@ export default function SignupUser() {
                             placeholder="소문자로입력해주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.email} />
                     <div className="form-group">
-                        <label className="form-label">생년월일</label>
+                        <label className="form-label required">생년월일</label>
                         <input
                             type="date"
                             name="birth"
@@ -143,18 +235,23 @@ export default function SignupUser() {
                         />
                     </div>
                     <div className="form-group">
-                        <label className="form-label">닉네임</label>
+                        <label className="form-label required">닉네임</label>
                         <input
                             type="text"
                             name="nickName"
                             className="form-input"
                             value={formData.nickName}
                             onChange={handleChange}
-                            placeholder="50자이내로 적어주세요"
+                            placeholder="닉네임은 2글자 이상이어야합니다"
                         />
+                        <button type="button" className="btn btn-secondary" onClick={checkNickName}>
+                            중복확인
+                        </button>
                     </div>
+                    <ErrorMessage message={errors.nickName} />
+                    <ErrorMessage message={nickNameCheckMsg} success={isNickNameValid} />
                     <div className="form-group">
-                        <label className="form-label">휴대전화</label>
+                        <label className="form-label required">휴대전화</label>
                         <input
                             type="text"
                             name="mobilePhone"
@@ -164,6 +261,7 @@ export default function SignupUser() {
                             placeholder="번호만적어주세요"
                         />
                     </div>
+                    <ErrorMessage message={errors.mobilePhone} />
                     <div className="form-group">
                         <label className="form-label">프로필 이미지</label>
                         <input
@@ -172,6 +270,7 @@ export default function SignupUser() {
                             className="form-input"
                             accept="image/*"
                             onChange={handleImagePreview}
+                            ref={fileInputRef}
                         />
                         {previewProfileImage && (
                             <div className="image-preview">
@@ -181,6 +280,10 @@ export default function SignupUser() {
                                     alt="프로필 이미지"
                                     style={{ maxWidth: '300px', marginTop: '10px' }}
                                 />
+                                {/* 삭제 버튼 */}
+                                <button type="button" className="remove-image-btn" onClick={handleRemoveImage}>
+                                    삭제
+                                </button>
                             </div>
                         )}
                     </div>

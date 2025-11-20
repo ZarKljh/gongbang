@@ -12,24 +12,20 @@ import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.image.service.ProfileImageService;
 import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.jwt.JwtProvider;
 import com.gobang.gobang.global.rq.Rq;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(value = "/api/v1/auth")
@@ -41,16 +37,49 @@ public class SiteUserController {
     private final JwtProvider jwtProvider;
     private final Rq rq;
     private final PasswordEncoder passwordEncoder;
+    private final ProfileImageService profileImageService;
 
     @PostMapping("/signup/user")
-    public RsData<SignupUserResponse> joinUser (@Valid @RequestBody SignupUserRequest signupUserRequest) {
+    public RsData<SignupUserResponse> joinUser (@RequestPart("data") @Valid SignupUserRequest signupUserRequest, @RequestPart(value = "file", required = false) MultipartFile file) {
         if (!signupUserRequest.getPassword().equals(signupUserRequest.getConfirmPassword())) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+        } else if (siteUserService.existsByUserName(signupUserRequest.getUserName())){
+            throw new IllegalArgumentException("이미 사용중인 아이디입니다.");
         }
         SiteUser siteUser = siteUserService.signupUser(signupUserRequest);
+
+        if (file != null && !file.isEmpty()) {
+            profileImageService.uploadProfileImage(siteUser.getId(), file);
+        }
+
         //System.out.println("여기까지 확인되었습니다");
         return RsData.of("200", "회원가입이 완료되었습니다.", new SignupUserResponse(siteUser));
     }
+
+    @GetMapping("/signup/user/checkusername")
+    public RsData<Boolean> checkUserName(@RequestParam String userName) {
+
+        boolean exists = siteUserService.existsByUserName(userName);
+
+        if (exists) {
+            return RsData.of("200", "이미 사용중인 아이디입니다.", false);
+        } else {
+            return RsData.of("200", "사용 가능한 아이디입니다.", true);
+        }
+    }
+
+    @GetMapping("/signup/user/checknickname")
+    public RsData<Boolean> checkNickName(@RequestParam String nickName) {
+
+        boolean exists = siteUserService.existsByNickName(nickName);
+
+        if (exists) {
+            return RsData.of("200", "이미 사용중인 닉네임입니다.", false);
+        } else {
+            return RsData.of("200", "사용 가능한 닉네임입니다.", true);
+        }
+    }
+
     @PostMapping("/signup/seller")
     public RsData<SignupSellerResponse> joinSeller(@Valid @RequestBody SignupSellerRequest signupSellerRequest){
         if (!signupSellerRequest.getPassword().equals(signupSellerRequest.getConfirmPassword())) {

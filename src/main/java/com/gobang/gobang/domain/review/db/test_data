@@ -1,0 +1,73 @@
+INSERT INTO product (id, studio_id, theme_id, category_id, name, summary, description, slug, subtitle, base_price, stock_quantity, backorderable, status, active)
+VALUES
+(1, 1, NULL, 1, '핸드메이드 머그컵', '감성 머그컵', '직접 만든 도자기 머그컵', 'mug-cup', '도자기컵', 15000, 20, false, 'PUBLISHED', true),
+(2, 1, NULL, 1, '캔들 세트', '아로마 캔들 3종 세트', '천연 오일로 만든 캔들', 'candle-set', '향기로운 하루', 32000, 15, false, 'PUBLISHED', true);
+
+INSERT INTO orders (order_id, user_id, order_code, total_price, created_date)
+VALUES
+(1, 2, 'ORD-10001', 55000.00, NOW()),
+(2, 2, 'ORD-10002', 32000.00, NOW()),
+(3, 2, 'ORD-10003', 32000.00, NOW());
+
+INSERT INTO user_address (user_address_id, user_id, recipient_name, base_address, detail_address, zipcode, is_default, created_at)
+VALUES
+(1, 2, '김지선', '서울특별시 강남구 테헤란로 123', '301호', '06100', true, NOW()),
+(2, 2, '김지선', '서울특별시 마포구 독막로 45', '202호', '04157', false, NOW());
+
+INSERT INTO delivery (delivery_id, completed_at, order_id, address_id, tracking_number, delivery_status, created_date, modified_date)
+VALUES
+(1, NOW(), 1, 1, 'TRACK-11111', '배송중', NOW(), NOW()),
+(2, NOW(), 2, 2, 'TRACK-22222', '배송완료', NOW(), NOW()),
+(3, NOW() - INTERVAL '1 month', 3, 2, 'TRACK-22223', '배송완료', NOW() - INTERVAL '1 month', NOW() - INTERVAL '1 month');
+
+INSERT INTO order_item (order_item_id, order_id, product_id, quantity, price)
+VALUES
+(1, 1, 1, 2, 30000.00),
+(2, 1, 2, 1, 25000.00),
+(3, 2, 2, 1, 32000.00);
+
+INSERT INTO payment_method (payment_id, user_id, type, bank_name, account_number, card_company, card_number, default_payment, created_at, modified_date)
+VALUES
+(1, 2, 'CARD', NULL, NULL, '신한카드', '1111-2222-3333-4444', true, NOW(), NOW()),
+(2, 2, 'ACCOUNT', '국민은행', '123-456-789012', NULL, NULL, false, NOW(), NOW());
+
+INSERT INTO cart (cart_id, user_id, product_id, quantity, created_at)
+VALUES
+(1, 2, 1, 1, NOW()),
+(2, 2, 2, 2, NOW());
+
+INSERT INTO wish_list (wishlist_id, user_id, product_id, created_at)
+VALUES
+(1, 2, 1, NOW()),
+(2, 2, 2, NOW());
+
+--INSERT INTO follow (follow_id, user_id, seller_id, created_at)
+--VALUES
+--(1, 3, 1, NOW());
+
+INSERT INTO inquiries (user_id, answered, created_at, id, type, title, email, content)
+VALUES
+(2, true, NOW(), 1, 'ACCOUNT', '제목1', 'test@test.com', 123);
+
+INSERT INTO TBL_REVIEW (
+order_id,
+order_item_id,
+product_id,
+user_id,
+rating,
+content,
+view_count,
+is_active,
+review_like,
+created_date,
+modified_date,
+created_by,
+updated_by
+)
+VALUES
+(1, 1, 1, 2, 5, '머그컵이 정말 예뻐요! 직접 만든 듯한 감성이 느껴집니다.', 10, true, 3, NOW(), NOW(), 'user1', 'user1'),
+(1, 2, 2, 2, 4, '캔들 향이 은은해서 좋아요. 다만 심지가 조금 짧아요.', 8, true, 2, NOW(), NOW(), 'user1', 'user1'),
+(2, 3, 2, 2, 5, '선물용으로 샀는데 포장도 예쁘고 향도 좋아요. 만족합니다!', 12, true, 5, NOW(), NOW(), 'user1', 'user1');
+
+
+

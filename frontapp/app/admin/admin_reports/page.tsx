@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
-import Modal from '@/app/admin/components/Modal' // ✅ 모달 추가
+import Modal from '@/app/admin/components/Modal'
 import styles from '@/app/admin/styles/AdminReports.module.css'
 
 type ReportStatus = 'PENDING' | 'RESOLVED' | 'REJECTED' | string
@@ -59,6 +59,20 @@ export default function AdminReportsPage() {
         const timer = setInterval(loadReports, 3000)
         return () => clearInterval(timer)
     }, [statusFilter])
+
+    // 🔹 enum → 한글 라벨 매핑
+    const statusKoreanLabel = (status: ReportStatus) => {
+        switch (status) {
+            case 'PENDING':
+                return '대기'
+            case 'RESOLVED':
+                return '처리 완료'
+            case 'REJECTED':
+                return '기각'
+            default:
+                return status
+        }
+    }
 
     const statusBadgeClass = (status: ReportStatus) => {
         switch (status) {
@@ -121,7 +135,7 @@ export default function AdminReportsPage() {
                 <div className={styles.headerRow}>
                     <div>
                         <h1 className={styles.title}>신고 관리</h1>
-                        <p className={styles.pageSubtitle}>고객이 남긴 1:1 문의를 확인하고 처리 상태를 관리합니다.</p>
+                        <p className={styles.pageSubtitle}>고객이 남긴 신고를 확인하고 처리 상태를 관리합니다.</p>
                     </div>
 
                     <div className={styles.filterGroup}>
@@ -163,7 +177,9 @@ export default function AdminReportsPage() {
                                     {reports.map((r) => (
                                         <tr key={r.id}>
                                             <td>
-                                                <span className={statusBadgeClass(r.status)}>{r.status}</span>
+                                                <span className={statusBadgeClass(r.status)}>
+                                                    {statusKoreanLabel(r.status)}
+                                                </span>
                                             </td>
                                             <td>
                                                 <div className={styles.target}>

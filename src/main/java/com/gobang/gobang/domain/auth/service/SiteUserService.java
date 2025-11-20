@@ -10,6 +10,7 @@ import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.request.SiteUserUpdateRequest;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.seller.model.StudioStatus;
 import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.config.SecurityUser;
@@ -68,7 +69,7 @@ public class SiteUserService {
                 .role(RoleType.USER)
                 .status(signupUserRequest.getStatus())
                 .gender(signupUserRequest.getGender())
-                .birth(signupUserRequest.getBirth().atStartOfDay())
+                .birth(signupUserRequest.getBirth() != null ? signupUserRequest.getBirth().atStartOfDay() : null)
                 .createdDate(LocalDateTime.now())
                 .build();
 
@@ -80,7 +81,9 @@ public class SiteUserService {
         SiteUser savedSiteUser = siteUserRepository.save(newUser);
 
         Image profileImage = buildProfileImagesFromRequest(signupUserRequest, savedSiteUser);
-        imageRepository.save(profileImage);
+        if (profileImage != null) {
+            imageRepository.save(profileImage);
+        }
         return newUser;
     }
 
@@ -106,6 +109,7 @@ public class SiteUserService {
         if (os.isPresent()) {
             SiteUser siteUser = os.get();
             if (passwordEncoder.matches(password, siteUser.getPassword())) {
+                System.out.println("패스워드가 일치하지 않습니다");
                 return siteUser;
             }
         }
@@ -155,7 +159,6 @@ public class SiteUserService {
                 .nickName(signupSellerRequest.getNickName())
                 //초기 사업자 회원가입시 user권한으로 가입, 추후 admin입점심사 후 seller 권한 변경
                 .role(RoleType.USER)
-                .status(signupSellerRequest.getStatus())
                 .gender(signupSellerRequest.getGender())
                 .birth(signupSellerRequest.getBirth().atStartOfDay())
                 .createdDate(LocalDateTime.now())
@@ -166,6 +169,7 @@ public class SiteUserService {
                 .categoryId(Long.parseLong(signupSellerRequest.getCategoryId()))
                 .studioName(signupSellerRequest.getStudioName())
                 .studioDescription(signupSellerRequest.getStudioDescription())
+                .status(StudioStatus.PENDING)
                 .studioMobile(signupSellerRequest.getStudioMobile())
                 .studioOfficeTell(signupSellerRequest.getStudioOfficeTell())
                 .studioFax(signupSellerRequest.getStudioFax())
@@ -201,6 +205,27 @@ public class SiteUserService {
             return null;
         }
     }
+
+    public boolean existsByUserName(String userName) {
+        Optional os = siteUserRepository.findByUserName(userName);
+        if ( os.isPresent() ) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public boolean existsByNickName(String nickName) {
+        Optional os = siteUserRepository.findByNickName(nickName);
+        if ( os.isPresent() ) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
 
 
     @AllArgsConstructor
@@ -293,10 +318,10 @@ public class SiteUserService {
 
     private Image buildProfileImagesFromRequest(SignupUserRequest request, SiteUser savedSiteUser) {
 
-        if (request.getProfileImageUrl() != null) {
+        if (request.getProfileImageName() != null && !request.getProfileImageName().isEmpty()) {
 
             Image profileImage = Image.builder()
-                    .imageUrl(request.getProfileImageUrl())
+                    .imageUrl(request.getProfileImageName())
                     .refId(savedSiteUser.getId())
                     .refType(Image.RefType.USER_PROFILE)
                     .imageFileName(request.getProfileImageName())

@@ -42,6 +42,24 @@ public class OrdersController {
         return RsData.of("200", "삭제 성공");
     }
 
+    @PatchMapping("/{orderId}/cancel")
+    public RsData<OrdersResponse> cancelOrder(@PathVariable Long orderId) {
+        OrdersResponse orders = ordersService.cancelOrder(orderId);
+        return RsData.of("200", "주문 취소 완료", orders);
+    }
+
+    @PatchMapping("/{orderId}/return")
+    public RsData<OrdersResponse> returnOrder(@PathVariable Long orderId) {
+        OrdersResponse orders = ordersService.returnOrder(orderId);
+        return RsData.of("200", "반품 신청 완료", orders);
+    }
+
+    @PatchMapping("/{orderId}/exchange")
+    public RsData<OrdersResponse> exchangeOrder(@PathVariable Long orderId) {
+        OrdersResponse orders = ordersService.exchangeOrder(orderId);
+        return RsData.of("200", "교환 신청 완료", orders);
+    }
+
     @PatchMapping("/delivery")
     public RsData<DeliveryResponse> updateDelivery(@RequestBody DeliveryRequest request) {
         DeliveryResponse response = deliveryService.updateDelivery(request);
