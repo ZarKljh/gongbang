@@ -60,7 +60,7 @@ public class ReviewService {
         if (hasKeyword) {
             // 일단은 내용(content) 기준 검색만 처리 (kwTypes는 나중에 확장)
             if (productId != null) {
-                // 👉 특정 상품 + 키워드 검색
+                // 특정 상품 + 키워드 검색
                 reviewPage = reviewRepository
                         .findByProductIdAndContentContainingIgnoreCase(
                                 productId,
@@ -68,7 +68,7 @@ public class ReviewService {
                                 pageable
                         );
             } else {
-                // 👉 전체 리뷰 + 키워드 검색
+                // 전체 리뷰 + 키워드 검색
                 reviewPage = reviewRepository
                         .findByContentContainingIgnoreCase(
                                 keyword,
@@ -76,7 +76,7 @@ public class ReviewService {
                         );
             }
         } else {
-            // 🔍 검색어 없을 때는 기존 로직 그대로
+            // 검색어 없을 때는 기존 로직 그대로
             if (productId != null) {
                 reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
             } else {
