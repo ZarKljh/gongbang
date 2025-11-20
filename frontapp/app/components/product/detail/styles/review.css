@@ -377,11 +377,12 @@
 
 .review-like-btn.liked {
     color: #5c3d1e;
+    background-color:#e0c192 ;
     transform: scale(1.05);
 }
 
 .review-like-btn.liked:hover {
-    background-color: #e0c192;
+    background-color: #bb9d71;
 }
 /* 🗑️ 삭제 버튼 */
 .review-delete-btn {

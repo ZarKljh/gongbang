@@ -132,7 +132,7 @@ export default function Review() {
     useEffect(() => {
         if (!productId) return
         fetchReviews(productId, currentPage, sortType)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchLikedReviews(productId)
     }, [productId, currentPage, sortType])
 
     // 페이지 버튼 클릭 시 상단 이동
@@ -342,6 +342,21 @@ export default function Review() {
         } catch (err) {
             console.error('좋아요 요청 실패:', err)
         }
+    }
+
+    // 좋아요 상태 받아오기
+    const fetchLikedReviews = async (productId: number) => {
+        const res = await fetch(`http://localhost:8090/api/v1/reviews/likes/me?productId=${productId}`, {
+            credentials: 'include',
+        })
+        if (!res.ok) return
+        const data = await res.json()
+
+        const likedState: Record<number, boolean> = {}
+        data.data.forEach((reviewId: number) => {
+            likedState[reviewId] = true
+        })
+        setLiked(likedState)
     }
 
     // 댓글 등록 버튼
@@ -774,10 +789,21 @@ export default function Review() {
                                         {/* 댓글 없을 때,  */}
                                         {!comments[review.reviewId]?.reviewComment && (
                                             <>
+                                                {/* 버튼 눌렀을 때 작성창 + 등록버튼 */}
+                                                {isLoggedIn &&
+                                                    roleType === 'SELLER' &&
+                                                    activeCommentBox !== review.reviewId && (
+                                                        <button
+                                                            className="review-comment-add-btn"
+                                                            onClick={() => setActiveCommentBox(review.reviewId)}
+                                                        >
+                                                            댓글 작성하기
+                                                        </button>
+                                                    )}
                                                 {/* 댓글 작성하기 버튼 눌렀을 때 */}
                                                 {isLoggedIn &&
-                                                    activeCommentBox !== review.reviewId &&
-                                                    roleType !== 'ADMIN' && (
+                                                    roleType === 'SELLER' &&
+                                                    activeCommentBox === review.reviewId && (
                                                         <div className="review-comment-addbox">
                                                             <textarea
                                                                 placeholder="댓글을 입력하세요."
@@ -794,18 +820,6 @@ export default function Review() {
                                                                 댓글 등록
                                                             </button>
                                                         </div>
-                                                    )}
-
-                                                {/* 버튼 눌렀을 때 작성창 + 등록버튼 */}
-                                                {isLoggedIn &&
-                                                    activeCommentBox !== review.reviewId &&
-                                                    roleType !== 'ADMIN' && (
-                                                        <button
-                                                            className="review-comment-add-btn"
-                                                            onClick={() => setActiveCommentBox(review.reviewId)}
-                                                        >
-                                                            댓글 작성하기
-                                                        </button>
                                                     )}
                                             </>
                                         )}
