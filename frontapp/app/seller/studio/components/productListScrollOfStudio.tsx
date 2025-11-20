@@ -73,29 +73,23 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
 
     return (
         <div className="product-list">
-            <h2>상품 리스트 (무한스크롤)</h2>
+            <h2 className="product-list-title">상품 리스트 (무한스크롤)</h2>
             {products.length === 0 ? (
                 <p>등록된 상품이 없습니다.</p>
             ) : (
-                <ul>
+                <ul className="product-grid">
                     {products.map((product) => (
-                        <li key={product.id} style={{ marginBottom: '1rem' }}>
+                        <li className="product-card" key={product.id}>
                             <img
+                                className="product-image"
                                 src={product.imageUrl || '/default-product.png'} // 기본 이미지 설정 가능
                                 alt={product.name}
-                                style={{
-                                    width: '100%',
-                                    maxWidth: '280px',
-                                    height: 'auto',
-                                    borderRadius: '8px',
-                                    marginBottom: '0.5rem',
-                                    objectFit: 'cover',
-                                }}
                             />
-                            <h4>상품명 : {product.name}</h4>
-                            <p>💰 가격: {product.basePrice.toLocaleString()}원</p>
-                            <p>📦 재고: {product.stockQuantity}개</p>
-                            <hr />
+                            <div className="product-info">
+                                <div className="product-name">상품명 : {product.name}</div>
+                                <div className="product-price">가격: {product.basePrice.toLocaleString()}원</div>
+                                <div className="product-stock">재고: {product.stockQuantity}개</div>
+                            </div>
                         </li>
                     ))}
                 </ul>

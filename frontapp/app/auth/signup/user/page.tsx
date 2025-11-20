@@ -167,7 +167,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.userName}
-                            placeholder="아이디에는 영문6자가 이상 포함되어야합니다"
+                            placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
                         />
                         <button type="button" className="btn btn-secondary" onClick={checkUserName}>
                             중복확인
@@ -183,7 +183,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.password}
-                            placeholder="패스워드에는 6자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
+                            placeholder="패스워드에는 3자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
                         />
                     </div>
                     <ErrorMessage message={errors.password} />
@@ -242,7 +242,7 @@ export default function SignupUser() {
                             className="form-input"
                             value={formData.nickName}
                             onChange={handleChange}
-                            placeholder="50자이내로 적어주세요"
+                            placeholder="닉네임은 2글자 이상이어야합니다"
                         />
                         <button type="button" className="btn btn-secondary" onClick={checkNickName}>
                             중복확인
