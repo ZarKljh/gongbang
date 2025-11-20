@@ -457,7 +457,7 @@ export default function MyPage() {
         formData.append('file', profileFile)
 
         try {
-            const { data } = await axios.put( `http://localhost:8090/api/v1/image/profile`, formData,
+            const { data } = await axios.patch( `http://localhost:8090/api/v1/image/profile`, formData,
                 {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
