@@ -4,10 +4,13 @@ import axios from 'axios'
 import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
+    const searchParams = useSearchParams()
+
     // =============== 타입 정의 ===============
     interface OrdersResponse {
         orderId: number
@@ -65,7 +68,7 @@ export default function MyPage() {
 
     // UI 상태
     const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState('orders')
+    const [activeTab, setActiveTab] = useState("orders")
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
 
@@ -163,6 +166,11 @@ export default function MyPage() {
             document.body.appendChild(script)
         }
     }, [isAddressModal])
+
+    useEffect(() => {
+        const tab = searchParams.get('tab')
+        if (tab) setActiveTab(tab)
+    }, [searchParams])
 
     // =============== API 호출 함수 ===============
     const loadAllData = async (userId: number) => {
@@ -1385,6 +1393,7 @@ export default function MyPage() {
                                             .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0]
 
                                         const status = latestDelivery?.deliveryStatus || order.deliveryStatus
+                                        const statusDate = latestDelivery?.modifiedDate || latestDelivery?.createdDate || "N/A"
 
                                         return (
                                             <div key={order.orderId} className="order-card">
@@ -1394,9 +1403,10 @@ export default function MyPage() {
                                                     className="order-header"
                                                     onClick={() => toggleManageOrder(order.orderId)}
                                                 >
-                                                    <div>
+                                                    <div className='order-title'>
                                                         <p>주문번호: {order.orderCode}</p>
-                                                        <p>주문일: {order.createdDate}</p>
+                                                        <p> | 주문일: {order.createdDate}</p>
+                                                        <p> | {status} 일시: {statusDate}</p>
                                                     </div>
                                                     <span className={`badge ${status}`}>{status}</span>
                                                 </div>
@@ -1421,8 +1431,8 @@ export default function MyPage() {
                                                         <div className="order-info">
                                                             <p>주문일자: {order.createdDate}</p>
                                                             <p>주문번호: {order.orderCode}</p>
-                                                            <p>배송상태: {status}</p>
-                                                            <p>사유: {order.cancelReason}{order.exchangeReason}{order.returnReason}</p>
+                                                            <p>상태: {status}</p>
+                                                            <p>사유: {order.reason}</p>
                                                         </div>
 
                                                         {/* 삭제 버튼만 표시 */}
