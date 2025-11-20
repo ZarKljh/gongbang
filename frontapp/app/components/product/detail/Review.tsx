@@ -62,7 +62,7 @@ export default function detail() {
                 credentials: 'include',
             })
 
-            console.log("로그인 상태 : ", res.status, res.ok)
+            console.log('로그인 상태 : ', res.status, res.ok)
 
             if (res.ok) {
                 const data = await res.json()
@@ -159,7 +159,7 @@ export default function detail() {
                 const pr = data.data.map((r) => ({
                     id: r.reviewId,
                     img: `http://localhost:8090${r.imageUrl}`, // 백엔드 필드명 맞춰
-                    title: r.content.length > 15 ? r.content.slice(0, 15) + '...': r.content,
+                    title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
                 }))
 
                 setPhotoReviews(pr)
@@ -566,16 +566,15 @@ export default function detail() {
                         {/* 오른쪽 그래프 */}
                         <div className="review-average-graph">
                             {['5', '4', '3', '2', '1'].map((label, i) => {
-                                <FaStar
-                                        size={22}
-                                        color= {'#FFD700'}
-                                        style={{ marginRight: '3px' }}
-                                    />
                                 const score = 5 - i
                                 const percent = ratingData[score] || 0
-                                return (  
+
+                                return (
                                     <div className="review-graph-row" key={label}>
-                                        <span className="review-graph-label">{label}</span>
+                                        <span className="review-graph-label">
+                                            <FaStar size={22} color={'#FFD700'} style={{ marginRight: '3px' }} />
+                                            {label}
+                                        </span>
                                         <div className="review-graph-bar-bg">
                                             <div className="review-graph-bar-fill" style={{ width: `${percent}%` }} />
                                         </div>
