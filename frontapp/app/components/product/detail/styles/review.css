@@ -324,7 +324,7 @@
 
 .review-item {
   margin-bottom: 40px;
-  width: 800px;
+  width: 820px;
 }
 
 .review-header {
@@ -353,7 +353,7 @@
 
 .review-actions {
   display: flex;
-  gap: 10px;
+  gap: 5px;
   margin-top: 10px;
 }
 
@@ -374,21 +374,15 @@
   transition: 0.3s;
 }
 .review-like-btn:hover {
-  background-color: #c42d2d;
   background-color: #e7e7e7;
 }
 
 .review-like-btn.liked {
-  background-color: #ff4d4d;
-  background-color: #eacda3;
-  color: white;
   color: #5c3d1e;
   transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(255, 120, 120, 0.4);
 }
 
 .review-like-btn.liked:hover {
-  background-color: #cc8383;
   background-color: #e0c192;
 }
 /* 🗑️ 삭제 버튼 */

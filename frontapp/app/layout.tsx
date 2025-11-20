@@ -30,11 +30,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <head>
+      <head style={{fontFamily: 'P-regular'}} >
                 {/* Daum 주소 검색 API 스크립트 추가  -  이승운 */}
                 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
             </head>
-      <body>
+      <body style={{fontFamily: 'P-regular'}} >
         {/* 1) Chatling 설정: embed.js보다 먼저 실행되어야 함 */}
         <Script
           id="chatling-config"
@@ -53,7 +53,7 @@ export default function RootLayout({
           async
         />
 
-        <nav>
+        <nav style={{fontFamily: 'P-regular'}}>
          <Link href="/">홈 </Link>
                     <Link href="/product/list">상품 </Link>
                     <Link href="/theme">테마목록 </Link>

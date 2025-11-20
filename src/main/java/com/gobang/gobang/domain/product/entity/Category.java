@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.product.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

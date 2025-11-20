@@ -411,7 +411,7 @@ export default function detail() {
 
     // 댓글 삭제
     const handleCommentDelete = async (reviewId: number, commentId: number) => {
-        if (!confirm('정말 댓글을 삭제하시겠습니까?')) return
+        if (!confirm('댓글을 삭제하시겠습니까?')) return
 
         try {
             const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
@@ -450,6 +450,8 @@ export default function detail() {
                 },
                 credentials: 'include',
             })
+
+            if (!confirm('리뷰를 삭제하시겠습니까?')) return
 
             const data = await res.json()
             console.log('🗑️ 삭제 응답:', data)

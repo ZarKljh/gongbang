@@ -3,9 +3,11 @@ package com.gobang.gobang.domain.auth.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gobang.gobang.domain.personal.entity.*;
+import com.gobang.gobang.domain.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.ToStringExclude;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,6 +70,8 @@ public class SiteUser {
 
     private LocalDateTime deletedDate;
 
+    @JsonIgnore
+    @ToStringExclude
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.REMOVE)
     private List<Studio> studioList;
     /**
@@ -95,21 +99,39 @@ public class SiteUser {
      String gender
     */
 
+    // 직렬화 문제로 @JsonIgnore, @ToStringExclude 추가 - hy -
+    @JsonIgnore
+    @ToStringExclude
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Cart> carts = new ArrayList<>();
 
+    @JsonIgnore
+    @ToStringExclude
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follow> follows = new ArrayList<>();
 
+    @JsonIgnore
+    @ToStringExclude
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Orders> orders = new ArrayList<>();
 
+    @JsonIgnore
+    @ToStringExclude
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PaymentMethod> paymentMethods = new ArrayList<>();
 
+    @JsonIgnore
+    @ToStringExclude
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAddress> userAddresses = new ArrayList<>();
 
+    @JsonIgnore
+    @ToStringExclude
     @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WishList> wishLists = new ArrayList<>();
+
+    @JsonIgnore
+    @ToStringExclude
+    @OneToMany(mappedBy = "siteUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
 }

@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.personal.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import jakarta.persistence.*;
 import lombok.*;
@@ -55,10 +56,11 @@ public class Orders {
     @JoinColumn(name = "payment_id")
     private PaymentMethod paymentMethod;
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     private List<Delivery> deliveries = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     private List<OrderItem> orderItems = new ArrayList<>();
 }

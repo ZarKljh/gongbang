@@ -58,21 +58,4 @@ public class ReviewComment{
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime modifiedDate;
 
-    // BaseEntity 추가로 필요 없음
-//    private LocalDateTime createdAt;
-//    private LocalDateTime updatedAt;
-
-//    private Long createdBy;
-//    private Long updatedBy;
-
-//    @PrePersist
-//    public void onCreate() {
-//        this.createdAt = LocalDateTime.now();
-//        this.updatedAt = LocalDateTime.now();
-//    }
-//
-//    @PreUpdate
-//    public void onUpdate() {
-//        this.updatedAt = LocalDateTime.now();
-//    }
 }
