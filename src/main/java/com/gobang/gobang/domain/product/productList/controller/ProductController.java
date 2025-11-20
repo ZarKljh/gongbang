@@ -63,7 +63,14 @@ public class ProductController {
     public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
 
         // 🔒 현재 로그인 유저 조회
-        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+//        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+
+        SiteUserResponse currentUser = null;
+        try {
+            currentUser = siteUserService.getCurrentUserInfo();
+        } catch (IllegalStateException e) {
+            // 로그인 안 된 상태 → 그냥 null로 두고 진행
+        }
 
         // 로그인되어 있으면 userId 전달, 아니면 null
         Long userId = (currentUser != null ? currentUser.getId() : null);

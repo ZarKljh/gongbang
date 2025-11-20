@@ -133,7 +133,7 @@ export default function Main() {
                                 <strong className={styles.categoryTitle}>{cat.name}</strong>
                                 <ul className={styles.subcategoryList}>
                                     {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
-                                        <li key={sub.id}>
+                                        <li key={sub.id} className={styles.subCatTitle}>
                                             <Link
                                                 href={{
                                                     pathname: '/product/list',
