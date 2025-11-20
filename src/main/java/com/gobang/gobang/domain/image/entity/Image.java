@@ -20,7 +20,7 @@ public class Image extends BaseEntity {
     private RefType refType;
 
     /** 참조 대상 PK (review_id, product_id, user_id 등) */
-    @Column(name = "ref_id", nullable = true)
+    @Column(name = "ref_id", nullable = false)
     private Long refId;
 
     /** 이미지 경로 또는 절대 URL */

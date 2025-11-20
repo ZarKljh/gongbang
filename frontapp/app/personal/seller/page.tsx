@@ -320,24 +320,6 @@ export default function MyPage() {
             else if (section === 'studioAdd') {
                 // 1) 스튜디오 기본 정보 저장
 
-                // 1) 이미지 업로드 먼저 실행 → URL/Name 확보
-                const uploadedImages = await uploadStudioImages(0)
-                // ⭐ studioId 생성 전이므로 0 또는 임시값 전달
-
-                // 이미지 종류 분류
-                const mainImage = uploadedImages.find((img) => img.refType === 'STUDIO_MAIN')
-                const logoImage = uploadedImages.find((img) => img.refType === 'STUDIO_LOGO')
-                const galleryImages = uploadedImages.filter((img) => img.refType === 'STUDIO')
-
-                const mainImageUrl = mainImage?.imageUrl || ''
-                const mainImageName = mainImage?.imageFileName || ''
-
-                const logoImageUrl = logoImage?.imageUrl || ''
-                const logoImageName = logoImage?.imageFileName || ''
-
-                const galleryImageUrls = galleryImages.map((img) => img.imageUrl)
-                const galleryImageNames = galleryImages.map((img) => img.imageFileName)
-
                 response = await axios.post(
                     `${API_BASE_URL}/studio/add`,
                     {
@@ -354,13 +336,15 @@ export default function MyPage() {
                         studioAddMain: tempData.studioAddMain,
                         studioAddDetail: tempData.studioAddDetail,
 
-                        // ⭐ 이미지 URL/파일명 함께 POST
-                        studioMainImageUrl: mainImageUrl,
-                        studioMainImageName: mainImageName,
-                        studioLogoImageUrl: logoImageUrl,
-                        studioLogoImageName: logoImageName,
-                        studioGalleryImageUrls: galleryImageUrls,
-                        studioGalleryImageNames: galleryImageNames,
+                        // 이미지 파일명 + 프론트 미리보기 URL 포함
+                        studioMainImageUrl: tempData.studioMainImageUrl || '',
+                        studioMainImageName: studioImages.STUDIO_MAIN?.name || '',
+
+                        studioLogoImageUrl: tempData.studioLogoImageUrl || '',
+                        studioLogoImageName: studioImages.STUDIO_LOGO?.name || '',
+
+                        studioGalleryImageUrls: tempData.studioGalleryImageUrls || [],
+                        studioGalleryImageNames: studioImages.STUDIO.map((f) => f.name),
                     },
                     { withCredentials: true },
                 )

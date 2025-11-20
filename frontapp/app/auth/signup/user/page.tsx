@@ -19,11 +19,11 @@ export default function SignupUser() {
         birth: '',
         nickName: '',
         mobilePhone: '',
-        profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
         profileImageName: '', // 이미지 파일명
     })
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
+    const [selectedProfileFile, setSelectedProfileFile] = useState<File | null>(null) //파일 객체 저장
     const { errors, validate } = signupUserValidation()
 
     // 중복검사 결과 저장
@@ -84,9 +84,11 @@ export default function SignupUser() {
 
         const previewUrl = URL.createObjectURL(file)
         setPreviewProfileImage(previewUrl)
+
+        setSelectedProfileFile(file)
+
         setFormData((prev) => ({
             ...prev,
-            profileImageUrl: previewUrl, // 실제 서버 업로드 후 URL로 교체 가능
             profileImageName: file.name, // 파일명 저장
         }))
     }
@@ -95,12 +97,27 @@ export default function SignupUser() {
         setPreviewProfileImage(null) // 미리보기 제거
         setFormData((prev) => ({
             ...prev,
-            profileImageUrl: '',
+            //profileImageUrl: '',
             profileImageName: '',
         }))
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
         }
+    }
+
+    // =============이미지업로드===============
+    const uploadProfileImage = async (username: string) => {
+        if (!selectedProfileFile) return // 이미지 없으면 업로드 생략
+
+        const form = new FormData()
+        form.append('file', selectedProfileFile)
+        form.append('refType', 'PROFILE')
+        form.append('refId', username) // 유저명 또는 userId 지정
+
+        await fetch(`http://localhost:8090/api/v1/images/upload/user`, {
+            method: 'POST',
+            body: form,
+        })
     }
 
     const handleSubmit = async (e) => {
@@ -139,12 +156,26 @@ export default function SignupUser() {
             body: JSON.stringify(formData),
         })
 
+        /*
         if (response.ok) {
             alert('회원가입 성공하였습니다. 로그인을 해주세요')
             router.push('/')
         } else {
             alert('회원가입에 실패하였습니다')
         }
+        */
+        if (!response.ok) {
+            alert('회원가입 실패했습니다.')
+            return
+        }
+
+        //프로필 이미지 업로드 요청
+        if (selectedProfileFile) {
+            await uploadProfileImage(formData.userName)
+        }
+
+        alert('회원가입 완료! 로그인 해주세요.')
+        router.push('/')
     }
 
     return (
@@ -161,7 +192,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.userName}
-                            placeholder="아이디에는 영문6자가 이상 포함되어야합니다"
+                            placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
                         />
                         <button type="button" className="btn btn-secondary" onClick={checkUserName}>
                             중복확인
@@ -177,7 +208,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.password}
-                            placeholder="패스워드에는 6자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
+                            placeholder="패스워드에는 3자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
                         />
                     </div>
                     <ErrorMessage message={errors.password} />
@@ -236,7 +267,7 @@ export default function SignupUser() {
                             className="form-input"
                             value={formData.nickName}
                             onChange={handleChange}
-                            placeholder="50자이내로 적어주세요"
+                            placeholder="닉네임은 2글자 이상이어야합니다"
                         />
                         <button type="button" className="btn btn-secondary" onClick={checkNickName}>
                             중복확인
