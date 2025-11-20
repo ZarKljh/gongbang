@@ -62,6 +62,8 @@ export default function detail() {
                 credentials: 'include',
             })
 
+            console.log("로그인 상태 : ", res.status, res.ok)
+
             if (res.ok) {
                 const data = await res.json()
                 console.log('🧭 currentUserId:', currentUserId)
