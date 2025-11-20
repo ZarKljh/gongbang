@@ -15,5 +15,5 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
-  custom:
-    genFileDirPath: C:\gongbangImg
+custom:
+  genFileDirPath: C:/work/gongbangImg
