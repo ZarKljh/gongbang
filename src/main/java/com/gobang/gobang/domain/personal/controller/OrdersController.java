@@ -3,13 +3,13 @@ package com.gobang.gobang.domain.personal.controller;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.request.DeliveryRequest;
+import com.gobang.gobang.domain.personal.dto.request.OrdersRequest;
 import com.gobang.gobang.domain.personal.dto.response.DeliveryResponse;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
 import com.gobang.gobang.domain.personal.service.DeliveryService;
 import com.gobang.gobang.domain.personal.service.OrdersService;
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,20 +43,20 @@ public class OrdersController {
     }
 
     @PatchMapping("/{orderId}/cancel")
-    public RsData<OrdersResponse> cancelOrder(@PathVariable Long orderId) {
-        OrdersResponse orders = ordersService.cancelOrder(orderId);
+    public RsData<OrdersResponse> cancelOrder(@PathVariable Long orderId, @RequestBody OrdersRequest request) {
+        OrdersResponse orders = ordersService.cancelOrder(orderId, request.getReason());
         return RsData.of("200", "주문 취소 완료", orders);
     }
 
     @PatchMapping("/{orderId}/return")
-    public RsData<OrdersResponse> returnOrder(@PathVariable Long orderId) {
-        OrdersResponse orders = ordersService.returnOrder(orderId);
+    public RsData<OrdersResponse> returnOrder(@PathVariable Long orderId, @RequestBody OrdersRequest request) {
+        OrdersResponse orders = ordersService.returnOrder(orderId, request.getReason());
         return RsData.of("200", "반품 신청 완료", orders);
     }
 
     @PatchMapping("/{orderId}/exchange")
-    public RsData<OrdersResponse> exchangeOrder(@PathVariable Long orderId) {
-        OrdersResponse orders = ordersService.exchangeOrder(orderId);
+    public RsData<OrdersResponse> exchangeOrder(@PathVariable Long orderId, @RequestBody OrdersRequest request) {
+        OrdersResponse orders = ordersService.exchangeOrder(orderId, request.getReason());
         return RsData.of("200", "교환 신청 완료", orders);
     }
 

@@ -83,6 +83,10 @@ export default function MyPage() {
     const [activeFilter, setActiveFilter] = useState('전체')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
     const [filteredOrder, setFilteredOrders] = useState<any[]>([])
+    const [isReasonModal, setIsReasonModal] = useState(false)
+    const [reasonModalTitle, setReasonModalTitle] = useState("")
+    const [reasonModalOnSubmit, setReasonModalOnSubmit] = useState<(reason: string) => void>(() => {})
+    const [reasonText, setReasonText] = useState("")
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -420,6 +424,12 @@ export default function MyPage() {
         setOpenOrderId((prev) => (prev === id ? null : id))
     }
 
+    const openReasonModal = (title, onSubmit) => {
+        setReasonModalTitle(title)
+        setReasonModalOnSubmit(() => onSubmit)
+        setIsReasonModal(true)
+    }
+
     // ================= 주문 취소 / 반품 / 교환 =================
     const handleCancelOrder = async (orderId: number, reason: string) => {
         const order = orders.find((o) => o.orderId === orderId)
@@ -432,7 +442,10 @@ export default function MyPage() {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/cancel`,
                 { reason },
-                { withCredentials: true }
+                { 
+                    withCredentials: true,
+                    headers: { "Content-Type": "application/json" }
+                }
             )
 
             if (data.resultCode === "200") {
@@ -712,9 +725,9 @@ export default function MyPage() {
                     zipcode: data.zonecode,
                     baseAddress: data.address,
                     extraAddress: data.buildingName || '',
-                }));
+                }))
             },
-        }).open();
+        }).open()
     }
 
     // =============== 결제수단 ===============
@@ -1135,7 +1148,7 @@ export default function MyPage() {
                         </ul>
                     </div>
                 </nav>
-                <a href="#" className='link-btn'>공방 페이지로 이동</a>
+                <a href="/persnal/seller" className='link-btn'>공방 페이지로 이동</a>
             </div>
 
             {/* 오른쪽 콘텐츠 */}
@@ -1227,103 +1240,110 @@ export default function MyPage() {
                                     <div className="order-accordion">
 
                                         {/* 상품 내역 */}
-                                    <h3>상품 내역</h3>
-                                    {(order.items || []).map((item, idx) => (
-                                        <div key={`${item.orderItemId}-${idx}`} className="order-item">
-                                            {/* 상품 이미지 */}
-                                            {item.imageUrl && (
-                                            <img
-                                                src={item.imageUrl}
-                                                alt={item.productName}
-                                                className="order-item-img"
-                                            />
-                                            )}
-                                            <div className="order-item-text">
-                                            <p className="order-item-name">{item.productName}</p>
-                                            <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
+                                        <h3>상품 내역</h3>
+                                        {(order.items || []).map((item, idx) => (
+                                            <div key={`${item.orderItemId}-${idx}`} className="order-item">
+                                                {/* 상품 이미지 */}
+                                                {item.imageUrl && (
+                                                <img
+                                                    src={item.imageUrl}
+                                                    alt={item.productName}
+                                                    className="order-item-img"
+                                                />
+                                                )}
+                                                <div className="order-item-text">
+                                                <p className="order-item-name">{item.productName}</p>
+                                                <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
+                                                </div>
                                             </div>
+                                        ))}
+
+                                        {/* 주문 상세 정보 */}
+                                        <div className="order-info">
+                                            <p>주문일자: {order.createdDate}</p>
+                                            <p>주문번호: {order.orderCode}</p>
+                                            <p>배송상태: {order.deliveryStatus}</p>
+
+                                            {order.deliveries?.length > 0 && (() => {
+                                            const d = order.deliveries[0]
+                                            return (
+                                                <>
+                                                <p>운송장번호: {d.trackingNumber || '없음'}</p>
+                                                <p>수령인: {d.recipientName || '정보 없음'}</p>
+                                                <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
+                                                <p>우편번호: {d.zipcode || ''}</p>
+                                                </>
+                                            )
+                                            })()}
+
+                                            {order.deliveryStatus === '배송완료' && order.completedAt && (
+                                            <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
+                                            )}
                                         </div>
-                                    ))}
 
-                                    {/* 주문 상세 정보 */}
-                                    <div className="order-info">
-                                        <p>주문일자: {order.createdDate}</p>
-                                        <p>주문번호: {order.orderCode}</p>
-                                        <p>배송상태: {order.deliveryStatus}</p>
-
-                                        {order.deliveries?.length > 0 && (() => {
-                                        const d = order.deliveries[0]
-                                        return (
-                                            <>
-                                            <p>운송장번호: {d.trackingNumber || '없음'}</p>
-                                            <p>수령인: {d.recipientName || '정보 없음'}</p>
-                                            <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
-                                            <p>우편번호: {d.zipcode || ''}</p>
-                                            </>
-                                        )
-                                        })()}
-
-                                        {order.deliveryStatus === '배송완료' && order.completedAt && (
-                                        <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
-                                        )}
-                                    </div>
-
-                                    {/* 버튼 영역 */}
-                                    <div className="order-actions" style={{ marginTop: 15 }}>
-                                        {order.deliveryStatus === "배송준비중" && (
-                                        <button
-                                            className="btn-primary"
-                                            onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleCancelOrder(order.orderId, "주문취소")
-                                            }}
-                                        >
-                                            주문 취소
-                                        </button>
-                                        )}
-
-                                        {order.deliveryStatus === "배송완료" &&
-                                        isWithinSevenDays(order.completedAt) && (
-                                            <>
+                                        {/* 버튼 영역 */}
+                                        <div className="order-actions" style={{ marginTop: 15 }}>
+                                            {order.deliveryStatus === "배송준비중" && (
                                             <button
                                                 className="btn-primary"
                                                 onClick={(e) => {
                                                 e.stopPropagation()
-                                                handleReturnOrder(order.orderId, "반품")
+                                                openReasonModal(
+                                                    "주문 취소 사유",
+                                                    (reason) => handleCancelOrder(order.orderId, reason)
+                                                )
                                                 }}
                                             >
-                                                반품 신청
+                                                주문 취소
                                             </button>
+                                            )}
 
+                                            {order.deliveryStatus === "배송완료" &&
+                                            isWithinSevenDays(order.completedAt) && (
+                                                <>
+                                                <button
+                                                    className="btn-primary"
+                                                    onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    openReasonModal("반품 사유", (reason) =>
+                                                        handleReturnOrder(order.orderId, reason)
+                                                    )
+                                                    }}
+                                                >
+                                                    반품 신청
+                                                </button>
+
+                                                <button
+                                                    className="btn-primary"
+                                                    onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    openReasonModal("교환 사유", (reason) =>
+                                                        handleExchangeOrder(order.orderId, reason)
+                                                    )
+                                                    }}
+                                                >
+                                                    교환 신청
+                                                </button>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <div className="order-actions" style={{ marginTop: 15 }}>
                                             <button
-                                                className="btn-primary"
+                                                className="link-btn delete"
                                                 onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleExchangeOrder(order.orderId, "교환")
+                                                    e.stopPropagation()
+                                                    handleDeleteOrder(order.orderId)
                                                 }}
                                             >
-                                                교환 신청
+                                                삭제
                                             </button>
-                                            </>
-                                        )}
-                                    </div>
+                                        </div>
 
-                                    <div className="order-actions" style={{ marginTop: 15 }}>
-                                        <button
-                                            className="link-btn delete"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleDeleteOrder(order.orderId)
-                                            }}
-                                        >
-                                            삭제
-                                        </button>
-                                    </div>
-
-                                    {/* 아코디언 하단 금액 */}
-                                    <div className="order-footer">
-                                        <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
-                                    </div>
+                                        {/* 아코디언 하단 금액 */}
+                                        <div className="order-footer">
+                                            <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
+                                        </div>
                                     </div>
                                 )}
                                 </div>
@@ -2262,6 +2282,53 @@ export default function MyPage() {
 
                         <button className="btn-primary" onClick={handleDeleteReview}>
                             삭제
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 사유 입력 모달 */}
+            {isReasonModal && (
+                <div className="address-modal" onClick={() => setIsReasonModal(false)}>
+                    <div
+                        className="address-modal-content"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* 닫기 버튼 */}
+                        <button
+                            className="address-modal-close"
+                            onClick={() => setIsReasonModal(false)}
+                        >
+                            X
+                        </button>
+
+                        {/* 제목 */}
+                        <h2 style={{ marginBottom: "10px" }}>{reasonModalTitle}</h2>
+
+                        {/* 사유 입력 */}
+                        <textarea
+                            className="reason-textarea"
+                            placeholder="사유를 입력해주세요."
+                            value={reasonText}
+                            onChange={(e) => setReasonText(e.target.value)}
+                        />
+
+                        {/* 제출 버튼 */}
+                        <button
+                            className="btn-primary"
+                            onClick={() => {
+                                if (!reasonText.trim()) {
+                                    alert("사유를 입력해주세요.")
+                                    return
+                                }
+                                console.log("1. 함수 자체:", reasonModalOnSubmit);
+                                console.log("2. reason:", reasonText);
+                                reasonModalOnSubmit(reasonText) // 실제 취소/반품/교환 로직 호출
+                                setIsReasonModal(false)
+                                setReasonText("")
+                            }}
+                        >
+                            제출
                         </button>
                     </div>
                 </div>
