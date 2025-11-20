@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class CommentCreateResponse {
+    private Long userId;
     private Long commentId;
     private String reviewComment;
     private String createdBy;
@@ -18,6 +19,7 @@ public class CommentCreateResponse {
     private LocalDateTime modifiedDate;
 
     public CommentCreateResponse(ReviewComment comment) {
+        this.userId = comment.getSiteUser().getId();
         this.commentId = comment.getCommentId();
         this.reviewComment = comment.getReviewComment();
         this.createdBy = comment.getCreatedBy();
