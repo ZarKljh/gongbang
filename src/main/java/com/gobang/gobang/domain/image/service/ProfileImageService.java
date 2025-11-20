@@ -1,7 +1,9 @@
 package com.gobang.gobang.domain.image.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.global.RsData.RsData;
@@ -17,12 +19,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProfileImageService {
 
     private final SiteUserRepository siteUserRepository;
+    private final StudioRepository  studioRepository;
     private final ImageRepository imageRepository;
 
     @Value("${custom.genFileDirPath}")
@@ -75,6 +79,17 @@ public class ProfileImageService {
         Path targetPath = Paths.get(uploadPath, fileName);
         Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
         return fileName;
+    }
+    /** 새로운 이름으로 파일 저장 */
+    private String saveFile(MultipartFile file, String forcedFileName) throws IOException {
+        Files.createDirectories(Paths.get(uploadPath));
+
+        String cleanName = StringUtils.cleanPath(forcedFileName);
+        Path targetPath = Paths.get(uploadPath, cleanName);
+
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        return cleanName;
     }
 
     /** 로컬 파일 삭제 */
@@ -142,4 +157,70 @@ public class ProfileImageService {
 //            throw new RuntimeException("파일 삭제 실패", e);
 //        }
 //    }
+    public RsData<Void> uploadStudioImage(Long studioId, MultipartFile file, Image.RefType refType, int sortOrder){
+
+        Studio studio = studioRepository.findByStudioId(studioId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+
+        if (file == null || file.isEmpty()) {
+            return RsData.of("F-1", "이미지가 없습니다.");
+        }
+
+
+
+        try {
+
+            //동일한 이름의 이미지 파일이 있으면 이름을 바꿔서 저장하기
+            // 🔥 1️⃣ 원본 파일명
+            String originalName = StringUtils.cleanPath(file.getOriginalFilename());
+
+            // 🔥 2️⃣ DB에 동일 파일명이 존재하는지 확인
+            //Optional<Image> oi = imageRepository.findByRefTypeAndRefId(refType, studioId);
+            Path targetPath = Paths.get(uploadPath, originalName);
+
+            // 🔥 3️⃣ 파일명 충돌 처리
+            String finalFileName = originalName;
+            /*
+            if (oi.isPresent()) {
+                // 같은 이름이 있으면 새 이름을 강제로 생성하여 MultipartFile 복제
+                finalFileName = System.currentTimeMillis() + "_" + originalName;
+            }
+            */
+            if (Files.exists(targetPath)) {
+                finalFileName = System.currentTimeMillis() + "_" + originalName;
+            }
+            // 🔥 4️⃣ saveFile() 호출 (파일명은 MultipartFile.getOriginalFilename() 사용됨)
+            String savedFileName = saveFile(file, finalFileName);
+
+            Image image = Image.builder()
+                    .refType(refType)
+                    .refId(studioId)
+                    .imageFileName(savedFileName)
+                    .imageUrl(savedFileName) // 로컬 경로 또는 URL 형태로 저장
+                    .sortOrder(sortOrder)
+                    .build();
+
+            imageRepository.save(image);
+
+            return RsData.of("S-1", "프로필 업로드 성공");
+
+        } catch (Exception e) {
+            return RsData.of("F-2", "프로필 업로드 실패: " + e.getMessage());
+        }
+    }
+
+    public RsData<Void> uploadStudioGalleryImages(Long studioId, List<MultipartFile> files) {
+
+        if (files == null || files.isEmpty()) {
+            return RsData.of("S-0", "갤러리 이미지 없음(옵션)");
+        }
+
+        int order = 0;
+
+        for (MultipartFile file : files) {
+            uploadStudioImage(studioId, file, Image.RefType.STUDIO, order++);
+        }
+
+        return RsData.of("S-1", "갤러리 이미지 전체 업로드 성공");
+    }
 }

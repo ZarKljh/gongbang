@@ -40,7 +40,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 🖼 로컬 이미지 폴더
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:C:/gongbangImg/");
+                .addResourceLocations("file:C:/work/gongbangImg/");
 
         // 📁 프로젝트 내부 uploads 폴더
         String uploadPath = System.getProperty("user.dir") + "/uploads/";

@@ -7,9 +7,6 @@ import './signup_seller_component.css'
 interface Props {
     studioInfo: StudioInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
-    onMainImagePreview: (e: React.ChangeEvent<HTMLInputElement>) => void
-    onLogoImagePreview: (e: React.ChangeEvent<HTMLInputElement>) => void
-    onGalleryImagesPreview: (e: React.ChangeEvent<HTMLInputElement>) => void
     onSubmit: () => void
     onPrev: () => void
     setStudioInfo: React.Dispatch<React.SetStateAction<StudioInfo>>
@@ -31,9 +28,6 @@ export default function StudioForm({
     onSubmit,
     onPrev,
     setStudioInfo,
-    onMainImagePreview,
-    onLogoImagePreview,
-    onGalleryImagesPreview,
     previewMainImage,
     previewLogoImage,
     previewGalleryImages,
@@ -223,13 +217,7 @@ export default function StudioForm({
             <ErrorMessage message={errors.studioAddDetail} />
             <div className="form-group">
                 <label className="form-label">대표 이미지</label>
-                <input
-                    type="file"
-                    name="studioMainImage"
-                    className="form-input"
-                    accept="image/*"
-                    onChange={onMainImagePreview}
-                />
+                <input type="file" name="studioMainImage" className="form-input" accept="image/*" onChange={onChange} />
                 {previewMainImage && (
                     <div className="image-preview">
                         <p>대표 이미지 미리보기:</p>
@@ -244,13 +232,7 @@ export default function StudioForm({
 
             <div className="form-group">
                 <label className="form-label">로고 이미지</label>
-                <input
-                    type="file"
-                    name="studioLogoImage"
-                    className="form-input"
-                    accept="image/*"
-                    onChange={onLogoImagePreview}
-                />
+                <input type="file" name="studioLogoImage" className="form-input" accept="image/*" onChange={onChange} />
                 {previewLogoImage && (
                     <div className="image-preview">
                         <p>로고 이미지 미리보기:</p>
@@ -271,7 +253,7 @@ export default function StudioForm({
                     className="form-input"
                     accept="image/*"
                     multiple
-                    onChange={onGalleryImagesPreview}
+                    onChange={onChange}
                 />
                 {previewGalleryImages.length > 0 && (
                     <div className="image-preview">
