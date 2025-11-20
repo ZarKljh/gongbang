@@ -89,7 +89,7 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                         studioList.map((studio) => (
                             <div key={studio.studioId} className="studio-item">
                                 <img
-                                    src={'/*`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`*/'}
+                                    src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
                                     alt="logo"
                                     width={80}
                                     height={80}
@@ -197,6 +197,43 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                             onChange={(e) => onTempChange('studioEmail', e.target.value)}
                         />
                     </div>
+                    <div className="form-group">
+                        <label>주소</label>
+
+                        {/* 우편번호 + 검색 버튼 */}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                type="text"
+                                className="editable"
+                                placeholder="우편번호"
+                                value={tempData.studioAddPostNumber || ''}
+                                onChange={(e) => onTempChange('studioAddPostNumber', e.target.value)}
+                                style={{ width: '140px' }}
+                            />
+                            <button type="button" className="btn-secondary" onClick={onAddressSearch}>
+                                주소 검색
+                            </button>
+                        </div>
+
+                        {/* 기본주소 */}
+                        <input
+                            type="text"
+                            className="editable"
+                            placeholder="기본주소"
+                            style={{ marginTop: 8 }}
+                            value={tempData.studioAddMain || ''}
+                            onChange={(e) => onTempChange('studioAddMain', e.target.value)}
+                        />
+                        {/* 상세주소 */}
+                        <input
+                            type="text"
+                            className="editable"
+                            placeholder="상세주소"
+                            style={{ marginTop: 8 }}
+                            value={tempData.studioAddDetail || ''}
+                            onChange={(e) => onTempChange('studioAddDetail', e.target.value)}
+                        />
+                    </div>
                     {/* 대표 이미지 */}
                     <div className="form-group">
                         <label>대표 이미지</label>
@@ -227,44 +264,6 @@ export default function StudioAddTab(props: StudioAddTabProps) {
                                 style={{ width: 150, marginTop: 10, borderRadius: 8 }}
                             />
                         )}
-                    </div>
-                    <div className="form-group">
-                        <label>주소</label>
-
-                        {/* 우편번호 + 검색 버튼 */}
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <input
-                                type="text"
-                                className="editable"
-                                placeholder="우편번호"
-                                value={tempData.studioAddPostNumber || ''}
-                                onChange={(e) => onTempChange('studioAddPostNumber', e.target.value)}
-                                style={{ width: '140px' }}
-                            />
-                            <button type="button" className="btn-secondary" onClick={onAddressSearch}>
-                                주소 검색
-                            </button>
-                        </div>
-
-                        {/* 기본주소 */}
-                        <input
-                            type="text"
-                            className="editable"
-                            placeholder="기본주소"
-                            style={{ marginTop: 8 }}
-                            value={tempData.studioAddMain || ''}
-                            onChange={(e) => onTempChange('studioAddMain', e.target.value)}
-                        />
-
-                        {/* 상세주소 */}
-                        <input
-                            type="text"
-                            className="editable"
-                            placeholder="상세주소"
-                            style={{ marginTop: 8 }}
-                            value={tempData.studioAddDetail || ''}
-                            onChange={(e) => onTempChange('studioAddDetail', e.target.value)}
-                        />
                     </div>
                     {/* 갤러리 이미지 */}
                     <div className="form-group">

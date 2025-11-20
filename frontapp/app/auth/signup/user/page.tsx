@@ -19,11 +19,11 @@ export default function SignupUser() {
         birth: '',
         nickName: '',
         mobilePhone: '',
-        profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
-        profileImageName: '', // 이미지 파일명
+        profileImageName: null, // 실제 파일
     })
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
+    const [profileImageFile, setProfileFile] = useState<File | null>(null)
     const { errors, validate } = signupUserValidation()
 
     // 중복검사 결과 저장
@@ -81,29 +81,16 @@ export default function SignupUser() {
     const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-
-        const previewUrl = URL.createObjectURL(file)
-        setPreviewProfileImage(previewUrl)
-        setFormData((prev) => ({
-            ...prev,
-            profileImageUrl: previewUrl, // 실제 서버 업로드 후 URL로 교체 가능
-            profileImageName: file.name, // 파일명 저장
-        }))
+        setProfileFile(file)
+        setPreviewProfileImage(URL.createObjectURL(file))
     }
 
     const handleRemoveImage = () => {
-        setPreviewProfileImage(null) // 미리보기 제거
-        setFormData((prev) => ({
-            ...prev,
-            profileImageUrl: '',
-            profileImageName: '',
-        }))
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-        }
+        setProfileFile(null)
+        setPreviewProfileImage(null)
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         const isValid = validate(formData)
@@ -129,21 +116,40 @@ export default function SignupUser() {
       birth: birthDateTime,
     };
     */
-        const response = await fetch(`http://localhost:8090/api/v1/auth/signup/user`, {
-            method: 'POST',
-            //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            //무엇을 json으로 할지 선언한것
-            body: JSON.stringify(formData),
-        })
+        try {
+            const submitData = new FormData()
 
-        if (response.ok) {
-            alert('회원가입 성공하였습니다. 로그인을 해주세요')
-            router.push('/')
-        } else {
-            alert('회원가입에 실패하였습니다')
+            // JSON Blob으로 만들어서 'data'라는 이름으로 append
+            const dataWithoutImage = {
+                ...formData,
+                profileImageName: profileImageFile ? profileImageFile.name : null,
+                birth: formData.birth || null
+            }
+            const blob = new Blob([JSON.stringify(dataWithoutImage)], { type: "application/json" })
+            submitData.append("data", blob)
+
+            // 파일이 있으면 별도 Part로 추가
+            if (profileImageFile) {
+                dataWithoutImage.profileImageName = profileImageFile.name
+                submitData.append("file", profileImageFile)
+            }
+
+            const response = await fetch("http://localhost:8090/api/v1/auth/signup/user", {
+                method: "POST",
+                body: submitData,
+            })
+
+            if (response.ok) {
+                alert('회원가입 성공하였습니다. 로그인을 해주세요')
+                router.push('/')
+            } else {
+                const error = await response.text()
+                console.error("회원가입 실패:", error)
+                alert('회원가입에 실패하였습니다')
+            }
+        } catch (err) {
+            console.error(err)
+            alert("회원가입 에러")
         }
     }
 
@@ -161,7 +167,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.userName}
-                            placeholder="아이디에는 영문6자가 이상 포함되어야합니다"
+                            placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
                         />
                         <button type="button" className="btn btn-secondary" onClick={checkUserName}>
                             중복확인
@@ -177,7 +183,7 @@ export default function SignupUser() {
                             className="form-input"
                             onChange={handleChange}
                             value={formData.password}
-                            placeholder="패스워드에는 6자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
+                            placeholder="패스워드에는 3자 이상의 영문과 1자 이상의 특수문자가 포함되어야합니다"
                         />
                     </div>
                     <ErrorMessage message={errors.password} />
@@ -236,7 +242,7 @@ export default function SignupUser() {
                             className="form-input"
                             value={formData.nickName}
                             onChange={handleChange}
-                            placeholder="50자이내로 적어주세요"
+                            placeholder="닉네임은 2글자 이상이어야합니다"
                         />
                         <button type="button" className="btn btn-secondary" onClick={checkNickName}>
                             중복확인

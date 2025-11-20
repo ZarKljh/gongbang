@@ -69,7 +69,7 @@ public class SiteUserService {
                 .role(RoleType.USER)
                 .status(signupUserRequest.getStatus())
                 .gender(signupUserRequest.getGender())
-                .birth(signupUserRequest.getBirth().atStartOfDay())
+                .birth(signupUserRequest.getBirth() != null ? signupUserRequest.getBirth().atStartOfDay() : null)
                 .createdDate(LocalDateTime.now())
                 .build();
 
@@ -81,7 +81,9 @@ public class SiteUserService {
         SiteUser savedSiteUser = siteUserRepository.save(newUser);
 
         Image profileImage = buildProfileImagesFromRequest(signupUserRequest, savedSiteUser);
-        imageRepository.save(profileImage);
+        if (profileImage != null) {
+            imageRepository.save(profileImage);
+        }
         return newUser;
     }
 
@@ -316,10 +318,10 @@ public class SiteUserService {
 
     private Image buildProfileImagesFromRequest(SignupUserRequest request, SiteUser savedSiteUser) {
 
-        if (request.getProfileImageUrl() != null) {
+        if (request.getProfileImageName() != null && !request.getProfileImageName().isEmpty()) {
 
             Image profileImage = Image.builder()
-                    .imageUrl(request.getProfileImageUrl())
+                    .imageUrl(request.getProfileImageName())
                     .refId(savedSiteUser.getId())
                     .refType(Image.RefType.USER_PROFILE)
                     .imageFileName(request.getProfileImageName())

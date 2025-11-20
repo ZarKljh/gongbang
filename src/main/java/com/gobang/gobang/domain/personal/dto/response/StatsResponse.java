@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class StatsResponse {
-    private Long totalPoints;
+    private Long totalQna;
     private Long totalReviews;
-    private String membershipLevel;
 }
