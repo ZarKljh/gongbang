@@ -35,7 +35,7 @@ public class ProfileImageController {
     }
 
     // ---------------- 수정 ----------------
-    @PutMapping("/profile")
+    @PostMapping("/profile")
     public RsData<Void> updateProfileImage(@RequestParam MultipartFile file) {
         SiteUser user = siteUserService.getCurrentUser();
         RsData<Void> result = profileImageService.updateProfileImage(user.getId(), file);

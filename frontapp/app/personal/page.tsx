@@ -137,7 +137,9 @@ export default function MyPage() {
     const [openQnaId, setOpenQnaId] = useState(null)// state 추가
 
     //이미지
-    const [profileImage, setProfileImage] = useState(null)
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+    const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(stats.profileImageUrl)
+    const [profileFile, setProfileFile] = useState<File | null>(null)
     
     // =============== Effects ===============
     useEffect(() => {
@@ -185,11 +187,10 @@ export default function MyPage() {
                 fetchMyReviews(userId),
                 fetchCart(userId),
                 fetchQna(userId),
+                fetchProfileImage(userId),
             ])
         } catch (error) {
             console.error('데이터 로드 실패:', error)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -350,6 +351,24 @@ export default function MyPage() {
         }
     }
 
+    const fetchProfileImage = async (id?: number) => {
+        const userId = id || userData?.id
+        if (!userId) return
+        
+        try {
+            const response = await axios.get(`http://localhost:8090/api/v1/image/profile/${userId}`, {
+            responseType: 'blob',
+            withCredentials: true,
+            })
+            const blob = new Blob([response.data], { type: response.headers['content-type'] })
+            const url = URL.createObjectURL(blob)
+            setPreviewProfileImage(url)
+            setStats(prev => ({ ...prev, profileImageUrl: url }))
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
     // =============== 유틸리티 함수 ===============
     const flattenAddresses = (data: any[]): any[] => {
         return data.map((addr) => ({
@@ -416,6 +435,75 @@ export default function MyPage() {
                 }))
             },
         }).open()
+    }
+
+    // =============== 프로필 이미지 ===============
+    const handleProfileClick = () => {
+        setPreviewProfileImage(stats.profileImageUrl)
+        setIsProfileModalOpen(true)
+    }
+
+    const handleProfileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setProfileFile(file)
+        setPreviewProfileImage(URL.createObjectURL(file))
+    }
+
+    const handleProfileUpload = async () => {
+        if (!profileFile) return alert('이미지를 선택해주세요.')
+
+        const formData = new FormData()
+        formData.append('file', profileFile)
+
+        try {
+            const { data } = await axios.post( `http://localhost:8090/api/v1/image/profile`, formData,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true,
+                }
+            )
+
+            if (data.resultCode === '200') {
+                alert('프로필 이미지가 업데이트되었습니다.')
+                setIsProfileModalOpen(false)
+                setProfileFile(null)
+                const uploadedUrl = `http://localhost:8090${data.data?.profileImageUrl || ''}`
+                setPreviewProfileImage(uploadedUrl)
+                setStats(prev => ({
+                    ...prev,
+                    profileImageUrl: uploadedUrl,
+                }))
+            } else {
+                alert('업로드 실패')
+            }
+        } catch (error) {
+            console.error(error)
+            alert('업로드 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleProfileDelete = async () => {
+        if (!confirm('프로필 이미지를 삭제하시겠습니까?')) return
+
+        try {
+            const { data } = await axios.delete(`http://localhost:8090/api/v1/image/profile`, {
+                withCredentials: true,
+            })
+
+            if (data.resultCode === 'S-3' || data.resultCode === '200') {
+                alert('삭제 성공')
+                setPreviewProfileImage(null)
+                setProfileFile(null)
+                setStats(prev => ({ ...prev, profileImageUrl: null }))
+                setIsProfileModalOpen(false)
+            } else {
+                alert('삭제 실패')
+            }
+        } catch (error) {
+            console.error(error)
+            alert('삭제 중 오류가 발생했습니다.')
+        }
     }
 
     // =============== 주문, 배송정보 ===============
@@ -1175,8 +1263,19 @@ export default function MyPage() {
                             <tbody>
                                 <tr>
                                     <td>
-                                        <div className="profile-image">
-                                            
+                                        <div className="profile-image" onClick={handleProfileClick}>
+                                            {stats.profileImageUrl ? (
+                                                <img
+                                                    src={
+                                                        previewProfileImage ||
+                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : '/default-profile.png') // 서버 이미지
+                                                    }
+                                                    alt="프로필 이미지"
+                                                    // style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+                                                />
+                                            ) : (
+                                                <div className="placeholder"></div>
+                                            )}
                                         </div>
                                     </td>
                                     <td>{stats.totalQna}</td>
@@ -2343,6 +2442,52 @@ export default function MyPage() {
                     </div>
                 </div>
             )}
-        </div>
+
+            {/* 프로필 이미지 수정 모달 */}
+            {isProfileModalOpen && (
+                <div
+                    className="modal-backdrop"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 100,
+                    }}
+                    onClick={() => setIsProfileModalOpen(false)}
+                >
+                    <div
+                        className="modal-content"
+                        style={{ background: 'white', padding: '20px', borderRadius: '8px' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3>프로필 이미지 수정</h3>
+
+                        {previewProfileImage ? (
+                            <img
+                                src={previewProfileImage}
+                                alt="미리보기"
+                                style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover', margin: '10px 0' }}
+                            />
+                        ) : (
+                            <div style={{ width: '150px', height: '150px', borderRadius: '50%', background: '#ccc', margin: '10px 0' }} />
+                        )}
+
+                        <input type="file" accept="image/*" onChange={handleProfileFileChange} />
+
+                        <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                            <button onClick={handleProfileUpload}>업로드 / 수정</button>
+                            <button onClick={handleProfileDelete}>삭제</button>
+                            <button onClick={() => setIsProfileModalOpen(false)}>취소</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+                    </div>
     )
 }
