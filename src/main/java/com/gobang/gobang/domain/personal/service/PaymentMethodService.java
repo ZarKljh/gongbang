@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,111 +18,77 @@ public class PaymentMethodService {
 
     private final PaymentMethodRepository paymentMethodRepository;
 
-    // 사용자별 결제수단 목록 조회
-    public List<PaymentMethodResponse> getPaymentMethodsByUserId(SiteUser siteUser) {
-        List<PaymentMethod> paymentMethods = paymentMethodRepository.findBySiteUser(siteUser);
-
-        return paymentMethods.stream()
+    // 결제수단 리스트 조회 (소프트 삭제 제외)
+    public List<PaymentMethodResponse> getPaymentMethodsByUserId(SiteUser user) {
+        return paymentMethodRepository.findBySiteUserAndIsDeletedFalse(user)
+                .stream()
                 .map(PaymentMethodResponse::from)
                 .sorted((a, b) -> {
-                    // 1. 기본 결제수단이 가장 위
-                    if (Boolean.TRUE.equals(a.getDefaultPayment()) && !Boolean.TRUE.equals(b.getDefaultPayment())) return -1;
-                    if (!Boolean.TRUE.equals(a.getDefaultPayment()) && Boolean.TRUE.equals(b.getDefaultPayment())) return 1;
-                    // 2. 기본 결제수단이 같으면 최근 등록 순
+                    // 기본 결제수단 우선
+                    if (a.getDefaultPayment() && !b.getDefaultPayment()) return -1;
+                    if (!a.getDefaultPayment() && b.getDefaultPayment()) return 1;
+                    // 최신순
                     return b.getCreatedAt().compareTo(a.getCreatedAt());
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    // 결제수단 등록
     @Transactional
     public PaymentMethodResponse createPaymentMethod(PaymentMethodRequest request) {
-        // 기본 결제수단으로 설정하는 경우, 기존 기본 결제수단 해제
-        if (request.getDefaultPayment() != null && request.getDefaultPayment()) {
+
+        // 기본 결제수단으로 등록할 경우 기존 결제수단 모두 해제
+        if (Boolean.TRUE.equals(request.getDefaultPayment())) {
             paymentMethodRepository.unsetDefaultBySiteUser(request.getSiteUser());
         }
 
-        // 카드번호 마스킹 처리
-        String maskedCardNumber = null;
-        if (request.getCardNumber() != null && !request.getCardNumber().isEmpty()) {
-            maskedCardNumber = maskCardNumber(request.getCardNumber());
+        // 카드 번호 마스킹
+        String maskedCard = null;
+        if (request.getCardNumber() != null) {
+            maskedCard = maskCardNumber(request.getCardNumber());
         }
 
-        PaymentMethod paymentMethod = PaymentMethod.builder()
-                .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
+        PaymentMethod pm = PaymentMethod.builder()
+                .siteUser(request.getSiteUser())
                 .type(request.getType())
                 .bankName(request.getBankName())
                 .accountNumber(request.getAccountNumber())
+                .accountHolder(request.getAccountHolder())
                 .cardCompany(request.getCardCompany())
-                .cardNumber(maskedCardNumber)
-                .defaultPayment(request.getDefaultPayment() != null ? request.getDefaultPayment() : false)
+                .cardNumber(maskedCard)
+                .cardExpire(request.getCardExpire())
+                .defaultPayment(request.getDefaultPayment() != null && request.getDefaultPayment())
                 .build();
 
-        PaymentMethod saved = paymentMethodRepository.save(paymentMethod);
-        return PaymentMethodResponse.from(saved);
+        return PaymentMethodResponse.from(paymentMethodRepository.save(pm));
     }
 
-    // 결제수단 수정
     @Transactional
-    public PaymentMethodResponse updatePaymentMethod(Long paymentId, PaymentMethodRequest request) {
-        PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("결제수단을 찾을 수 없습니다."));
+    public void deletePaymentMethod(Long paymentId, SiteUser user) {
+        PaymentMethod pm = paymentMethodRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("결제수단 없음"));
 
-        // 기본 결제수단으로 변경하는 경우
-        if (request.getDefaultPayment() != null && request.getDefaultPayment() && !paymentMethod.getDefaultPayment()) {
-            paymentMethodRepository.unsetDefaultBySiteUser(paymentMethod.getSiteUser());
+        if (!pm.getSiteUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("본인 결제수단만 삭제 가능");
         }
 
-        paymentMethod.setType(request.getType());
-        paymentMethod.setBankName(request.getBankName());
-        paymentMethod.setAccountNumber(request.getAccountNumber());
-        paymentMethod.setCardCompany(request.getCardCompany());
-
-        if (request.getCardNumber() != null && !request.getCardNumber().isEmpty()) {
-            paymentMethod.setCardNumber(maskCardNumber(request.getCardNumber()));
-        }
-
-        if (request.getDefaultPayment() != null) {
-            paymentMethod.setDefaultPayment(request.getDefaultPayment());
-        }
-
-        return PaymentMethodResponse.from(paymentMethod);
+        pm.setIsDeleted(true);
     }
 
-    // 결제수단 삭제
     @Transactional
-    public void deletePaymentMethod(Long paymentId, SiteUser siteUser) {
-        PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("결제수단을 찾을 수 없습니다."));
+    public void setDefaultPayment(Long paymentId, SiteUser user) {
+        PaymentMethod pm = paymentMethodRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("결제수단 없음"));
 
-        // 본인 계정의 결제수단인지 확인 (보안)
-        if (!paymentMethod.getSiteUser().getId().equals(siteUser.getId())) {
-            throw new IllegalArgumentException("본인 결제수단만 삭제할 수 있습니다.");
-        }
-
-        paymentMethodRepository.delete(paymentMethod);
+        paymentMethodRepository.unsetDefaultBySiteUser(user);
+        pm.setDefaultPayment(true);
     }
 
-    // 기본 결제수단 설정
-    @Transactional
-    public void setDefaultPaymentMethod(Long paymentId, SiteUser siteUser) {
-        PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("결제수단을 찾을 수 없습니다."));
 
-        // 기존 기본 결제수단 해제
-        paymentMethodRepository.unsetDefaultBySiteUser(siteUser);
-
-        // 새로운 기본 결제수단 설정
-        paymentMethod.setDefaultPayment(true);
-    }
-
-    // 카드번호 마스킹 처리
     private String maskCardNumber(String cardNumber) {
-        if (cardNumber == null || cardNumber.length() < 4) {
-            return cardNumber;
-        }
+        if (cardNumber.length() < 4) return cardNumber;
 
-        String lastFour = cardNumber.substring(cardNumber.length() - 4);
-        return "****-****-****-" + lastFour;
+        String last = cardNumber.substring(cardNumber.length() - 4);
+
+        return "****-****-****-" + last;
     }
 }

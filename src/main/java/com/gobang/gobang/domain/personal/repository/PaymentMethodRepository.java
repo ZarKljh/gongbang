@@ -10,16 +10,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Long> {
 
-    // 사용자별 결제수단 목록 조회
-    List<PaymentMethod> findBySiteUser(SiteUser siteUser);
+    List<PaymentMethod> findBySiteUserAndIsDeletedFalse(SiteUser siteUser);
 
-    // 사용자의 모든 결제수단을 기본 결제수단 해제
     @Modifying
-    @Query("UPDATE PaymentMethod pm SET pm.defaultPayment = false WHERE pm.siteUser = :siteUser")
+    @Query("UPDATE PaymentMethod pm SET pm.defaultPayment = false WHERE pm.siteUser = :siteUser AND pm.isDeleted = false")
     void unsetDefaultBySiteUser(@Param("siteUser") SiteUser siteUser);
 }
