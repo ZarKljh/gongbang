@@ -80,7 +80,7 @@ body {
 .chartArea {
     display: flex;
     justify-content: space-between;
-    gap: 72px;
+    gap: 32px;
 }
 
 .chartRight {
@@ -141,7 +141,7 @@ body {
 /* === 문의 땡그라미 === */
 .bottomsection {
     display: flex;
-    gap: 72px;
+    gap: 32px;
 }
 .bottomright {
     padding: 24px;
@@ -416,7 +416,7 @@ body {
 }
 
 .modalMd {
-    max-width: 640px;
+    max-width: 700px;
 }
 
 .modalLg {
@@ -461,7 +461,7 @@ body {
 
 /* 내용 영역 */
 .modalBody {
-    padding: 16px 20px;
+    padding: 12px 20px 16px 20px;
     overflow-y: auto;
 }
 

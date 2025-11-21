@@ -26,6 +26,9 @@ export default function AdminReportsPage() {
     const [statusFilter, setStatusFilter] = useState<'ALL' | ReportStatus>('PENDING')
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
+    // ✅ 미처리(PENDING) 건 수
+    const [totalPending, setTotalPending] = useState<number>(0)
+
     // ✅ 모달 상태
     const [detailOpen, setDetailOpen] = useState(false)
     const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -37,12 +40,22 @@ export default function AdminReportsPage() {
     const loadReports = async () => {
         try {
             setError(null)
+
             const params: any = {}
             if (statusFilter !== 'ALL') params.status = statusFilter
 
-            const res = await api.get('/admin/reports', { params })
-            const list: Report[] = res.data
-            setReports(list)
+            // 🔹 현재 필터에 맞는 리스트 + 전체 PENDING 리스트를 같이 가져와서 카운트
+            const [listRes, pendingRes] = await Promise.all([
+                api.get('/admin/reports', { params }),
+                api.get('/admin/reports', { params: { status: 'PENDING' } }),
+            ])
+
+            const list: Report[] = listRes.data
+            const pendingList: Report[] = pendingRes.data
+
+            const sorted = [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            setReports(sorted)
+            setTotalPending(pendingList.length)
             setLastUpdated(new Date())
         } catch (e: any) {
             console.error('신고 목록 불러오기 실패:', e)
@@ -139,17 +152,26 @@ export default function AdminReportsPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <span style={{ fontSize: 12, color: '#6b7280' }}>상태 필터</span>
-                        <select
-                            className={styles.select}
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as any)}
-                        >
-                            <option value="ALL">전체</option>
-                            <option value="PENDING">미처리</option>
-                            <option value="RESOLVED">처리 완료</option>
-                            <option value="REJECTED">기각</option>
-                        </select>
+                        {/* ✅ 미처리 건 수 박스 */}
+                        <div className={styles.counterBox}>
+                            <span className={styles.counterLabel}>미처리 건 수</span>
+                            <span className={styles.counterValue}>{totalPending}건</span>
+                        </div>
+
+                        {/* ✅ 상태 필터 셀렉트 */}
+                        <div>
+                            <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>상태 필터</div>
+                            <select
+                                className={styles.select}
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                            >
+                                <option value="ALL">전체</option>
+                                <option value="PENDING">미처리</option>
+                                <option value="RESOLVED">처리 완료</option>
+                                <option value="REJECTED">기각</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -165,7 +187,7 @@ export default function AdminReportsPage() {
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>상태</th>
+                                        <th className={styles.firstT}>상태</th>
                                         <th>대상</th>
                                         <th>사유 / 내용</th>
                                         <th>신고자</th>
@@ -176,7 +198,7 @@ export default function AdminReportsPage() {
                                 <tbody>
                                     {reports.map((r) => (
                                         <tr key={r.id}>
-                                            <td>
+                                            <td className={styles.firstT}>
                                                 <span className={statusBadgeClass(r.status)}>
                                                     {statusKoreanLabel(r.status)}
                                                 </span>

@@ -1,10 +1,12 @@
 package com.gobang.gobang.domain.product.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.ToStringExclude;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -121,6 +123,8 @@ public class Product extends BaseEntity {
     )
     private Set<Category> category = new LinkedHashSet<>();
 
+    @JsonIgnore // hy
+    @ToStringExclude // hy
     @OneToMany(
             mappedBy = "product",
             cascade = CascadeType.ALL,

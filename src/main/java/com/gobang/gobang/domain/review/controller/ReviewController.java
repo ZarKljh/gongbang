@@ -13,19 +13,23 @@ import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
 import jakarta.validation.Valid;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
+@Slf4j
 public class ReviewController {
 
     private final ReviewCommentService reviewCommentService;
@@ -34,19 +38,6 @@ public class ReviewController {
     private final ReviewImageService reviewImageService;
 
 
-
-//        // ✅ 검색 기능 추가 (keyword 있을 때만 검색)
-//        if (keyword != null && !keyword.trim().isEmpty()) {
-//            reviewPage = reviewService.searchReviews(keyword, pageable);
-//        } else {
-//            reviewPage = reviewService.getReviews(page);
-//        }
-//
-//        return RsData.of(
-//                "200",
-//                "목록 조회 성공",
-//                new ReviewsResponse(reviewPage)
-//        );
 
     // (평균 별점)상품 상세 만들어지면 사용
     @GetMapping("/average/{productId}")
@@ -69,13 +60,30 @@ public class ReviewController {
             @RequestParam(required = false) Long productId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "date_desc") String sort,
+            @RequestParam(value = "kwType",required = false) List<String> kwTypes,
             @RequestParam(required = false) String keyword
     ) {
         System.out.println("🔥 sort param = " + sort);
-        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort, keyword);
+        System.out.println("🔥 keyword param = " + keyword);
+        System.out.println("🔥 productId param = " + productId);
+        System.out.println("🔥 kwTypes param = " + kwTypes);
 
 
+        // 검색 기능 추가
+        List<String> safeKwTypes =
+                (kwTypes == null) ? List.of() : kwTypes;
+
+        Map<String, Boolean> kwTypesMap = safeKwTypes.stream()
+                .collect(Collectors.toMap(
+                        kwType -> kwType,
+                        kwType -> true
+                ));
+
+
+        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort, kwTypes, keyword);
         ReviewsResponse response = ReviewsResponse.fromPage(reviewPage);
+        log.info("검색 요청: productId={}, page={}, sort={}, keyword={}",
+                productId, page, sort, keyword);
 
         return RsData.of(
                 "200",

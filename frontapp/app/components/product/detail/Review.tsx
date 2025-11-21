@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import 'swiper/css/navigation'
 import '@/app/components/product/detail/styles/review.css'
+import ReportButton from '@/app/admin/components/ReportButton'
 
 export default function detail() {
     // ================= 리뷰 =================
@@ -545,12 +546,11 @@ export default function detail() {
                             <ChevronRight size={26} strokeWidth={2.5} />
                         </div>
                     </section>
-                    
 
                     {/* 📜 리뷰 목록 */}
                     <div ref={reviewTopRef} aria-hidden>
-                          <hr style={{marginBottom: '20px'}}/>
-                        <h3  className="review-title">리뷰</h3>
+                        <hr style={{ marginBottom: '20px' }} />
+                        <h3 className="review-title">리뷰</h3>
                     </div>
 
                     {/* 평균 별점 */}
@@ -666,6 +666,8 @@ export default function detail() {
                                                     )}
                                                     도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
+                                                <ReportButton targetType="POST" targetId={review.review_id} />
+
                                                 {(Number(currentUserId) === Number(review.userId) ||
                                                     roleType === 'ADMIN') && (
                                                     <button

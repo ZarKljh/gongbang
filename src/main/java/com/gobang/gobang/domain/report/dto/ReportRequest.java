@@ -20,6 +20,7 @@ public class ReportRequest {
     @NotNull
     private ReportTargetType targetType;
 
+    @NotNull
     private String targetId;
 
     @NotNull

@@ -1,22 +1,41 @@
+.pageContainer {
+    /* max-width: 1280px; */
+    margin: 0 auto;
+    padding: 10px 0px;
+}
+.heroBanner {
+    width: 100%;
+    height: 420px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.heroBanner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    object-position: bottom;
+}
 .mainPage {
     max-width: 1280px;
     margin: 0 auto;
 }
 
-.pageTitle {
-    font-size: 1.25rem;
+/* .pageTitle {
+    font-size: 38px;
     font-weight: 600;
     margin: 1rem 0;
-}
+} */
 
 .slider {
     display: flex;
     gap: 1rem;
-    padding: 1rem;
+    padding: 1rem 0;
     width: 100%;
     align-items: center;
     justify-content: center;
-    background-color: #f9f9f9;
+    /* background-color: #f9f9f9; */
 }
 
 .sliderPrev,
@@ -49,7 +68,7 @@
     border-radius: 50%;
     background-color: #d9d0cf;
     border: none;
-    font-size: 0.9rem;
+    font-size: 14px;
     font-weight: 500;
     color: #333;
     cursor: pointer;
@@ -58,11 +77,29 @@
     justify-content: center; /* 가로 정렬 */
     align-items: center; /* 세로 정렬 */
     height: 100px; /* 세로 기준이 생기도록 높이 지정 */
+    overflow: hidden;
+}
+.categoryBtn img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+
+    display: block;
+    /* object-position: center; */
 }
 
 .categoryBtn:hover {
-    background-color: #c7bebb;
+    background-color: #d9d0cf;
     transform: scale(1.05);
+}
+.categoryLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #7a6b60;
+    text-align: center;
+    letter-spacing: -0.2px;
+    margin-top: 6px;
 }
 
 /* ---------------- 헤더 ---------------- */
@@ -70,8 +107,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #e0e0e0;
-    padding: 8px 12px;
+    background-color: #f9f9f9;
+    padding: 0px 20px;
 }
 
 .headerLeft {
@@ -81,8 +118,9 @@
 }
 
 .headerTitle {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
+    color: #6b5642;
 }
 
 .headerNav {
@@ -105,7 +143,7 @@
 /* ---------------- 2차 카테고리 ---------------- */
 .categoryContainer {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center; /* 가운데 정렬 */
     align-items: flex-start;
     gap: 40px;
     padding: 20px;
@@ -124,7 +162,7 @@
     font-weight: 600;
     font-size: 1rem;
     margin-bottom: 8px;
-    color: #000;
+    color: #6b5642;
     border-bottom: 1px solid #ddd;
     padding-bottom: 4px;
 }
@@ -141,10 +179,88 @@
 
 .subcategoryList a {
     text-decoration: none;
-    color: #333;
-    font-size: 0.95rem;
+    color: #8a7661;
+    font-size: 16px;
 }
 
 .subcategoryList a:hover {
     color: #745f45;
+}
+
+/* 상품 섹션 */
+.recommendWrap {
+    max-width: 1280px;
+    margin: 60px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+}
+
+.sectionBox {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sectionTitle {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 0;
+    color: #6b5642;
+}
+
+.productGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    list-style: none;
+    padding: 0;
+}
+
+/* 🧁 상품 아이템 전체 */
+.productItem {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 🖼️ 상품 이미지(또는 박스) */
+.productCard {
+    width: 100%;
+    height: 180px;
+    background: #f7f7f7;
+    border-radius: 12px;
+    border: 1px solid #e5e5e5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px; /* 🔥 이미지와 텍스트 간격 */
+    font-size: 16px;
+    color: #555;
+}
+
+.productInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0px; /* 🔥 완전 최소 간격 */
+}
+
+.productTitle {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2; /* 🔥 줄간 여백 줄이기 */
+    margin: 4 0px; /* 🔥 기본 margin 제거 */
+    color: #8a7661;
+}
+
+.productPrice {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 4 0px; /* 🔥 기본 margin 제거 */
+    line-height: 1.2; /* 시각적으로 안정감 */
+    color: #8a7661;
+}
+
+body {
+    /* background-color: #f7f3eb; */
 }
