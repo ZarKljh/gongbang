@@ -20,5 +20,5 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-  custom:
-    genFileDirPath: C:\work\gongbangImg
+custom:
+  genFileDirPath: C:\\work\\gongbangImg
