@@ -55,6 +55,9 @@ type FollowInfo = {
     followed: boolean
     followerCount: number
 }
+type cartInfo = {
+    inCart: boolean
+}
 // ⭐ 실제 API 응답의 data 형태
 type ProductDetailApiResponse = {
     productDetailList: ProductDetail
@@ -62,6 +65,7 @@ type ProductDetailApiResponse = {
     studioDetail: StudioDetail | null
     gbImage: gongbangImage | null
     followInfo: FollowInfo | null
+    cartInfo: cartInfo | null
 }
 
 // type Props = { 안쓸거임 쿼리스트링에서 읽는걸로 개발해버렸음
@@ -78,6 +82,7 @@ export default function ProductDetailView({}) {
 
     const [count, setCount] = useState(1)
     const [isFollowed, setIsFollowed] = useState<boolean>(false)
+    const [isInCart, setIsInCart] = useState<boolean>(false)
     const [followerCount, setFollowerCount] = useState<number>(0)
 
     const { data, isLoading, isError, error } = useQuery<ProductDetailApiResponse>({
@@ -88,7 +93,9 @@ export default function ProductDetailView({}) {
 
             // followInfo 읽기
             const followInfo = res.data.data.followInfo
+            const cartInfo = res.data.data.cartInfo
 
+            console.log(res.data.data)
             if (followInfo) {
                 setIsFollowed(followInfo.followed)
                 setFollowerCount(followInfo.followerCount)
@@ -96,6 +103,8 @@ export default function ProductDetailView({}) {
                 setIsFollowed(false)
                 setFollowerCount(0)
             }
+
+            setIsInCart(cartInfo ? cartInfo.inCart : false)
 
             return res.data.data as ProductDetailApiResponse
         },
@@ -110,8 +119,13 @@ export default function ProductDetailView({}) {
             setFollowerCount(0)
             return
         }
-
+        if (!data?.cartInfo) {
+            setIsInCart(false)
+            return
+        }
         setIsFollowed(data.followInfo.followed)
+        setIsInCart(data.cartInfo.inCart)
+        console.log(`daa + ` + data.cartInfo.inCart)
         setFollowerCount(data.followInfo.followerCount)
     }, [data])
 
@@ -120,7 +134,7 @@ export default function ProductDetailView({}) {
     const detailImage = data?.detailImage
     const sellerinfo = data?.studioDetail
     const gbLogo = data?.gbImage
-    const followRes = data?.followInfo
+    //const followRes = data?.followInfo
 
     const pdImageUrl = detailImage
         ? `http://localhost:8090${detailImage.imageUrl}`
@@ -165,6 +179,32 @@ export default function ProductDetailView({}) {
                 } else {
                     alert('로그인이 필요합니다.')
                     console.error('팔로우 에러:', err)
+                }
+            })
+    }
+
+    const handleToggleCart = (productId: number) => {
+        api.post(`product/${productId}/cart`)
+            .then((res) => {
+                console.log('cart response:', res.data)
+
+                const { resultCode, msg, data } = res.data
+
+                if (resultCode !== '200') {
+                    alert(msg)
+                    return
+                }
+
+                const inCart: boolean = data.inCart
+
+                setIsInCart(inCart)
+            })
+            .catch((err) => {
+                if (err.response?.status === 401) {
+                    alert('로그인이 필요합니다.')
+                } else {
+                    alert('로그인이 필요합니다.')
+                    console.error('장바구니 에러:', err)
                 }
             })
     }
@@ -246,7 +286,21 @@ export default function ProductDetailView({}) {
                         <button className={styles.btnBuy}>바로구매하기</button>
 
                         <div className={styles.subButtons}>
-                            <button className={styles.btnCart}>장바구니</button>
+                            <button
+                                className={`${styles.btnCart} ${isInCart ? styles.active : ''}`}
+                                onClick={(e) => {
+                                    e.preventDefault()
+
+                                    if (!product || !product.id) {
+                                        console.warn('❗ product.id가 없습니다.')
+                                        return
+                                    }
+
+                                    handleToggleCart(product.id)
+                                }}
+                            >
+                                {isInCart ? '장바구니 성공' : '장바구니 실패'}
+                            </button>
                             <button className={styles.btnFav}>♥</button>
                         </div>
                     </div>

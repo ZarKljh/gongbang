@@ -1,10 +1,14 @@
 package com.gobang.gobang.domain.product.productList.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.entity.Follow;
+import com.gobang.gobang.domain.personal.repository.CartRepository;
 import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.domain.product.dto.ProductDto;
@@ -12,6 +16,7 @@ import com.gobang.gobang.domain.product.dto.ProductImageDto;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.product.dto.StudioDto;
 import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
+import com.gobang.gobang.domain.product.dto.response.ProductCartResponse;
 import com.gobang.gobang.domain.product.dto.response.ProductDetailResponse;
 import com.gobang.gobang.domain.product.dto.response.SellerFollowResponse;
 import com.gobang.gobang.domain.product.entity.Product;
@@ -40,6 +45,8 @@ public class ProductService {
     private final WishListRepository wishListRepository;
     private final StudioRepository studioRepository;
     private final SellerFollowRepository sellerFollowRepository;
+    private final CartRepository cartRepository;
+    private final SiteUserRepository siteUserRepository;
 
     public List<ProductDto> getProductList(Long subCategoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
@@ -160,6 +167,13 @@ public class ProductService {
 
         Long studioId = productDetail.getStudioId();
 
+//        Product product = productRepository.findById(productId)
+//                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+
+        // 2. 사용자 조회
+        SiteUser siteUser = siteUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
         // 2) 상품 이미지 한 장 조회 + 없으면 throw
         Image pdImage = productImageRepository
                 .findFirstByRefIdAndRefTypeOrderBySortOrderAsc(productId, Image.RefType.PRODUCT)
@@ -178,14 +192,25 @@ public class ProductService {
         // 팔로워 수 재조회
         long followerCount = sellerFollowRepository.countByStudio_StudioId(studioId);
 
+        //팔로우 변수초기화
         boolean followed = false;
         // 이미 팔로우 되어있는지 조회
-        Optional<Follow> existing = sellerFollowRepository
+        Optional<Follow> existingFollow = sellerFollowRepository
                 .findByStudio_StudioIdAndSiteUser_Id(studioId, userId);
-        if (existing.isPresent()) {
+        if (existingFollow.isPresent()) {
             followed = true;
         }
         SellerFollowResponse followInfo = new SellerFollowResponse(followed, followerCount);
+
+        //카트 변수초기화
+        boolean isIncart = false;
+        // 이미 카트 되어있는지 조회
+        Optional<Cart> existingCart =
+                cartRepository.findBySiteUserAndProduct(siteUser, productDetail);
+        if (existingCart.isPresent()) {
+            isIncart = true;
+        }
+        ProductCartResponse cartInfo = new ProductCartResponse(isIncart);
 
         // 3) DTO 변환 (생성자)
         ProductDto productDto = new ProductDto(productDetail);
@@ -207,7 +232,7 @@ public class ProductService {
 
 
         // 4) Response DTO 리턴
-        return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity, followInfo);
+        return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity, followInfo, cartInfo);
 
     }
 

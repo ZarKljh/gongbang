@@ -4,6 +4,7 @@ import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.response.*;
+import com.gobang.gobang.domain.product.productList.service.ProductCartService;
 import com.gobang.gobang.domain.product.productList.service.ProductService;
 import com.gobang.gobang.domain.product.productList.service.ProductWishListService;
 import com.gobang.gobang.domain.seller.service.SellerFollowService;
@@ -23,6 +24,7 @@ public class ProductController {
     private final ProductWishListService productWishListService;
     private final SiteUserService siteUserService;
     private final SellerFollowService sellerFollowService;
+    private final ProductCartService productCartService;
 
     @GetMapping("/{subCategoryId}")
     @Operation(summary = "상품 다건 조회")
@@ -63,7 +65,7 @@ public class ProductController {
     public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
 
         // 🔒 현재 로그인 유저 조회
-//        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+        //SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
         SiteUserResponse currentUser = null;
         try {
@@ -129,7 +131,7 @@ public class ProductController {
 
     @PostMapping("/{productId}/cart")
     @Operation(summary = "상세페이지 상품 장바구니")
-    public RsData<SellerFollowResponse> toggleCart(
+    public RsData<ProductCartResponse> toggleCart(
             @PathVariable Long productId
     ) {
         // 🔒 현재 로그인 유저 조회
@@ -140,12 +142,12 @@ public class ProductController {
             return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
         }
 
-        SellerFollowResponse res = sellerFollowService.toggleFollow(productId, currentUser.getId());
+        ProductCartResponse res = productCartService.addToCart(productId, currentUser.getId());
 
         // ✅ 최종 응답 반환 (RsData 래핑)
-        String msg = res.isFollowed() ? "작가 팔로우." : "작가 팔로우 취소.";
 
-        return RsData.of("200", msg, res);
+
+        return RsData.of("200", "장바구니 성공.", res);
     }
 
 }
