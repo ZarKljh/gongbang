@@ -28,18 +28,24 @@ public class QnaService {
     // 전체 내 문의 조회
     @Transactional(readOnly = true)
     public RsData<List<QnaResponse>> getMyInquiries(Long userId) {
-        SiteUser user = siteUserRepository.findById(userId).orElse(null);
+        try {
+            if (userId == null) {
+                return RsData.of("401", "로그인이 필요합니다", null);
+            }
 
-        if (user == null) {
-            return RsData.of("401", "로그인이 필요합니다", null);
+            SiteUser user = siteUserRepository.findById(userId).orElse(null);
+            if (user == null) return RsData.of("401", "로그인이 필요합니다", null);
+
+            List<QnaResponse> inquiries = inquiryRepository.findAllByWriter(user)
+                    .stream()
+                    .map(QnaResponse::from)
+                    .collect(Collectors.toList());
+
+            return RsData.of("200", "내 문의 전체 조회 성공", inquiries);
+        } catch (Exception e) {
+            log.error("문의 목록 조회 중 오류 발생", e);
+            return RsData.of("500", "서버 오류 발생", null);
         }
-
-        List<QnaResponse> inquiries = inquiryRepository.findAllByWriter(user)
-                .stream()
-                .map(QnaResponse::from)
-                .collect(Collectors.toList());
-
-        return RsData.of("200", "내 문의 전체 조회 성공", inquiries);
     }
 
     // 특정 문의 상세 조회
