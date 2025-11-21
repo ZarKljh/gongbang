@@ -85,7 +85,6 @@ export default function ProductDetailView({}) {
         queryFn: async () => {
             const res = await api.get(`/product/${productId}/detail`)
             // ✅ 백엔드의 data 전체 반환
-            console.log(res.data.data)
 
             // followInfo 읽기
             const followInfo = res.data.data.followInfo

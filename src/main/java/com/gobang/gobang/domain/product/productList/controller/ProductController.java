@@ -63,7 +63,14 @@ public class ProductController {
     public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
 
         // 🔒 현재 로그인 유저 조회
-        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+//        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+
+        SiteUserResponse currentUser = null;
+        try {
+            currentUser = siteUserService.getCurrentUserInfo();
+        } catch (IllegalStateException e) {
+            // 로그인 안 된 상태 → 그냥 null로 두고 진행
+        }
 
         // 로그인되어 있으면 userId 전달, 아니면 null
         Long userId = (currentUser != null ? currentUser.getId() : null);
@@ -112,6 +119,28 @@ public class ProductController {
         }
 
         SellerFollowResponse res = sellerFollowService.toggleFollow(studioId, currentUser.getId());
+
+        // ✅ 최종 응답 반환 (RsData 래핑)
+        String msg = res.isFollowed() ? "작가 팔로우." : "작가 팔로우 취소.";
+
+        return RsData.of("200", msg, res);
+    }
+
+
+    @PostMapping("/{productId}/cart")
+    @Operation(summary = "상세페이지 상품 장바구니")
+    public RsData<SellerFollowResponse> toggleCart(
+            @PathVariable Long productId
+    ) {
+        // 🔒 현재 로그인 유저 조회
+        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+
+        // 비로그인 상태 처리
+        if (currentUser == null) {
+            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
+        }
+
+        SellerFollowResponse res = sellerFollowService.toggleFollow(productId, currentUser.getId());
 
         // ✅ 최종 응답 반환 (RsData 래핑)
         String msg = res.isFollowed() ? "작가 팔로우." : "작가 팔로우 취소.";

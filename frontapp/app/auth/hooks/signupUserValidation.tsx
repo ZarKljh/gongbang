@@ -34,13 +34,15 @@ export function signupUserValidation() {
             newErrors.userName = '아이디에는 한글을 사용할 수 없습니다.'
         } else if (!/^[A-Za-z0-9]+$/.test(user.userName)) {
             newErrors.userName = '아이디는 영문과 숫자만 사용할 수 있습니다.'
-        } else {
+        }
+        /* 
+        else {
             const onlyLetters = user.userName.match(/[A-Za-z]/g) || [] // 영문만 추출
             if (onlyLetters.length < 4) {
                 newErrors.userName = '아이디에는 영문이 최소 4글자 이상 포함되어야 합니다.'
             }
         }
-
+        */
         if (!user.password) {
             newErrors.password = '비밀번호를 입력해주세요.'
         } else if (user.password.length < 3) {
