@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -37,24 +38,25 @@ public class ReviewCommentService {
         Optional<Review> reviewOpt = reviewRepository.findById(req.getReviewId());
         if (reviewOpt.isEmpty()) return Optional.empty();
 
-        // ✅ 현재 로그인한 유저 가져오기
+        // 현재 로그인한 유저 가져오기
         SiteUser user = rq.getSiteUser();
         if (user == null) return Optional.empty();
 
-        // ✅ 스튜디오(판매자) 찾기
+        // 스튜디오(판매자) 찾기
         Studio studio = studioRepository.findBySiteUser(user)
                 .orElseThrow(() -> new IllegalStateException("판매자 스튜디오가 존재하지 않습니다."));
 
-        // ✅ 리뷰당 댓글 1개 제한
+        // 리뷰당 댓글 1개 제한
         if (reviewCommentRepository.findByReview(reviewOpt.get()).isPresent()) {
             return Optional.empty();
         }
 
-        // ✅ 댓글 생성
+        // 댓글 생성
         ReviewComment comment = ReviewComment.builder()
                 .review(reviewOpt.get())
                 .studio(studio)
                 .reviewComment(req.getReviewComment())
+                .siteUser(user)
                 .createdBy(user.getUserName())
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -100,6 +102,15 @@ public class ReviewCommentService {
             @NotBlank(message = "수정할 댓글 내용을 입력해주세요.") String newComment
     ) {
 
+        SiteUser currentUser = rq.getSiteUser();
+        if (currentUser == null) {
+            return RsData.of("401", "로그인 후 이용 가능합니다.");
+        }
+
+        if (!comment.getSiteUser().getId().equals(currentUser.getId())) {
+            return RsData.of("403", "본인이 작성한 댓글만 수정할 수 있습니다.");
+        }
+
         if (newComment == null || newComment.trim().isEmpty()) {
             return RsData.of("400", "수정할 댓글 내용을 입력해주세요.");
         }
@@ -119,25 +130,24 @@ public class ReviewCommentService {
 
     // 댓글 삭제
     @Transactional
-    public RsData<Void> deleteComment(Long reviewId, Long commentId) {
+    public RsData<Void> deleteComment(Long reviewId, Long commentId, Long currentUserId, String role) {
         Optional<ReviewComment> optComment = reviewCommentRepository.findById(commentId);
 
-        if (optComment.isEmpty()) {
-            return RsData.of("404", "%d번 댓글이 존재하지 않습니다.".formatted(commentId));
+        ReviewComment comment = reviewCommentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+
+        // 리뷰 ID 불일치 시 방어(관리자 예외)
+        if (!comment.getReview().getReviewId().equals(reviewId)
+                && !role.contains("ADMIN")) {
+            return RsData.of("400", "잘못된 요청입니다.");
         }
 
-        ReviewComment comment = optComment.get();
-
-        // 리뷰 ID 불일치 시 방어
-        if (!comment.getReview().getReviewId().equals(reviewId)) {
-            return RsData.of("400", "리뷰 ID가 일치하지 않습니다.");
+        // 작성자 일치시 삭제
+        if (!comment.getSiteUser().getId().equals(currentUserId)
+                && !role.contains("ADMIN")) {
+            return RsData.of("403", "삭제 권한이 없습니다.");
         }
-
-        // studioId 비교 로직 나중에 추가
-        // SiteUser currentUser = rq.getSiteUser();
-        // if (!Objects.equals(currentUser.getId(), comment.getSeller().getId())) {
-        //     return RsData.of("403", "본인이 작성한 댓글만 삭제할 수 있습니다.");
-        // }
 
         reviewCommentRepository.delete(comment);
 

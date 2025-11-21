@@ -1,11 +1,13 @@
 package com.gobang.gobang.domain.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gobang.gobang.domain.personal.entity.Follow;
 import com.gobang.gobang.domain.seller.model.StudioStatus;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.ToStringExclude;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -25,6 +27,7 @@ public class Studio {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto_increment
     private Long studioId;
 
+    @JsonIgnore // hy
     @ManyToOne
     private SiteUser siteUser;
 
@@ -77,8 +80,8 @@ public class Studio {
     @PreUpdate
     void onUpdate() { this.updatedDate = LocalDateTime.now(); }
 
+    @JsonIgnore // hy
+    @ToStringExclude // hy
     @OneToMany(mappedBy = "studio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follow> follows = new ArrayList<>();
-
-
 }

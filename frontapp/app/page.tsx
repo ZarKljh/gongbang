@@ -75,52 +75,60 @@ export default function Main() {
     }, [])
 
     return (
-        <main className={styles.mainPage}>
-            <h1 className={styles.pageTitle}>카테고리</h1>
-
-            <nav aria-label="카테고리 슬라이더">
-                <div className={styles.slider} role="region" aria-roledescription="carousel">
-                    <button type="button" className={styles.sliderPrev} aria-label="이전 카테고리">
-                        &lt;
-                    </button>
-
-                    <ul className={styles.categoryList} role="list">
-                        {categories.map((cat) => (
-                            <li key={cat.id} className={styles.categoryItem}>
-                                {/* <button type="button" className={styles.categoryBtn}>
-                                    {cat.name}
-                                </button> */}
-
-                                <Link
-                                    className={styles.categoryBtn}
-                                    href={{
-                                        pathname: '/product/list',
-                                        query: { categoryId: String(cat.id), subId: '0' },
-                                    }}
-                                    prefetch={false}
-                                >
-                                    {cat.name}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-
-                    <button type="button" className={styles.sliderNext} aria-label="다음 카테고리">
-                        &gt;
-                    </button>
+        <>
+            {/* 배너 */}
+            <div className={styles.pageContainer}>
+                <div className={styles.heroBanner}>
+                    <img src="http://localhost:8090/uploads/sogum.jfif" alt="메인 배너" />
                 </div>
-            </nav>
+            </div>
+            {/* 카테고리 */}
+            <main className={styles.mainPage}>
+                <p className={styles.pageTitle}></p>
 
-            <header className={styles.categoryHeader}>
-                <div className={styles.headerLeft}>
-                    <h2 className={styles.headerTitle}>목록별 카테고리</h2>
-                    <button type="button" className={styles.menuToggle} aria-label="카테고리 메뉴 열기">
-                        {/* 전역 아이콘 (Font Awesome) */}
-                        <i className="fa fa-bars"></i>
-                    </button>
-                </div>
+                <nav aria-label="카테고리 슬라이더">
+                    <div className={styles.slider} role="region" aria-roledescription="carousel">
+                        <button type="button" className={styles.sliderPrev} aria-label="이전 카테고리">
+                            &lt;
+                        </button>
 
-                <nav className={styles.headerNav} aria-label="상단 메뉴">
+                        <ul className={styles.categoryList} role="list">
+                            {categories.map((cat, index) => (
+                                <li key={cat.id} className={styles.categoryItem}>
+                                    <Link
+                                        className={styles.categoryBtn}
+                                        href={{
+                                            pathname: '/product/list',
+                                            query: { categoryId: String(cat.id), subId: '0' },
+                                        }}
+                                        prefetch={false}
+                                    >
+                                        <img
+                                            src={`http://localhost:8090/uploads/c${String(index + 1).padStart(
+                                                2,
+                                                '0',
+                                            )}.png`}
+                                            alt={cat.name}
+                                        />
+                                    </Link>
+
+                                    <p className={styles.categoryLabel}>{cat.name}</p>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <button type="button" className={styles.sliderNext} aria-label="다음 카테고리">
+                            &gt;
+                        </button>
+                    </div>
+                </nav>
+
+                <header className={styles.categoryHeader}>
+                    <div className={styles.headerLeft}>
+                        <h2 className={styles.headerTitle}>세부 카테고리</h2>
+                    </div>
+
+                    {/* <nav className={styles.headerNav} aria-label="상단 메뉴">
                     <ul className={styles.navList}>
                         <li className={styles.navItem}>
                             <a href="#">이벤트</a>
@@ -132,33 +140,96 @@ export default function Main() {
                             <a href="#">문의사항</a>
                         </li>
                     </ul>
-                </nav>
-            </header>
+                </nav> */}
+                </header>
 
-            <div className={styles.categoryContainer}>
-                {categories.map((cat) => (
-                    <ul className={styles.categoryList2} key={cat.id}>
-                        <li>
-                            <strong className={styles.categoryTitle}>{cat.name}</strong>
-                            <ul className={styles.subcategoryList}>
-                                {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
-                                    <li key={sub.id}>
-                                        <Link
-                                            href={{
-                                                pathname: '/product/list',
-                                                query: { categoryId: String(cat.id), subId: String(sub.id) },
-                                            }}
-                                            prefetch={false}
-                                        >
-                                            {sub.name}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
+                <div className={styles.categoryContainer}>
+                    {categories.map((cat) => (
+                        <ul className={styles.categoryList2} key={cat.id}>
+                            <li>
+                                <strong className={styles.categoryTitle}>{cat.name}</strong>
+                                <ul className={styles.subcategoryList}>
+                                    {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
+                                        <li key={sub.id} className={styles.subCatTitle}>
+                                            <Link
+                                                href={{
+                                                    pathname: '/product/list',
+                                                    query: { categoryId: String(cat.id), subId: String(sub.id) },
+                                                }}
+                                                prefetch={false}
+                                            >
+                                                {sub.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </li>
+                        </ul>
+                    ))}
+                </div>
+            </main>
+            {/* 섹션 */}
+            <section className={styles.recommendWrap}>
+                {/* 섹션 1 — 오늘의 추천 상품 */}
+                <div className={styles.sectionBox}>
+                    <h2 className={styles.sectionTitle}>오늘의 추천 상품</h2>
+
+                    <ul className={styles.productGrid}>
+                        <li className={styles.productItem}>
+                            <div className={styles.productCard}>상품1</div>
+                            <div className={styles.productInfo}>
+                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
+                                <p className={styles.productPrice}>3,300원</p>
+                            </div>
+                        </li>
+
+                        <li className={styles.productItem}>
+                            <div className={styles.productCard}>상품2</div>
+                            <div className={styles.productInfo}>
+                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
+                                <p className={styles.productPrice}>3,300원</p>
+                            </div>
+                        </li>
+
+                        <li className={styles.productItem}>
+                            <div className={styles.productCard}>상품3</div>
+                            <div className={styles.productInfo}>
+                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
+                                <p className={styles.productPrice}>3,300원</p>
+                            </div>
                         </li>
                     </ul>
-                ))}
-            </div>
-        </main>
+                </div>
+
+                {/* 섹션 2 — 인기 소품 */}
+                <div className={styles.sectionBox}>
+                    <h2 className={styles.sectionTitle}>지금 인기 있는 소품</h2>
+
+                    <ul className={styles.productGrid}>
+                        <li>
+                            <li className={styles.productCard}>상품1</li>
+                            <div className={styles.productInfo}>
+                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
+                                <p className={styles.productPrice}>3,300원</p>
+                            </div>
+                        </li>
+                        <li>
+                            <li className={styles.productCard}>상품2</li>
+                            <div className={styles.productInfo}>
+                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
+                                <p className={styles.productPrice}>3,300원</p>
+                            </div>
+                        </li>
+                        <li>
+                            <li className={styles.productCard}>상품3</li>
+                            <div className={styles.productInfo}>
+                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
+                                <p className={styles.productPrice}>3,300원</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </>
     )
 }

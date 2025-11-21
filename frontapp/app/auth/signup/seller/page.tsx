@@ -21,6 +21,7 @@ export default function SellerSignupPage() {
         birth: '',
         nickName: '',
         mobilePhone: '',
+        profileImageFile: null,
         profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
         profileImageName: '', // 이미지 파일명
     })
@@ -37,6 +38,9 @@ export default function SellerSignupPage() {
         studioAddPostNumber: '',
         studioAddMain: '',
         studioAddDetail: '',
+        studioMainImageFile: null,
+        studioLogoImageFile: null,
+        studioGalleryImageFiles: [],
         studioMainImageUrl: '',
         studioLogoImageUrl: '',
         studioGalleryImageUrls: [],
@@ -61,15 +65,18 @@ export default function SellerSignupPage() {
     const handleUserImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-
+        const previewUrl = URL.createObjectURL(file)
+        /*
         const previewUrl = URL.createObjectURL(file)
         setPreviewProfileImage(previewUrl)
-
+        */
         setUserInfo((prev) => ({
             ...prev,
+            profileImageFile: file,
             profileImageUrl: previewUrl, // 서버 업로드 전 로컬 미리보기 URL
             profileImageName: file.name, // 파일명 저장
         }))
+        setPreviewProfileImage(previewUrl)
     }
 
     const handleStudioChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -77,19 +84,40 @@ export default function SellerSignupPage() {
         // 이미지파일 입력 처리
         if ('files' in e.target && e.target.files) {
             const files = e.target.files
+            const file = files[0]
+            const previewUrl = URL.createObjectURL(file)
 
             if (name === 'studioGalleryImages') {
                 const fileArray = Array.from(files).slice(0, 5)
-                const localUrls = fileArray.map((file) => URL.createObjectURL(file))
+                const previewUrls = fileArray.map((file) => URL.createObjectURL(file))
                 const fileNames = fileArray.map((file) => file.name) // ✅ 파일명 배열 생성
 
                 setStudioInfo((prev) => ({
                     ...prev,
-                    studioGalleryImageUrls: localUrls,
+                    studioGalleryImageFiles: fileArray,
+                    studioGalleryImageUrls: previewUrls,
                     studioGalleryImageNames: fileNames,
                 }))
-                setPreviewGalleryImages(localUrls)
-            } else {
+                setPreviewGalleryImages(previewUrls)
+            } else if (name === 'studioMainImage') {
+                setStudioInfo((prev) => ({
+                    ...prev,
+                    studioMainImageFile: file,
+                    studioMainImageUrl: previewUrl,
+                    studioMainImageName: file.name,
+                }))
+                setPreviewMainImage(previewUrl)
+            } else if (name === 'studioLogoImage') {
+                setStudioInfo((prev) => ({
+                    ...prev,
+                    studioLogoImageFile: file,
+                    studioLogoImageUrl: previewUrl,
+                    studioLogoImageName: file.name,
+                }))
+                setPreviewLogoImage(previewUrl)
+            }
+            /*
+            else {
                 const file = files[0]
                 const localUrl = URL.createObjectURL(file)
 
@@ -109,6 +137,7 @@ export default function SellerSignupPage() {
                     setPreviewLogoImage(localUrl)
                 }
             }
+                */
             return
         }
         setStudioInfo((prev) => ({ ...prev, [name]: value }))
@@ -129,8 +158,11 @@ export default function SellerSignupPage() {
     }
 
     const handleSubmit = async () => {
-        const { studioMainImageUrl, studioLogoImageUrl, studioGalleryImageUrls } = studioInfo
-        if (!studioMainImageUrl || !studioLogoImageUrl || studioGalleryImageUrls.length === 0) {
+        if (
+            !studioInfo.studioMainImageFile ||
+            !studioInfo.studioLogoImageFile ||
+            studioInfo.studioGalleryImageFiles.length === 0
+        ) {
             alert('이미지 업로드가 완료되지 않았습니다. 잠시 후 다시 시도해주세요.')
             return
         }
@@ -141,13 +173,43 @@ export default function SellerSignupPage() {
             role: 'SELLER',
         }
 
+        /*
+        const { studioMainImageUrl, studioLogoImageUrl, studioGalleryImageUrls } = studioInfo
+        if (!studioMainImageUrl || !studioLogoImageUrl || studioGalleryImageUrls.length === 0) {
+            alert('이미지 업로드가 완료되지 않았습니다. 잠시 후 다시 시도해주세요.')
+            return
+        }
+        
+    
+        */
+        const formData = new FormData()
+
+        // 🔥 1) request(JSON) 추가
+        formData.append('request', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
+
+        // 🔥 2) 파일 추가
+        if (userInfo.profileImageFile) {
+            formData.append('profileImage', userInfo.profileImageFile)
+        }
+
+        if (studioInfo.studioMainImageFile) {
+            formData.append('studioMainImage', studioInfo.studioMainImageFile)
+        }
+
+        if (studioInfo.studioLogoImageFile) {
+            formData.append('studioLogoImage', studioInfo.studioLogoImageFile)
+        }
+
+        studioInfo.studioGalleryImageFiles.forEach((file) => {
+            formData.append('studioGalleryImages', file)
+        })
+
         // ✅ 여기에서 콘솔로 확인
-        console.log('회원가입 요청 payload:', payload)
+        console.log('회원가입 요청 payload:', [...formData.entries()])
 
         const response = await fetch('http://localhost:8090/api/v1/auth/signup/seller', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            body: formData,
         })
 
         if (response.ok) {
@@ -177,9 +239,6 @@ export default function SellerSignupPage() {
                 <StudioForm
                     studioInfo={studioInfo}
                     onChange={handleStudioChange}
-                    onMainImagePreview={handleStudioChange}
-                    onLogoImagePreview={handleStudioChange}
-                    onGalleryImagesPreview={handleStudioChange}
                     onSubmit={handleSubmit}
                     onPrev={handlePrev}
                     setStudioInfo={setStudioInfo}

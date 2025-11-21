@@ -13,7 +13,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/images")
 public class ReviewImageController {
 
-    private final String uploadDir = System.getProperty("user.dir") + "/uploads/";
+    private final String uploadDir = System.getProperty("user.dir") + "/uploads/reviews/";
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
@@ -31,7 +31,7 @@ public class ReviewImageController {
         Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
         // 접근 가능한 URL 반환 (Spring static mapping 필요)
-        String imageUrl = "/uploads/" + newFilename;
+        String imageUrl = "/uploads/reviews/" + newFilename;
         return ResponseEntity.ok(imageUrl);
     }
 

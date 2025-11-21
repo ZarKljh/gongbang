@@ -1,7 +1,9 @@
 package com.gobang.gobang.domain.product.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.apache.commons.lang3.builder.ToStringExclude;
 
 import java.math.BigDecimal;
 
@@ -22,6 +24,8 @@ public class ProductAttr  {
     @EmbeddedId
     private ProductAttrId id;
 
+    @JsonIgnore // hy 무한루프 차단
+    @ToStringExclude // hy 재귀 차단
     @MapsId("productId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false,

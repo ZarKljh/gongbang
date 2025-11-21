@@ -319,6 +319,7 @@ export default function MyPage() {
             // 3) ⭐ 신규 공방 등록
             else if (section === 'studioAdd') {
                 // 1) 스튜디오 기본 정보 저장
+
                 response = await axios.post(
                     `${API_BASE_URL}/studio/add`,
                     {
@@ -334,6 +335,16 @@ export default function MyPage() {
                         studioAddPostNumber: tempData.studioAddPostNumber,
                         studioAddMain: tempData.studioAddMain,
                         studioAddDetail: tempData.studioAddDetail,
+
+                        // 이미지 파일명 + 프론트 미리보기 URL 포함
+                        studioMainImageUrl: tempData.studioMainImageUrl || '',
+                        studioMainImageName: studioImages.STUDIO_MAIN?.name || '',
+
+                        studioLogoImageUrl: tempData.studioLogoImageUrl || '',
+                        studioLogoImageName: studioImages.STUDIO_LOGO?.name || '',
+
+                        studioGalleryImageUrls: tempData.studioGalleryImageUrls || [],
+                        studioGalleryImageNames: studioImages.STUDIO.map((f) => f.name),
                     },
                     { withCredentials: true },
                 )

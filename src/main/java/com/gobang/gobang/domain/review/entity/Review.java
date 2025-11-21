@@ -37,6 +37,7 @@ public class Review {
     @JsonIgnore
     private List<ReviewComment> comments = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "review", cascade = ALL, orphanRemoval = true)
     private List<ReviewLike> likes = new ArrayList<>();
 

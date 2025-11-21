@@ -69,7 +69,7 @@ public class SiteUserService {
                 .role(RoleType.USER)
                 .status(signupUserRequest.getStatus())
                 .gender(signupUserRequest.getGender())
-                .birth(signupUserRequest.getBirth().atStartOfDay())
+                .birth(signupUserRequest.getBirth() != null ? signupUserRequest.getBirth().atStartOfDay() : null)
                 .createdDate(LocalDateTime.now())
                 .build();
 
@@ -79,9 +79,12 @@ public class SiteUserService {
         newUser.setRefreshToken(refreshToken);
 
         SiteUser savedSiteUser = siteUserRepository.save(newUser);
-
+        /*
         Image profileImage = buildProfileImagesFromRequest(signupUserRequest, savedSiteUser);
-        imageRepository.save(profileImage);
+        if (profileImage != null) {
+            imageRepository.save(profileImage);
+        }
+         */
         return newUser;
     }
 
@@ -179,7 +182,7 @@ public class SiteUserService {
                 .build();
 
         // ✅ 이미지 정보 → Image 엔티티 리스트로 변환
-        List<Image> studioImages = buildStudioImagesFromRequest(signupSellerRequest);
+        //List<Image> studioImages = buildStudioImagesFromRequest(signupSellerRequest);
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
@@ -188,7 +191,7 @@ public class SiteUserService {
         System.out.println("유저정보가 저장되었습니다");
 
         //studioService.createStudio(newStudio);
-        studioService.createStudio(newStudio, studioImages);
+        studioService.createStudio(newStudio);
         System.out.println("공방이 저장되었습니다");
         return newUser;
 
@@ -316,10 +319,10 @@ public class SiteUserService {
 
     private Image buildProfileImagesFromRequest(SignupUserRequest request, SiteUser savedSiteUser) {
 
-        if (request.getProfileImageUrl() != null) {
-
+        if (request.getProfileImageName() != null && !request.getProfileImageName().isEmpty()) {
+            System.out.println(request.getProfileImageName());
             Image profileImage = Image.builder()
-                    .imageUrl(request.getProfileImageUrl())
+                    .imageUrl(request.getProfileImageName())
                     .refId(savedSiteUser.getId())
                     .refType(Image.RefType.USER_PROFILE)
                     .imageFileName(request.getProfileImageName())
