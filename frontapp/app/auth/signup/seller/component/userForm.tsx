@@ -28,6 +28,7 @@ export default function UserForm({
     const handleRemoveProfileImage = () => {
         setUserInfo((prev) => ({
             ...prev,
+            profileImageFile: null,
             profileImageUrl: '',
             profileImageName: '',
         }))
@@ -35,10 +36,6 @@ export default function UserForm({
             fileInputRef.current.value = ''
         }
         setPreviewProfileImage(null)
-
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-        }
     }
 
     return (
@@ -144,7 +141,7 @@ export default function UserForm({
                 <input
                     ref={fileInputRef}
                     type="file"
-                    name="profileImage"
+                    name="profileImageFile"
                     accept="image/*"
                     className="form-input"
                     onChange={onImagePreview}
