@@ -24,7 +24,7 @@ export default function SignupUser() {
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
     const [profileImageFile, setProfileFile] = useState<File | null>(null)
-    const { errors, validate } = signupUserValidation()
+    const { errors, validate, validateField } = signupUserValidation()
 
     // 중복검사 결과 저장
     const [userNameCheckMsg, setUserNameCheckMsg] = useState('')
@@ -76,6 +76,8 @@ export default function SignupUser() {
             setIsNickNameValid(false)
             setNickNameCheckMsg('')
         }
+        // name 을 keyof SignupUser 로 캐스팅하여 전달
+        validateField(name as keyof SignupUser, value, { ...formData, [name]: value })
     }
 
     const generateRandomFileName = (originalName: string) => {
@@ -97,7 +99,7 @@ export default function SignupUser() {
         setPreviewProfileImage(null)
 
         if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+            fileInputRef.current.value = ''
         }
     }
 
@@ -135,26 +137,26 @@ export default function SignupUser() {
             let newFileName: string | null = null
 
             if (profileImageFile) {
-                const newFileName = generateRandomFileName(profileImageFile.name);
-                fileToUpload = new File([profileImageFile], newFileName, { type: profileImageFile.type });
+                const newFileName = generateRandomFileName(profileImageFile.name)
+                fileToUpload = new File([profileImageFile], newFileName, { type: profileImageFile.type })
             }
 
             // JSON Blob으로 만들어서 'data'라는 이름으로 append
             const dataWithoutImage = {
                 ...formData,
                 profileImageName: newFileName,
-                birth: formData.birth || null
+                birth: formData.birth || null,
             }
 
-            const blob = new Blob([JSON.stringify(dataWithoutImage)], { type: "application/json" })
-            submitData.append("data", blob)
+            const blob = new Blob([JSON.stringify(dataWithoutImage)], { type: 'application/json' })
+            submitData.append('data', blob)
 
             if (fileToUpload) {
-                submitData.append("file", fileToUpload)
+                submitData.append('file', fileToUpload)
             }
 
-            const response = await fetch("http://localhost:8090/api/v1/auth/signup/user", {
-                method: "POST",
+            const response = await fetch('http://localhost:8090/api/v1/auth/signup/user', {
+                method: 'POST',
                 body: submitData,
             })
 
@@ -163,12 +165,12 @@ export default function SignupUser() {
                 router.push('/')
             } else {
                 const error = await response.text()
-                console.error("회원가입 실패:", error)
+                console.error('회원가입 실패:', error)
                 alert('회원가입에 실패하였습니다')
             }
         } catch (err) {
             console.error(err)
-            alert("회원가입 에러")
+            alert('회원가입 에러')
         }
     }
 
