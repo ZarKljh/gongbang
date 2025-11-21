@@ -25,7 +25,7 @@ public class ProfileImageController {
         if (result.isSuccess()) {
             return RsData.of("S-1", "프로필 업로드 성공");
         }
-        return result; // 실패 메시지는 서비스에서 전달
+        return result;
     }
 
     // ---------------- 조회 ----------------

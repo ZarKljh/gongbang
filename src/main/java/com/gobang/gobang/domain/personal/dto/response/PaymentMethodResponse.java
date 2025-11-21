@@ -1,41 +1,40 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.entity.PaymentMethod;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@AllArgsConstructor
 @Builder
 public class PaymentMethodResponse {
 
     private Long paymentId;
-    private Long userId;
     private String type;
     private String bankName;
     private String accountNumber;
+    private String accountHolder;
+
     private String cardCompany;
-    private String cardNumber; // 마스킹된 카드번호
+    private String cardNumber;
+    private String cardExpire;
+
     private Boolean defaultPayment;
     private LocalDateTime createdAt;
-    private LocalDateTime modifiedDate;
 
     public static PaymentMethodResponse from(PaymentMethod paymentMethod) {
         return PaymentMethodResponse.builder()
                 .paymentId(paymentMethod.getPaymentId())
-                .userId(paymentMethod.getSiteUser().getId())
-                .type(paymentMethod.getType())
+                .type(paymentMethod.getType().name())
                 .bankName(paymentMethod.getBankName())
                 .accountNumber(paymentMethod.getAccountNumber())
+                .accountHolder(paymentMethod.getAccountHolder())
                 .cardCompany(paymentMethod.getCardCompany())
                 .cardNumber(paymentMethod.getCardNumber())
+                .cardExpire(paymentMethod.getCardExpire())
                 .defaultPayment(paymentMethod.getDefaultPayment())
                 .createdAt(paymentMethod.getCreatedAt())
-                .modifiedDate(paymentMethod.getModifiedDate())
                 .build();
     }
 }

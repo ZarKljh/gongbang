@@ -860,22 +860,7 @@ export default function MyPage() {
             }
         } catch (error) {
             console.error('결제수단 등록 실패:', error)
-            alert('결제수단 등록 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleDeletePayment = async (paymentId: number) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return
-
-        try {
-            await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
-                withCredentials: true,
-            })
-            alert('삭제 성공')
-            await fetchPaymentMethods()
-        } catch (error) {
-            console.error('결제수단 삭제 실패:', error)
-            alert('삭제 중 오류가 발생했습니다.')
+            alert(error?.response?.data?.msg ?? '결제수단 등록 중 오류가 발생했습니다.')
         }
     }
 
@@ -894,7 +879,22 @@ export default function MyPage() {
             }
         } catch (error) {
             console.error('기본 결제수단 설정 실패:', error)
-            alert('기본 결제수단 설정 중 오류가 발생했습니다.')
+            alert(error?.response?.data?.msg ?? '기본 결제수단 설정 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleDeletePayment = async (paymentId: number) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return
+
+        try {
+            await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
+                withCredentials: true,
+            })
+            alert('삭제 성공')
+            await fetchPaymentMethods()
+        } catch (error: any) {
+            console.error('결제수단 삭제 실패:', error)
+            alert(error?.response?.data?.msg ?? '삭제 중 오류가 발생했습니다.')
         }
     }
 
@@ -2488,6 +2488,6 @@ export default function MyPage() {
                     </div>
                 </div>
             )}
-                    </div>
+        </div>
     )
 }
