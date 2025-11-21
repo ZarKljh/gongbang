@@ -133,19 +133,19 @@ public class ProductController {
             @PathVariable Long productId
     ) {
         // 🔒 현재 로그인 유저 조회
-        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+//        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+//
+//        // 비로그인 상태 처리
+//        if (currentUser == null) {
+//            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
+//        }
+//
+//        SellerFollowResponse res = sellerFollowService.toggleFollow(productId, currentUser.getId());
+//
+//        // ✅ 최종 응답 반환 (RsData 래핑)
+//        String msg = res.isFollowed() ? "작가 팔로우." : "작가 팔로우 취소.";
 
-        // 비로그인 상태 처리
-        if (currentUser == null) {
-            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
-        }
-
-        SellerFollowResponse res = sellerFollowService.toggleFollow(productId, currentUser.getId());
-
-        // ✅ 최종 응답 반환 (RsData 래핑)
-        String msg = res.isFollowed() ? "작가 팔로우." : "작가 팔로우 취소.";
-
-        return RsData.of("200", msg, res);
+        return null;
     }
 
 }
