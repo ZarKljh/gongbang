@@ -388,63 +388,96 @@
 }
 
 /* FAQ 슬라이드 카드 전체 */
-.formGrid {
+/* 내부 카드 박스 */
+.slidePanelInner {
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     background: #f9fafb;
     padding: 14px 16px;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+/* ====== 인라인 에디터 폼 레이아웃 ====== */
+
+/* 인라인 에디터 전체 그리드 */
+.slidePanelInner .formGrid {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-/* 상단 헤더 */
-.formField {
+/* 공통 필드 */
+.slidePanelInner .formField {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.inlineEditorTitle {
-    font-size: 13px;
-    font-weight: 600;
-    color: #111827;
-}
-
-.inlineEditorHint {
+/* 라벨 */
+.slidePanelInner .fieldLabel {
     font-size: 11px;
-    color: #9ca3af;
+    font-weight: 500;
+    color: #6b7280;
+    text-align: left;
 }
 
-/* 본문 그리드 */
-.inlineEditorBody {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.slidePanelInner .inputText,
+.slidePanelInner .select,
+.slidePanelInner .textarea {
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    padding: 7px 10px;
+    background: #ffffff;
 }
 
-.inlineEditorGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px 14px;
-}
-
-.formFieldFull {
+/* 답변 필드는 전체 가로 사용 */
+.slidePanelInner .formField:nth-of-type(3) {
     grid-column: 1 / -1;
 }
 
-/* 정렬/공개 한 줄 */
-.inlineEditorMetaRow {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+/* 답변 박스 높이 */
+.slidePanelInner .textarea {
+    min-height: 90px;
+    resize: vertical;
 }
 
-/* 하단 버튼 */
-.inlineEditorFooter {
-    margin-top: 6px;
+/* 하단 버튼 라인 */
+.slidePanelInner .modalFooter {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+}
+
+/* 하단 버튼 디자인 */
+.slidePanelInner .buttonSecondary,
+.slidePanelInner .buttonPrimary {
+    min-width: 80px;
+    height: 32px;
+    border-radius: 999px;
+    font-size: 12px;
+    padding: 0 14px;
+    background: #2563eb;
+    color: #fff;
+    cursor: pointer;
+    border: none;
+}
+
+.slidePanelInner .buttonSecondary:hover,
+.slidePanelInner .buttonPrimary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+/* 반응형: 좁은 화면에서는 한 줄로 */
+@media (max-width: 768px) {
+    .slidePanelInner .formGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .slidePanelInner .formField:nth-of-type(3) {
+        grid-column: auto;
+    }
 }

@@ -317,6 +317,11 @@ export default function AdminFaqPage() {
                                                     <td className={styles.cellQuestion}>
                                                         <div className={styles.questionText}>{r.question}</div>
                                                     </td>
+
+                                                    <td className={styles.cellAnswer}>
+                                                        <div className={styles.answerText}>{r.answer}</div>
+                                                    </td>
+
                                                     <td className={styles.cellActions}>
                                                         <button
                                                             className={`${styles.btn} ${styles.actionDanger}`}
