@@ -6,14 +6,15 @@ import com.gobang.gobang.domain.inquiry.entity.Inquiry;
 import com.gobang.gobang.domain.inquiry.model.InquiryType;
 import com.gobang.gobang.domain.inquiry.repository.InquiryRepository;
 import com.gobang.gobang.domain.personal.dto.response.QnaResponse;
+import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,84 +27,75 @@ public class QnaService {
 
     // 전체 내 문의 조회
     @Transactional(readOnly = true)
-    public List<QnaResponse> getMyInquiries(Long userId) {
-        SiteUser user = siteUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    public RsData<List<QnaResponse>> getMyInquiries(Long userId) {
+        SiteUser user = siteUserRepository.findById(userId).orElse(null);
 
-        List<Inquiry> inquiries = inquiryRepository.findAllByWriter(user);
-        System.out.println("[DEBUG] DB에서 조회된 문의 수: " + (inquiries != null ? inquiries.size() : "null"));
-
-        List<QnaResponse> safeList = new ArrayList<>();
-
-        for (Inquiry inquiry : inquiries) {
-            try {
-                safeList.add(QnaResponse.from(inquiry));
-            } catch (Exception e) {
-                System.out.println("[WARN] Inquiry 변환 실패 id=" + inquiry.getId() + " reason=" + e.getMessage());
-            }
+        if (user == null) {
+            return RsData.of("401", "로그인이 필요합니다", null);
         }
-        return safeList;
+
+        List<QnaResponse> inquiries = inquiryRepository.findAllByWriter(user)
+                .stream()
+                .map(QnaResponse::from)
+                .collect(Collectors.toList());
+
+        return RsData.of("200", "내 문의 전체 조회 성공", inquiries);
     }
 
     // 특정 문의 상세 조회
-    public QnaResponse getInquiryDetail(Long userId, Long qnaId) {
-        SiteUser user = siteUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    public RsData<QnaResponse> getInquiryDetail(Long userId, Long qnaId) {
+        SiteUser user = siteUserRepository.findById(userId).orElse(null);
+        if (user == null) return RsData.of("401", "로그인이 필요합니다", null);
+
         Inquiry inquiry = inquiryRepository.findByIdAndWriter(qnaId, user)
-                .orElseThrow(() -> new IllegalArgumentException("해당 문의를 찾을 수 없습니다."));
-        return QnaResponse.from(inquiry);
-    }
+                .orElse(null);
 
-    // 답변 완료/대기 상태별 조회
-    public List<QnaResponse> getInquiriesByAnswered(Long userId, boolean answered) {
-        SiteUser user = siteUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        if (inquiry == null) return RsData.of("404", "문의가 존재하지 않습니다", null);
 
-        List<Inquiry> inquiries = inquiryRepository.findByWriterAndAnswered(user, answered);
-        List<QnaResponse> safeList = new ArrayList<>();
-
-        for (Inquiry inquiry : inquiries) {
-            try {
-                safeList.add(QnaResponse.from(inquiry));
-            } catch (Exception e) {
-                log.warn("Inquiry 변환 실패 id={} reason={}", inquiry.getId(), e.getMessage());
-            }
-        }
-        return safeList;
-    }
-
-    // 타입별 조회
-    public List<QnaResponse> getMyInquiriesByType(Long userId, InquiryType type) {
-        SiteUser user = siteUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return inquiryRepository.findByWriterAndType(user, type)
-                .stream()
-                .map(QnaResponse::from)
-                .toList();
-    }
-
-    // 타입 + 답변 상태별 조회
-    public List<QnaResponse> getInquiriesByTypeAndAnswered(Long userId, InquiryType type, boolean answered) {
-        SiteUser user = siteUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return inquiryRepository.findByWriterAndTypeAndAnswered(user, type, answered)
-                .stream()
-                .map(QnaResponse::from)
-                .toList();
+        return RsData.of("200", "문의 상세 조회 성공", QnaResponse.from(inquiry));
     }
 
     // 문의 삭제
     @Transactional
-    public void deleteInquiry(Long userId, Long qnaId) {
-        SiteUser user = siteUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        Inquiry inquiry = inquiryRepository.findById(qnaId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 문의를 찾을 수 없습니다."));
+    public RsData<Void> deleteInquiry(Long userId, Long qnaId) {
+        SiteUser user = siteUserRepository.findById(userId).orElse(null);
+        if (user == null) return RsData.of("401", "로그인이 필요합니다", null);
+
+        Inquiry inquiry = inquiryRepository.findById(qnaId).orElse(null);
+        if (inquiry == null) return RsData.of("404", "문의가 존재하지 않습니다", null);
 
         if (!inquiry.getWriter().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("본인의 문의만 삭제할 수 있습니다.");
+            return RsData.of("403", "본인 문의만 삭제 가능합니다", null);
         }
 
         inquiryRepository.delete(inquiry);
+        return RsData.of("200", "문의 삭제 성공", null);
+    }
+
+    // 타입별 문의 조회
+    public RsData<List<QnaResponse>> getInquiriesByType(Long userId, InquiryType type) {
+        SiteUser user = siteUserRepository.findById(userId).orElse(null);
+        if (user == null) return RsData.of("401", "로그인이 필요합니다", null);
+
+        List<QnaResponse> inquiries = inquiryRepository.findByWriterAndType(user, type)
+                .stream()
+                .map(QnaResponse::from)
+                .collect(Collectors.toList());
+
+        return RsData.of("200", type + " 문의 조회 성공", inquiries);
+    }
+
+    // 답변 완료/대기 상태별 조회
+    public RsData<List<QnaResponse>> getInquiriesByAnswered(Long userId, boolean answered) {
+        SiteUser user = siteUserRepository.findById(userId).orElse(null);
+        if (user == null) return RsData.of("401", "로그인이 필요합니다", null);
+
+        List<QnaResponse> inquiries = inquiryRepository.findByWriterAndAnswered(user, answered)
+                .stream()
+                .map(QnaResponse::from)
+                .collect(Collectors.toList());
+
+        String statusMsg = answered ? "답변 완료" : "답변 대기";
+        return RsData.of("200", statusMsg + " 문의 조회 성공", inquiries);
     }
 }
