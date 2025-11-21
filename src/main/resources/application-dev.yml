@@ -14,6 +14,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
 
-  custom:
-    genFileDirPath: C:\work\gongbangImg
+custom:
+  genFileDirPath: C:\\work\\gongbangImg

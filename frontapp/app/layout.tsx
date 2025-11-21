@@ -59,6 +59,7 @@ export default function RootLayout({
                     <Link href="/theme">테마목록 </Link>
                     {/* <Link href="/review">리뷰</Link> */}
                     <Link href="/product/list/detail?productId=11">11번상품상세 </Link>
+                    <Link href="/personal?tab=cart">장바구니</Link>
                     <Link href="/personal">마이페이지</Link>
                     <Link href="/auth/login">로그인</Link>
                     <Link href="/auth/signup">회원가입</Link>

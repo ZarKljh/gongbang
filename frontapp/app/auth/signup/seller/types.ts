@@ -8,6 +8,7 @@ export interface UserInfo {
     birth: string
     nickName: string
     mobilePhone: string
+    profileImageFile: File | null
     profileImageUrl: string
     profileImageName: string
 }
@@ -24,6 +25,9 @@ export interface StudioInfo {
     studioAddPostNumber: string
     studioAddMain: string
     studioAddDetail: string
+    studioMainImageFile: File | null
+    studioLogoImageFile: File | null
+    studioGalleryImageFiles: Array<File>
     studioMainImageUrl: string
     studioLogoImageUrl: string
     studioGalleryImageUrls: string[]

@@ -33,16 +33,16 @@ public class StudioService {
         return productPage.map(ProductDto::fromEntity);
     }
     @Transactional
-    public void createStudio(Studio newStudio, List<Image> studioImages) {
+    public void createStudio(Studio newStudio) {
         System.out.println("공방정보가 서비스로 넘어왔습니다");
         Studio savedNewStudio = studioRepository.save(newStudio);
         System.out.println("공방이 리포지토리에 들어갔습니다");
-
+        /*
         for (Image image : studioImages) {
             image.setRefId(savedNewStudio.getStudioId()); // Studio 저장 후 ID 할당
             imageRepository.save(image);
         }
-
+        */
     }
 
     public Studio getStudioBySiteUser(SiteUser siteUser) {

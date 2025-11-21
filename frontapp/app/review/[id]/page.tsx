@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { FaStar, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import api from '@/app/utils/api'
 import Link from 'next/link'
+import ReportButton from '@/app/admin/components/ReportButton'
 
 export default function ReviewDetail() {
     const params = useParams()
@@ -13,6 +14,7 @@ export default function ReviewDetail() {
     const [reviews, setReviews] = useState([])
     const [currentUserId, setCurrentUserId] = useState(null)
     const [selectedImageIndex, setSelectedImageIndex] = useState(null) // ✅ index 기반으로 변경
+
 
     const searchParams = useSearchParams()
     const [product, setProduct] = useState(null)
@@ -68,7 +70,6 @@ export default function ReviewDetail() {
             })
             if (res.ok) {
                 const data = await res.json()
-                setIsLoggedIn(true)
                 setCurrentUserId(data?.data?.id || null)
             }
         } catch (err) {
@@ -202,7 +203,7 @@ export default function ReviewDetail() {
                         paddingBottom: '8px',
                     }}
                 >
-                    <strong style={{ color: '#333' }}>{review.userNickName}</strong> · 작성일:{' '}
+                    <strong style={{ color: '#333' }}>{review.userNickName || '익명'}</strong> · 작성일:{' '}
                     {review.createdDate
                         ? new Date(review.createdDate).toLocaleDateString('ko-KR', {
                               year: 'numeric',
@@ -301,6 +302,28 @@ export default function ReviewDetail() {
                         </button>
                     )}
 
+
+                    <Link
+                        href={{
+                            pathname: '/product/list/detail',
+                            query: { productId: review?.productId },
+                        }}
+                        style={{
+                            display: 'inline-block',
+                            backgroundColor: '#ddd',
+                            color: '#333',
+                            textDecoration: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            fontWeight: 'bold',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d1d1d1')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ddd')}
+                    >
+                        ← 목록으로 돌아가기
+                    </Link>
+
+                    <ReportButton targetType="POST" targetId={review.review_id} />
                     {(Number(currentUserId) === Number(review.userId) || roleType === 'ADMIN') && (
                         <button className="review-delete-btn" onClick={() => handleDeleteClick(review.reviewId)}>
                             삭제

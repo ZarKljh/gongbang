@@ -34,7 +34,7 @@ public class OrdersService {
 
     // 주문 상세 조회
     public OrdersResponse getOrderDetail(Long orderId) {
-        Orders order = ordersRepository.findByIdWithDeliveryAndAddress(orderId)
+        Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         return OrdersResponse.from(order);
@@ -50,9 +50,9 @@ public class OrdersService {
     }
 
     // 주문 취소
-    @Transactional
-    public OrdersResponse cancelOrder(Long orderId) {
-        Orders order = ordersRepository.findByIdWithDelivery(orderId)
+    @Transactional(readOnly = false)
+    public OrdersResponse cancelOrder(Long orderId, String reason) {
+        Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         // 배송 상태 확인
@@ -62,18 +62,20 @@ public class OrdersService {
                     if (!"배송준비중".equals(delivery.getDeliveryStatus())) {
                         throw new IllegalStateException("배송 준비중 상태일 때만 주문 취소가 가능합니다.");
                     }
+                    delivery.setDeliveryStatus("취소");
                 });
 
         order.setStatus("취소");
+        order.setReason(reason);
         ordersRepository.save(order);
 
         return OrdersResponse.from(order);
     }
 
     // 반품 신청
-    @Transactional
-    public OrdersResponse returnOrder(Long orderId) {
-        Orders order = ordersRepository.findByIdWithDelivery(orderId)
+    @Transactional(readOnly = false)
+    public OrdersResponse returnOrder(Long orderId, String reason) {
+        Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         order.getDeliveries().stream()
@@ -82,18 +84,20 @@ public class OrdersService {
                     if (!"배송완료".equals(delivery.getDeliveryStatus())) {
                         throw new IllegalStateException("배송 완료된 주문만 반품 신청이 가능합니다.");
                     }
+                    delivery.setDeliveryStatus("반품");
                 });
 
         order.setStatus("반품");
+        order.setReason(reason);
         ordersRepository.save(order);
 
         return OrdersResponse.from(order);
     }
 
     // 교환 신청
-    @Transactional
-    public OrdersResponse exchangeOrder(Long orderId) {
-        Orders order = ordersRepository.findByIdWithDelivery(orderId)
+    @Transactional(readOnly = false)
+    public OrdersResponse exchangeOrder(Long orderId, String reason) {
+        Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         order.getDeliveries().stream()
@@ -102,9 +106,11 @@ public class OrdersService {
                     if (!"배송완료".equals(delivery.getDeliveryStatus())) {
                         throw new IllegalStateException("배송 완료된 주문만 교환 신청이 가능합니다.");
                     }
+                    delivery.setDeliveryStatus("교환");
                 });
 
         order.setStatus("교환");
+        order.setReason(reason);
         ordersRepository.save(order);
 
         return OrdersResponse.from(order);

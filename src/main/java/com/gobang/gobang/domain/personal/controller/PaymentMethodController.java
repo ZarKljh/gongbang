@@ -31,7 +31,6 @@ public class PaymentMethodController {
     }
 
     @PostMapping
-    @ResponseBody
     @Operation(summary = "결제수단 등록")
     public RsData<PaymentMethodResponse> createPaymentMethod(@RequestBody PaymentMethodRequest request) {
         SiteUser siteUser = siteUserService.getCurrentUser();
@@ -41,16 +40,14 @@ public class PaymentMethodController {
     }
 
     @PatchMapping("/{paymentId}/default")
-    @ResponseBody
     @Operation(summary = "기본 결제수단 설정")
     public RsData<Void> setDefaultPaymentMethod(@PathVariable Long paymentId) {
         SiteUser siteUser = siteUserService.getCurrentUser();
-        paymentMethodService.setDefaultPaymentMethod(paymentId, siteUser);
+        paymentMethodService.setDefaultPayment(paymentId, siteUser);
         return RsData.of("200", "기본 결제수단 설정 성공");
     }
 
     @DeleteMapping("/{paymentId}")
-    @ResponseBody
     @Operation(summary = "결제수단 삭제")
     public RsData<Void> deletePaymentMethod(@PathVariable Long paymentId) {
         SiteUser siteUser = siteUserService.getCurrentUser();

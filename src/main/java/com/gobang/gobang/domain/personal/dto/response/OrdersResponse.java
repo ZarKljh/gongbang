@@ -26,9 +26,7 @@ public class OrdersResponse {
     private String deliveryStatus;
     private String completedAt; // String으로 변경
     private String status;
-    private String cancelReason;
-    private String returnReason;
-    private String exchangeReason;
+    private String reason;
     private List<OrderItemResponse> items;
     private List<DeliveryResponse> deliveries;
 
@@ -68,9 +66,7 @@ public class OrdersResponse {
                 .deliveryStatus(deliveryStatus)
                 .completedAt(completedAt)
                 .status(orders.getStatus())
-                .cancelReason(orders.getCancelReason())
-                .returnReason(orders.getReturnReason())
-                .exchangeReason(orders.getExchangeReason())
+                .reason(orders.getReason())
                 .items(items)
                 .deliveries(deliveries)
                 .build();

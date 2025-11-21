@@ -6,6 +6,7 @@ import api from '@/app/utils/api'
 import { useEffect, useMemo, useState } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
+import ReportButton from '@/app/admin/components/ReportButton'
 
 type ProductDetail = {
     id: number
@@ -85,7 +86,6 @@ export default function ProductDetailView({}) {
         queryFn: async () => {
             const res = await api.get(`/product/${productId}/detail`)
             // ✅ 백엔드의 data 전체 반환
-            console.log(res.data.data)
 
             // followInfo 읽기
             const followInfo = res.data.data.followInfo
@@ -251,6 +251,7 @@ export default function ProductDetailView({}) {
                             <button className={styles.btnFav}>♥</button>
                         </div>
                     </div>
+                    <ReportButton targetType="POST" targetId={product.productId} />
                 </section>
             </div>
         </div>

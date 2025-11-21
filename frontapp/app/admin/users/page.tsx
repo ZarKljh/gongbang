@@ -151,7 +151,7 @@ export default function AdminUsersPage() {
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>상태</th>
+                                        <th className={styles.firstT}>상태</th>
                                         <th>아이디</th>
                                         <th>이름</th>
                                         <th>이메일</th>
@@ -163,7 +163,7 @@ export default function AdminUsersPage() {
                                 <tbody>
                                     {rows.map((u) => (
                                         <tr key={u.id}>
-                                            <td>
+                                            <td className={styles.firstT}>
                                                 {u.status ? (
                                                     <span className={badge(u.status)}>{statusLabel(u.status)}</span>
                                                 ) : (
