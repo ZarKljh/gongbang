@@ -4,10 +4,13 @@ import axios from 'axios'
 import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
+    const searchParams = useSearchParams()
+
     // =============== 타입 정의 ===============
     interface OrdersResponse {
         orderId: number
@@ -65,7 +68,7 @@ export default function MyPage() {
 
     // UI 상태
     const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState('orders')
+    const [activeTab, setActiveTab] = useState("orders")
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
 
@@ -83,6 +86,10 @@ export default function MyPage() {
     const [activeFilter, setActiveFilter] = useState('전체')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
     const [filteredOrder, setFilteredOrders] = useState<any[]>([])
+    const [isReasonModal, setIsReasonModal] = useState(false)
+    const [reasonModalTitle, setReasonModalTitle] = useState("")
+    const [reasonModalOnSubmit, setReasonModalOnSubmit] = useState<(reason: string) => void>(() => {})
+    const [reasonText, setReasonText] = useState("")
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -130,7 +137,9 @@ export default function MyPage() {
     const [openQnaId, setOpenQnaId] = useState(null)// state 추가
 
     //이미지
-    const [profileImage, setProfileImage] = useState(null)
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+    const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(stats.profileImageUrl)
+    const [profileFile, setProfileFile] = useState<File | null>(null)
     
     // =============== Effects ===============
     useEffect(() => {
@@ -160,6 +169,11 @@ export default function MyPage() {
         }
     }, [isAddressModal])
 
+    useEffect(() => {
+        const tab = searchParams.get('tab')
+        if (tab) setActiveTab(tab)
+    }, [searchParams])
+
     // =============== API 호출 함수 ===============
     const loadAllData = async (userId: number) => {
         try {
@@ -173,11 +187,10 @@ export default function MyPage() {
                 fetchMyReviews(userId),
                 fetchCart(userId),
                 fetchQna(userId),
+                fetchProfileImage(userId),
             ])
         } catch (error) {
             console.error('데이터 로드 실패:', error)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -338,6 +351,24 @@ export default function MyPage() {
         }
     }
 
+    const fetchProfileImage = async (id?: number) => {
+        const userId = id || userData?.id
+        if (!userId) return
+        
+        try {
+            const response = await axios.get(`http://localhost:8090/api/v1/image/profile/${userId}`, {
+            responseType: 'blob',
+            withCredentials: true,
+            })
+            const blob = new Blob([response.data], { type: response.headers['content-type'] })
+            const url = URL.createObjectURL(blob)
+            setPreviewProfileImage(url)
+            setStats(prev => ({ ...prev, profileImageUrl: url }))
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
     // =============== 유틸리티 함수 ===============
     const flattenAddresses = (data: any[]): any[] => {
         return data.map((addr) => ({
@@ -406,6 +437,75 @@ export default function MyPage() {
         }).open()
     }
 
+    // =============== 프로필 이미지 ===============
+    const handleProfileClick = () => {
+        setPreviewProfileImage(stats.profileImageUrl)
+        setIsProfileModalOpen(true)
+    }
+
+    const handleProfileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setProfileFile(file)
+        setPreviewProfileImage(URL.createObjectURL(file))
+    }
+
+    const handleProfileUpload = async () => {
+        if (!profileFile) return alert('이미지를 선택해주세요.')
+
+        const formData = new FormData()
+        formData.append('file', profileFile)
+
+        try {
+            const { data } = await axios.patch( `http://localhost:8090/api/v1/image/profile`, formData,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true,
+                }
+            )
+
+            if (data.resultCode === '200') {
+                alert('프로필 이미지가 업데이트되었습니다.')
+                setIsProfileModalOpen(false)
+                setProfileFile(null)
+                const uploadedUrl = `http://localhost:8090${data.data?.profileImageUrl || ''}`
+                setPreviewProfileImage(uploadedUrl)
+                setStats(prev => ({
+                    ...prev,
+                    profileImageUrl: uploadedUrl,
+                }))
+            } else {
+                alert('업로드 실패')
+            }
+        } catch (error) {
+            console.error(error)
+            alert('업로드 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleProfileDelete = async () => {
+        if (!confirm('프로필 이미지를 삭제하시겠습니까?')) return
+
+        try {
+            const { data } = await axios.delete(`http://localhost:8090/api/v1/image/profile`, {
+                withCredentials: true,
+            })
+
+            if (data.resultCode === 'S-3' || data.resultCode === '200') {
+                alert('삭제 성공')
+                setPreviewProfileImage(null)
+                setProfileFile(null)
+                setStats(prev => ({ ...prev, profileImageUrl: null }))
+                setIsProfileModalOpen(false)
+            } else {
+                alert('삭제 실패')
+            }
+        } catch (error) {
+            console.error(error)
+            alert('삭제 중 오류가 발생했습니다.')
+        }
+    }
+
     // =============== 주문, 배송정보 ===============
     const isWithinSevenDays = (dateString?: string) => {
         if (!dateString) return false
@@ -420,6 +520,12 @@ export default function MyPage() {
         setOpenOrderId((prev) => (prev === id ? null : id))
     }
 
+    const openReasonModal = (title, onSubmit) => {
+        setReasonModalTitle(title)
+        setReasonModalOnSubmit(() => onSubmit)
+        setIsReasonModal(true)
+    }
+
     // ================= 주문 취소 / 반품 / 교환 =================
     const handleCancelOrder = async (orderId: number, reason: string) => {
         const order = orders.find((o) => o.orderId === orderId)
@@ -432,7 +538,10 @@ export default function MyPage() {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/cancel`,
                 { reason },
-                { withCredentials: true }
+                { 
+                    withCredentials: true,
+                    headers: { "Content-Type": "application/json" }
+                }
             )
 
             if (data.resultCode === "200") {
@@ -712,9 +821,9 @@ export default function MyPage() {
                     zipcode: data.zonecode,
                     baseAddress: data.address,
                     extraAddress: data.buildingName || '',
-                }));
+                }))
             },
-        }).open();
+        }).open()
     }
 
     // =============== 결제수단 ===============
@@ -1135,7 +1244,7 @@ export default function MyPage() {
                         </ul>
                     </div>
                 </nav>
-                <a href="#" className='link-btn'>공방 페이지로 이동</a>
+                <a href="/persnal/seller" className='link-btn'>공방 페이지로 이동</a>
             </div>
 
             {/* 오른쪽 콘텐츠 */}
@@ -1154,8 +1263,19 @@ export default function MyPage() {
                             <tbody>
                                 <tr>
                                     <td>
-                                        <div className="profile-image">
-                                            
+                                        <div className="profile-image" onClick={handleProfileClick}>
+                                            {stats.profileImageUrl ? (
+                                                <img
+                                                    src={
+                                                        previewProfileImage ||
+                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : '/default-profile.png') // 서버 이미지
+                                                    }
+                                                    alt="프로필 이미지"
+                                                    // style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+                                                />
+                                            ) : (
+                                                <div className="placeholder"></div>
+                                            )}
                                         </div>
                                     </td>
                                     <td>{stats.totalQna}</td>
@@ -1227,103 +1347,110 @@ export default function MyPage() {
                                     <div className="order-accordion">
 
                                         {/* 상품 내역 */}
-                                    <h3>상품 내역</h3>
-                                    {(order.items || []).map((item, idx) => (
-                                        <div key={`${item.orderItemId}-${idx}`} className="order-item">
-                                            {/* 상품 이미지 */}
-                                            {item.imageUrl && (
-                                            <img
-                                                src={item.imageUrl}
-                                                alt={item.productName}
-                                                className="order-item-img"
-                                            />
-                                            )}
-                                            <div className="order-item-text">
-                                            <p className="order-item-name">{item.productName}</p>
-                                            <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
+                                        <h3>상품 내역</h3>
+                                        {(order.items || []).map((item, idx) => (
+                                            <div key={`${item.orderItemId}-${idx}`} className="order-item">
+                                                {/* 상품 이미지 */}
+                                                {item.imageUrl && (
+                                                <img
+                                                    src={item.imageUrl}
+                                                    alt={item.productName}
+                                                    className="order-item-img"
+                                                />
+                                                )}
+                                                <div className="order-item-text">
+                                                <p className="order-item-name">{item.productName}</p>
+                                                <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
+                                                </div>
                                             </div>
+                                        ))}
+
+                                        {/* 주문 상세 정보 */}
+                                        <div className="order-info">
+                                            <p>주문일자: {order.createdDate}</p>
+                                            <p>주문번호: {order.orderCode}</p>
+                                            <p>배송상태: {order.deliveryStatus}</p>
+
+                                            {order.deliveries?.length > 0 && (() => {
+                                            const d = order.deliveries[0]
+                                            return (
+                                                <>
+                                                <p>운송장번호: {d.trackingNumber || '없음'}</p>
+                                                <p>수령인: {d.recipientName || '정보 없음'}</p>
+                                                <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
+                                                <p>우편번호: {d.zipcode || ''}</p>
+                                                </>
+                                            )
+                                            })()}
+
+                                            {order.deliveryStatus === '배송완료' && order.completedAt && (
+                                            <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
+                                            )}
                                         </div>
-                                    ))}
 
-                                    {/* 주문 상세 정보 */}
-                                    <div className="order-info">
-                                        <p>주문일자: {order.createdDate}</p>
-                                        <p>주문번호: {order.orderCode}</p>
-                                        <p>배송상태: {order.deliveryStatus}</p>
-
-                                        {order.deliveries?.length > 0 && (() => {
-                                        const d = order.deliveries[0]
-                                        return (
-                                            <>
-                                            <p>운송장번호: {d.trackingNumber || '없음'}</p>
-                                            <p>수령인: {d.recipientName || '정보 없음'}</p>
-                                            <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
-                                            <p>우편번호: {d.zipcode || ''}</p>
-                                            </>
-                                        )
-                                        })()}
-
-                                        {order.deliveryStatus === '배송완료' && order.completedAt && (
-                                        <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
-                                        )}
-                                    </div>
-
-                                    {/* 버튼 영역 */}
-                                    <div className="order-actions" style={{ marginTop: 15 }}>
-                                        {order.deliveryStatus === "배송준비중" && (
-                                        <button
-                                            className="btn-primary"
-                                            onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleCancelOrder(order.orderId, "주문취소")
-                                            }}
-                                        >
-                                            주문 취소
-                                        </button>
-                                        )}
-
-                                        {order.deliveryStatus === "배송완료" &&
-                                        isWithinSevenDays(order.completedAt) && (
-                                            <>
+                                        {/* 버튼 영역 */}
+                                        <div className="order-actions" style={{ marginTop: 15 }}>
+                                            {order.deliveryStatus === "배송준비중" && (
                                             <button
                                                 className="btn-primary"
                                                 onClick={(e) => {
                                                 e.stopPropagation()
-                                                handleReturnOrder(order.orderId, "반품")
+                                                openReasonModal(
+                                                    "주문 취소 사유",
+                                                    (reason) => handleCancelOrder(order.orderId, reason)
+                                                )
                                                 }}
                                             >
-                                                반품 신청
+                                                주문 취소
                                             </button>
+                                            )}
 
+                                            {order.deliveryStatus === "배송완료" &&
+                                            isWithinSevenDays(order.completedAt) && (
+                                                <>
+                                                <button
+                                                    className="btn-primary"
+                                                    onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    openReasonModal("반품 사유", (reason) =>
+                                                        handleReturnOrder(order.orderId, reason)
+                                                    )
+                                                    }}
+                                                >
+                                                    반품 신청
+                                                </button>
+
+                                                <button
+                                                    className="btn-primary"
+                                                    onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    openReasonModal("교환 사유", (reason) =>
+                                                        handleExchangeOrder(order.orderId, reason)
+                                                    )
+                                                    }}
+                                                >
+                                                    교환 신청
+                                                </button>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <div className="order-actions" style={{ marginTop: 15 }}>
                                             <button
-                                                className="btn-primary"
+                                                className="link-btn delete"
                                                 onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleExchangeOrder(order.orderId, "교환")
+                                                    e.stopPropagation()
+                                                    handleDeleteOrder(order.orderId)
                                                 }}
                                             >
-                                                교환 신청
+                                                삭제
                                             </button>
-                                            </>
-                                        )}
-                                    </div>
+                                        </div>
 
-                                    <div className="order-actions" style={{ marginTop: 15 }}>
-                                        <button
-                                            className="link-btn delete"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleDeleteOrder(order.orderId)
-                                            }}
-                                        >
-                                            삭제
-                                        </button>
-                                    </div>
-
-                                    {/* 아코디언 하단 금액 */}
-                                    <div className="order-footer">
-                                        <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
-                                    </div>
+                                        {/* 아코디언 하단 금액 */}
+                                        <div className="order-footer">
+                                            <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
+                                        </div>
                                     </div>
                                 )}
                                 </div>
@@ -1365,6 +1492,7 @@ export default function MyPage() {
                                             .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0]
 
                                         const status = latestDelivery?.deliveryStatus || order.deliveryStatus
+                                        const statusDate = latestDelivery?.modifiedDate || latestDelivery?.createdDate || "N/A"
 
                                         return (
                                             <div key={order.orderId} className="order-card">
@@ -1374,9 +1502,10 @@ export default function MyPage() {
                                                     className="order-header"
                                                     onClick={() => toggleManageOrder(order.orderId)}
                                                 >
-                                                    <div>
+                                                    <div className='order-title'>
                                                         <p>주문번호: {order.orderCode}</p>
-                                                        <p>주문일: {order.createdDate}</p>
+                                                        <p> | 주문일: {order.createdDate}</p>
+                                                        <p> | {status} 일시: {statusDate}</p>
                                                     </div>
                                                     <span className={`badge ${status}`}>{status}</span>
                                                 </div>
@@ -1401,8 +1530,8 @@ export default function MyPage() {
                                                         <div className="order-info">
                                                             <p>주문일자: {order.createdDate}</p>
                                                             <p>주문번호: {order.orderCode}</p>
-                                                            <p>배송상태: {status}</p>
-                                                            <p>사유: {order.cancelReason}{order.exchangeReason}{order.returnReason}</p>
+                                                            <p>상태: {status}</p>
+                                                            <p>사유: {order.reason}</p>
                                                         </div>
 
                                                         {/* 삭제 버튼만 표시 */}
@@ -2266,6 +2395,99 @@ export default function MyPage() {
                     </div>
                 </div>
             )}
-        </div>
+
+            {/* 사유 입력 모달 */}
+            {isReasonModal && (
+                <div className="address-modal" onClick={() => setIsReasonModal(false)}>
+                    <div
+                        className="address-modal-content"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* 닫기 버튼 */}
+                        <button
+                            className="address-modal-close"
+                            onClick={() => setIsReasonModal(false)}
+                        >
+                            X
+                        </button>
+
+                        {/* 제목 */}
+                        <h2 style={{ marginBottom: "10px" }}>{reasonModalTitle}</h2>
+
+                        {/* 사유 입력 */}
+                        <textarea
+                            className="reason-textarea"
+                            placeholder="사유를 입력해주세요."
+                            value={reasonText}
+                            onChange={(e) => setReasonText(e.target.value)}
+                        />
+
+                        {/* 제출 버튼 */}
+                        <button
+                            className="btn-primary"
+                            onClick={() => {
+                                if (!reasonText.trim()) {
+                                    alert("사유를 입력해주세요.")
+                                    return
+                                }
+                                console.log("1. 함수 자체:", reasonModalOnSubmit);
+                                console.log("2. reason:", reasonText);
+                                reasonModalOnSubmit(reasonText) // 실제 취소/반품/교환 로직 호출
+                                setIsReasonModal(false)
+                                setReasonText("")
+                            }}
+                        >
+                            제출
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 프로필 이미지 수정 모달 */}
+            {isProfileModalOpen && (
+                <div
+                    className="modal-backdrop"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 100,
+                    }}
+                    onClick={() => setIsProfileModalOpen(false)}
+                >
+                    <div
+                        className="modal-content"
+                        style={{ background: 'white', padding: '20px', borderRadius: '8px' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3>프로필 이미지 수정</h3>
+
+                        {previewProfileImage ? (
+                            <img
+                                src={previewProfileImage}
+                                alt="미리보기"
+                                style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover', margin: '10px 0' }}
+                            />
+                        ) : (
+                            <div style={{ width: '150px', height: '150px', borderRadius: '50%', background: '#ccc', margin: '10px 0' }} />
+                        )}
+
+                        <input type="file" accept="image/*" onChange={handleProfileFileChange} />
+
+                        <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                            <button onClick={handleProfileUpload}>업로드 / 수정</button>
+                            <button onClick={handleProfileDelete}>삭제</button>
+                            <button onClick={() => setIsProfileModalOpen(false)}>취소</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+                    </div>
     )
 }

@@ -1,8 +1,7 @@
 package com.gobang.gobang.domain.personal.dto.request;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
-import com.gobang.gobang.domain.product.entity.Product;
-import lombok.*;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,4 +13,5 @@ public class OrdersRequest {
     private Long deliveryAddressId;
     private BigDecimal totalPrice;
     private List<OrderItemRequest> orderItems;
+    private String reason;
 }

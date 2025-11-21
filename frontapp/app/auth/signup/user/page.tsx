@@ -78,6 +78,13 @@ export default function SignupUser() {
         }
     }
 
+    const generateRandomFileName = (originalName: string) => {
+        const ext = originalName.split('.').pop() // 확장자
+        const randomStr = Math.random().toString(36).substring(2, 10) // 8자리 랜덤
+        const timestamp = Date.now()
+        return `profile_${timestamp}_${randomStr}.${ext}`
+    }
+
     const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
@@ -88,6 +95,10 @@ export default function SignupUser() {
     const handleRemoveImage = () => {
         setProfileFile(null)
         setPreviewProfileImage(null)
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -119,19 +130,27 @@ export default function SignupUser() {
         try {
             const submitData = new FormData()
 
+            // 업로드 파일 이름 자동 변경
+            let fileToUpload = profileImageFile
+            let newFileName: string | null = null
+
+            if (profileImageFile) {
+                const newFileName = generateRandomFileName(profileImageFile.name);
+                fileToUpload = new File([profileImageFile], newFileName, { type: profileImageFile.type });
+            }
+
             // JSON Blob으로 만들어서 'data'라는 이름으로 append
             const dataWithoutImage = {
                 ...formData,
-                profileImageName: profileImageFile ? profileImageFile.name : null,
+                profileImageName: newFileName,
                 birth: formData.birth || null
             }
+
             const blob = new Blob([JSON.stringify(dataWithoutImage)], { type: "application/json" })
             submitData.append("data", blob)
 
-            // 파일이 있으면 별도 Part로 추가
-            if (profileImageFile) {
-                dataWithoutImage.profileImageName = profileImageFile.name
-                submitData.append("file", profileImageFile)
+            if (fileToUpload) {
+                submitData.append("file", fileToUpload)
             }
 
             const response = await fetch("http://localhost:8090/api/v1/auth/signup/user", {
