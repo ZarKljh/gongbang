@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
-import styles from '@/app/admin/styles/AdminReports.module.css'
 import Modal from '@/app/admin/components/Modal'
+import styles from '@/app/admin/styles/AdminReports.module.css'
 
 type Inquiry = {
     id: number
@@ -21,19 +21,48 @@ type CountResponse = {
     count: number
 }
 
+type StatusFilter = 'ALL' | 'UNANSWERED' | 'ANSWERED'
+
+/** ✅ 문의 전용 상태 타입 (boolean → 여기에 매핑해서 사용) */
+type InquiryStatus = 'PENDING' | 'RESOLVED'
+
+const inquiryStatusFromAnswered = (answered: boolean): InquiryStatus => (answered ? 'RESOLVED' : 'PENDING')
+
+const inquiryStatusBadgeClass = (status: InquiryStatus) => {
+    switch (status) {
+        case 'PENDING':
+            return `${styles.badge} ${styles.badgePending}`
+        case 'RESOLVED':
+            return `${styles.badge} ${styles.badgeResolved}`
+        default:
+            return styles.badge
+    }
+}
+
+const inquiryStatusLabel = (status: InquiryStatus) => {
+    switch (status) {
+        case 'PENDING':
+            return '대기'
+        case 'RESOLVED':
+            return '처리 완료'
+    }
+}
+
 export default function AdminInquiriesPage() {
     const [list, setList] = useState<Inquiry[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const [totalUnread, setTotalUnread] = useState<number>(0)
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
+    // ✅ 상세 모달
     const [selected, setSelected] = useState<Inquiry | null>(null)
-    const [ackLoading, setAckLoading] = useState(false)
 
-    const [showOnlyUnread, setShowOnlyUnread] = useState(false)
+    // ✅ 상태 필터 (전체 / 미처리 / 처리 완료)
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('UNANSWERED')
 
-    // 모달 내 답변 폼 상태
+    // ✅ 모달 내 답변 폼 상태
     const [replyText, setReplyText] = useState('')
     const [replySubmitting, setReplySubmitting] = useState(false)
 
@@ -54,10 +83,23 @@ export default function AdminInquiriesPage() {
             const rawList = listRes.data as any
             const inquiries: Inquiry[] = rawList?.data ?? rawList ?? []
 
-            setList(inquiries)
+            // ✅ 새 문의가 최상단에 오도록 createdAt 기준 내림차순 정렬
+            const sorted = [...inquiries].sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+            )
+
+            setList(sorted)
             setTotalUnread(countRes.data?.count ?? 0)
+            setLastUpdated(new Date())
+
+            // ✅ 선택된 문의가 있다면 최신 데이터로만 동기화 (무한루프 방지)
+            setSelected((prev) => {
+                if (!prev) return prev
+                const latest = sorted.find((i) => i.id === prev.id)
+                return latest ?? null
+            })
         } catch (e: any) {
-            if (!opts?.silent) {
+            if (!silent) {
                 setError(e?.message ?? '문의 목록을 불러오는 중 오류가 발생했습니다.')
             }
         } finally {
@@ -76,12 +118,12 @@ export default function AdminInquiriesPage() {
     useEffect(() => {
         const id = setInterval(() => {
             fetchData({ silent: true })
-        }, 3000) // 3초마다
+        }, 3000)
 
         return () => clearInterval(id)
     }, [fetchData])
 
-    // 선택된 문의가 바뀔 때 답변 폼 초기화
+    // ✅ 선택된 문의가 바뀔 때 답변 폼 초기화
     useEffect(() => {
         if (selected) {
             setReplyText(selected.answerContent ?? '')
@@ -89,6 +131,19 @@ export default function AdminInquiriesPage() {
             setReplyText('')
         }
     }, [selected])
+
+    // ✅ 상태 필터 반영
+    const filteredList = useMemo(() => {
+        switch (statusFilter) {
+            case 'UNANSWERED':
+                return list.filter((item) => !item.answered)
+            case 'ANSWERED':
+                return list.filter((item) => item.answered)
+            case 'ALL':
+            default:
+                return list
+        }
+    }, [list, statusFilter])
 
     const handleSubmitReply = async () => {
         if (!selected) return
@@ -104,10 +159,11 @@ export default function AdminInquiriesPage() {
                 answer: replyText,
             })
 
-            // 최신 데이터 다시 불러오기
+            // ✅ 최신 데이터 다시 불러오고
             await fetchData()
-            // 모달 닫기 (미처리 필터 켜져 있으면 리스트에서 자연스럽게 사라짐)
+            // ✅ 모달 닫기
             setSelected(null)
+            setReplyText('')
         } catch (e: any) {
             const raw = e?.response?.data
             let msg: string | null = null
@@ -131,15 +187,13 @@ export default function AdminInquiriesPage() {
         }
     }
 
-    const filteredList = showOnlyUnread ? list.filter((item) => !item.answered) : list
-
     return (
         <div className={styles.page}>
             <Sidebar />
 
             <main className={styles.main}>
                 {/* 상단 헤더 */}
-                <section className={styles.headerRow}>
+                <div className={styles.headerRow}>
                     <div>
                         <h1 className={styles.title}>문의 관리</h1>
                         <p className={styles.pageSubtitle}>고객이 남긴 1:1 문의를 확인하고 처리 상태를 관리합니다.</p>
@@ -150,60 +204,88 @@ export default function AdminInquiriesPage() {
                             <span className={styles.counterLabel}>미처리 건 수</span>
                             <span className={styles.counterValue}>{totalUnread}건</span>
                         </div>
+
+                        <div>
+                            <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>상태 필터</div>
+                            <select
+                                className={styles.select}
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                            >
+                                <option value="ALL">전체</option>
+                                <option value="UNANSWERED">미처리</option>
+                                <option value="ANSWERED">처리 완료</option>
+                            </select>
+                        </div>
                     </div>
-                </section>
+                </div>
 
-                {/* 필터/에러 표시 */}
-                <section className={styles.controlSection}>
-                    {error && <div className={styles.errorBox}>{error}</div>}
-                </section>
-
-                {/* 테이블 */}
                 <section className={styles.card}>
-                    {loading && <div className={styles.infoText}>불러오는 중...</div>}
+                    {error && <div className={styles.errorBox}>{error}</div>}
 
-                    {!loading && filteredList.length === 0 && (
-                        <div className={styles.infoText}>표시할 문의가 없습니다.</div>
-                    )}
-
-                    {!loading && filteredList.length > 0 && (
+                    {loading ? (
+                        <div className={styles.empty}>불러오는 중...</div>
+                    ) : filteredList.length === 0 ? (
+                        <div className={styles.empty}>표시할 문의가 없습니다.</div>
+                    ) : (
                         <div className={styles.tableWrapper}>
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>상태</th>
+                                        <th className={styles.firstT}>상태</th>
                                         <th>유형</th>
-                                        <th>제목</th>
+                                        <th>제목 / 내용</th>
                                         <th>이메일</th>
                                         <th>작성일</th>
+                                        <th>처리</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredList.map((inq) => (
-                                        <tr
-                                            key={inq.id}
-                                            className={inq.answered ? styles.rowAnswered : styles.rowUnread}
-                                            onClick={() => setSelected(inq)}
-                                        >
-                                            <td>
-                                                <span
-                                                    className={
-                                                        inq.answered ? styles.badgeAnswered : styles.badgePending
-                                                    }
-                                                >
-                                                    {inq.answered ? '처리 완료' : '대기'}
-                                                </span>
-                                            </td>
-                                            <td>{inq.type}</td>
-                                            <td className={styles.titleCell}>{inq.title}</td>
-                                            <td>{inq.email}</td>
-                                            <td>{new Date(inq.createdAt).toLocaleString()}</td>
-                                        </tr>
-                                    ))}
+                                    {filteredList.map((inq) => {
+                                        const status = inquiryStatusFromAnswered(inq.answered)
+                                        return (
+                                            <tr
+                                                key={inq.id}
+                                                className={inq.answered ? styles.rowAnswered : styles.rowUnread}
+                                            >
+                                                <td className={styles.firstT}>
+                                                    <span className={inquiryStatusBadgeClass(status)}>
+                                                        {inquiryStatusLabel(status)}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className={styles.target}>
+                                                        <strong>{inq.type}</strong>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className={styles.reason}>{inq.title}</div>
+                                                    <div className={styles.desc}>{inq.content}</div>
+                                                </td>
+                                                <td>{inq.email}</td>
+                                                <td>{new Date(inq.createdAt).toLocaleString()}</td>
+                                                <td>
+                                                    <div className={styles.actions}>
+                                                        <button
+                                                            className={`${styles.btn} ${styles.btnGhost}`}
+                                                            onClick={() => setSelected(inq)}
+                                                        >
+                                                            검토하기
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         </div>
                     )}
+
+                    <div className={styles.pollInfo}>
+                        3초마다 자동 새로고침
+                        {lastUpdated && ` · 마지막 갱신: ${lastUpdated.toLocaleTimeString()}`}
+                    </div>
                 </section>
 
                 {/* 상세 + 답변 모달 */}
@@ -218,9 +300,14 @@ export default function AdminInquiriesPage() {
                             <div className={styles.detailRow}>
                                 <span className={styles.detailLabel}>상태</span>
                                 <span>
-                                    <span className={selected.answered ? styles.badgeAnswered : styles.badgePending}>
-                                        {selected.answered ? '처리 완료' : '미처리'}
-                                    </span>
+                                    {(() => {
+                                        const status = inquiryStatusFromAnswered(selected.answered)
+                                        return (
+                                            <span className={inquiryStatusBadgeClass(status)}>
+                                                {inquiryStatusLabel(status)}
+                                            </span>
+                                        )
+                                    })()}
                                 </span>
                             </div>
                             <div className={styles.detailRow}>

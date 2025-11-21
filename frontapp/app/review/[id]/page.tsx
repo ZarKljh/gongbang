@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { FaStar, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import api from '@/app/utils/api'
 import Link from 'next/link'
+import ReportButton from '@/app/admin/components/ReportButton'
 
 export default function ReviewDetail() {
     const params = useParams()
@@ -12,7 +13,6 @@ export default function ReviewDetail() {
     const [review, setReview] = useState({})
     const [currentUserId, setCurrentUserId] = useState(null)
     const [selectedImageIndex, setSelectedImageIndex] = useState(null) // ✅ index 기반으로 변경
-
 
     const searchParams = useSearchParams()
     const [product, setProduct] = useState(null)
@@ -243,6 +243,8 @@ export default function ReviewDetail() {
                     >
                         ← 목록으로 돌아가기
                     </Link>
+
+                    <ReportButton targetType="POST" targetId={review.review_id} />
                 </div>
             </div>
 

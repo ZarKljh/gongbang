@@ -6,6 +6,7 @@ import api from '@/app/utils/api'
 import { useEffect, useMemo, useState } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
+import ReportButton from '@/app/admin/components/ReportButton'
 
 type ProductDetail = {
     id: number
@@ -251,6 +252,7 @@ export default function ProductDetailView({}) {
                             <button className={styles.btnFav}>♥</button>
                         </div>
                     </div>
+                    <ReportButton targetType="POST" targetId={product.productId} />
                 </section>
             </div>
         </div>

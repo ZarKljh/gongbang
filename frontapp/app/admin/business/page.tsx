@@ -125,7 +125,7 @@ export default function AdminBusinessPage() {
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>상태</th>
+                                        <th className={styles.firstT}>상태</th>
                                         <th>스튜디오</th>
                                         <th>신청자</th>
                                         <th>카테고리</th>
@@ -136,7 +136,7 @@ export default function AdminBusinessPage() {
                                 <tbody>
                                     {shops.map((s) => (
                                         <tr key={s.id}>
-                                            <td>
+                                            <td className={styles.firstT}>
                                                 <span className={statusBadgeClass(s.status)}>
                                                     {statusKoreanLabel(s.status)}
                                                 </span>
