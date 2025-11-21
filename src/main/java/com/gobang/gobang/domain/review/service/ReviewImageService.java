@@ -20,7 +20,7 @@ public class ReviewImageService {
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewRepository reviewRepository;
 
-    // ✅ 이미지 저장
+    // 이미지 저장
     public void saveImages(Long reviewId, List<String> imageUrls) {
         if (imageUrls == null || imageUrls.isEmpty()) return;
 
@@ -36,12 +36,12 @@ public class ReviewImageService {
         }
     }
 
-    // ✅ 리뷰 ID 기준 이미지 조회
+    // 리뷰 ID 기준 이미지 조회
     public List<Image> getImagesByReviewId(Long reviewId) {
         return reviewImageRepository.findByRefTypeAndRefId(Image.RefType.REVIEW, reviewId);
     }
 
-    // ✅ 리뷰 삭제 시 이미지 삭제
+    // 리뷰 삭제 시 이미지 삭제
     public void deleteImagesByReviewId(Long reviewId) {
         reviewImageRepository.deleteByRefTypeAndRefId(Image.RefType.REVIEW, reviewId);
     }

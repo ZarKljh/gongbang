@@ -226,6 +226,7 @@ export default function ReviewDetail() {
                         </button>
                     )}
 
+
                     <Link
                         href={{
                             pathname: '/product/list/detail',
@@ -240,6 +241,8 @@ export default function ReviewDetail() {
                             padding: '10px 20px',
                             fontWeight: 'bold',
                         }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d1d1d1')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ddd')}
                     >
                         ← 목록으로 돌아가기
                     </Link>

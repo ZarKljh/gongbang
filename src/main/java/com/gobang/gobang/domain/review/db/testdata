@@ -1,125 +1,56 @@
+-- 모든 데이터를 삭제하고 시퀀스를 1부터 시작
 TRUNCATE TABLE tbl_review RESTART IDENTITY CASCADE;
 TRUNCATE TABLE tbl_review_report RESTART IDENTITY CASCADE;
 TRUNCATE TABLE tbl_review_comment RESTART IDENTITY CASCADE;
 TRUNCATE TABLE site_user RESTART IDENTITY CASCADE;
--- 모든 데이터를 삭제하고 시퀀스를 1부터 시작
+TRUNCATE TABLE product RESTART IDENTITY CASCADE;
+TRUNCATE TABLE product_attr RESTART IDENTITY CASCADE;
+TRUNCATE TABLE studio RESTART IDENTITY CASCADE;
 
+-- 테이블 확인
 select * from tbl_review;
-select * from tbl_review_report;
 select * from tbl_review_comment;
 select * from site_user;
 select * from image;
 SELECT * FROM product;
 SELECT * FROM studio;
 
-ALTER TABLE filter_option ADD COLUMN filter_code varchar(50);
-ALTER TABLE image ALTER COLUMN image_url TYPE VARCHAR(255);
-ALTER TABLE imaged ALTER COLUMN image_url TYPE TEXT;
-
--- roletype seller로 강제 업데이트
+-- roletype 강제 업데이트
 UPDATE site_user
 SET role = 'USER'
-WHERE id = 301;
+WHERE id = 300;
 
--- studio 강제 업데이트
-INSERT INTO studio (site_user_id, studio_name, created_date, modified_date)
+INSERT INTO studio (studio_id, site_user_id, studio_name, studio_description, studio_mobile,
+    studio_office_tell,studio_fax, studio_email, studio_business_number, studio_add_post_number,
+    studio_add_main, studio_add_detail, category_id, studio_img, created_date, status
+)
 VALUES (
-   (SELECT id FROM site_user WHERE role = 'SELLER' LIMIT 1),
-   '테스트 스튜디오',
-   NOW(),
-   NOW()
-);
+    1,
+    1,
+    '테스트 공방',
+    '소품, 공예, 향초 클래스 전문 공방입니다.',
+    '010-9999-3000',
+    '02-300-3000',
+    '02-300-3001',
+    'studio300@example.com',
+    '300-30-30030',
+    '04524',
+    '서울특별시 강남구 역삼동 300번지',
+    '300호 테스트룸',
+    1,                          -- 존재하는 카테고리 ID로 설정
+    '/uploads/studio/main300.jpg',
+    NOW(),
+    'APPROVED'
+)
+ON CONFLICT (studio_id) DO NOTHING;
 
-SELECT r.review_id, r.user_id
-FROM TBL_REVIEW r
-LEFT JOIN site_user u ON u.id = r.user_id
-WHERE u.id IS NULL;
-
--- 댓글 권한 임시 허용
-ALTER TABLE tbl_review_comment
-ALTER COLUMN seller_id DROP NOT NULL;
-
-SELECT * FROM TBL_REVIEW WHERE review_id = 1;
-
--- site_user 더미 유저 생성
-INSERT INTO site_user (id, email, password, user_name, mobile_phone, nick_name, role, created_date, status)
-VALUES
-(1, 'user1@example.com', '1234', '현영1', '010-0000-0001', 'hy1', 'USER', NOW(), 'ACTIVE'),
-(2, 'user2@example.com', '1234', '현영2', '010-0000-0002', 'hy2', 'USER', NOW(), 'ACTIVE'),
-(3, 'user3@example.com', '1234', '현영3', '010-0000-0003', 'hy3', 'USER', NOW(), 'ACTIVE'),
-(4, 'user4@example.com', '1234', '현영4', '010-0000-0004', 'hy4', 'USER', NOW(), 'ACTIVE'),
-(5, 'user5@example.com', '1234', '현영5', '010-0000-0005', 'hy5', 'USER', NOW(), 'ACTIVE'),
-(6, 'user6@example.com', '1234', '현영6', '010-0000-0006', 'hy6', 'USER', NOW(), 'ACTIVE'),
-(7, 'user7@example.com', '1234', '현영7', '010-0000-0007', 'hy7', 'USER', NOW(), 'ACTIVE'),
-(8, 'user8@example.com', '1234', '현영8', '010-0000-0008', 'hy8', 'USER', NOW(), 'ACTIVE'),
-(9, 'user9@example.com', '1234', '현영9', '010-0000-0009', 'hy9', 'USER', NOW(), 'ACTIVE'),
-(10, 'user10@example.com', '1234', '현영10', '010-0000-0010', 'hy10', 'USER', NOW(), 'ACTIVE'),
-(11, 'user11@example.com', '1234', '현영11', '010-0000-0011', 'hy11', 'USER', NOW(), 'ACTIVE'),
-(12, 'user12@example.com', '1234', '현영12', '010-0000-0012', 'hy12', 'USER', NOW(), 'ACTIVE'),
-(13, 'user13@example.com', '1234', '현영13', '010-0000-0013', 'hy13', 'USER', NOW(), 'ACTIVE'),
-(14, 'user14@example.com', '1234', '현영14', '010-0000-0014', 'hy14', 'USER', NOW(), 'ACTIVE'),
-(15, 'user15@example.com', '1234', '현영15', '010-0000-0015', 'hy15', 'USER', NOW(), 'ACTIVE'),
-(16, 'user16@example.com', '1234', '현영16', '010-0000-0016', 'hy16', 'USER', NOW(), 'ACTIVE'),
-(17, 'user17@example.com', '1234', '현영17', '010-0000-0017', 'hy17', 'USER', NOW(), 'ACTIVE'),
-(18, 'user18@example.com', '1234', '현영18', '010-0000-0018', 'hy18', 'USER', NOW(), 'ACTIVE'),
-(19, 'user19@example.com', '1234', '현영19', '010-0000-0019', 'hy19', 'USER', NOW(), 'ACTIVE'),
-(20, 'user20@example.com', '1234', '현영20', '010-0000-0020', 'hy20', 'USER', NOW(), 'ACTIVE'),
-(21, 'user21@example.com', '1234', '현영21', '010-0000-0021', 'hy21', 'USER', NOW(), 'ACTIVE'),
-(22, 'user22@example.com', '1234', '현영22', '010-0000-0022', 'hy22', 'USER', NOW(), 'ACTIVE'),
-(23, 'user23@example.com', '1234', '현영23', '010-0000-0023', 'hy23', 'USER', NOW(), 'ACTIVE'),
-(24, 'user24@example.com', '1234', '현영24', '010-0000-0024', 'hy24', 'USER', NOW(), 'ACTIVE'),
-(25, 'user25@example.com', '1234', '현영25', '010-0000-0025', 'hy25', 'USER', NOW(), 'ACTIVE'),
-(26, 'user26@example.com', '1234', '현영26', '010-0000-0026', 'hy26', 'USER', NOW(), 'ACTIVE'),
-(27, 'user27@example.com', '1234', '현영27', '010-0000-0027', 'hy27', 'USER', NOW(), 'ACTIVE'),
-(28, 'user28@example.com', '1234', '현영28', '010-0000-0028', 'hy28', 'USER', NOW(), 'ACTIVE'),
-(29, 'user29@example.com', '1234', '현영29', '010-0000-0029', 'hy29', 'USER', NOW(), 'ACTIVE'),
-(30, 'user30@example.com', '1234', '현영30', '010-0000-0030', 'hy30', 'USER', NOW(), 'ACTIVE');
-
-
--- id 31번 부터 생성
+-- user_id 31번 부터 생성
 ALTER SEQUENCE site_user_id_seq RESTART WITH 31;
--- orderId 1씩 증가
+
+-- orderId 1씩 자동증가(order_id 없을 때 테스트 사용)
 ALTER TABLE tbl_review DROP CONSTRAINT IF EXISTS tbl_review_order_item_id_key;
 
-
--- test data에서 임의로 PK id값을 정해주는게 아닌 생성 순서대로 id값을 정해주기 위함
-SELECT setval(pg_get_serial_sequence('tbl_review', 'review_id'), COALESCE(MAX(review_id), 1), true) FROM tbl_review;
-
--- 리뷰
-INSERT INTO tbl_review (order_id, order_item_id, product_id, user_id, rating, content, view_count, is_active, review_like, created_date, created_by)
-VALUES
-( 101, 501, 11, 1, 5, '정말 예쁘고 향도 좋아요!', 12, TRUE, 3, NOW(), '현영1'),
-( 102, 502, 11, 2, 4, '배송이 빠르고 만족합니다.', 5, TRUE, 2, NOW(), '현영2'),
-( 103, 503, 1003, 3, 5, '선물용으로 완전 추천!', 8, TRUE, 4, NOW(), '현영3'),
-( 104, 504, 1004, 4, 3, '디자인은 예쁜데 포장이 조금 아쉬워요.', 6, TRUE, 1, NOW(), '현영4'),
-( 105, 505, 1005, 5, 4, '테스트 리뷰 이건 장문 본 발전하다, 있습니다 수 않으면서 통신이나 만들어 협상보다, 기름을 아니다. 계급성부터 높인 걸어가다 정부의 섬세하여야 생기는 충족시키다. 있은 자녀가 더 보기 만들어서 사물의 더 활동으로, 합시다. 좋아 동일화에 고개로 모습을 먹다 우리에 않다, 제대로 철저하여야지. 위한 개방부터 모질던 않아서 있은 듭니다. 군사가 2024년 동시의 주요한 붙이다. 있으니 권한과 이거는 오늘은 본 우선적이든지 아버지를 기리다. 강물이요 문화적 행동이 모르리라 분해만 한편 어렵고, 이용된단다. 아니 의식이 기록하고 노래와 풀죽을 통통, 한 품종이요 보다 사람이 성장한가.', 10, TRUE, 3, NOW(), '현영5'),
-( 106, 506, 1006, 6, 5, '향이 진짜 좋아요.', 11, TRUE, 2, NOW(), '현영6'),
-( 107, 507, 1007, 7, 4, '디테일이 섬세하네요.', 7, TRUE, 1, NOW(), '현영7'),
-( 108, 508, 1008, 8, 5, '선물했는데 너무 좋아했어요.', 14, TRUE, 5, NOW(), '현영8'),
-( 109, 509, 1009, 9, 3, '색상이 화면이랑 달라요.', 4, TRUE, 0, NOW(), '현영9'),
-( 110, 510, 1010, 10, 5, '비누 향이 은은해서 좋아요.', 9, TRUE, 2, NOW(), '현영10'),
-( 111, 51, 101, 11, 5, '정말 예쁘고 향도 좋아요!', 12, TRUE, 3, NOW(), '현영11'),
-( 112, 52, 102, 12, 4, '배송이 빠르고 만족합니다.', 5, TRUE, 2, NOW(), '현영12'),
-( 113, 53, 103, 13, 5, '선물용으로 완전 추천!', 8, TRUE, 4, NOW(), '현영13'),
-( 114, 54, 104, 14, 3, '디자인은 예쁜데 포장이 조금 아쉬워요.', 6, TRUE, 1, NOW(), '현영14'),
-( 115, 55, 105, 15, 4, '가죽 퀄리티가 좋아요.', 10, TRUE, 3, NOW(), '현영15'),
-( 116, 56, 106, 16, 5, '향이 진짜 좋아요.', 11, TRUE, 2, NOW(), '현영16'),
-( 117, 57, 107, 17, 4, '디테일이 섬세하네요.', 7, TRUE, 1, NOW(), '현영17'),
-( 118, 58, 108, 18, 5, '선물했는데 너무 좋아했어요.', 14, TRUE, 5, NOW(), '현영18'),
-( 119, 59, 109, 19, 3, '색상이 화면이랑 달라요.', 4, TRUE, 0, NOW(), '현영19'),
-( 120, 60, 110, 20, 5, '정말 예쁘고 향도 좋아요!', 9, TRUE, 2, NOW(), '현영20'),
-( 121, 61, 111, 21, 4, '비누 향이 은은해서 좋아요.', 1, TRUE, 4, NOW(), '현영21'),
-( 122, 62, 112, 22, 3, '비누 향이 은은해서 좋아요.', 65, TRUE, 50, NOW(), '현영22'),
-( 123, 63, 113, 23, 2, '비누 향이 은은해서 좋아요.', 123, TRUE, 23, NOW(), '현영23'),
-( 124, 64, 114, 24, 5, '비누 향이 은은해서 좋아요.', 43, TRUE, 21, NOW(), '현영24'),
-( 125, 65, 115, 25, 3, '비누 향이 은은해서 좋아요.', 8, TRUE, 0, NOW(), '현영25'),
-( 126, 66, 116, 26, 4, '비누 향이 은은해서 좋아요.', 1, TRUE, 2, NOW(), '현영26'),
-( 127, 67, 117, 27, 1, '비누 향이 은은해서 좋아요.', 99, TRUE, 5, NOW(), '현영27'),
-( 128, 68, 118, 28, 4, '비누 향이 은은해서 좋아요.', 2, TRUE, 7, NOW(), '현영28'),
-( 129, 69, 119, 29, 6, '비누 향이 은은해서 좋아요.', 55, TRUE, 9, NOW(), '현영29'),
-( 130, 70, 120, 30, 5, '비누 향이 은은해서 좋아요.', 9, TRUE, 0, NOW(), '현영30');
-;
-
+-- 상품 테스트 데이터 생성
 INSERT INTO product
 (studio_id, theme_id, category_id, subcategory_id, name, summary, description, slug, subtitle,
  base_price, stock_quantity, backorderable, status, seo_title, seo_description, active)
@@ -2112,19 +2043,247 @@ VALUES
 (180, 'LIGHT_TONE', NULL, '밝은빛'),
 (180, 'CATEGORY', NULL, '마사지기');
 
--- postman 리뷰 등록(생성) 테스트용(json)
--- orderItemId는 uq이기 때문에 숫자 바꿔주기
-{
-  "orderId": 1,
-  "orderItemId": 1,
-  "productId": 1,
-  "userId": 3,
-  "rating": 5,
-  "content": "첫 번째 테스트 리뷰 생성"
-}
 
-comment test data
-{
-  "review_id": 1,
-  "review_comment_content": "이 상품은 향이 진하고 고객님께 잘 어울릴 것 같아요!"
-}
+----------셀러사용자 등록--------
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('1997-04-12 00:00:00.000', '2025-11-19 09:03:45.988', NULL, 304, NULL, '', NULL, '01038492011', 'USER', '김민수', 'minsoo', 'sellerabc201', 'sellerabc201@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInNlbGxlcmFiYzIwMVwifSIsImV4cCI6MTc5NTA0NjYyNX0.n1BPd9lXrDhDfXaDJ7xdvsGSz4UWe_MClGdNCHGHzOevbVH8hr7JMAUUxLF19gwsjLEoJKqfH--gjLaiXiQExA', '$2a$10$Fv6uirc1FcujvynTzUxt9ep7i63XtcWfcNFkCsLuN3lOBD3vDYUHq');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('2001-09-25 00:00:00.000', '2025-11-19 10:19:31.163', NULL, 305, NULL, '', NULL, '01094837212', 'USER', '이지은', 'jieun', 'sellerabc202', 'sellerabc202@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInNlbGxlcmFiYzIwMlwifSIsImV4cCI6MTc5NTA1MTE3MX0.v3bBGJhGr5w9XYXU3JWB0l1OmwM7zlo--3u0D6klA3jbLkRFfKOR8DHPtHOIQqd1H00Ullo4u-ofhgUUVhYYPw', '$2a$10$9RlyeZiFD00hn1.J5Wrpsez9utllLSh2Nd3dN/UOr2qlh7J0ePYHW');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('1998-06-03 00:00:00.000', '2025-11-19 10:24:11.654', NULL, 306, NULL, '', NULL, '01027384901', 'USER', '박지훈', 'jihoo', 'sellerabc203', 'sellerabc203@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInNlbGxlcmFiYzIwM1wifSIsImV4cCI6MTc5NTA1MTQ1MX0.HSq9lpcLYYHnEsP4PCvxkoxr85KNAUXNmajuLnRMy-tJ94SN_3zAhbAwyDCt2USqlHGWCKoNlFhkglkKSDRfOw', '$2a$10$ZxZGzBWpyC40AJ46kuYaeeOnRO/CB0EqyeChHK.nmM60NkX157p82');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('2000-12-14 00:00:00.000', '2025-11-19 10:28:23.938', NULL, 307, NULL, '', NULL, '01058293001', 'USER', '최유진', 'youjun', 'sellerabc204', 'sellerabc204@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInNlbGxlcmFiYzIwNFwifSIsImV4cCI6MTc5NTA1MTcwM30.8AaB2fay_PNjg3M6QR1dHeEMrMcIkD669_96rSDK1rjGeGHU8ep1thexiMPFX4KjR2UJPgvMlQAREf8KFoNXjw', '$2a$10$S.x78/EcqPeLZ8S732J6XO7GuQEqJarQBRR1CBVwOQwKUvpVqDlIq');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('1995-02-28 00:00:00.000', '2025-11-19 10:33:11.266', NULL, 308, NULL, '', NULL, '01039485701', 'USER', '정하늘', 'haneul', 'sellerabc205', 'sellerabc205@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInNlbGxlcmFiYzIwNVwifSIsImV4cCI6MTc5NTA1MTk5MX0.cQy912mRstBPLC4sad9P6Ft-XaoNOdfz3DGCCsc031poTW3-eJr6_dePxIpLmd6K4e6r3ZOq6DZc3kVGlUi03Q', '$2a$10$r6nfIBYXCxHhrJ/mky.Dy.GN2Mf2RAb0/MsbkusywfjqIKFUeRJqy');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('1997-05-03 00:00:00.000', '2025-11-19 10:39:47.392', NULL, 309, NULL, '', 'ACTIVE', '01039485704', 'USER', '윤하린', 'harin', 'userabc201', 'userabc201@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInVzZXJhYmMyMDFcIn0iLCJleHAiOjE3OTUwNTIzODd9.Yv3MtEgDtKDt9tHpU5teGGznVveNhAqaLwylzy_RyjqsE_fvUphXfXzhTMSo4cvLjp0zEVzKFZ0gzsVs0hCTbQ', '$2a$10$DKUmA92B9vy4mZvgNjHEReLWavpVlDdjhrVVrmmCnuBD/DSQclvBW');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('2000-09-12 00:00:00.000', '2025-11-19 10:41:08.670', NULL, 310, NULL, '', 'ACTIVE', '01074839204', 'USER', '장도현', 'dohyun', 'userabc202', 'userabc202@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInVzZXJhYmMyMDJcIn0iLCJleHAiOjE3OTUwNTI0Njh9.7b0dVkdytWuKjhyH2KHpcgn4ape_9KSs68v3Hc5xsfkR5SrU0v72sutQoARU_RAOlDJbzZ6jqwy664_RZE2pYQ', '$2a$10$p1yNwopwOSnJze/nQCtRdeLe9OEXYGoPiOGwN3y.TofGBiLu7d6ti');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('1998-01-01 00:00:00.000', '2025-11-19 10:42:26.494', NULL, 311, NULL, '', 'ACTIVE', '01023984704', 'USER', '백지우', 'jiwoo', 'userabc203', 'userabc203@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInVzZXJhYmMyMDNcIn0iLCJleHAiOjE3OTUwNTI1NDZ9.FpW_DKbIpp7-WucCUQ8AHpBKTLdS7diU_vA8HtJqqtQx0U6vCBtE_RLPKz2iw9BBvIt8d7ON-ePm2OEnHs1V0w', '$2a$10$ngfgzJswLLr6a6y.aOqlM.u/wgrTXI6XFV707pMoMvxk0dRtuzX7W');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('1998-02-02 00:00:00.000', '2025-11-19 10:44:25.147', NULL, 313, NULL, '', 'ACTIVE', '01058392004', 'USER', '오세진', 'sejin', 'userabc204', 'userabc204@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInVzZXJhYmMyMDRcIn0iLCJleHAiOjE3OTUwNTI2NjV9.eiIliK0fr7shmM6_ohqmWTb12IZ8XiCd-Rl4gBDnma_V_8v3U2zwIktlCnlhWvqfVpxA43lX3xCpzfW3oa_-Fw', '$2a$10$RjXJ6Tw0569ElypcMhoR0.P0IYzrAUkt7gp9JTElOE1mG92XIO8zS');
+INSERT INTO public.site_user
+(birth, created_date, deleted_date, id, updated_date, gender, status, mobile_phone, "role", full_name, nick_name, user_name, email, profile_img, refresh_token, "password")
+VALUES('1996-04-27 00:00:00.000', '2025-11-19 10:45:58.592', NULL, 314, NULL, '', 'ACTIVE', '01094837216', 'USER', '한지후', 'jihwoo', 'userabc205', 'userabc205@test.com', NULL, 'eyJhbGciOiJIUzUxMiJ9.eyJib2R5Ijoie1wiUm9sZVwiOlwiVVNFUlwiLFwiaWRcIjpudWxsLFwidXNlck5hbWVcIjpcInVzZXJhYmMyMDVcIn0iLCJleHAiOjE3OTUwNTI3NTh9.aH15J6dnlU2wk9jgn8FKBWtetCVcia8vkJC5QYg7HmMyEELB6j5ckkiyM8wuLSK3oPM-ruaPeOKOonokFANDOA', '$2a$10$JjZoVFtDwQQuB.mKR0hzsu6VFRYh.yImpraAJ/qyYzXMtoxfVaUFq');
+----------셀러사용자 공방 등록--------
+
+UPDATE public.studio
+SET category_id=1, created_date=NULL, site_user_id=304, updated_date=NULL, studio_add_post_number='34121', studio_business_number='1234567890', status='PENDING', studio_fax='04238492012', studio_mobile='01038492011', studio_office_tell='04238492011', studio_email='minsoo@test.com', studio_name='민수 공방 1호점', studio_add_detail='1층', studio_add_main='대전 유성구 대덕대로556번길 104', studio_img=NULL, studio_description='민수민수한 수제 캔들 공방입니다'
+WHERE studio_id=3;
+UPDATE public.studio
+SET category_id=5, created_date=NULL, site_user_id=305, updated_date=NULL, studio_add_post_number='34395', studio_business_number='2345678901', status='PENDING', studio_fax='0429487213', studio_mobile='01094837212', studio_office_tell='04294837212', studio_email='jieun@test.com', studio_name='지은공방 1호점', studio_add_detail='1층', studio_add_main='대전 대덕구 계족로 537', studio_img=NULL, studio_description='지은지은한 도자기를 만드는 공방입니다'
+WHERE studio_id=4;
+UPDATE public.studio
+SET category_id=6, created_date=NULL, site_user_id=306, updated_date=NULL, studio_add_post_number='34085', studio_business_number='3456789012', status='PENDING', studio_fax='04227384902', studio_mobile='01027384901', studio_office_tell='04227384901', studio_email='jihoo@test.com', studio_name='지훈공방 1호점', studio_add_detail='1층', studio_add_main='대전 유성구 노은동로 157', studio_img=NULL, studio_description='지훈지훈한 금속 주얼리를 만드는 공방입니다'
+WHERE studio_id=5;
+UPDATE public.studio
+SET category_id=7, created_date=NULL, site_user_id=307, updated_date=NULL, studio_add_post_number='34208', studio_business_number='4567890123', status='PENDING', studio_fax='04258293002', studio_mobile='01058293001', studio_office_tell='04258293001', studio_email='youjun@test.com', studio_name='유진공방 1호점', studio_add_detail='1층', studio_add_main='대전 유성구 학하서로 5', studio_img=NULL, studio_description='유진유진한 자수공방입니다'
+WHERE studio_id=6;
+UPDATE public.studio
+SET category_id=8, created_date=NULL, site_user_id=308, updated_date=NULL, studio_add_post_number='07505', studio_business_number='5678901234', status='PENDING', studio_fax='04239485702', studio_mobile='01039485701', studio_office_tell='04239485701', studio_email='haneul@test.com', studio_name='하늘공방 1호점', studio_add_detail='1층', studio_add_main='서울 강서구 하늘길 70', studio_img=NULL, studio_description='하늘하늘한 드로잉을 하는 공방입니다'
+WHERE studio_id=7;
+
+---------------각종 이미지--------------
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 1, NULL, 1, 'PRODUCT', 'moodlightWarm3.jfif', '/uploads/products/moodlightWarm3.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 2, NULL, 2, 'PRODUCT', 'moodlightMini1.jfif', '/uploads/products/moodlightMini1.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 3, NULL, 3, 'PRODUCT', 'moodlightWarm1.jfif', '/uploads/products/moodlightWarm1.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 4, NULL, 4, 'PRODUCT', 'moodlightMini5.jfif', '/uploads/products/moodlightMini5.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 5, NULL, 5, 'PRODUCT', 'moodlightWarm4.jfif', '/uploads/products/moodlightWarm4.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 6, NULL, 6, 'PRODUCT', 'moodlightMini3.jfif', '/uploads/products/moodlightMini3.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 7, NULL, 7, 'PRODUCT', 'moodlightWarm2.jfif', '/uploads/products/moodlightWarm2.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 8, NULL, 8, 'PRODUCT', 'moodlightMini4.jfif', '/uploads/products/moodlightMini4.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 9, NULL, 9, 'PRODUCT', 'moodlightWarm5.jfif', '/uploads/products/moodlightWarm5.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-13 14:32:00.000', 10, NULL, 10, 'PRODUCT', 'moodlightMini2.jfif', '/uploads/products/moodlightMini2.jfif');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-18 09:21:54.276', 11, '2025-11-18 09:21:54.276', 1, 'STUDIO_MAIN', '나은공방메인.jpg', 'blob:http://localhost:3000/f0cabc27-b02a-4508-b5a5-a831dbfb2fa6');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-18 09:21:54.448', 12, '2025-11-18 09:21:54.448', 1, 'STUDIO_LOGO', '나은공방로고.jpg', 'blob:http://localhost:3000/e6097365-a3cf-408f-8e9c-22a8bcfdc2d0');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(2, '2025-11-18 09:21:54.453', 13, '2025-11-18 09:21:54.453', 1, 'STUDIO', '나은공방01.jpg', 'blob:http://localhost:3000/8cd7f586-b034-4f1c-b934-3c2dcd3e611c');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(3, '2025-11-18 09:21:54.463', 14, '2025-11-18 09:21:54.463', 1, 'STUDIO', '나은공방02.jpg', 'blob:http://localhost:3000/4360059e-365d-4b30-a873-3842f9a4e585');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(4, '2025-11-18 09:21:54.468', 15, '2025-11-18 09:21:54.468', 1, 'STUDIO', '나은공방03.jpg', 'blob:http://localhost:3000/d7222b4e-2228-4f1c-abee-0ec160d340ef');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(5, '2025-11-18 09:21:54.480', 16, '2025-11-18 09:21:54.480', 1, 'STUDIO', '나은공방04.jpg', 'blob:http://localhost:3000/2a83cf08-95a9-44ae-9ec2-232f6f50a590');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(6, '2025-11-18 09:21:54.483', 17, '2025-11-18 09:21:54.483', 1, 'STUDIO', '나은공방05.jpg', 'blob:http://localhost:3000/e0e96016-6021-4578-8855-c1fc3e12fe97');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-18 22:12:58.026', 18, '2025-11-18 22:12:58.026', 2, 'STUDIO_MAIN', '나은공방메인.jpg', 'blob:http://localhost:3000/c0b347cf-c282-41cf-9908-f0178120247c');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-18 22:12:58.143', 19, '2025-11-18 22:12:58.143', 2, 'STUDIO_LOGO', '나은공방로고.jpg', 'blob:http://localhost:3000/23f0b0eb-f623-4b2d-a92e-c0a87d4b2ee2');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(2, '2025-11-18 22:12:58.147', 20, '2025-11-18 22:12:58.147', 2, 'STUDIO', '나은공방01.jpg', 'blob:http://localhost:3000/dfe3896c-f941-4be7-b314-0c4acce03b56');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(3, '2025-11-18 22:12:58.151', 21, '2025-11-18 22:12:58.151', 2, 'STUDIO', '나은공방02.jpg', 'blob:http://localhost:3000/766e4867-8be1-4e30-a8d9-d4cb5bb7d207');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(4, '2025-11-18 22:12:58.155', 22, '2025-11-18 22:12:58.155', 2, 'STUDIO', '나은공방03.jpg', 'blob:http://localhost:3000/d85b7a3b-15fd-48ee-9d46-12b7cae1d312');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(5, '2025-11-18 22:12:58.161', 23, '2025-11-18 22:12:58.161', 2, 'STUDIO', '나은공방04.jpg', 'blob:http://localhost:3000/73668094-096b-40a3-9f06-b440976ba90f');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(6, '2025-11-18 22:12:58.166', 24, '2025-11-18 22:12:58.166', 2, 'STUDIO', '나은공방05.jpg', 'blob:http://localhost:3000/050494eb-9809-45ab-996e-522739d97155');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 09:03:46.601', 25, '2025-11-19 09:03:46.601', 3, 'STUDIO_MAIN', 'sellerabc201-studiomain.jpg', 'blob:http://localhost:3000/8592e5c4-e863-4836-8921-d9a1fdf50eba');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-19 09:03:46.688', 26, '2025-11-19 09:03:46.688', 3, 'STUDIO_LOGO', 'sellerabc201-studiologo.jpg', 'blob:http://localhost:3000/08ea1148-a275-45b5-915c-4d62eccdc80c');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(2, '2025-11-19 09:03:46.695', 27, '2025-11-19 09:03:46.695', 3, 'STUDIO', 'sellerabc201-studio01.jpg', 'blob:http://localhost:3000/e26a74bc-cd60-46f1-9d1a-38aaa5842db9');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(3, '2025-11-19 09:03:46.714', 28, '2025-11-19 09:03:46.714', 3, 'STUDIO', 'sellerabc201-studio02.jpg', 'blob:http://localhost:3000/565ccec4-4278-4836-aff1-d026f42d834d');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(4, '2025-11-19 09:03:46.720', 29, '2025-11-19 09:03:46.720', 3, 'STUDIO', 'sellerabc201-studio03.jpg', 'blob:http://localhost:3000/46e870df-bf6e-4403-bc19-0f96001262ea');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(5, '2025-11-19 09:03:46.735', 30, '2025-11-19 09:03:46.735', 3, 'STUDIO', 'sellerabc201-studio04.jpg', 'blob:http://localhost:3000/800c4969-c954-4e7c-bc3e-e9a474305d27');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(6, '2025-11-19 09:03:46.739', 31, '2025-11-19 09:03:46.739', 3, 'STUDIO', 'sellerabc201-studio05.jpg', 'blob:http://localhost:3000/409a6e4c-da22-4fb7-ad12-dfa9e227f2e3');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:19:31.574', 32, '2025-11-19 10:19:31.574', 4, 'STUDIO_MAIN', 'sellerabc202-sutdiomain.jpg', 'blob:http://localhost:3000/5c9be1eb-bcf3-4707-b626-af4ccb29df91');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-19 10:19:31.603', 33, '2025-11-19 10:19:31.603', 4, 'STUDIO_LOGO', 'sellerabc202-studiologo.jpg', 'blob:http://localhost:3000/9b521a80-bb6d-423f-9f8f-0562b32c7d91');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(2, '2025-11-19 10:19:31.606', 34, '2025-11-19 10:19:31.606', 4, 'STUDIO', 'sellerabc202-studio01.jpg', 'blob:http://localhost:3000/783a9f87-d077-44f2-a737-88ec117ec855');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(3, '2025-11-19 10:19:31.610', 35, '2025-11-19 10:19:31.610', 4, 'STUDIO', 'sellerabc202-studio02.jpg', 'blob:http://localhost:3000/92bc3421-769e-45b8-9cd3-481a4913b6a0');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(4, '2025-11-19 10:19:31.700', 36, '2025-11-19 10:19:31.700', 4, 'STUDIO', 'sellerabc202-studio03.jpg', 'blob:http://localhost:3000/491c07b2-c7c8-4c84-b213-1128e9bfd247');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(5, '2025-11-19 10:19:31.724', 37, '2025-11-19 10:19:31.724', 4, 'STUDIO', 'sellerabc202-studio04.jpg', 'blob:http://localhost:3000/e3da3daf-bbbf-4dbb-ae56-9f3749ceaca3');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(6, '2025-11-19 10:19:31.729', 38, '2025-11-19 10:19:31.729', 4, 'STUDIO', 'sellerabc202-studio05.jpg', 'blob:http://localhost:3000/580e6a8f-2197-4576-a5a5-d3ba8e578d71');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:24:11.962', 39, '2025-11-19 10:24:11.962', 5, 'STUDIO_MAIN', 'sellerabc203-sutdiomain.jpg', 'blob:http://localhost:3000/95419345-ec6e-4b40-aff0-0fe5d8a61914');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-19 10:24:12.088', 40, '2025-11-19 10:24:12.088', 5, 'STUDIO_LOGO', 'sellerabc203-studiologo.jpg', 'blob:http://localhost:3000/2f682ee2-bdaf-4ab7-8a48-50d9937ee875');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(2, '2025-11-19 10:24:12.130', 41, '2025-11-19 10:24:12.130', 5, 'STUDIO', 'sellerabc203-studio01.jpg', 'blob:http://localhost:3000/acc7d52b-2a1a-48f3-b37d-0e946320cf05');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(3, '2025-11-19 10:24:12.152', 42, '2025-11-19 10:24:12.152', 5, 'STUDIO', 'sellerabc203-studio02.jpg', 'blob:http://localhost:3000/4575742d-07f5-4c5f-93ae-f8a1b7a93837');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(4, '2025-11-19 10:24:12.155', 43, '2025-11-19 10:24:12.155', 5, 'STUDIO', 'sellerabc203-studio03.jpg', 'blob:http://localhost:3000/b94cc1b0-3ac9-4217-965d-0105c9f7209f');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(5, '2025-11-19 10:24:12.158', 44, '2025-11-19 10:24:12.158', 5, 'STUDIO', 'sellerabc203-studio04.jpg', 'blob:http://localhost:3000/9eb1ffce-40d6-4204-93c6-68bbb0001633');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(6, '2025-11-19 10:24:12.162', 45, '2025-11-19 10:24:12.162', 5, 'STUDIO', 'sellerabc203-studio05.jpg', 'blob:http://localhost:3000/76d9dde3-9cba-442e-ae84-413702013997');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:28:24.050', 46, '2025-11-19 10:28:24.050', 6, 'STUDIO_MAIN', 'sellerabc204-sutdiomain.jpg', 'blob:http://localhost:3000/b92dfc9d-a213-4821-8641-308246b482ef');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-19 10:28:24.056', 47, '2025-11-19 10:28:24.056', 6, 'STUDIO_LOGO', 'sellerabc204-studiologo.jpg', 'blob:http://localhost:3000/cf3427f1-2c2d-4228-a4e6-cec6be791d4e');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(2, '2025-11-19 10:28:24.063', 48, '2025-11-19 10:28:24.063', 6, 'STUDIO', 'sellerabc204-studio01.jpg', 'blob:http://localhost:3000/bf601c50-2ef5-43c7-b861-9780a6a993fe');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(3, '2025-11-19 10:28:24.086', 49, '2025-11-19 10:28:24.086', 6, 'STUDIO', 'sellerabc204-studio02.jpg', 'blob:http://localhost:3000/3612ee14-c41f-4c0d-b719-5747000d3227');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(4, '2025-11-19 10:28:24.089', 50, '2025-11-19 10:28:24.089', 6, 'STUDIO', 'sellerabc204-studio03.jpg', 'blob:http://localhost:3000/f7d4a413-3fed-4234-a462-3e0f3a6ae978');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(5, '2025-11-19 10:28:24.092', 51, '2025-11-19 10:28:24.092', 6, 'STUDIO', 'sellerabc204-studio04.jpg', 'blob:http://localhost:3000/14312b72-dc38-4623-a4b6-19b32fffd72c');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(6, '2025-11-19 10:28:24.150', 52, '2025-11-19 10:28:24.150', 6, 'STUDIO', 'sellerabc204-studio05.jpg', 'blob:http://localhost:3000/d19afdb7-05bc-4b33-907d-b8f15b5c4c0d');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:33:11.320', 53, '2025-11-19 10:33:11.320', 7, 'STUDIO_MAIN', 'sellerabc205-sutdiomain.jpg', 'blob:http://localhost:3000/22d63854-28f4-483a-97e7-68c41df97cd5');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(1, '2025-11-19 10:33:11.337', 54, '2025-11-19 10:33:11.337', 7, 'STUDIO_LOGO', 'sellerabc205-studiologo.jpg', 'blob:http://localhost:3000/1e59db56-9a84-4cd8-9881-bd4df87b7789');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(2, '2025-11-19 10:33:11.348', 55, '2025-11-19 10:33:11.348', 7, 'STUDIO', 'sellerabc205-studio01.jpg', 'blob:http://localhost:3000/cd33227b-5b37-4b12-a52e-89fa8e30849d');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(3, '2025-11-19 10:33:11.351', 56, '2025-11-19 10:33:11.351', 7, 'STUDIO', 'sellerabc205-studio02.jpg', 'blob:http://localhost:3000/9083e49f-7043-4c4d-81c8-54eb97655f2a');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(4, '2025-11-19 10:33:11.354', 57, '2025-11-19 10:33:11.354', 7, 'STUDIO', 'sellerabc205-studio03.jpg', 'blob:http://localhost:3000/bee819f7-1330-4c2e-92ec-e40ceb5b7a6c');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(5, '2025-11-19 10:33:11.357', 58, '2025-11-19 10:33:11.357', 7, 'STUDIO', 'sellerabc205-studio04.jpg', 'blob:http://localhost:3000/edea8755-c66e-4250-a72e-0094441a82a6');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(6, '2025-11-19 10:33:11.361', 59, '2025-11-19 10:33:11.361', 7, 'STUDIO', 'sellerabc205-studio05.jpg', 'blob:http://localhost:3000/e44f0223-2922-423d-81b9-4415edcb2d42');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:39:47.443', 60, '2025-11-19 10:39:47.443', 309, 'USER_PROFILE', 'userabc201-profile.jpg', 'blob:http://localhost:3000/bee4ecfe-9819-4a00-92ad-8c99ff8ae6f2');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:41:08.711', 61, '2025-11-19 10:41:08.711', 310, 'USER_PROFILE', 'userabc202-profile.jpg', 'blob:http://localhost:3000/3e603b13-320c-4c66-8128-dd4be1623f35');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:42:26.522', 62, '2025-11-19 10:42:26.522', 311, 'USER_PROFILE', 'userabc203-profile.jpg', 'blob:http://localhost:3000/d0b68ec2-cdd4-48d6-9d46-8fc71a8b5ee7');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:44:25.157', 63, '2025-11-19 10:44:25.157', 313, 'USER_PROFILE', 'userabc204-profile.jpg', 'blob:http://localhost:3000/6f82660e-95c5-4c7c-8aec-cbdd220b392b');
+INSERT INTO public.image
+(sort_order, created_date, id, modified_date, ref_id, ref_type, image_file_name, image_url)
+VALUES(0, '2025-11-19 10:45:58.610', 64, '2025-11-19 10:45:58.610', 314, 'USER_PROFILE', 'userabc205-profile.jpg', 'blob:http://localhost:3000/406d5d95-7bdb-4ea6-a328-45d6a8beda78');
+
