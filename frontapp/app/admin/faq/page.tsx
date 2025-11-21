@@ -277,106 +277,92 @@ export default function AdminFaqPage() {
                 </header>
 
                 {err && <div className={styles.errorBox}>{err}</div>}
-
-                <div className={styles.card}>
-                    <table className={styles.table}>
-                        <thead className={styles.tableWrapper}>
-                            <tr>
-                                <th className={styles.colCategory}>카테고리</th>
-                                <th className={styles.colQuestion}>질문</th>
-                                <th className={styles.colOrder}>정렬</th>
-                                <th className={styles.colPublish}>공개</th>
-                                <th className={styles.colActions}></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
+                <section className={styles.card}>
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
+                            <thead>
                                 <tr>
-                                    <td className={styles.tableLoadingCell} colSpan={5}>
-                                        로딩 중…
-                                    </td>
+                                    <th className={styles.colCategory}>카테고리</th>
+                                    <th className={styles.colQuestion}>질문</th>
+                                    <th className={styles.colQuestion}>상세 내용</th>
+                                    <th className={styles.colQuestion}>삭제</th>
                                 </tr>
-                            ) : rows.length === 0 ? (
-                                <tr>
-                                    <td className={styles.tableEmptyCell} colSpan={5}>
-                                        항목이 없습니다.
-                                    </td>
-                                </tr>
-                            ) : (
-                                rows.map((r) => {
-                                    const isOpen =
-                                        expandedId === r.id && inlineEditingRow && inlineEditingRow.id === r.id
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr>
+                                        <td className={styles.tableLoadingCell} colSpan={5}>
+                                            로딩 중…
+                                        </td>
+                                    </tr>
+                                ) : rows.length === 0 ? (
+                                    <tr>
+                                        <td className={styles.tableEmptyCell} colSpan={5}>
+                                            항목이 없습니다.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    rows.map((r) => {
+                                        const isOpen =
+                                            expandedId === r.id && inlineEditingRow && inlineEditingRow.id === r.id
 
-                                    return (
-                                        <Fragment key={r.id}>
-                                            {/* 클릭해서 여는 메인 행 */}
-                                            <tr
-                                                className={`${styles.tableRow} ${styles.tableRowClickable}`}
-                                                onClick={() => toggleRow(r)}
-                                            >
-                                                <td className={styles.cellCategory}>{r.categoryName}</td>
-                                                <td className={styles.cellQuestion}>
-                                                    <div className={styles.questionText}>{r.question}</div>
-                                                </td>
-                                                <td className={styles.cellOrder}>{r.orderNo}</td>
-                                                <td className={styles.cellPublish}>
-                                                    <button
-                                                        className={`${styles.btn} ${
-                                                            r.published ? styles.publishOn : styles.publishOff
-                                                        }`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            onTogglePublish(r)
-                                                        }}
-                                                    >
-                                                        {r.published ? '공개' : '비공개'}
-                                                    </button>
-                                                </td>
-                                                <td className={styles.cellActions}>
-                                                    <button
-                                                        className={`${styles.btn} ${styles.actionDanger}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            onDeleteFaq(r.id)
-                                                        }}
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                        return (
+                                            <Fragment key={r.id}>
+                                                {/* 클릭해서 여는 메인 행 */}
+                                                <tr
+                                                    className={`${styles.tableRow} ${styles.tableRowClickable}`}
+                                                    onClick={() => toggleRow(r)}
+                                                >
+                                                    <td className={styles.cellCategory}>{r.categoryName}</td>
+                                                    <td className={styles.cellQuestion}>
+                                                        <div className={styles.questionText}>{r.question}</div>
+                                                    </td>
+                                                    <td className={styles.cellActions}>
+                                                        <button
+                                                            className={`${styles.btn} ${styles.actionDanger}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                onDeleteFaq(r.id)
+                                                            }}
+                                                        >
+                                                            삭제
+                                                        </button>
+                                                    </td>
+                                                </tr>
 
-                                            {/* 슬라이드 인라인 에디터 행 */}
-                                            <tr className={styles.detailRow}>
-                                                <td colSpan={5} className={styles.detailCell}>
-                                                    <div
-                                                        className={`${styles.slidePanel} ${
-                                                            isOpen ? styles.slidePanelOpen : ''
-                                                        }`}
-                                                    >
-                                                        {isOpen && inlineEditingRow && (
-                                                            <div className={styles.slidePanelInner}>
-                                                                <InlineFaqEditor
-                                                                    categories={categories}
-                                                                    form={inlineEditingRow}
-                                                                    onChange={updateInlineEditingRow}
-                                                                    onCancel={() => {
-                                                                        setExpandedId(null)
-                                                                        setInlineEditingRow(null)
-                                                                    }}
-                                                                    onSave={() => onSaveFaq(inlineEditingRow)}
-                                                                />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </Fragment>
-                                    )
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                                {/* 슬라이드 인라인 에디터 행 */}
+                                                <tr className={styles.detailRow}>
+                                                    <td colSpan={5} className={styles.detailCell}>
+                                                        <div
+                                                            className={`${styles.slidePanel} ${
+                                                                isOpen ? styles.slidePanelOpen : ''
+                                                            }`}
+                                                        >
+                                                            {isOpen && inlineEditingRow && (
+                                                                <div className={styles.slidePanelInner}>
+                                                                    <InlineFaqEditor
+                                                                        categories={categories}
+                                                                        form={inlineEditingRow}
+                                                                        onChange={updateInlineEditingRow}
+                                                                        onCancel={() => {
+                                                                            setExpandedId(null)
+                                                                            setInlineEditingRow(null)
+                                                                        }}
+                                                                        onSave={() => onSaveFaq(inlineEditingRow)}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </Fragment>
+                                        )
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
 
             {/* 카테고리 관리 모달 (공용 Modal 사용) */}
@@ -434,7 +420,7 @@ function CategoryManagerPanel({
                 <button className={styles.buttonSecondarySmall} onClick={() => onEdit({})} title="카테고리 추가">
                     + 추가
                 </button>
-                <button className={styles.buttonSecondary} onClick={onClose}>
+                <button className={styles.modalCloseButton} onClick={onClose}>
                     닫기
                 </button>
             </div>
@@ -443,7 +429,6 @@ function CategoryManagerPanel({
                     <tr>
                         <th className={styles.colCatName}>이름</th>
                         <th className={styles.colCatSlug}>슬러그</th>
-                        <th className={styles.colCatOrder}>정렬</th>
                         <th className={styles.colCatStatus}>상태</th>
                         <th className={styles.colActions}>작업</th>
                     </tr>
@@ -462,7 +447,6 @@ function CategoryManagerPanel({
                                     <div className={styles.categoryNameText}>{c.name}</div>
                                 </td>
                                 <td className={styles.cellCategorySlug}>{c.slug}</td>
-                                <td className={styles.cellOrder}>{c.orderNo}</td>
                                 <td className={styles.cellStatus}>
                                     <span
                                         className={`${styles.categoryStatus} ${
@@ -473,11 +457,11 @@ function CategoryManagerPanel({
                                     </span>
                                 </td>
                                 <td className={styles.cellActions}>
-                                    <button className={styles.actionButton} onClick={() => onEdit(c)}>
+                                    <button className={styles.buttonSecondarySmall} onClick={() => onEdit(c)}>
                                         수정
                                     </button>
                                     <button
-                                        className={`${styles.actionButton} ${styles.actionDanger}`}
+                                        className={`${styles.modalCloseButton} ${styles.actionDanger}`}
                                         onClick={() => onDelete(c.id)}
                                     >
                                         삭제
@@ -739,25 +723,7 @@ function InlineFaqEditor({
                     placeholder="답변을 입력하세요"
                 />
             </div>
-            <div className={styles.formRow}>
-                <div className={styles.formField}>
-                    <label className={styles.fieldLabel}>정렬</label>
-                    <input
-                        type="number"
-                        className={styles.inputNumberSmall}
-                        value={(form.orderNo as number) ?? 0}
-                        onChange={(e) => onChange({ orderNo: Number(e.target.value) || 0 })}
-                    />
-                </div>
-                <label className={styles.checkboxLabel}>
-                    <input
-                        type="checkbox"
-                        checked={!!form.published}
-                        onChange={(e) => onChange({ published: e.target.checked })}
-                    />
-                    공개
-                </label>
-            </div>
+
             <div className={styles.modalFooter}>
                 <button className={styles.buttonSecondary} onClick={onCancel}>
                     취소
