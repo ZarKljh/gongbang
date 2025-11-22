@@ -260,8 +260,10 @@ export default function ProductDetailView() {
             <div className={styles.layout}>
                 {/* 좌: 이미지 */}
                 <section className={styles.imagePanel}>
-                    <div className={styles.imageMain}>
-                        <img src={pdImageUrl} alt={product?.name} />
+                    <div className={styles.imageSticky}>
+                        <div className={styles.imageMain}>
+                            <img src={pdImageUrl} alt={product?.name} />
+                        </div>
                     </div>
                 </section>
 
@@ -320,9 +322,9 @@ export default function ProductDetailView() {
                                 </div>
                             </div>
 
-                            <div className="creator-right">
-                                <div className="follower-label">팔로워</div>
-                                <div className="follower-count">{followerCount}</div>
+                            <div className={styles.creatorRight}>
+                                <div className={styles.followerLabel}>팔로워</div>
+                                <div className={styles.followerCount}>{followerCount}</div>
                             </div>
                         </div>
                     )}

@@ -1,273 +1,333 @@
 /* 전체 프레임 */
 .detailPage {
-    width: 1280px; /* ✅ 고정 1280 */
-    margin: 0 auto; /* 가운데 정렬 */
-    padding: 24px 0;
+    max-width: 1280px;
+
+    margin: 0 auto;
+    padding: 32px 0px 0px;
     box-sizing: border-box;
 }
 
-/* 2열 레이아웃 (이미지 : 구매패널 = 720px : 520px + 간격) */
+/* 2열 레이아웃 (이미지 : 구매패널) */
 .layout {
     display: grid;
-    grid-template-columns: 720px 1fr; /* 오른쪽은 나머지(대략 520px) */
+    grid-template-columns: 650px 1fr;
     column-gap: 40px;
-    align-items: start;
+    align-items: flex-start; /* 위 기준 정렬 */
 }
 
-/* === 왼쪽 이미지 영역 === */
+/* 왼쪽 이미지 영역 */
 .imagePanel {
     position: sticky;
     top: 24px;
 }
 
 .imageMain {
-    width: 720px;
-    aspect-ratio: 1 / 1; /* 정사각형 박스 */
+    width: 100%;
+    aspect-ratio: 1 / 1;
     border: 1px solid #e5e5e5;
-    border-radius: 16px; /* ✅ 곡선 조금 더 키워도 됨 */
-    overflow: hidden; /* ✅ 자식(img)이 모서리 밖으로 못 나가게 */
+    border-radius: 16px;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 28px;
-    color: #333;
-    background: #fafafa;
+    color: #3b2a1c;
+    background: #fbf7f1;
 }
 
 .imageMain > img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* ✅ 비율 유지하면서 꽉 채우기 */
+    object-fit: cover;
     display: block;
-    /* border-radius: 16px;    // 이건 없어도 되지만, 넣어도 무방 */
 }
-/* 썸네일이 필요하면 사용
-.thumbList { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
-.thumbList li { padding-top: 100%; background:#eee; border-radius: 6px; } 
-*/
 
-/* === 오른쪽 구매 패널 === */
+/* 오른쪽 구매 패널 */
 .purchaseSection {
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 20px 24px;
-    background: #fff;
-}
+    position: sticky;
+    top: 24px;
 
-.productTitle {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 20px 24px 20px 24px;
+    background: #fffdf8;
 
-.productDesc {
-    margin-bottom: 16px;
-}
-.productDesc p {
-    margin: 0 0 10px;
-    font-size: 15px;
-    color: #555;
-    line-height: 1.6;
-}
-.priceInfo {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #eee;
-    padding-top: 8px;
-    font-size: 14px;
+    flex-direction: column;
+    gap: 18px;
+
+    /* 오른쪽이 길어질 때 detailPage 밖으로 안 나가게 */
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    height: 93%;
 }
 
-.optionRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 12px 0;
-    margin: 16px 0;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-}
-.optionRow > span:first-child {
-    flex: 1;
-    min-width: 0;
-}
-.optionRow select {
-    width: 64px;
-    height: 32px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding-left: 6px;
-}
-.optionTotal {
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.totalRow {
-    text-align: right;
-    font-size: 15px;
-    margin-bottom: 16px;
-}
-.totalRow span {
-    opacity: 0.7;
-    margin-right: 6px;
-}
-
+/* 버튼이 항상 아래에 위치하도록 */
 .buttonRow {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: auto;
 }
-.btnBuy {
-    height: 48px;
-    width: 100%;
-    border: 0;
-    border-radius: 8px;
-    background: #f0c9df;
+
+/* 상품 타이틀 & 설명 */
+.productTitle {
+    font-size: 22px;
     font-weight: 700;
-    cursor: pointer;
+    margin: 0;
+    line-height: 1.35;
+    color: #2f2419;
 }
-.subButtons {
-    display: flex;
-    gap: 10px;
+
+.productDesc {
+    margin: 0;
 }
-.btnCart,
-.btnFav,
-.btnShare {
-    height: 44px;
-    border: 1px solid #ccc;
-    background: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    padding: 0 14px;
+.productDesc p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #6a5a47;
+    line-height: 1.6;
+}
+
+/* 옵션 영역 (상품명 / 수량 / 소계) */
+.optionRow {
+    display: grid;
+    grid-template-columns: 1.4fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
     font-size: 14px;
 }
-.btnCart {
-    flex: 1;
+
+.optionRow > span:first-child {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #4a3a2a;
 }
-.btnCart.active {
-    border-color: #ff6b6b;
-    background: #ffecec;
-    color: #ff4b4b;
+
+.optionTotal {
     font-weight: 600;
+    white-space: nowrap;
+    color: #2f2419;
 }
 
-.btnFav {
-    width: 56px;
+/* 총합 영역 */
+.totalRow {
+    text-align: right;
+    font-size: 15px;
+    margin-bottom: 4px;
 }
-.btnShare {
-    width: 56px;
+.totalRow span {
+    opacity: 0.75;
+    margin-right: 6px;
+    color: #7a6854;
 }
 
-/* 🔸 수량 컨트롤 박스 */
+/* 수량 컨트롤 */
 .quantityControl {
     display: flex;
     align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
     overflow: hidden;
     height: 32px;
+    background: #fff;
 }
 
 .qtyBtn {
     width: 32px;
     height: 32px;
-    background: #f8f8f8;
+    background: #f3ece3;
     border: none;
     font-size: 18px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.05s;
 }
 .qtyBtn:hover {
-    background: #f0f0f0;
+    background: #e8ded0;
+}
+.qtyBtn:active {
+    transform: scale(0.96);
 }
 
 .qtyInput {
-    width: 40px;
+    width: 44px;
     text-align: center;
     border: none;
     outline: none;
     font-size: 14px;
     background: #fff;
+    color: #3b2a1c;
 }
 
-.optionTotal {
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-/* --------------------------------------------- 작가 팔로우  */
+/* 작가 팔로우 박스 */
 .creatorBox {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
-    font-family: sans-serif;
+    padding: 14px 0 10px;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .creatorLeft {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
 }
 
 .creatorProfile {
-    width: 70px;
-    height: 70px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1.5px solid #333;
+    border: 1px solid #e5e5e5;
+    background: #f8f0e0;
 }
 
 .creatorInfo {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 4px;
 }
 
 .creatorName {
     font-size: 15px;
     font-weight: 700;
+    color: #2f2419;
 }
 
 .creatorActions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
+/* 팔로우 버튼: 브라운 포인트 */
 .btnFollow {
-    padding: 4px 10px;
+    padding: 4px 12px;
     font-size: 13px;
     border: none;
-    background-color: #ff6a00;
+    background: #b3824a;
     color: white;
-    border-radius: 4px;
+    border-radius: 999px;
     cursor: pointer;
 }
+.btnFollow:hover {
+    background: #a26f3a;
+}
+.btnFollow:active {
+    transform: scale(0.97);
+}
 
+.btnFollow.active {
+    background-color: #8a7660;
+}
+
+/* 작가 홈 버튼 */
 .btnHome {
     padding: 4px 10px;
     font-size: 13px;
-    border: 1px solid #ccc;
-    background-color: white;
-    border-radius: 4px;
+    border: 1px solid #e5e5e5;
+    background-color: #fff;
+    border-radius: 999px;
     cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    color: #4a3a2a;
+}
+.btnHome:hover {
+    background: #f5eee3;
+    border-color: #e5e5e5;
 }
 
+/* 오른쪽 팔로워 수 */
 .creatorRight {
-    text-align: center;
+    text-align: right;
 }
-
 .followerLabel {
     font-size: 12px;
-    color: #666;
+    color: #8b7a65;
 }
-
 .followerCount {
     font-size: 14px;
     font-weight: 700;
+    color: #2f2419;
+}
+
+/* 메인 구매 버튼: 브라운 그라디언트 */
+.btnBuy {
+    height: 48px;
+    width: 100%;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #cfa777, #b48754);
+    font-weight: 700;
+    font-size: 15px;
+    color: #2f1f12;
+    cursor: pointer;
+}
+.btnBuy:hover {
+    filter: brightness(1.03);
+}
+.btnBuy:active {
+    transform: translateY(1px);
+}
+
+/* 서브 버튼들 (장바구니, 좋아요) */
+.subButtons {
+    display: flex;
+    gap: 10px;
+}
+
+.btnCart,
+.btnFav {
+    height: 44px;
+    border: 1px solid #e5e5e5;
+    background: #fff;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 0 14px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.05s;
+    color: #4a3a2a;
+}
+
+.btnCart {
+    flex: 1;
+}
+.btnCart:hover,
+.btnFav:hover {
+    background: #f5eee3;
+    border-color: #c4b4a0;
+}
+.btnCart:active,
+.btnFav:active {
+    transform: translateY(1px);
+}
+
+/* 장바구니 ON 상태 */
+.btnCart.active {
+    border-color: #b3824a;
+    background: #f4e3cf;
+    color: #8b5a2b;
+    font-weight: 600;
+}
+
+/* 좋아요 버튼 */
+.btnFav {
+    width: 56px;
+}
+.btnFav.active {
+    border-color: #e5e5e5;
+    background: #f3e1cf;
+    color: #a2612a;
+    font-weight: 600;
 }
