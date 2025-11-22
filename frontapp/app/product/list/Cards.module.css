@@ -25,8 +25,9 @@
     overflow: auto;
 }
 
-.categoryTree h2 {
-    font-size: 16px;
+.catHeader {
+    font-size: 18px;
+    font-weight: 600;
     margin: 0 0 12px;
 }
 
@@ -45,6 +46,8 @@
 
 .categoryToggle {
     width: 100%;
+    font-size: 15px;
+    font-weight: 600;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -64,6 +67,7 @@
 
 .subcategoryList li a {
     display: block;
+    font-size: 14px;
     padding: 8px 10px;
     border-radius: 6px;
     color: #fff;
@@ -83,12 +87,23 @@
 
 /* ====== 필터 영역 ====== */
 
-#filterHeading {
-    margin: 0 0 10px;
+.filterHeading {
+    font-size: 26px;
+    margin: 0 0 20px;
 }
 
 .filterForm {
-    margin: 0;
+    margin: 0px;
+}
+
+.textSm {
+    padding: 100px 0px;
+    text-align: center;
+    color: #7a6a58;
+    background: #f6f0e8;
+    border: 1px solid #e0d6ca;
+    border-radius: 8px;
+    margin-top: 12px;
 }
 
 .chip,
@@ -223,6 +238,7 @@
     margin: 8px 0 0;
     padding: 0;
     list-style: none;
+    font-size: 18px;
 }
 
 /* 각 그룹(ul>li의 li 하나)에 적용할 래퍼 */
@@ -297,7 +313,7 @@
 
 /* 라벨(옵션 이름) */
 .optLabel {
-    font-size: 13px;
+    font-size: 14px;
     color: #333;
     margin-right: 8px;
 }
