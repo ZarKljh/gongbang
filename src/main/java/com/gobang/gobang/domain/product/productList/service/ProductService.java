@@ -8,6 +8,7 @@ import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.entity.Follow;
+import com.gobang.gobang.domain.personal.entity.WishList;
 import com.gobang.gobang.domain.personal.repository.CartRepository;
 import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.product.common.ProductStatus;
@@ -15,10 +16,7 @@ import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.ProductImageDto;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.product.dto.StudioDto;
-import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
-import com.gobang.gobang.domain.product.dto.response.ProductCartResponse;
-import com.gobang.gobang.domain.product.dto.response.ProductDetailResponse;
-import com.gobang.gobang.domain.product.dto.response.SellerFollowResponse;
+import com.gobang.gobang.domain.product.dto.response.*;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductImageRepository;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
@@ -156,9 +154,6 @@ public class ProductService {
     }
 
 
-
-
-
     public ProductDetailResponse getProductDetail(Long productId, Long userId) {
 
         // 1) 상품 조회
@@ -179,12 +174,15 @@ public class ProductService {
                 .findFirstByRefIdAndRefTypeOrderBySortOrderAsc(studioId, Image.RefType.STUDIO_LOGO)
                 .orElse(null);
 
-        // 3) 팔로워 수는 로그인 여부와 상관 없음
+        // 3) 팔로워, 좋아요 수는 로그인 여부와 상관 없음
         long followerCount = sellerFollowRepository.countByStudio_StudioId(studioId);
+        long likeCount = wishListRepository.countByProduct(productDetail);
+
 
         // ====== 💡 로그인 여부에 따라 분기 ======
         boolean followed = false;
         boolean isInCart = false;
+        boolean liked = false;
 
         SiteUser siteUser = null;
 
@@ -203,11 +201,19 @@ public class ProductService {
                         cartRepository.findBySiteUserAndProduct(siteUser, productDetail);
                 isInCart = existingCart.isPresent();
             }
+
+            //좋아요 여부 (siteUser가 null 아닐 때만)
+            if (siteUser != null) {
+                Optional<WishList> existingLike =
+                        wishListRepository.findBySiteUserAndProduct(siteUser, productDetail);
+                liked = existingLike.isPresent();
+            }
         }
         // ====================================
 
         SellerFollowResponse followInfo = new SellerFollowResponse(followed, followerCount);
         ProductCartResponse cartInfo = new ProductCartResponse(isInCart);
+        ProductLikeResponse productLikeInfo = new ProductLikeResponse(productId, liked, likeCount);
 
         // 4) DTO 변환
         ProductDto productDto = new ProductDto(productDetail);
@@ -218,13 +224,8 @@ public class ProductService {
 
         Image gbImageEntity = (gbImage != null) ? gbImage : null;
 
-        return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity, followInfo, cartInfo);
+        return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity, followInfo, cartInfo, productLikeInfo);
     }
-
-
-
-
-
 
 
     //필터 파라미터용 유틸코드

@@ -61,6 +61,11 @@ type CartInfo = {
     inCart: boolean
 }
 
+type LikeInfo = {
+    liked: boolean
+    likeCount: number
+}
+
 // ✅ 실제 API 응답 형태
 type ProductDetailApiResponse = {
     productDetailList: ProductDetail
@@ -69,6 +74,7 @@ type ProductDetailApiResponse = {
     gbImage: GongbangImage | null
     followInfo: FollowInfo | null
     cartInfo: CartInfo | null
+    productLikeInfo: LikeInfo | null
 }
 
 // 공통 응답 래퍼 타입 (resultCode, msg, data)
@@ -89,8 +95,9 @@ export default function ProductDetailView() {
             if (!productId) {
                 throw new Error('productId가 없습니다.')
             }
-            console.log('🔁 fetch product detail:', productId)
+
             const res = await api.get(`/product/${productId}/detail`)
+            console.log('🔁 fetch product detail:', res.data.data)
             return res.data.data as ProductDetailApiResponse
         },
         enabled: !!productId,
@@ -103,7 +110,7 @@ export default function ProductDetailView() {
         refetchOnReconnect: 'always', // 네트워크 재연결 시도 때 refetch
     })
 
-    // 🟡 2) data에서 바로 값 꺼내쓰기 (로컬 state X)
+    // 🟡 2) data에서 바로 값 꺼내쓰기
     const product = data?.productDetailList
     const detailImage = data?.detailImage
     const sellerinfo = data?.studioDetail
@@ -112,6 +119,8 @@ export default function ProductDetailView() {
     const isFollowed: boolean = data?.followInfo?.followed ?? false
     const followerCount: number = data?.followInfo?.followerCount ?? 0
     const isInCart: boolean = data?.cartInfo?.inCart ?? false
+    const liked: boolean = data?.productLikeInfo?.liked ?? false
+    const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
     const pdImageUrl = detailImage
         ? `http://localhost:8090${detailImage.imageUrl}`
@@ -193,6 +202,45 @@ export default function ProductDetailView() {
             } else {
                 alert('로그인이 필요합니다.')
                 console.error('장바구니 에러:', err)
+            }
+        },
+    })
+
+    // 🟡 4) 좋아요(WishList) 토글 뮤테이션 (캐시 직접 수정)
+    const likeMutation = useMutation({
+        mutationFn: (prodId: number) =>
+            api
+                .post<CommonResponse<{ liked: boolean; likeCount: number }>>(`product/${prodId}/like`)
+                .then((res) => res.data),
+        onSuccess: (resData) => {
+            const { resultCode, msg, data: likeData } = resData
+
+            if (resultCode !== '200') {
+                alert(msg)
+                return
+            }
+
+            if (!productId) return
+
+            // ✅ productDetail 캐시를 직접 업데이트
+            queryClient.setQueryData<ProductDetailApiResponse>(['productDetail', productId], (old) =>
+                old
+                    ? {
+                          ...old,
+                          productLikeInfo: {
+                              liked: likeData.liked,
+                              likeCount: likeData.likeCount,
+                          },
+                      }
+                    : old,
+            )
+        },
+        onError: (err: any) => {
+            if (err?.response?.status === 401) {
+                alert('로그인이 필요합니다.')
+            } else {
+                alert('로그인이 필요합니다.')
+                console.error('팔로우 에러:', err)
             }
         },
     })
@@ -296,7 +344,17 @@ export default function ProductDetailView() {
                             >
                                 {'장바구니'}
                             </button>
-                            <button className={styles.btnFav}>♥</button>
+                            <button
+                                className={styles.btnFav}
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    if (!product?.id) return
+
+                                    likeMutation.mutate(product.id)
+                                }}
+                            >
+                                {liked ? '❤️' : '🤍'}
+                            </button>
                         </div>
                     </div>
                 </section>

@@ -516,7 +516,8 @@ export default function Product() {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    className={`${styles.likeBtn} ${p.liked ? styles.active : ''}`}
+                                                    // className={`${styles.likeBtn} ${p.liked ? styles.active : ''}`}
+                                                    className={styles.likeBtn}
                                                     onClick={(e) => {
                                                         e.preventDefault() // 링크 이동 막기
                                                         handleToggleLike(p.id)

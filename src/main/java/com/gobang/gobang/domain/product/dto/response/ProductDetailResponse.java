@@ -16,4 +16,5 @@ public class ProductDetailResponse {
     private Image gbImage;
     private SellerFollowResponse followInfo;
     private ProductCartResponse cartInfo;
+    private ProductLikeResponse productLikeInfo;
 }

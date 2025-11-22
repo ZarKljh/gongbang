@@ -35,7 +35,7 @@ public class ProductController {
     }
 
     @GetMapping("/{subCategoryId}/search")
-    @Operation(summary = "상품 다건 필터 조회")
+    @Operation(summary = "목록페이지 상품 다건 필터 조회")
     public RsData<FilterProductResponse> categoryFilterList(@PathVariable Long subCategoryId, @RequestParam(defaultValue = "20") int size, @RequestParam MultiValueMap<String, String> params) {
 
         System.out.println("===== 📦 받은 필터 파라미터 =====");
@@ -85,7 +85,7 @@ public class ProductController {
 
 
     @PostMapping("/{productId}/like")
-    @Operation(summary = "목록페이지 상품 좋아요")
+    @Operation(summary = "(목록+상세) 페이지 상품 좋아요")
     public RsData<ProductLikeResponse> toggleLike(
             @PathVariable Long productId
     ) {
