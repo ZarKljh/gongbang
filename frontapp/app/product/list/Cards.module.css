@@ -166,10 +166,24 @@
 }
 
 .cardTitle {
-    margin: 8px 0 4px;
+    font-size: 16px;
+    font-weight: 500; /* 조금 더 고급스럽게 */
+    margin: 10px 0 6px;
+    color: #4b3a2a; /* 짙은 따뜻한 브라운 */
+    letter-spacing: -0.2px;
 }
 .cardDesc {
-    margin: 0 0 12px;
+    font-size: 13.5px;
+    margin: 0 0 14px;
+    color: #7a6a58; /* 중간 브라운그레이 */
+    line-height: 1.45;
+}
+.cardDescPrice {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c46a48; /* 테라코타 포인트 컬러 */
+    margin: 0 0 14px;
+    letter-spacing: -0.3px;
 }
 
 .cardActions {

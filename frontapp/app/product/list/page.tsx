@@ -506,7 +506,7 @@ export default function Product() {
                                                 <h3 className={styles.cardTitle}>{p.name}</h3>
 
                                                 <p className={styles.cardDesc}>{p.seoTitle}</p>
-                                                <p className={styles.cardDesc}>{p.basePrice.toLocaleString()}원</p>
+                                                <p className={styles.cardDescPrice}>{p.basePrice.toLocaleString()}원</p>
                                             </Link>
 
                                             <footer className={styles.cardActions}>
