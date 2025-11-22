@@ -437,9 +437,10 @@ export default function Product() {
                                                                     </button>
                                                                 </>
                                                             ) : (
-                                                                <>
+                                                                <label className={styles.checkWrap}>
                                                                     {/*디자인 */}
                                                                     <input
+                                                                        className={styles.checkbox}
                                                                         form="filterForm"
                                                                         type="CHECKBOX"
                                                                         name={o.filterCode}
@@ -463,7 +464,7 @@ export default function Product() {
                                                                             )
                                                                         }}
                                                                     />
-                                                                </>
+                                                                </label>
                                                             )}
                                                         </li>
                                                     ))
@@ -480,7 +481,7 @@ export default function Product() {
 
                     {/* 카드 섹션 */}
                     <section aria-labelledby="cards-title" className={styles.cardsWrap}>
-                        <h2 id="cards-title">카드섹션</h2>
+                        <h2 id="cards-title">카테고리별 상품</h2>
 
                         {products.length === 0 ? (
                             <p className="text-sm text-gray-500">표시할 상품목록이 없습니다.</p>

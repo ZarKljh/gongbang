@@ -17,7 +17,7 @@
 .categoryTree {
     position: sticky;
     top: 16px;
-    background: #7a6868;
+    background: #6d5847;
     color: #fff;
     border-radius: 8px;
     padding: 16px;
@@ -51,8 +51,8 @@
     padding: 10px 12px;
     border: 0;
     border-radius: 6px;
-    background: #fff;
-    color: #333;
+    background: #faf7f0;
+    color: #6b5642;
     cursor: pointer;
 }
 
@@ -82,11 +82,6 @@
 }
 
 /* ====== 필터 영역 ====== */
-.filterArea {
-    background: #f6c1c1;
-    border-radius: 8px;
-    padding: 14px 16px;
-}
 
 #filterHeading {
     margin: 0 0 10px;
@@ -213,7 +208,8 @@
 
 /* ===== 필터 바 ===== */
 .filterArea {
-    background: #f6c1c1; /* 연핑크 */
+    background: #ede3d6;
+    border: 1px solid #e5e5e5;
     border-radius: 8px;
     padding: 16px 20px;
 }
@@ -258,15 +254,17 @@
     border: 0;
     border-radius: 999px;
     padding: 8px 12px;
-    background: #8d8d8d;
+    background: #f9f5ed;
     color: #fff;
     cursor: pointer;
     transition: transform 0.05s ease, box-shadow 0.15s ease;
     line-height: 1;
 }
-.chip:active,
-.prChip:active {
+.chip.active,
+.prChip.active {
     transform: scale(0.98);
+    background: #7a5a46;
+    color: #fff;
 }
 
 .active {
@@ -317,4 +315,49 @@
 }
 .likeBtn.active {
     /* outline: 1px solid #333; */
+}
+
+/* 체크박스 스타일 */
+.checkWrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #4b3a2a;
+}
+
+/* 기본 박스 모양 */
+.checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    border-radius: 4px;
+    border: 1px solid #c4b7a5;
+    background: #f9f4ec;
+    position: relative;
+}
+
+/* 체크된 상태 */
+.checkbox:checked {
+    background: #7a5a46; /* 포인트 색 */
+    border-color: #7a5a46;
+}
+
+/* 체크마크 그리기 */
+.checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 6px;
+    height: 10px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
 }
