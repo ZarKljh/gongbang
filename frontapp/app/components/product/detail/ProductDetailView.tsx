@@ -198,6 +198,7 @@ export default function ProductDetailView({}) {
                 const inCart: boolean = data.inCart
 
                 setIsInCart(inCart)
+                alert('장바구니 담기')
             })
             .catch((err) => {
                 if (err.response?.status === 401) {
@@ -299,7 +300,7 @@ export default function ProductDetailView({}) {
                                     handleToggleCart(product.id)
                                 }}
                             >
-                                {isInCart ? '장바구니 성공' : '장바구니 실패'}
+                                장바구니
                             </button>
                             <button className={styles.btnFav}>♥</button>
                         </div>
