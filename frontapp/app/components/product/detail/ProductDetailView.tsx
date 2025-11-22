@@ -1,11 +1,12 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import api from '@/app/utils/api'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
+import { queryClient } from '@/app/utils/ReactQueryProviders'
 
 type ProductDetail = {
     id: number
@@ -15,7 +16,6 @@ type ProductDetail = {
     description?: string
     basePrice: number
     stockQuantity: number
-    //images?: string[]
 }
 
 type ProductImage = {
@@ -29,7 +29,7 @@ type ProductImage = {
     modifiedDate?: string | null
 }
 
-type gongbangImage = {
+type GongbangImage = {
     id: number
     imageUrl: string
     imageFileName?: string | null
@@ -51,164 +51,161 @@ type StudioDetail = {
     updatedDate?: string | null
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | string
 }
+
 type FollowInfo = {
     followed: boolean
     followerCount: number
 }
-type cartInfo = {
+
+type CartInfo = {
     inCart: boolean
 }
-// ⭐ 실제 API 응답의 data 형태
+
+// ✅ 실제 API 응답 형태
 type ProductDetailApiResponse = {
     productDetailList: ProductDetail
     detailImage: ProductImage | null
     studioDetail: StudioDetail | null
-    gbImage: gongbangImage | null
+    gbImage: GongbangImage | null
     followInfo: FollowInfo | null
-    cartInfo: cartInfo | null
+    cartInfo: CartInfo | null
 }
 
-// type Props = { 안쓸거임 쿼리스트링에서 읽는걸로 개발해버렸음
-//     /** 선택: 외부에서 productId를 넘길 수도 있고, 없으면 쿼리스트링에서 읽음 */
-//     productId?: string | number
-//     onBuy?: (id: number, qty: number) => void
-//     onAddCart?: (id: number, qty: number) => void
-//     onToggleFav?: (id: number) => void
-// }
+// 공통 응답 래퍼 타입 (resultCode, msg, data)
+type CommonResponse<T> = {
+    resultCode: string
+    msg: string
+    data: T
+}
 
-export default function ProductDetailView({}) {
+export default function ProductDetailView() {
     const searchParams = useSearchParams()
-    const productId = searchParams.get('productId')
+    const productId = searchParams.get('productId') // string | null
 
     const [count, setCount] = useState(1)
-    const [isFollowed, setIsFollowed] = useState<boolean>(false)
-    const [isInCart, setIsInCart] = useState<boolean>(false)
-    const [followerCount, setFollowerCount] = useState<number>(0)
-
     const { data, isLoading, isError, error } = useQuery<ProductDetailApiResponse>({
         queryKey: ['productDetail', productId],
         queryFn: async () => {
-            const res = await api.get(`/product/${productId}/detail`)
-            // ✅ 백엔드의 data 전체 반환
-
-            // followInfo 읽기
-            const followInfo = res.data.data.followInfo
-            const cartInfo = res.data.data.cartInfo
-
-            console.log(res.data.data)
-            if (followInfo) {
-                setIsFollowed(followInfo.followed)
-                setFollowerCount(followInfo.followerCount)
-            } else {
-                setIsFollowed(false)
-                setFollowerCount(0)
+            if (!productId) {
+                throw new Error('productId가 없습니다.')
             }
-
-            setIsInCart(cartInfo ? cartInfo.inCart : false)
-
+            console.log('🔁 fetch product detail:', productId)
+            const res = await api.get(`/product/${productId}/detail`)
             return res.data.data as ProductDetailApiResponse
         },
         enabled: !!productId,
         retry: 1,
-        refetchOnWindowFocus: false,
-    })
-    // followInfo를 state에 동기화
-    useEffect(() => {
-        if (!data?.followInfo) {
-            setIsFollowed(false)
-            setFollowerCount(0)
-            return
-        }
-        if (!data?.cartInfo) {
-            setIsInCart(false)
-            return
-        }
-        setIsFollowed(data.followInfo.followed)
-        setIsInCart(data.cartInfo.inCart)
-        console.log(`daa + ` + data.cartInfo.inCart)
-        setFollowerCount(data.followInfo.followerCount)
-    }, [data])
 
-    // 구조 분해
+        // 🔥 렌더(마운트)·포커스 때마다 항상 새로 가져오도록
+        staleTime: 0, // 항상 금방 stale 취급
+        refetchOnMount: 'always', // 컴포넌트 마운트될 때마다 refetch
+        refetchOnWindowFocus: 'always', // 창 포커스 돌아올 때마다 refetch
+        refetchOnReconnect: 'always', // 네트워크 재연결 시도 때 refetch
+    })
+
+    // 🟡 2) data에서 바로 값 꺼내쓰기 (로컬 state X)
     const product = data?.productDetailList
     const detailImage = data?.detailImage
     const sellerinfo = data?.studioDetail
     const gbLogo = data?.gbImage
-    //const followRes = data?.followInfo
+
+    const isFollowed: boolean = data?.followInfo?.followed ?? false
+    const followerCount: number = data?.followInfo?.followerCount ?? 0
+    const isInCart: boolean = data?.cartInfo?.inCart ?? false
 
     const pdImageUrl = detailImage
         ? `http://localhost:8090${detailImage.imageUrl}`
-        : 'http://localhost:8090/uploads/products/no-image-soft.png' // 기본 이미지 경로
+        : 'http://localhost:8090/uploads/products/no-image-soft.png'
 
     const gbImageUrl = gbLogo
         ? `http://localhost:8090${gbLogo.imageUrl}`
-        : 'http://localhost:8090/uploads/products/no-image-soft.png' // 기본 이미지 경로
+        : 'http://localhost:8090/uploads/products/no-image-soft.png'
 
     const unitPrice = useMemo(() => product?.basePrice ?? 0, [product])
     const total = unitPrice * count
 
+    // 🟡 3) 팔로우 토글 뮤테이션 (캐시 직접 수정)
+    const followMutation = useMutation({
+        mutationFn: (studioId: number) =>
+            api
+                .post<CommonResponse<{ followed: boolean; followerCount: number }>>(`product/${studioId}/follow`)
+                .then((res) => res.data),
+        onSuccess: (resData) => {
+            const { resultCode, msg, data: followData } = resData
+
+            if (resultCode !== '200') {
+                alert(msg)
+                return
+            }
+
+            if (!productId) return
+
+            // ✅ productDetail 캐시를 직접 업데이트
+            queryClient.setQueryData<ProductDetailApiResponse>(['productDetail', productId], (old) =>
+                old
+                    ? {
+                          ...old,
+                          followInfo: {
+                              followed: followData.followed,
+                              followerCount: followData.followerCount,
+                          },
+                      }
+                    : old,
+            )
+        },
+        onError: (err: any) => {
+            if (err?.response?.status === 401) {
+                alert('로그인이 필요합니다.')
+            } else {
+                alert('로그인이 필요합니다.')
+                console.error('팔로우 에러:', err)
+            }
+        },
+    })
+
+    // 🟡 4) 장바구니 토글 뮤테이션 (캐시 직접 수정)
+    const cartMutation = useMutation({
+        mutationFn: ([prodId, quantity]: [number, number]) =>
+            api.post(`/product/${prodId}/cart`, { quantity }).then((res) => res.data),
+        onSuccess: (resData) => {
+            const { resultCode, data: cartData } = resData
+
+            if (resultCode !== '200') return
+
+            if (!productId) return
+
+            queryClient.setQueryData(['productDetail', productId], (old: any) =>
+                old
+                    ? {
+                          ...old,
+                          cartInfo: {
+                              inCart: cartData.inCart,
+                          },
+                      }
+                    : old,
+            )
+            console.log('🧾 cartData:', cartData)
+            alert('장바구니에 담았습니다.')
+        },
+        onError: (err: any) => {
+            if (err?.response?.status === 401) {
+                alert('로그인이 필요합니다.')
+            } else {
+                alert('로그인이 필요합니다.')
+                console.error('장바구니 에러:', err)
+            }
+        },
+    })
+
     if (isLoading) return <p>로딩 중...</p>
+
     if (isError) {
+        console.error('상품 상세 에러:', error)
         return <p>상품 정보를 불러오지 못했습니다.</p>
     }
 
     const inc = () => setCount((v) => v + 1)
     const dec = () => setCount((v) => (v > 1 ? v - 1 : 1))
-
-    const handleToggleLike = (studioId: number) => {
-        api.post(`product/${studioId}/follow`)
-            .then((res) => {
-                console.log('follow response:', res.data)
-
-                const { resultCode, msg, data } = res.data
-
-                if (resultCode !== '200') {
-                    alert(msg)
-                    return
-                }
-
-                const followed: boolean = data.followed
-                const followCount: number = data.followerCount
-
-                setIsFollowed(followed)
-                setFollowerCount(followCount)
-            })
-            .catch((err) => {
-                if (err.response?.status === 401) {
-                    alert('로그인이 필요합니다.')
-                } else {
-                    alert('로그인이 필요합니다.')
-                    console.error('팔로우 에러:', err)
-                }
-            })
-    }
-
-    const handleToggleCart = (productId: number) => {
-        api.post(`product/${productId}/cart`)
-            .then((res) => {
-                console.log('cart response:', res.data)
-
-                const { resultCode, msg, data } = res.data
-
-                if (resultCode !== '200') {
-                    alert(msg)
-                    return
-                }
-
-                const inCart: boolean = data.inCart
-
-                setIsInCart(inCart)
-                alert('장바구니 담기')
-            })
-            .catch((err) => {
-                if (err.response?.status === 401) {
-                    alert('로그인이 필요합니다.')
-                } else {
-                    alert('로그인이 필요합니다.')
-                    console.error('장바구니 에러:', err)
-                }
-            })
-    }
 
     return (
         <div className={styles.detailPage}>
@@ -249,8 +246,6 @@ export default function ProductDetailView({}) {
                         <strong>
                             {total.toLocaleString()}원 ({count}개)
                         </strong>
-                        {/* 재고 표시가 필요하면: */}
-                        {/* <em className={styles.stock}>재고 {product.stockQuantity}개</em> */}
                     </div>
 
                     {sellerinfo && (
@@ -264,8 +259,8 @@ export default function ProductDetailView({}) {
                                             type="button"
                                             className={`${styles.btnFollow} ${isFollowed ? styles.active : ''}`}
                                             onClick={(e) => {
-                                                e.preventDefault() // 링크 이동 막기
-                                                handleToggleLike(sellerinfo.studioId)
+                                                e.preventDefault()
+                                                followMutation.mutate(sellerinfo.studioId)
                                             }}
                                         >
                                             {isFollowed ? '팔로잉' : '+ 팔로우'}
@@ -283,6 +278,7 @@ export default function ProductDetailView({}) {
                             </div>
                         </div>
                     )}
+
                     <div className={styles.buttonRow}>
                         <button className={styles.btnBuy}>바로구매하기</button>
 
@@ -291,16 +287,14 @@ export default function ProductDetailView({}) {
                                 className={`${styles.btnCart} ${isInCart ? styles.active : ''}`}
                                 onClick={(e) => {
                                     e.preventDefault()
-
-                                    if (!product || !product.id) {
+                                    if (!product?.id) {
                                         console.warn('❗ product.id가 없습니다.')
                                         return
                                     }
-
-                                    handleToggleCart(product.id)
+                                    cartMutation.mutate([product.id, count])
                                 }}
                             >
-                                장바구니
+                                {'장바구니'}
                             </button>
                             <button className={styles.btnFav}>♥</button>
                         </div>

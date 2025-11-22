@@ -4,6 +4,7 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.repository.CartRepository;
+import com.gobang.gobang.domain.product.dto.request.ProductCartRequest;
 import com.gobang.gobang.domain.product.dto.response.ProductCartResponse;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
@@ -56,7 +57,7 @@ public class ProductCartService {
 
 
     @Transactional
-    public ProductCartResponse addToCart(Long productId, Long userId) {
+    public ProductCartResponse addToCart(Long productId, Long userId, ProductCartRequest cartRequest) {
         // 1. 상품 조회
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
@@ -74,7 +75,7 @@ public class ProductCartService {
         if (existingCart.isPresent()) {
             // 이미 있으면 수량 +1 증가 (혹은 원하는 만큼 증가 로직)
             Cart cart = existingCart.get();
-            cart.setQuantity(cart.getQuantity() + 1);   // ← 필요하면 + 요청 수량으로 변경
+            cart.setQuantity(cart.getQuantity() + cartRequest.getQuantity());   // ← 필요하면 + 요청 수량으로 변경
 
             Cart saved = cartRepository.save(cart);
         } else {
@@ -82,11 +83,12 @@ public class ProductCartService {
             Cart cart = Cart.builder()
                     .siteUser(siteUser)
                     .product(product)
-                    .quantity(1L)     // ← 기본 수량
+                    .quantity(cartRequest.getQuantity())     // ← 기본 수량
                     .build();
 
             Cart saved = cartRepository.save(cart);
         }
-        return new ProductCartResponse(isAlreadyInCart);
+        //무조건 true: 최종 상태는 항상 “장바구니에 있는 상태”
+        return new ProductCartResponse(true);
     }
 }

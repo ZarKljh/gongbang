@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.product.productList.controller;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.product.dto.ProductDto;
+import com.gobang.gobang.domain.product.dto.request.ProductCartRequest;
 import com.gobang.gobang.domain.product.dto.response.*;
 import com.gobang.gobang.domain.product.productList.service.ProductCartService;
 import com.gobang.gobang.domain.product.productList.service.ProductService;
@@ -132,7 +133,8 @@ public class ProductController {
     @PostMapping("/{productId}/cart")
     @Operation(summary = "상세페이지 상품 장바구니")
     public RsData<ProductCartResponse> toggleCart(
-            @PathVariable Long productId
+            @PathVariable Long productId,
+            @RequestBody ProductCartRequest request
     ) {
         // 🔒 현재 로그인 유저 조회
         SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
@@ -142,7 +144,7 @@ public class ProductController {
             return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
         }
 
-        ProductCartResponse res = productCartService.addToCart(productId, currentUser.getId());
+        ProductCartResponse res = productCartService.addToCart(productId, currentUser.getId(), request);
 
         // ✅ 최종 응답 반환 (RsData 래핑)
 

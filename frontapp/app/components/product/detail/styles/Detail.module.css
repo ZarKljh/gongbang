@@ -146,6 +146,13 @@
 .btnCart {
     flex: 1;
 }
+.btnCart.active {
+    border-color: #ff6b6b;
+    background: #ffecec;
+    color: #ff4b4b;
+    font-weight: 600;
+}
+
 .btnFav {
     width: 56px;
 }
