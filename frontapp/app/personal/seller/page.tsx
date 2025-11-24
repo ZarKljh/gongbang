@@ -306,6 +306,17 @@ export default function MyPage() {
                         studioAddPostNumber: tempData.studioAddPostNumber,
                         studioAddMain: tempData.studioAddMain,
                         studioAddDetail: tempData.studioAddDetail,
+                        studioMainImageFile: null,
+                        studioLogoImageFile: null,
+                        studioGalleryImageFiles: [],
+
+                        studioMainImageUrl: studio.studioMainImage?.imageUrl || '',
+                        studioLogoImageUrl: studio.studioLogoImage?.imageUrl || '',
+                        studioGalleryImageUrls: studio.studioImages.map((i) => i.imageUrl),
+
+                        studioMainImageName: '',
+                        studioLogoImageName: '',
+                        studioGalleryImageNames: [],
                     },
                     { withCredentials: true },
                 )
