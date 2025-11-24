@@ -14,7 +14,7 @@ export default function LoginUser() {
         role: 'USER',
     })
 
-    const { errors, validate } = loginUserValidation()
+    const { errors, validate, validateField } = loginUserValidation()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -61,6 +61,8 @@ export default function LoginUser() {
         const { name, value } = e.target
         setUser({ ...user, [name]: value })
         //console.log({...article, [name]: value});
+        // 🔥 실시간 검증 실행
+        validateField(name, value)
     }
 
     return (

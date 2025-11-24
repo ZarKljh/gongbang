@@ -1,21 +1,30 @@
 package com.gobang.gobang.domain.product.productList.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.repository.CartRepository;
+import com.gobang.gobang.domain.product.dto.request.ProductCartRequest;
 import com.gobang.gobang.domain.product.dto.response.ProductCartResponse;
+import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ProductCartService {
 
-
+    private final SiteUserRepository siteUserRepository;
+    private final ProductRepository productRepository;
     private final CartRepository cartRepository;
 
-    @Transactional
-    public ProductCartResponse toggleCart(Long productId, Long userId) {
-
+//    @Transactional
+//    public ProductCartResponse toggleCart(Long productId, Long userId) {
+//
 //        // 이미 장바구니 되어있는지 조회
 //        Optional<Cart> existing = cartRepository
 //                .findByProduct_IdAndSiteUser_Id(productId, userId);
@@ -41,8 +50,45 @@ public class ProductCartService {
 //
 //        // 팔로워 수 재조회
 //        long followerCount = cartRepository.countByStudio_StudioId(productId);
+//
+//        // 응답 DTO 반환
+//        return new ProductCartResponse(isInCart, followerCount);
+//    }
 
-        // 응답 DTO 반환
-        return null;
+
+    @Transactional
+    public ProductCartResponse addToCart(Long productId, Long userId, ProductCartRequest cartRequest) {
+        // 1. 상품 조회
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+
+        // 2. 사용자 조회
+        SiteUser siteUser = siteUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 3. 기존 장바구니에 같은 상품 있는지 조회
+        Optional<Cart> existingCart = cartRepository.findBySiteUserAndProduct(siteUser, product);
+
+        // 이미 장바구니에 있는지 여부
+        boolean isAlreadyInCart = existingCart.isPresent();
+
+        if (existingCart.isPresent()) {
+            // 이미 있으면 수량 +1 증가 (혹은 원하는 만큼 증가 로직)
+            Cart cart = existingCart.get();
+            cart.setQuantity(cart.getQuantity() + cartRequest.getQuantity());   // ← 필요하면 + 요청 수량으로 변경
+
+            Cart saved = cartRepository.save(cart);
+        } else {
+            // 없으면 새로 추가 (기본 수량 1)
+            Cart cart = Cart.builder()
+                    .siteUser(siteUser)
+                    .product(product)
+                    .quantity(cartRequest.getQuantity())     // ← 기본 수량
+                    .build();
+
+            Cart saved = cartRepository.save(cart);
+        }
+        //무조건 true: 최종 상태는 항상 “장바구니에 있는 상태”
+        return new ProductCartResponse(true);
     }
 }

@@ -1,19 +1,22 @@
 package com.gobang.gobang.domain.product.productList.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.entity.Follow;
+import com.gobang.gobang.domain.personal.entity.WishList;
+import com.gobang.gobang.domain.personal.repository.CartRepository;
 import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.ProductImageDto;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.product.dto.StudioDto;
-import com.gobang.gobang.domain.product.dto.response.FilterProductResponse;
-import com.gobang.gobang.domain.product.dto.response.ProductDetailResponse;
-import com.gobang.gobang.domain.product.dto.response.SellerFollowResponse;
+import com.gobang.gobang.domain.product.dto.response.*;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductImageRepository;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
@@ -40,6 +43,8 @@ public class ProductService {
     private final WishListRepository wishListRepository;
     private final StudioRepository studioRepository;
     private final SellerFollowRepository sellerFollowRepository;
+    private final CartRepository cartRepository;
+    private final SiteUserRepository siteUserRepository;
 
     public List<ProductDto> getProductList(Long subCategoryId, int size) {
         int limit = Math.max(1, Math.min(size, 50));
@@ -149,72 +154,78 @@ public class ProductService {
     }
 
 
-
-
-    
-    //상세 상품 정보 가져오기
     public ProductDetailResponse getProductDetail(Long productId, Long userId) {
 
+        // 1) 상품 조회
         Product productDetail = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다. id=" + productId));
 
         Long studioId = productDetail.getStudioId();
 
-        // 2) 상품 이미지 한 장 조회 + 없으면 throw
+        // 2) 이미지 & 공방 조회 (유저랑 상관없는 애들)
         Image pdImage = productImageRepository
                 .findFirstByRefIdAndRefTypeOrderBySortOrderAsc(productId, Image.RefType.PRODUCT)
                 .orElse(null);
 
-        // 3) studioId로 공방(Studio) 조회
         Studio studio = studioRepository.findById(studioId)
                 .orElse(null);
 
-        // 2) 공방 프로필 이미지 한 장 조회 + 없으면 throw
         Image gbImage = productImageRepository
                 .findFirstByRefIdAndRefTypeOrderBySortOrderAsc(studioId, Image.RefType.STUDIO_LOGO)
                 .orElse(null);
 
-
-        // 팔로워 수 재조회
+        // 3) 팔로워, 좋아요 수는 로그인 여부와 상관 없음
         long followerCount = sellerFollowRepository.countByStudio_StudioId(studioId);
+        long likeCount = wishListRepository.countByProduct(productDetail);
 
+
+        // ====== 💡 로그인 여부에 따라 분기 ======
         boolean followed = false;
-        // 이미 팔로우 되어있는지 조회
-        Optional<Follow> existing = sellerFollowRepository
-                .findByStudio_StudioIdAndSiteUser_Id(studioId, userId);
-        if (existing.isPresent()) {
-            followed = true;
-        }
-        SellerFollowResponse followInfo = new SellerFollowResponse(followed, followerCount);
+        boolean isInCart = false;
+        boolean liked = false;
 
-        // 3) DTO 변환 (생성자)
+        SiteUser siteUser = null;
+
+        if (userId != null) {
+            // 👉 여기서만 userId로 조회
+            siteUser = siteUserRepository.findById(userId).orElse(null);
+
+            // 팔로우 여부
+            Optional<Follow> existingFollow =
+                    sellerFollowRepository.findByStudio_StudioIdAndSiteUser_Id(studioId, userId);
+            followed = existingFollow.isPresent();
+
+            // 카트 여부 (siteUser가 null 아닐 때만)
+            if (siteUser != null) {
+                Optional<Cart> existingCart =
+                        cartRepository.findBySiteUserAndProduct(siteUser, productDetail);
+                isInCart = existingCart.isPresent();
+            }
+
+            //좋아요 여부 (siteUser가 null 아닐 때만)
+            if (siteUser != null) {
+                Optional<WishList> existingLike =
+                        wishListRepository.findBySiteUserAndProduct(siteUser, productDetail);
+                liked = existingLike.isPresent();
+            }
+        }
+        // ====================================
+
+        SellerFollowResponse followInfo = new SellerFollowResponse(followed, followerCount);
+        ProductCartResponse cartInfo = new ProductCartResponse(isInCart);
+        ProductLikeResponse productLikeInfo = new ProductLikeResponse(productId, liked, likeCount);
+
+        // 4) DTO 변환
         ProductDto productDto = new ProductDto(productDetail);
 
-        ProductImageDto pdImageDto = null;   // ⭐ 기본값은 null
-        if (pdImage != null) {               // ⭐ null일 때만 생성자 호출 안 함
-            pdImageDto = new ProductImageDto(pdImage);
-        }
+        ProductImageDto pdImageDto = (pdImage != null) ? new ProductImageDto(pdImage) : null;
 
-        StudioDto studioDto  = null;   // ⭐ 기본값은 null
-        if (studio != null) {               // ⭐ null일 때만 생성자 호출 안 함
-            studioDto = StudioDto.fromEntity(studio); //팩토리 메서드 방식도 한번 써봄
-        }
+        StudioDto studioDto = (studio != null) ? StudioDto.fromEntity(studio) : null;
 
-        Image gbImageEntity  = null;   // ⭐ 기본값은 null
-        if (gbImage != null) {               // ⭐ null일 때만 생성자 호출 안 함
-            gbImageEntity = gbImage; //팩토리 메서드 방식도 한번 써봄
-        }
+        Image gbImageEntity = (gbImage != null) ? gbImage : null;
 
-
-        // 4) Response DTO 리턴
-        return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity, followInfo);
-
+        return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity, followInfo, cartInfo, productLikeInfo);
     }
-
-
-
-
-
 
 
     //필터 파라미터용 유틸코드

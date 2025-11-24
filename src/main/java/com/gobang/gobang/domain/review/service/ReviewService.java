@@ -4,6 +4,7 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
@@ -150,9 +151,9 @@ public class ReviewService {
         reviewRepository.save(review);
 
         // 이미지가 존재하면 함께 저장
-        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
-            reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
-        }
+//        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
+//            reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
+//        }
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
@@ -251,7 +252,7 @@ public class ReviewService {
         }
 
         // 이미지 삭제
-        reviewImageService.deleteImagesByReviewId(reviewId);
+//        reviewImageService.deleteImagesByReviewId(reviewId);
 
         reviewRepository.delete(review);
         return RsData.of("200", "리뷰가 삭제되었습니다.", review);

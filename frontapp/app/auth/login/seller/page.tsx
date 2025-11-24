@@ -14,7 +14,7 @@ export default function LoginSeller() {
         role: 'SELLER',
     })
 
-    const { errors, validate } = loginUserValidation()
+    const { errors, validate, validateField } = loginUserValidation()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -59,22 +59,9 @@ export default function LoginSeller() {
 
     const handleChange = (e) => {
         const { name, value } = e.target
-        let newValue = value
-
-        // userName일 경우 자동으로 소문자 변환
-        if (name === 'userName') {
-            newValue = value.toLowerCase()
-        }
-        if (name === 'password' || name === 'confirmPassword') {
-            newValue = value.replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/g, '')
-        }
-        // 📱 mobilePhone: 숫자만 남기기
-        if (name === 'mobilePhone') {
-            newValue = value.replace(/[^0-9]/g, '') // 숫자 외 제거
-        }
-
         setSeller({ ...seller, [name]: value })
         //console.log({...article, [name]: value});
+        validateField(name, value)
     }
 
     return (

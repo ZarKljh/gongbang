@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductCartResponse {
-    private boolean isInCart;
-    private Long cartCount;
+    private boolean InCart;
 }
