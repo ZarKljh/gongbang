@@ -36,7 +36,7 @@ public class QnaService {
             SiteUser user = siteUserRepository.findById(userId).orElse(null);
             if (user == null) return RsData.of("401", "로그인이 필요합니다", null);
 
-            List<QnaResponse> inquiries = inquiryRepository.findAllByWriter(user)
+            List<QnaResponse> inquiries = inquiryRepository.findAllByWriterWithFetchJoin(user)
                     .stream()
                     .map(QnaResponse::from)
                     .collect(Collectors.toList());

@@ -292,6 +292,7 @@ export default function MyPage() {
         
         try {
             const response = await axios.get(`${API_BASE_URL}/qna`, {
+                params: { userId },
                 withCredentials: true,
             })
             console.log(response.data)
@@ -299,7 +300,7 @@ export default function MyPage() {
             setQna(list)
             setStats((prev) => ({
                 ...prev,
-                totalReviews: list.length,
+                totalQna: list.length,
             }))
         } catch (error) {
             console.error('문의 목록 조회 실패:', error)
@@ -982,7 +983,10 @@ export default function MyPage() {
         if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return
 
         try {
-            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, { withCredentials: true })
+            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, {
+                params: { userId: userData.id },
+                withCredentials: true,
+            })
 
             if (data.resultCode === "200") {
                 alert("문의가 삭제되었습니다.")
