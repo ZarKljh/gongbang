@@ -137,7 +137,7 @@ export default function SignupUser() {
             let newFileName: string | null = null
 
             if (profileImageFile) {
-                const newFileName = generateRandomFileName(profileImageFile.name)
+                newFileName = generateRandomFileName(profileImageFile.name)
                 fileToUpload = new File([profileImageFile], newFileName, { type: profileImageFile.type })
             }
 
@@ -194,8 +194,10 @@ export default function SignupUser() {
                             중복확인
                         </button>
                     </div>
-                    <ErrorMessage message={errors.userName} />
-                    <ErrorMessage message={userNameCheckMsg} success={isUserNameValid} />
+                    {errors.userName && <ErrorMessage message={errors.userName} />}
+                    {!errors.userName && userNameCheckMsg && (
+                        <ErrorMessage message={userNameCheckMsg} success={isUserNameValid} />
+                    )}
                     <div className="form-group">
                         <label className="form-label required">패스워드</label>
                         <input
@@ -269,8 +271,10 @@ export default function SignupUser() {
                             중복확인
                         </button>
                     </div>
-                    <ErrorMessage message={errors.nickName} />
-                    <ErrorMessage message={nickNameCheckMsg} success={isNickNameValid} />
+                    {errors.nickName && <ErrorMessage message={errors.nickName} />}
+                    {!errors.nickName && nickNameCheckMsg && (
+                        <ErrorMessage message={nickNameCheckMsg} success={isNickNameValid} />
+                    )}
                     <div className="form-group">
                         <label className="form-label required">휴대전화</label>
                         <input
