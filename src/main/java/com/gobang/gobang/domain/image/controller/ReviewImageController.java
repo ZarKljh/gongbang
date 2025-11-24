@@ -40,13 +40,13 @@ import java.util.List;
 //}
 
 @RestController
-@RequestMapping("/api/v1/image")
+@RequestMapping("/api/v1/images")
 @RequiredArgsConstructor
 public class ReviewImageController {
 
     private final ReviewImageService reviewImageService;
 
-    /** 리뷰 이미지 업로드 (단일 파일 + refId + sortOrder) */
+    // 리뷰 이미지 업로드 (단일 파일 + refId + sortOrder)
     @PostMapping("/upload")
     public RsData<ImageUploadResponse> uploadReviewImage(
 //            ImageUploadRequest request
@@ -58,13 +58,13 @@ public class ReviewImageController {
         return reviewImageService.uploadReviewImage(new ImageUploadRequest(file, refType, refId, sortOrder));
     }
 
-    /** 리뷰 이미지 전체 조회 */
+    // 리뷰 이미지 전체 조회
     @GetMapping("/review/{reviewId}")
     public List<ImageUploadResponse> getReviewImages(@PathVariable Long reviewId) {
         return reviewImageService.getReviewImages(reviewId);
     }
 
-    /** 리뷰 이미지 삭제 */
+    // 삭제
     @DeleteMapping("/review/{imageId}")
     public RsData<Void> deleteReviewImage(@PathVariable Long imageId) {
         return reviewImageService.deleteReviewImage(imageId);
