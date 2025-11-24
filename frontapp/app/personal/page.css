@@ -101,7 +101,6 @@ body {
 .auth-banner {
     padding: 16px;
     background: #f9fafb;
-    border: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -119,8 +118,8 @@ body {
 }
 
 .auth-banner.success {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
+    background: #ffe7eb;
+    border-radius: 8px;
 }
 
 .auth-banner-input input {
@@ -132,7 +131,7 @@ body {
 
 .auth-banner button {
     padding: 8px 16px;
-    background: #000;
+    background: #B17457;
     color: white;
     border: none;
     font-size: 12px;
@@ -140,7 +139,7 @@ body {
 }
 
 .auth-banner button:hover {
-    background: #1f2937;
+    background: rgba(212, 139, 105, 0.9);
 }
 
 /* 통계 테이블 */
@@ -219,7 +218,7 @@ body {
 
 .btn-primary {
     padding: 8px 16px;
-    background: #DAC0A3;
+    background: #B17457;
     color: white;
     border: none;
     font-size: 14px;
@@ -229,7 +228,7 @@ body {
 }
 
 .btn-primary:hover {
-    background: #E9DCC4;
+    background: rgba(212, 139, 105, 0.9);
 }
 
 /* 버튼 disabled 상태 */
@@ -1101,4 +1100,49 @@ button.btn-primary:disabled:hover {
 /* 서브탭 콘텐츠 */
 .subtab-content {
     margin-top: 20px;
+}
+
+/* 프로필 이미지 수정 */
+.profile-img-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-Content: center;
+    align-Items: center;
+    z-Index: 100;
+}
+
+.profile-img-modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    padding: 20px;
+    border-Radius: 8px;
+}
+
+.profile-img-priview {
+    width: 300px;
+    height: 300px;
+    border-Radius: 50%;
+    object-Fit: cover;
+    margin: 10px 0;
+}
+
+.empty-img {
+    width: 150px;
+    height: 150px;
+    border-Radius: 50%;
+    background: #ccc;
+    margin: 10px 0;
+}
+
+.profile-img-btn {
+    margin-Top: 10px;
+    display: flex;
+    gap: 10px;
 }

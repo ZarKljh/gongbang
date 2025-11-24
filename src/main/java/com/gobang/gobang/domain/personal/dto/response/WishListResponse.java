@@ -1,8 +1,8 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.entity.WishList;
-import com.gobang.gobang.domain.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,8 +20,16 @@ public class WishListResponse {
     private String productName;
     private Integer price;
     private LocalDateTime createdAt;
+    private String imageUrl;
 
-    public static WishListResponse from(WishList wishList) {
+    public static WishListResponse from(WishList wishList, ImageRepository imageRepository) {
+        String imageUrl = imageRepository
+                .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, wishList.getProduct().getId())
+                .stream()
+                .findFirst()
+                .map(img -> "/api/v1/image/product/" + img.getImageFileName())
+                .orElse(null);
+
         return WishListResponse.builder()
                 .wishlistId(wishList.getWishlistId())
                 .userId(wishList.getSiteUser().getId())
@@ -29,6 +37,7 @@ public class WishListResponse {
                 .productName(wishList.getProduct().getName())
                 .price(wishList.getProduct().getBasePrice())
                 .createdAt(wishList.getCreatedAt())
+                .imageUrl(imageUrl)
                 .build();
     }
 }

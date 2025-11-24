@@ -1256,10 +1256,9 @@ export default function MyPage() {
                                                 <img
                                                     src={
                                                         previewProfileImage ||
-                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : '/default-profile.png') // 서버 이미지
+                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : 'null') // 서버 이미지
                                                     }
                                                     alt="프로필 이미지"
-                                                    // style={{ width: '50px', height: '50px', borderRadius: '50%' }}
                                                 />
                                             ) : (
                                                 <div className="placeholder"></div>
@@ -1339,13 +1338,20 @@ export default function MyPage() {
                                         {(order.items || []).map((item, idx) => (
                                             <div key={`${item.orderItemId}-${idx}`} className="order-item">
                                                 {/* 상품 이미지 */}
-                                                {item.imageUrl && (
-                                                <img
-                                                    src={item.imageUrl}
-                                                    alt={item.productName}
-                                                    className="order-item-img"
-                                                />
-                                                )}
+                                                <div className='order-img'>
+                                                    {(order.items || []).slice(0, 4).map((item, idx) => (
+                                                        <img
+                                                            key={idx}
+                                                            src={item.imageUrl 
+                                                                ? `http://localhost:8090${item.imageUrl}` 
+                                                                : '/default-product.png'}
+                                                            alt={item.productName}
+                                                            // onError={(e) => {
+                                                            //     e.currentTarget.src = '/default-product.png'
+                                                            // }}
+                                                        />
+                                                    ))}
+                                                </div>
                                                 <div className="order-item-text">
                                                 <p className="order-item-name">{item.productName}</p>
                                                 <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
@@ -1593,7 +1599,19 @@ export default function MyPage() {
                                         onChange={(e) => handleSelectItem(item.cartId, e.target.checked)}
                                     />
 
-                                    <div className="cart-image"></div>
+                                    <div className="cart-image">
+                                        {item.imageUrl ? (
+                                            <img 
+                                                src={`http://localhost:8090${item.imageUrl}`}
+                                                alt={item.productName}
+                                                // onError={(e) => {
+                                                //     e.currentTarget.src = '/default-product.png'
+                                                // }}
+                                            />
+                                        ) : (
+                                            <div className="no-image">이미지 없음</div>
+                                        )}
+                                    </div>
 
                                     <div className='cart-text'>
                                         <Link href={`/product/list/detail/${item.productId}`} className="product-name">
@@ -1666,6 +1684,7 @@ export default function MyPage() {
                                             placeholder="현재 비밀번호 입력"
                                             value={passwordInput}
                                             onChange={(e) => setPasswordInput(e.target.value)}
+                                            onKeyDown={(e) => {if (e.key === "Enter") handleVerifyPassword()}}
                                         />
                                         <button onClick={handleVerifyPassword}>인증 확인</button>
                                     </div>
@@ -1785,7 +1804,7 @@ export default function MyPage() {
 
                                 <div className="form-group">
                                     <label>생년월일</label>
-                                    <p>{userData.birth}</p>
+                                    <p>{userData.birth ? userData.birth.split('T')[0] : '-'}</p>
                                 </div>
                             </div>
                         </div>
@@ -1923,7 +1942,19 @@ export default function MyPage() {
                                         <div className="wishlist-grid">
                                             {wishList.map((item) => (
                                                 <div key={item.wishlistId} className="wishlist-item">
-                                                    <div className="wishlist-image"></div>
+                                                    <div className="wishlist-image">
+                                                        {item.imageUrl ? (
+                                                            <img 
+                                                                src={`http://localhost:8090${item.imageUrl}`}
+                                                                alt={item.productName}
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = '/default-product.png'
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <div className="no-image">이미지 없음</div>
+                                                        )}
+                                                    </div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
                                                         <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
@@ -1949,7 +1980,21 @@ export default function MyPage() {
                                         <ul className="follow-list">
                                             {followList.map((follow) => (
                                                 <li key={follow.studioId} className="follow-card">
-                                                    <p>{follow.studioName}</p>
+                                                    <div className="studio-info">
+                                                        {follow.studioImageUrl ? (
+                                                            <img 
+                                                                src={`http://localhost:8090${follow.studioImageUrl}`}
+                                                                alt={follow.studioName}
+                                                                className="studio-image"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = '/default-studio.png'
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <div className="studio-image-placeholder">🏪</div>
+                                                        )}
+                                                        <p>{follow.studioName}</p>
+                                                    </div>
                                                     <button onClick={() => handleUnfollow(follow.studioId)}>
                                                         언팔로우
                                                     </button>
@@ -1982,12 +2027,20 @@ export default function MyPage() {
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
                                             </div>
 
-                                            <div className="my-review-images">
-                                                {review.images?.map((imgUrl, idx) => (
-                                                    <img key={idx} src={imgUrl} alt={`리뷰 이미지 ${idx + 1}`} />
-                                                ))}
-                                                {/* <p>⭐TODO: 이미지 꼭 확인해볼 것⭐</p> */}
-                                            </div>
+                                            {review.images && review.images.length > 0 && (
+                                                <div className="my-review-images">
+                                                    {review.images.map((imgUrl, idx) => (
+                                                        <img 
+                                                            key={idx} 
+                                                            src={`http://localhost:8090${imgUrl}`}
+                                                            alt={`리뷰 이미지 ${idx + 1}`}
+                                                            // onError={(e) => {
+                                                            //     e.currentTarget.src = '/default-image.png'
+                                                            // }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
 
                                             <div className="my-review-content">{review.content}</div>
 
@@ -2412,44 +2465,31 @@ export default function MyPage() {
             {/* 프로필 이미지 수정 모달 */}
             {isProfileModalOpen && (
                 <div
-                    className="modal-backdrop"
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 100,
-                    }}
+                    className="profile-img-modal"
                     onClick={() => setIsProfileModalOpen(false)}
                 >
                     <div
-                        className="modal-content"
-                        style={{ background: 'white', padding: '20px', borderRadius: '8px' }}
+                        className="profile-img-modal-content"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h3>프로필 이미지 수정</h3>
 
                         {previewProfileImage ? (
                             <img
+                                className='profile-img-priview'
                                 src={previewProfileImage}
                                 alt="미리보기"
-                                style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover', margin: '10px 0' }}
                             />
                         ) : (
-                            <div style={{ width: '150px', height: '150px', borderRadius: '50%', background: '#ccc', margin: '10px 0' }} />
+                            <div className='empty-img' />
                         )}
 
                         <input type="file" accept="image/*" onChange={handleProfileFileChange} />
 
-                        <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                            <button onClick={handleProfileUpload}>업로드 / 수정</button>
-                            <button onClick={handleProfileDelete}>삭제</button>
-                            <button onClick={() => setIsProfileModalOpen(false)}>취소</button>
+                        <div className='profile-img-btn'>
+                            <button className='btn-primary' onClick={handleProfileUpload}>업로드 / 수정</button>
+                            <button className='btn-primary' onClick={handleProfileDelete}>삭제</button>
+                            <button className='btn-primary' onClick={() => setIsProfileModalOpen(false)}>취소</button>
                         </div>
                     </div>
                 </div>
