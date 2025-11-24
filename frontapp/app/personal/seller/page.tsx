@@ -432,6 +432,11 @@ export default function MyPage() {
         }
         if (section === 'studio') {
             setTempData({ ...studio })
+            setStudioImages({
+                STUDIO_MAIN: null,
+                STUDIO_LOGO: null,
+                STUDIO: [],
+            })
         }
         if (section === 'studioDesc') {
             setTempData({ ...studio })

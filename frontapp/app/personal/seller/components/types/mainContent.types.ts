@@ -36,9 +36,9 @@ export interface MainContentProps {
     // ====== 이미지 업로드 공통 핸들링 ======
     /** 현재 업로드된 이미지 파일들 저장용 */
     studioImages?: {
-        studioMain?: File | null
-        studioLogo?: File | null
-        studioGallery?: File[] // 여러장
+        STUDIO_MAIN: File | null
+        STUDIO_LOGO: File | null
+        STUDIO: File[]
     }
 
     /** 이미지 변경 핸들러 */
