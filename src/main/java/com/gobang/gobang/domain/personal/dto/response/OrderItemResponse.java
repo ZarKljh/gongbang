@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
-import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.entity.OrderItem;
 import lombok.AllArgsConstructor;
@@ -19,15 +18,15 @@ public class OrderItemResponse {
     private String productName;
     private Long quantity;
     private BigDecimal price;
-    private String imageUrl;
+//    private String imageUrl;
 
     public static OrderItemResponse from(OrderItem orderItem, ImageRepository imageRepository) {
-        String imageUrl = imageRepository
-                .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, orderItem.getProduct().getId())
-                .stream()
-                .findFirst()
-                .map(img -> "/api/v1/image/product/" + img.getImageFileName())
-                .orElse(null);
+//        String imageUrl = imageRepository
+//                .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, orderItem.getProduct().getId())
+//                .stream()
+//                .findFirst()
+//                .map(img -> "/api/v1/image/product/" + img.getImageFileName())
+//                .orElse(null);
 
         return OrderItemResponse.builder()
                 .orderItemId(orderItem.getOrderItemId())
@@ -36,7 +35,7 @@ public class OrderItemResponse {
                 .productName(orderItem.getProduct().getName())
                 .quantity(orderItem.getQuantity())
                 .price(orderItem.getPrice())
-                .imageUrl(imageUrl)
+//                .imageUrl(imageUrl)
                 .build();
     }
 }

@@ -1335,10 +1335,17 @@ export default function MyPage() {
 
                                         {/* 상품 내역 */}
                                         <h3>상품 내역</h3>
-                                        {(order.items || []).map((item, idx) => (
+                                        {(order.items || []).map((item: any, idx: any) => (
                                             <div key={`${item.orderItemId}-${idx}`} className="order-item">
                                                 {/* 상품 이미지 */}
-                                                <div className='order-img'>
+                                                {/* <div className='order-img'>
+                                                    {item.imageUrl && (
+                                                        <img
+                                                            src={item.imageUrl}
+                                                            alt={item.productName}
+                                                            className="order-item-img"
+                                                        />
+                                                    )}
                                                     {(order.items || []).slice(0, 4).map((item, idx) => (
                                                         <img
                                                             key={idx}
@@ -1351,7 +1358,7 @@ export default function MyPage() {
                                                             // }}
                                                         />
                                                     ))}
-                                                </div>
+                                                </div> */}
                                                 <div className="order-item-text">
                                                 <p className="order-item-name">{item.productName}</p>
                                                 <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
@@ -1391,7 +1398,7 @@ export default function MyPage() {
                                                 e.stopPropagation()
                                                 openReasonModal(
                                                     "주문 취소 사유",
-                                                    (reason) => handleCancelOrder(order.orderId, reason)
+                                                    (reason: any) => handleCancelOrder(order.orderId, reason)
                                                 )
                                                 }}
                                             >
@@ -1406,7 +1413,7 @@ export default function MyPage() {
                                                     className="btn-primary"
                                                     onClick={(e) => {
                                                     e.stopPropagation()
-                                                    openReasonModal("반품 사유", (reason) =>
+                                                    openReasonModal("반품 사유", (reason: any) =>
                                                         handleReturnOrder(order.orderId, reason)
                                                     )
                                                     }}
@@ -1418,7 +1425,7 @@ export default function MyPage() {
                                                     className="btn-primary"
                                                     onClick={(e) => {
                                                     e.stopPropagation()
-                                                    openReasonModal("교환 사유", (reason) =>
+                                                    openReasonModal("교환 사유", (reason: any) =>
                                                         handleExchangeOrder(order.orderId, reason)
                                                     )
                                                     }}
@@ -1686,7 +1693,7 @@ export default function MyPage() {
                                             onChange={(e) => setPasswordInput(e.target.value)}
                                             onKeyDown={(e) => {if (e.key === "Enter") handleVerifyPassword()}}
                                         />
-                                        <button onClick={handleVerifyPassword}>인증 확인</button>
+                                        <div className='auth-banner-btn' onClick={handleVerifyPassword}>인증 확인</div>
                                     </div>
                                     
                                 </div>
@@ -1877,16 +1884,15 @@ export default function MyPage() {
                                 <div className="payment-list">
                                 {paymentMethods.map((pm) => (
                                     <div key={pm.paymentId} className="payment-card">
-                                    <div className="card-info">
-                                        <div>
-                                        <div className="title">
+                                    <div className="payment-card-info">
+                                        <div className="card-header">
                                             {pm.type === "CARD" ? "신용/체크카드" : "계좌이체"}
                                             {pm.defaultPayment && <span className="badge">기본</span>}
                                         </div>
-                                        <div className="details">
+                                        <div className="card-content">
                                             {pm.type === "CARD" ? (
                                             <>
-                                                <p>은행 {pm.cardCompany}</p>
+                                                <p>{pm.cardCompany}</p>
                                                 <p>카드번호 {maskCard(pm.cardNumber)}</p>
                                                 <p>유효기간 {pm.cardExpire}</p>
                                             </>
@@ -1898,11 +1904,10 @@ export default function MyPage() {
                                             </>
                                             )}
                                         </div>
-                                        </div>
 
-                                        <div className="actions">
-                                        {!pm.defaultPayment && <button className='btn-primary' onClick={() => handleSetDefault(pm.paymentId)}>기본설정</button>}
-                                        <button className="link-btn delete" onClick={() => handleDeletePayment(pm.paymentId)}>삭제</button>
+                                        <div className="card-actions">
+                                            {!pm.defaultPayment && <button className='link-btn' onClick={() => handleSetDefault(pm.paymentId)}>기본설정</button>}
+                                            <button className="link-btn delete" onClick={() => handleDeletePayment(pm.paymentId)}>삭제</button>
                                         </div>
                                     </div>
                                     </div>
@@ -1947,9 +1952,9 @@ export default function MyPage() {
                                                             <img 
                                                                 src={`http://localhost:8090${item.imageUrl}`}
                                                                 alt={item.productName}
-                                                                onError={(e) => {
-                                                                    e.currentTarget.src = '/default-product.png'
-                                                                }}
+                                                                // onError={(e) => {
+                                                                //     e.currentTarget.src = '/default-product.png'
+                                                                // }}
                                                             />
                                                         ) : (
                                                             <div className="no-image">이미지 없음</div>
@@ -1958,12 +1963,14 @@ export default function MyPage() {
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
                                                         <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
-                                                        <button
-                                                            className="link-btn delete"
-                                                            onClick={() => handleRemoveWish(item.wishlistId)}
-                                                        >
-                                                            삭제
-                                                        </button>
+                                                        <div className="wishlist-btn-box">
+                                                            <button
+                                                                className="link-btn delete"
+                                                                onClick={() => handleRemoveWish(item.wishlistId)}
+                                                            >
+                                                                삭제
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
