@@ -499,7 +499,7 @@ export default function Review() {
                 <div
                     style={{
                         maxWidth: '1280px',
-                        margin: '0 auto', 
+                        margin: '0 auto',
                     }}
                 >
                     {/* 🎨 상단 배너 */}
@@ -653,7 +653,14 @@ export default function Review() {
                                     <li key={review.reviewId} className="review-item">
                                         <div className="review-header">
                                             <span className="review-meta">
-                                                {review.createdDate} / 작성자 : {review.createdBy}
+                                                {review.createdDate
+                                                    ? new Date(review.createdDate).toLocaleDateString('ko-KR', {
+                                                          year: 'numeric',
+                                                          month: '2-digit',
+                                                          day: '2-digit',
+                                                      })
+                                                    : '-'}{' '}
+                                                / 작성자 : {review.createdBy}
                                             </span>
                                         </div>
                                         {/* 별점 */}
@@ -684,7 +691,7 @@ export default function Review() {
                                                     )}
                                                     도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
-                                                   <ReportButton targetType="POST" targetId={review.review_id} />
+                                                <ReportButton targetType="POST" targetId={review.review_id} />
 
                                                 {(Number(currentUserId) === Number(review.userId) ||
                                                     roleType === 'ADMIN') && (

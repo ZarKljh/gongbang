@@ -42,11 +42,10 @@ public class WebConfig implements WebMvcConfigurer {
          registry.addResourceHandler("/images/**")
                  .addResourceLocations("file:" + path);
 
-        // 📁 프로젝트 내부 uploads 폴더
-        String uploadPath = System.getProperty("user.dir") + "/uploads/";
+        // 프로젝트 내부 uploads 폴더 (테스트 데이터용으로 살려둠)
+        String staticUploadPath = System.getProperty("user.dir") + "/uploads/";
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadPath);
- 
+                .addResourceLocations("file:" + staticUploadPath);
     }
 
 }
