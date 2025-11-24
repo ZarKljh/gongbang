@@ -3,7 +3,9 @@ package com.gobang.gobang.domain.product.productList.controller;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.product.dto.ProductDto;
+import com.gobang.gobang.domain.product.dto.request.ProductCartRequest;
 import com.gobang.gobang.domain.product.dto.response.*;
+import com.gobang.gobang.domain.product.productList.service.ProductCartService;
 import com.gobang.gobang.domain.product.productList.service.ProductService;
 import com.gobang.gobang.domain.product.productList.service.ProductWishListService;
 import com.gobang.gobang.domain.seller.service.SellerFollowService;
@@ -23,6 +25,7 @@ public class ProductController {
     private final ProductWishListService productWishListService;
     private final SiteUserService siteUserService;
     private final SellerFollowService sellerFollowService;
+    private final ProductCartService productCartService;
 
     @GetMapping("/{subCategoryId}")
     @Operation(summary = "상품 다건 조회")
@@ -32,7 +35,7 @@ public class ProductController {
     }
 
     @GetMapping("/{subCategoryId}/search")
-    @Operation(summary = "상품 다건 필터 조회")
+    @Operation(summary = "목록페이지 상품 다건 필터 조회")
     public RsData<FilterProductResponse> categoryFilterList(@PathVariable Long subCategoryId, @RequestParam(defaultValue = "20") int size, @RequestParam MultiValueMap<String, String> params) {
 
         System.out.println("===== 📦 받은 필터 파라미터 =====");
@@ -63,7 +66,7 @@ public class ProductController {
     public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
 
         // 🔒 현재 로그인 유저 조회
-//        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+        //SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
         SiteUserResponse currentUser = null;
         try {
@@ -82,7 +85,7 @@ public class ProductController {
 
 
     @PostMapping("/{productId}/like")
-    @Operation(summary = "목록페이지 상품 좋아요")
+    @Operation(summary = "(목록+상세) 페이지 상품 좋아요")
     public RsData<ProductLikeResponse> toggleLike(
             @PathVariable Long productId
     ) {
@@ -129,23 +132,24 @@ public class ProductController {
 
     @PostMapping("/{productId}/cart")
     @Operation(summary = "상세페이지 상품 장바구니")
-    public RsData<SellerFollowResponse> toggleCart(
-            @PathVariable Long productId
+    public RsData<ProductCartResponse> toggleCart(
+            @PathVariable Long productId,
+            @RequestBody ProductCartRequest request
     ) {
         // 🔒 현재 로그인 유저 조회
-//        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
-//
-//        // 비로그인 상태 처리
-//        if (currentUser == null) {
-//            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
-//        }
-//
-//        SellerFollowResponse res = sellerFollowService.toggleFollow(productId, currentUser.getId());
-//
-//        // ✅ 최종 응답 반환 (RsData 래핑)
-//        String msg = res.isFollowed() ? "작가 팔로우." : "작가 팔로우 취소.";
+        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
 
-        return null;
+        // 비로그인 상태 처리
+        if (currentUser == null) {
+            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
+        }
+
+        ProductCartResponse res = productCartService.addToCart(productId, currentUser.getId(), request);
+
+        // ✅ 최종 응답 반환 (RsData 래핑)
+
+
+        return RsData.of("200", "장바구니 성공.", res);
     }
 
 }

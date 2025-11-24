@@ -60,6 +60,9 @@ public class FilterService {
             case "white":
                 hexColor = "#FFFFFF"; // 화이트
                 break;
+            case "gray":
+                hexColor = "#6F665C"; // 그레이
+                break;
             case "beige":
                 hexColor = "#F5F5DC"; // 베이지
                 break;

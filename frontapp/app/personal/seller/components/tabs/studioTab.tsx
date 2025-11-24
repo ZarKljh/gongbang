@@ -41,6 +41,8 @@ export type StudioTabProps = Pick<
     | 'studioList'
     | 'studio'
     | 'onAddressSearch'
+    | 'studioImages'
+    | 'onStudioImageChange'
 >
 
 /*
@@ -70,8 +72,30 @@ export default function StudioTab(props: StudioTabProps) {
         onNewPasswordChange,
         onConfirmPasswordChange,
         onAddressSearch,
+        studioImages,
+        onStudioImageChange,
     } = props
     console.log('📌 StudioTab props:', props)
+
+    const serverImageUrl = (fileName: string) => `http://localhost:8090/api/v1/images/${fileName}`
+
+    // 새 업로드 이미지 preview 생성
+    const createPreview = (file: File | null) => (file ? URL.createObjectURL(file) : null)
+
+    const previewMainImage =
+        createPreview(studioImages?.STUDIO_MAIN ?? null) ||
+        (studio?.studioMainImage?.imageUrl ? serverImageUrl(studio.studioMainImage.imageUrl) : null)
+
+    const previewLogoImage =
+        createPreview(studioImages?.STUDIO_LOGO ?? null) ||
+        (studio?.studioLogoImage?.imageUrl ? serverImageUrl(studio.studioLogoImage.imageUrl) : null)
+
+    // 갤러리 이미지(새 파일 + 기존 이미지 합쳐서 미리보기)
+    const previewGalleryImages: string[] = [
+        ...(studioImages?.STUDIO ?? []).map((f) => URL.createObjectURL(f)),
+        ...(studio?.studioImages ?? []).map((img: any) => serverImageUrl(img.imageUrl)),
+    ]
+
     return (
         <div className="tab-content">
             {!isAuthenticated ? (
@@ -221,6 +245,93 @@ export default function StudioTab(props: StudioTabProps) {
                     ) : (
                         <p>{studio.studioAddDetail}</p>
                     )}
+                </div>
+                <div className="form-group">
+                    <label>메인화면</label>
+                    {editMode.studio && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                    onStudioImageChange?.('STUDIO_MAIN', e.target.files[0])
+                                }
+                            }}
+                        />
+                    )}
+                    {previewMainImage && (
+                        <img
+                            src={
+                                studioImages?.STUDIO_MAIN
+                                    ? URL.createObjectURL(studioImages.STUDIO_MAIN)
+                                    : studio?.studioMainImage?.imageFileName
+                                    ? `http://localhost:8090/images/${studio.studioMainImage.imageUrl}`
+                                    : '/default-main.png'
+                            }
+                            alt="대표 이미지"
+                            style={{ maxWidth: '250px', marginTop: '10px' }}
+                        />
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>로고이미지</label>
+                    {editMode.studio && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                    onStudioImageChange?.('STUDIO_LOGO', e.target.files[0])
+                                }
+                            }}
+                        />
+                    )}
+                    {previewLogoImage && (
+                        <img
+                            src={
+                                studioImages?.STUDIO_LOGO
+                                    ? URL.createObjectURL(studioImages.STUDIO_LOGO)
+                                    : studio?.studioLogoImage?.imageFileName
+                                    ? `http://localhost:8090/images/${studio.studioLogoImage.imageUrl}`
+                                    : '/default-logo.png'
+                            }
+                            alt="공방 로고 이미지"
+                        />
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>공방이미지</label>
+
+                    {editMode.studio && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                                if (e.target.files) {
+                                    onStudioImageChange?.('STUDIO', Array.from(e.target.files))
+                                }
+                            }}
+                        />
+                    )}
+
+                    {/* 기존 서버 이미지 */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                        {(studio?.studioImages ?? []).map((img) => (
+                            <img
+                                key={img.id}
+                                src={`http://localhost:8090/images/${img.imageFileName}`}
+                                style={{ width: 150, height: 150, objectFit: 'cover' }}
+                            />
+                        ))}
+                    </div>
+
+                    {/* 새로 업로드한 미리보기 이미지 */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                        {previewGalleryImages.map((src, idx) => (
+                            <img key={idx} src={src} style={{ width: 150, height: 150, objectFit: 'cover' }} />
+                        ))}
+                    </div>
                 </div>
                 <p>{/*JSON.stringify(studio)*/}</p>
             </div>
