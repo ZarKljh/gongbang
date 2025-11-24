@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.service.ProfileImageService;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
 import com.gobang.gobang.domain.seller.dto.StudioResponse;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +34,7 @@ public class StudioController {
     private final SiteUserService siteUserService;
     private final StudioService studioService;
     private final Rq rq;
+    private final ProfileImageService profileImageService;
 
     @GetMapping("/{id}")
     public RsData<Map<String, Object>> getStudioAndStuidioList(@PathVariable("id") Long id){
@@ -76,8 +79,11 @@ public class StudioController {
     //studioId로 공방검색
     @PatchMapping("/{id}")
     public RsData<StudioResponse> studioModify(
-            @Valid @RequestBody StudioAddRequest studioAddRequest,
-            @PathVariable("id") Long studioId
+            @RequestPart("request") @Valid StudioAddRequest studioAddRequest,
+            @PathVariable("id") Long studioId,
+            @RequestPart(value = "studioMainImage", required = false) MultipartFile studioMainImage,
+            @RequestPart(value = "studioLogoImage", required = false) MultipartFile studioLogoImage,
+            @RequestPart(value = "studioGalleryImages", required = false) List<MultipartFile> studioGalleryImages
             ){
 
         Studio studio = studioService.getStudioById(studioId);
@@ -87,6 +93,16 @@ public class StudioController {
 
         SiteUser siteUser = siteUserService.getSiteUserById(studio.getSiteUser().getId());
         studio = studioService.modifyStudio(studioAddRequest, studio, siteUser);
+
+        if(studioMainImage != null && !studioMainImage.isEmpty()){
+            profileImageService.replaceStudioImage(studio.getStudioId(), studioMainImage, Image.RefType.STUDIO_MAIN, 0);
+        }
+
+        if(studioLogoImage != null && !studioLogoImage.isEmpty()){
+            profileImageService.replaceStudioImage(studio.getStudioId(), studioLogoImage, Image.RefType.STUDIO_LOGO, 0);
+        }
+        profileImageService.replaceStudioGalleryImages(studio.getStudioId(), studioGalleryImages);
+
         StudioResponse studioResponse = new StudioResponse(siteUser, studio);
         return  RsData.of("200", studio.getStudioName()+"의 공방정보가 수정되었습니다", studioResponse);
     }
