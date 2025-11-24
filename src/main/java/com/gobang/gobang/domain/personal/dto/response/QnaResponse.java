@@ -18,7 +18,9 @@ public class QnaResponse {
     private String content;
     private InquiryType type;
     private Boolean answered;
+    private String answerContent;
     private LocalDateTime createdAt;
+    private LocalDateTime answeredAt;
 
     public static QnaResponse from(Inquiry inquiry) {
         Long userId = null;
@@ -37,7 +39,9 @@ public class QnaResponse {
                 .content(inquiry.getContent() != null ? inquiry.getContent() : "")
                 .type(inquiry.getType())
                 .answered(inquiry.isAnswered())
+                .answerContent(inquiry.getAnswerContent())
                 .createdAt(inquiry.getCreatedAt())
+                .answeredAt(inquiry.getAnsweredAt())
                 .build();
     }
 }
