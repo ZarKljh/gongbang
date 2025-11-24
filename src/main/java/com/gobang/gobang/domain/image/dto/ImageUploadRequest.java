@@ -1,10 +1,14 @@
 package com.gobang.gobang.domain.image.dto;
 
 import com.gobang.gobang.domain.image.entity.Image;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ImageUploadRequest {
     /** 이미지 파일 */
     private MultipartFile file;

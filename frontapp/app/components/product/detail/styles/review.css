@@ -10,7 +10,7 @@
     width: 1280px;
     margin: 0 auto;
     position: relative;
-    padding: 20px 0;
+    /* padding: 20px 0; */
     overflow: hidden;
 }
 
@@ -290,6 +290,7 @@
 
 .review-search-btn {
     background-color: #ad9263;
+    background-color: #B17457;
     color: white;
     border: none;
     border-radius: 8px;
@@ -300,6 +301,7 @@
 
 .review-search-btn:hover {
     background-color: #8f7851;
+    background-color: #F4991A;
     transition: 0.3s;
 }
 /* 정렬 + 검색 바 끝*/
