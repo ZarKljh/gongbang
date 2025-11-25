@@ -3,6 +3,7 @@ package com.gobang.gobang.domain.review.service;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
@@ -33,7 +34,7 @@ public class ReviewService {
     private final SiteUserRepository siteUserRepository;
     private final ReviewImageService reviewImageService ;
     private final ReviewImageRepository reviewImageRepository;
-
+    private final ImageRepository imageRepository;
 
     public Page<Review> getReviews(Long productId, int page, String sort, List<String> kwTypes, String keyword) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
@@ -260,7 +261,7 @@ public class ReviewService {
     public List<ReviewResponse> getReviewsByUserId(Long userId) {
         return reviewRepository.findBySiteUser_Id(userId)
                 .stream()
-                .map(ReviewResponse::fromEntity)
+                .map(item -> ReviewResponse.fromEntity(item, imageRepository))
                 .collect(Collectors.toList());
     }
 

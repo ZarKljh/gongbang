@@ -561,3 +561,50 @@ body {
     box-sizing: border-box;
     line-height: 1.8;
 }
+
+/* 갤러리 영역 전체 */
+.gallery-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* 갤러리 아이템(이미지 + X 버튼 컨테이너) */
+.gallery-item {
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+
+/* 갤러리 이미지 스타일 */
+.gallery-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* 갤러리 삭제 버튼(X) */
+.gallery-delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 22px;
+    text-align: center;
+    padding: 0;
+    transition: background 0.2s ease-in-out;
+}
+
+.gallery-delete-btn:hover {
+    background: rgba(255, 0, 0, 0.8);
+}

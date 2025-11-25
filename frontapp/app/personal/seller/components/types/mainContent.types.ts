@@ -46,4 +46,8 @@ export interface MainContentProps {
 
     /** 스튜디오 저장 후 호출되는 이미지 업로드 함수 */
     onStudioImagesUpload?: (studioId: number) => Promise<void>
+
+    deletedGalleryImageIds?: number[]
+    setDeletedGalleryImageIds?: (ids: number[]) => void
+    setStudioImages?: (updater: any) => void
 }
