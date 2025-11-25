@@ -358,7 +358,6 @@ export default function MyPage() {
             baseAddress: '',
             detailAddress: '',
             extraAddress: '',
-            isDefault: false,
         })
     }
 
@@ -876,16 +875,6 @@ export default function MyPage() {
             console.error('결제수단 삭제 실패:', error)
             alert(error?.response?.data?.msg ?? '삭제 중 오류가 발생했습니다.')
         }
-    }
-
-    const resetForm = () => {
-        setBankName("")
-        setAccountNumber("")
-        setAccountHolder("")
-        setCardCompany("")
-        setCardNumber("")
-        setCardExpire("")
-        setDefaultPayment(false)
     }
 
     const maskCard = (num: string | undefined) => {
@@ -2150,7 +2139,10 @@ export default function MyPage() {
                                                     })}
                                                 </span>
                                                 <button
-                                                    onClick={() => handleDeleteQna(item)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleDeleteQna(item.qnaId)
+                                                    }}
                                                     className="link-btn delete"
                                                 >
                                                     삭제
