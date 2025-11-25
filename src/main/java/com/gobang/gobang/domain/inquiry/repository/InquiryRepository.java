@@ -28,7 +28,8 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
 
     List<Inquiry> findByWriter_Id(Long writerId);
 
-    List<Inquiry> findAllByWriter(SiteUser writer);
+    @Query("SELECT i FROM Inquiry i LEFT JOIN FETCH i.writer WHERE i.writer = :writer")
+    List<Inquiry> findAllByWriterWithFetchJoin(@Param("writer") SiteUser writer);
 
     Optional<Inquiry> findByIdAndWriter(Long id, SiteUser writer);
 

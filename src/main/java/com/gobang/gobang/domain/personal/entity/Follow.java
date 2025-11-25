@@ -26,7 +26,7 @@ public class Follow {
     private SiteUser siteUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
+    @JoinColumn(name = "seller_id", nullable = false)//이거 컬럼이름 seller_id아니고 studio_id로 바꿔야 맞는건데.. 지금 바꾸면 여러군데서 오류나서 안바꾸는 중
     private Studio studio;
 
     @Column(name = "created_at", nullable = false)

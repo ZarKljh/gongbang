@@ -11,45 +11,6 @@ const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 export default function MyPage() {
     const searchParams = useSearchParams()
 
-    // =============== 타입 정의 ===============
-    interface OrdersResponse {
-        orderId: number
-        userId: number
-        orderCode: string
-        totalPrice: number
-        createdDate: string
-        deliveryStatus: string
-        completedAt?: string
-        items: OrderItemResponse[]
-        deliveries?: DeliveryResponse[]
-    }
-
-    interface OrderItemResponse {
-        orderItemId: number
-        orderId: number
-        productId: number
-        productName: string
-        quantity: number
-        price: number
-    }
-
-    interface DeliveryResponse {
-        deliveryId: number
-        orderId: number
-        addressId: number
-        trackingNumber: string | null
-        deliveryStatus: string
-        completedAt: string | null // 백엔드에서 String으로 내려주는 것
-        createdDate: string | null
-        modifiedDate: string | null
-
-        // 배송지 정보
-        recipientName: string | null
-        baseAddress: string | null
-        detailAddress: string | null
-        zipcode: string | null
-    }
-
     // =============== State 관리 ===============
     // 사용자 정보
     const [userData, setUserData] = useState<any>(null)
@@ -106,13 +67,15 @@ export default function MyPage() {
     })
 
     // 결제수단
-    const [paymentMethods, setPaymentMethods] = useState([])
+    const [paymentMethods, setPaymentMethods] = useState<any[]>([])
     const [isPaymentModal, setIsPaymentModal] = useState(false)
-    const [paymentType, setPaymentType] = useState('BANK')
-    const [bankName, setBankName] = useState('')
-    const [accountNumber, setAccountNumber] = useState('')
-    const [cardCompany, setCardCompany] = useState('')
-    const [cardNumber, setCardNumber] = useState('')
+    const [paymentType, setPaymentType] = useState<"CARD" | "BANK">("BANK")
+    const [bankName, setBankName] = useState("")
+    const [accountNumber, setAccountNumber] = useState("")
+    const [accountHolder, setAccountHolder] = useState("")
+    const [cardCompany, setCardCompany] = useState("")
+    const [cardNumber, setCardNumber] = useState("")
+    const [cardExpire, setCardExpire] = useState("")
     const [defaultPayment, setDefaultPayment] = useState(false)
 
     // 리뷰
@@ -134,7 +97,7 @@ export default function MyPage() {
 
     //문의
     const [qna, setQna] = useState<any[]>([])
-    const [openQnaId, setOpenQnaId] = useState(null)// state 추가
+    const [openQnaId, setOpenQnaId] = useState(null)
 
     //이미지
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
@@ -180,7 +143,7 @@ export default function MyPage() {
             await Promise.all([
                 fetchOrders(userId),
                 fetchAddresses(userId),
-                fetchPaymentMethods(userId),
+                fetchPaymentMethods(),
                 fetchWishList(userId),
                 fetchFollowList(userId),
                 fetchStatsData(userId),
@@ -208,14 +171,6 @@ export default function MyPage() {
             return null
         }
     }
-
-    const filteredOrders = orders.filter((order) => {
-        if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
-        if (activeFilter === "취소") return order.deliveryStatus === "취소"
-        if (activeFilter === "반품") return order.deliveryStatus === "반품"
-        if (activeFilter === "교환") return order.deliveryStatus === "교환"
-        return true
-    })
 
     const fetchOrders = async (id?: number) => {
         if (!id) return
@@ -257,10 +212,7 @@ export default function MyPage() {
         }
     }
 
-    const fetchPaymentMethods = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-
+    const fetchPaymentMethods = async () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
                 withCredentials: true,
@@ -271,9 +223,9 @@ export default function MyPage() {
             } else {
                 alert(`결제수단 조회 실패: ${data.msg}`)
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('결제수단 조회 실패:', error)
-            alert('결제수단 조회 중 오류가 발생했습니다.')
+            alert(error?.response?.data?.msg ?? '결제수단 조회 중 오류가 발생했습니다.')
         }
     }
 
@@ -335,15 +287,20 @@ export default function MyPage() {
     }
 
     const fetchQna = async (id?: number) => {
+        const userId = id || userData?.id
+        if (!userId) return
+        
         try {
             const response = await axios.get(`${API_BASE_URL}/qna`, {
+                params: { userId },
                 withCredentials: true,
             })
+            console.log(response.data)
             const list = Array.isArray(response.data.data) ? response.data.data : []
             setQna(list)
             setStats((prev) => ({
                 ...prev,
-                totalReviews: list.length,
+                totalQna: list.length,
             }))
         } catch (error) {
             console.error('문의 목록 조회 실패:', error)
@@ -516,17 +473,25 @@ export default function MyPage() {
         return diffDays <= 7
     }
 
-    const toggleOrder = (id) => {
+    const toggleOrder = (id: any) => {
         setOpenOrderId((prev) => (prev === id ? null : id))
     }
 
-    const openReasonModal = (title, onSubmit) => {
+    const openReasonModal = (title: any, onSubmit: any) => {
         setReasonModalTitle(title)
         setReasonModalOnSubmit(() => onSubmit)
         setIsReasonModal(true)
     }
 
     // ================= 주문 취소 / 반품 / 교환 =================
+    const filteredOrders = orders.filter((order) => {
+        if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
+        if (activeFilter === "취소") return order.deliveryStatus === "취소"
+        if (activeFilter === "반품") return order.deliveryStatus === "반품"
+        if (activeFilter === "교환") return order.deliveryStatus === "교환"
+        return true
+    })
+    
     const handleCancelOrder = async (orderId: number, reason: string) => {
         const order = orders.find((o) => o.orderId === orderId)
         if (!order) return alert("주문 정보를 찾을 수 없습니다.")
@@ -828,37 +793,43 @@ export default function MyPage() {
 
     // =============== 결제수단 ===============
     const handleSavePayment = async () => {
-        if (paymentType === 'BANK' && (!bankName || !accountNumber)) {
+        if (paymentType === 'BANK' && (!bankName || !accountNumber || !accountHolder)) {
             alert('은행명과 계좌번호를 입력해주세요.')
             return
         }
 
-        if (paymentType === 'CARD' && (!cardCompany || !cardNumber)) {
+        if (paymentType === 'CARD' && (!cardCompany || !cardNumber || !cardExpire)) {
             alert('카드사와 카드번호를 입력해주세요.')
             return
         }
 
-        const newPayment = {
+        const payload: any = {
             type: paymentType,
-            bankName,
-            accountNumber,
-            cardCompany,
-            cardNumber,
             defaultPayment,
         }
 
+        if (paymentType === "BANK") {
+            payload.bankName = bankName
+            payload.accountNumber = accountNumber
+            payload.accountHolder = accountHolder
+        } else {
+            payload.cardCompany = cardCompany
+            payload.cardNumber = cardNumber
+            payload.cardExpire = cardExpire
+        }
+
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, newPayment, { withCredentials: true })
+            const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, payload, { withCredentials: true })
 
             if (data.resultCode === '200') {
                 alert('결제수단 등록 성공')
-                await fetchPaymentMethods()
+                fetchPaymentMethods()
                 setIsPaymentModal(false)
                 resetPaymentForm()
             } else {
                 alert(`등록 실패: ${data.msg}`)
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('결제수단 등록 실패:', error)
             alert(error?.response?.data?.msg ?? '결제수단 등록 중 오류가 발생했습니다.')
         }
@@ -877,7 +848,7 @@ export default function MyPage() {
             } else {
                 alert(`실패: ${data.msg}`)
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('기본 결제수단 설정 실패:', error)
             alert(error?.response?.data?.msg ?? '기본 결제수단 설정 중 오류가 발생했습니다.')
         }
@@ -890,12 +861,26 @@ export default function MyPage() {
             await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
                 withCredentials: true,
             })
-            alert('삭제 성공')
-            await fetchPaymentMethods()
+            fetchPaymentMethods()
         } catch (error: any) {
             console.error('결제수단 삭제 실패:', error)
             alert(error?.response?.data?.msg ?? '삭제 중 오류가 발생했습니다.')
         }
+    }
+
+    const resetForm = () => {
+        setBankName("")
+        setAccountNumber("")
+        setAccountHolder("")
+        setCardCompany("")
+        setCardNumber("")
+        setCardExpire("")
+        setDefaultPayment(false)
+    }
+
+    const maskCard = (num: string | undefined) => {
+        if (!num) return ""
+        return num.replace(/\d(?=\d{4})/g, "*")
     }
 
     // =============== 리뷰 ===============
@@ -998,7 +983,10 @@ export default function MyPage() {
         if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return
 
         try {
-            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, { withCredentials: true })
+            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, {
+                params: { userId: userData.id },
+                withCredentials: true,
+            })
 
             if (data.resultCode === "200") {
                 alert("문의가 삭제되었습니다.")
@@ -1291,22 +1279,22 @@ export default function MyPage() {
 
                             {/* ================= 배송 상태 요약 ================= */}
                             <div className="delivery-status-summary">
-                            {['배송준비중', '배송중', '배송완료'].map((status) => (
-                                <div
-                                key={status}
-                                className="status-card"
-                                onClick={() => {
-                                    handleStatusClick(status)
-                                    setIsStatusModal(true)
-                                }}
-                                >
-                                <p>{status}</p>
-                                <p>{orders.filter((o) =>
-                                    o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '') &&
-                                    isWithinSevenDays(o.completedAt)
-                                ).length}</p>
-                                </div>
-                            ))}
+                                {['배송준비중', '배송중', '배송완료'].map((status) => (
+                                    <div
+                                    key={status}
+                                    className="status-card"
+                                    onClick={() => {
+                                        handleStatusClick(status)
+                                        setIsStatusModal(true)
+                                    }}
+                                    >
+                                    <p>{status}</p>
+                                    <p>{orders.filter((o) =>
+                                        o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '') &&
+                                        isWithinSevenDays(o.completedAt)
+                                    ).length}</p>
+                                    </div>
+                                ))}
                             </div>
 
                             {/* ================= 주문 내역 ================= */}
@@ -1335,7 +1323,7 @@ export default function MyPage() {
                                         {(order.items || []).slice(0, 4).map((item, idx) => (
                                             <img
                                                 key={idx}
-                                                src={item.imageUrl}
+                                                src={item.imageUrl || '/default-product.png'}
                                                 alt={item.productName}
                                             />
                                         ))}
@@ -1391,7 +1379,7 @@ export default function MyPage() {
                                         {/* 버튼 영역 */}
                                         <div className="order-actions" style={{ marginTop: 15 }}>
                                             {order.deliveryStatus === "배송준비중" && (
-                                            <button
+                                            <div
                                                 className="btn-primary"
                                                 onClick={(e) => {
                                                 e.stopPropagation()
@@ -1402,13 +1390,13 @@ export default function MyPage() {
                                                 }}
                                             >
                                                 주문 취소
-                                            </button>
+                                            </div>
                                             )}
 
                                             {order.deliveryStatus === "배송완료" &&
                                             isWithinSevenDays(order.completedAt) && (
                                                 <>
-                                                <button
+                                                <div
                                                     className="btn-primary"
                                                     onClick={(e) => {
                                                     e.stopPropagation()
@@ -1418,9 +1406,9 @@ export default function MyPage() {
                                                     }}
                                                 >
                                                     반품 신청
-                                                </button>
+                                                </div>
 
-                                                <button
+                                                <div
                                                     className="btn-primary"
                                                     onClick={(e) => {
                                                     e.stopPropagation()
@@ -1430,7 +1418,7 @@ export default function MyPage() {
                                                     }}
                                                 >
                                                     교환 신청
-                                                </button>
+                                                </div>
                                                 </>
                                             )}
                                         </div>
@@ -1698,7 +1686,7 @@ export default function MyPage() {
                                         <button className="btn-primary" onClick={() => handleSave('profile')}>
                                             저장
                                         </button>
-                                        <button className="btn-secondary" onClick={() => handleCancel('profile')}>
+                                        <button className="btn-primary" onClick={() => handleCancel('profile')}>
                                             취소
                                         </button>
                                     </div>
@@ -1867,40 +1855,39 @@ export default function MyPage() {
                             {paymentMethods.length === 0 ? (
                                 <div className="empty-state">등록된 결제수단이 없습니다.</div>
                             ) : (
-                                <div>
-                                    {paymentMethods.map((method) => (
-                                        <div key={method.paymentId} className="payment-card">
-                                            <div className="card-header">
-                                                <div>
-                                                    <div className="card-title">
-                                                        <span>{method.type === 'CARD' ? '신용카드' : '계좌이체'}</span>
-                                                        {method.defaultPayment && (
-                                                            <span className="badge">기본결제</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="card-content" style={{ marginTop: '8px' }}>
-                                                        <p>{method.cardCompany || method.bankName}</p>
-                                                        <p>{method.cardNumber || method.accountNumber}</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="card-actions">
-                                                    <button
-                                                        className="link-btn"
-                                                        onClick={() => handleSetDefault(method.paymentId)}
-                                                    >
-                                                        기본설정
-                                                    </button>
-                                                    <button
-                                                        className="link-btn delete"
-                                                        onClick={() => handleDeletePayment(method.paymentId)}
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
-                                            </div>
+                                <div className="payment-list">
+                                {paymentMethods.map((pm) => (
+                                    <div key={pm.paymentId} className="payment-card">
+                                    <div className="card-info">
+                                        <div>
+                                        <div className="title">
+                                            {pm.type === "CARD" ? "신용/체크카드" : "계좌이체"}
+                                            {pm.defaultPayment && <span className="badge">기본</span>}
                                         </div>
-                                    ))}
+                                        <div className="details">
+                                            {pm.type === "CARD" ? (
+                                            <>
+                                                <p>은행 {pm.cardCompany}</p>
+                                                <p>카드번호 {maskCard(pm.cardNumber)}</p>
+                                                <p>유효기간 {pm.cardExpire}</p>
+                                            </>
+                                            ) : (
+                                            <>
+                                                <p>{pm.bankName}</p>
+                                                <p>계좌번호 {pm.accountNumber}</p>
+                                                <p>예금주 {pm.accountHolder}</p>
+                                            </>
+                                            )}
+                                        </div>
+                                        </div>
+
+                                        <div className="actions">
+                                        {!pm.defaultPayment && <button className='btn-primary' onClick={() => handleSetDefault(pm.paymentId)}>기본설정</button>}
+                                        <button className="link-btn delete" onClick={() => handleDeletePayment(pm.paymentId)}>삭제</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                ))}
                                 </div>
                             )}
                         </div>
@@ -2040,7 +2027,9 @@ export default function MyPage() {
                             ) : (
                                 <div className="qna-list">
                                     {qna.map((item) => (
-                                        <div key={item.qnaId} className="qna-card">
+                                        <div key={item.qnaId} className="qna-card"
+                                        onClick={() => toggleQna(item.qnaId)}
+                                        >
                                             <div className="qna-header">
                                                 <div className="qna-title">{item.title}</div>
                                                 <span className="qna-type">{item.type}</span>
@@ -2071,6 +2060,15 @@ export default function MyPage() {
                                                     삭제
                                                 </button>
                                             </div>
+                                            {openQnaId === item.qnaId && (
+                                                <div className="qna-accordion">
+                                                    {/* 답변 상세 */}
+                                                    <div className="qna-info">
+                                                        <h3>답변</h3>
+                                                        <p>{item.answerContent || '답변 대기 중'}</p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -2093,7 +2091,7 @@ export default function MyPage() {
                             o.deliveryStatus === selectedStatus &&
                             (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
                             ).length === 0 ? (
-                            <p>주문 내역이 없습니다.</p>
+                                <p>주문 내역이 없습니다.</p>
                         ) : (
                             orders
                             .filter(o =>
@@ -2102,13 +2100,14 @@ export default function MyPage() {
                             )
                             .map((order) => (
                                 <div key={order.orderId} className="order-card">
-                                <div className="order-header">
-                                    <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
-                                    <span>{order.deliveryStatus}</span>
-                                </div>
-                                <div className="order-footer">
-                                    <p>총 {order.totalPrice?.toLocaleString()}원</p>
-                                </div>
+                                    <div className="deliverie-header">
+                                        <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
+                                        <span>{order.productName}</span>
+                                        <span>{order.deliveryStatus}</span>
+                                    </div>
+                                    <div className="order-footer">
+                                        <p>총 {order.totalPrice?.toLocaleString()}원</p>
+                                    </div>
                                 </div>
                             ))
                         )}
@@ -2249,97 +2248,64 @@ export default function MyPage() {
             {/* 결제수단 추가 모달 */}
             {isPaymentModal && (
                 <div className="payment-modal" onClick={() => setIsPaymentModal(false)}>
-                    <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="payment-modal-close" onClick={() => setIsPaymentModal(false)}>
-                            X
-                        </button>
+                <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
+                    <button className="payment-modal-close" onClick={() => setIsPaymentModal(false)}>X</button>
+                    <h3>결제수단 추가</h3>
 
-                        <h2>새 결제수단 추가</h2> <br />
-
-                        <form
-                            onSubmit={async (e) => {
-                                e.preventDefault()
-                                await handleSavePayment()
-                            }}
-                            className="space-y-4"
-                        >
-                            <div className='pament-w'>
-                                <label>결제수단 종류</label>
-                                <select className='payment-type' value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
-                                    <option value="BANK">은행 계좌</option>
-                                    <option value="CARD">신용/체크카드</option>
-                                </select>
-                            </div>
-
-                            {paymentType === 'BANK' && (
-                                <>
-                                    <div className='pament-w'>
-                                        <label>은행명</label>
-                                        <input
-                                            type="text"
-                                            value={bankName}
-                                            onChange={(e) => setBankName(e.target.value)}
-                                            placeholder="예: 신한은행"
-                                        />
-                                    </div>
-                                    <div className='pament-w'>
-                                        <label>계좌번호</label>
-                                        <input
-                                            type="text"
-                                            value={accountNumber}
-                                            onChange={(e) => setAccountNumber(e.target.value)}
-                                            placeholder="123-4567-8901-23"
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            {paymentType === 'CARD' && (
-                                <>
-                                    <div className='pament-w'>
-                                        <label>카드사</label>
-                                        <input
-                                            type="text"
-                                            value={cardCompany}
-                                            onChange={(e) => setCardCompany(e.target.value)}
-                                            placeholder="예: 현대카드"
-                                        />
-                                    </div>
-                                    <div className='pament-w'>
-                                        <label>카드번호</label>
-                                        <input
-                                            type="text"
-                                            value={cardNumber}
-                                            onChange={(e) => setCardNumber(e.target.value)}
-                                            placeholder="1234-5678-9012-3456"
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            <div>
-                                <input
-                                    type="checkbox"
-                                    checked={defaultPayment}
-                                    onChange={(e) => setDefaultPayment(e.target.checked)}
-                                />
-                                <span> 기본 결제수단으로 설정</span>
-                            </div>
-
-                            <div className="modal-buttons">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsPaymentModal(false)}
-                                    className="btn-secondary"
-                                >
-                                    취소
-                                </button>
-                                <button type="submit" className="btn-primary">
-                                    등록
-                                </button>
-                            </div>
-                        </form>
+                    <div className="form-group">
+                    <label>결제수단</label>
+                    <select value={paymentType} onChange={(e) => setPaymentType(e.target.value as any)}>
+                        <option value="BANK">은행 계좌</option>
+                        <option value="CARD">신용/체크카드</option>
+                    </select>
                     </div>
+
+                    {paymentType === "BANK" && (
+                    <>
+                        <div className="form-group">
+                        <label>은행명</label>
+                        <input value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                        <label>계좌번호</label>
+                        <input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                        <label>예금주</label>
+                        <input value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} />
+                        </div>
+                    </>
+                    )}
+
+                    {paymentType === "CARD" && (
+                    <>
+                        <div className="form-group">
+                        <label>카드사</label>
+                        <input value={cardCompany} onChange={(e) => setCardCompany(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                        <label>카드번호</label>
+                        <input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                        <label>유효기간</label>
+                        <input value={cardExpire} onChange={(e) => setCardExpire(e.target.value)} placeholder="MM/YY" />
+                        </div>
+                    </>
+                    )}
+
+                    <div className="form-group">
+                    <label>
+                        <input type="checkbox" checked={defaultPayment} onChange={(e) => setDefaultPayment(e.target.checked)} />
+                        기본 결제수단으로 설정
+                    </label>
+                    </div>
+
+                    <div className="modal-actions">
+                    <div className='btn-primary' onClick={() => setIsPaymentModal(false)}>취소</div>
+                    <div className='btn-primary' onClick={handleSavePayment}>등록</div>
+                    </div>
+                </div>
                 </div>
             )}
 

@@ -320,7 +320,7 @@ export default function Product() {
             <div className={styles.grid}>
                 {/* 왼쪽: 카테고리 사이드바 */}
                 <nav className={styles.categoryTree} aria-label="카테고리 메뉴">
-                    <h2>카테고리</h2>
+                    <div className={styles.catHeader}>전체 카테고리</div>
                     {categories.map((cat) => (
                         <ul className={`${styles.categoryList} mb-3`} key={cat.id}>
                             <li className={styles.categoryItem}>
@@ -354,9 +354,7 @@ export default function Product() {
                     <section aria-labelledby="filter-heading" className={styles.filterArea}>
                         <form id="filterForm" method="get" className={styles.filterForm} action=""></form>
 
-                        <h2 id="filter-heading" className="text-lg font-semibold mb-3">
-                            필터 영역
-                        </h2>
+                        <div id="filter-heading" className={styles.filterHeading}></div>
 
                         {filterGroups.length === 0 ? (
                             <p className="text-sm text-gray-500">표시할 필터그룹이 없습니다.</p>
@@ -437,9 +435,10 @@ export default function Product() {
                                                                     </button>
                                                                 </>
                                                             ) : (
-                                                                <>
+                                                                <label className={styles.checkWrap}>
                                                                     {/*디자인 */}
                                                                     <input
+                                                                        className={styles.checkbox}
                                                                         form="filterForm"
                                                                         type="CHECKBOX"
                                                                         name={o.filterCode}
@@ -463,7 +462,7 @@ export default function Product() {
                                                                             )
                                                                         }}
                                                                     />
-                                                                </>
+                                                                </label>
                                                             )}
                                                         </li>
                                                     ))
@@ -480,10 +479,10 @@ export default function Product() {
 
                     {/* 카드 섹션 */}
                     <section aria-labelledby="cards-title" className={styles.cardsWrap}>
-                        <h2 id="cards-title">카드섹션</h2>
+                        <h2 id="cards-title">카테고리별 상품</h2>
 
                         {products.length === 0 ? (
-                            <p className="text-sm text-gray-500">표시할 상품목록이 없습니다.</p>
+                            <p className={styles.textSm}>표시할 상품목록이 없습니다.</p>
                         ) : (
                             <ul className={styles.cardGrid} role="list">
                                 {products.map((p) => (
@@ -507,7 +506,7 @@ export default function Product() {
                                                 <h3 className={styles.cardTitle}>{p.name}</h3>
 
                                                 <p className={styles.cardDesc}>{p.seoTitle}</p>
-                                                <p className={styles.cardDesc}>{p.basePrice.toLocaleString()}원</p>
+                                                <p className={styles.cardDescPrice}>{p.basePrice.toLocaleString()}원</p>
                                             </Link>
 
                                             <footer className={styles.cardActions}>
@@ -516,7 +515,8 @@ export default function Product() {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    className={`${styles.likeBtn} ${p.liked ? styles.active : ''}`}
+                                                    // className={`${styles.likeBtn} ${p.liked ? styles.active : ''}`}
+                                                    className={styles.likeBtn}
                                                     onClick={(e) => {
                                                         e.preventDefault() // 링크 이동 막기
                                                         handleToggleLike(p.id)
