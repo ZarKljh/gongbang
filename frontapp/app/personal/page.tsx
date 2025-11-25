@@ -1627,115 +1627,146 @@ export default function MyPage() {
                     {activeTab === 'cart' && (
                         <div className='tab-content'>
                             <div className='section-header'>
-                            <h2>장바구니</h2>
+                                <h2>장바구니</h2>
                             </div>
 
                             {cart.length === 0 ? (
-                            <div className="empty-state">장바구니에 담은 상품이 없습니다.</div>
+                                <div className="empty-state">
+                                    <div className="empty-state-icon">🛒</div>
+                                    <p>장바구니에 담은 상품이 없습니다.</p>
+                                    <Link href="/product/list" className="empty-state-link">
+                                        쇼핑 계속하기
+                                    </Link>
+                                </div>
                             ) : (
-                            <>
-                                {/* 전체 선택 영역 */}
-                                <div className="cart-header">
-                                <label>
-                                    <input
-                                    type="checkbox"
-                                    checked={selectedItems.length === cart.length}
-                                    onChange={handleToggleSelectAll}
-                                    />
-                                    전체 선택
-                                </label>
-
-                                <button className="link-btn" onClick={handleClearSelection}>
-                                    선택 해제
-                                </button>
-
-                                <button 
-                                    className="btn-primary"
-                                    onClick={handlePurchaseAll}
-                                    disabled={cart.length === 0}
-                                >
-                                    전체 구매
-                                </button>
-                                </div>
-
-                                <div className="cart-list">
-                                {cart.map((item) => (
-                                    <div key={item.cartId} className="cart-product">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedItems.includes(item.cartId)}
-                                        onChange={(e) => handleSelectItem(item.cartId, e.target.checked)}
-                                    />
-
-                                    <div className="cart-image">
-                                        {item.imageUrl ? (
-                                            <img 
-                                                src={`http://localhost:8090${item.imageUrl}`}
-                                                alt={item.productName}
-                                                // onError={(e) => {
-                                                //     e.currentTarget.src = '/default-product.png'
-                                                // }}
-                                            />
-                                        ) : (
-                                            <div className="no-image">이미지 없음</div>
-                                        )}
+                                <>
+                                    {/* 장바구니 헤더 */}
+                                    <div className="cart-header">
+                                        <div className="cart-header-left">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedItems.length === cart.length && cart.length > 0}
+                                                    onChange={handleToggleSelectAll}
+                                                />
+                                                전체 선택
+                                            </label>
+                                            {selectedItems.length > 0 && (
+                                                <span className="selection-info">
+                                                    <span className="selection-count">{selectedItems.length}</span>개 상품 선택됨
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="cart-header-right">
+                                            <button className="cart-btn btn-primary" onClick={handleClearSelection}>
+                                                선택 해제
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div className='cart-text'>
-                                        <Link href={`/product/list/detail/${item.productId}`} className="product-name">
-                                        {item.productName}
-                                        </Link>
-                                        <p>{item.price ? `${item.price * item.quantity}원` : '가격 정보 없음'}</p>
+                                    {/* 장바구니 목록 */}
+                                    <div className="cart-list">
+                                        {cart.map((item) => (
+                                            <div key={item.cartId} className="cart-product">
+                                                <div className="cart-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedItems.includes(item.cartId)}
+                                                        onChange={(e) => handleSelectItem(item.cartId, e.target.checked)}
+                                                    />
+                                                </div>
+
+                                                <div className="cart-image">
+                                                    {item.imageUrl ? (
+                                                        <img 
+                                                            src={`http://localhost:8090${item.imageUrl}`}
+                                                            alt={item.productName}
+                                                        />
+                                                    ) : (
+                                                        <div className="no-image">이미지 없음</div>
+                                                    )}
+                                                </div>
+
+                                                <div className='cart-info'>
+                                                    <Link href={`/product/list/detail/${item.productId}`} className="product-name">
+                                                        {item.productName}
+                                                    </Link>
+                                                    <div className="product-unit-price">
+                                                        단가: {item.price?.toLocaleString()}원
+                                                    </div>
+                                                    <div className="product-price">
+                                                        {(item.price * item.quantity).toLocaleString()}원
+                                                    </div>
+                                                </div>
+
+                                                <div className="quantity-control">
+                                                    <button 
+                                                        className="link-btn"
+                                                        onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
+                                                        disabled={item.quantity <= 1}
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="quantity-display">{item.quantity}</span>
+                                                    <button 
+                                                        className="link-btn"
+                                                        onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+
+                                                <div className="cart-delete">
+                                                    <button
+                                                        className="link-btn delete cart-btn"
+                                                        onClick={() => handleDeleteCart(item.cartId)}
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    <div className="quantity-control">
-                                        <button className="btn-primary"
-                                        onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
-                                        disabled={item.quantity <= 1}
-                                        >
-                                        -
-                                        </button>
-
-                                        <span>{item.quantity}개</span>
-
-                                        <button className="btn-primary"
-                                        onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
-                                        >
-                                        +
-                                        </button>
-
+                                    {/* 장바구니 푸터 */}
+                                    <div className="cart-footer">
+                                        <div className="cart-summary">
+                                            <div className="summary-row">
+                                                <span className="summary-label">상품 금액</span>
+                                                <span className="summary-value">
+                                                    {selectedItems.length === 0
+                                                        ? 0
+                                                        : cart
+                                                            .filter(item => selectedItems.includes(item.cartId))
+                                                            .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
+                                                            .toLocaleString()}원
+                                                </span>
+                                            </div>
+                                            <div className="summary-row">
+                                                <span className="summary-label">배송비</span>
+                                                <span className="summary-value">무료</span>
+                                            </div>
+                                            <div className="summary-row total">
+                                                <span className="summary-label">총 결제금액</span>
+                                                <span className="summary-value">
+                                                    {selectedItems.length === 0
+                                                        ? 0
+                                                        : cart
+                                                            .filter(item => selectedItems.includes(item.cartId))
+                                                            .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
+                                                            .toLocaleString()}원
+                                                </span>
+                                            </div>
+                                        </div>
                                         <button
-                                        className="link-btn delete"
-                                        onClick={() => handleDeleteCart(item.cartId)}
+                                            className="cart-btn btn-primary"
+                                            disabled={selectedItems.length === 0}
+                                            onClick={handlePurchaseSelected}
                                         >
-                                        삭제
+                                            선택 상품 구매하기
                                         </button>
                                     </div>
-                                    </div>
-                                ))}
-                                </div>
-
-                                {/* 총액 + 선택 상품 구매 버튼 */}
-                                <div className="cart-footer">
-                                <p>
-                                    총 금액: 
-                                    {selectedItems.length === 0
-                                    ? 0
-                                    : cart
-                                        .filter(item => selectedItems.includes(item.cartId))
-                                        .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)}
-                                    원
-                                </p>
-
-                                <button
-                                    className="btn-primary"
-                                    disabled={selectedItems.length === 0}
-                                    onClick={handlePurchaseSelected}
-                                >
-                                    선택 상품 구매
-                                </button>
-                                </div>
-                            </>
+                                </>
                             )}
                         </div>
                     )}
