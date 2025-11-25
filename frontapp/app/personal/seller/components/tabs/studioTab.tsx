@@ -43,6 +43,8 @@ export type StudioTabProps = Pick<
     | 'onAddressSearch'
     | 'studioImages'
     | 'onStudioImageChange'
+    | 'deletedGalleryImageIds'
+    | 'setDeletedGalleryImageIds'
 >
 
 /*
@@ -74,10 +76,12 @@ export default function StudioTab(props: StudioTabProps) {
         onAddressSearch,
         studioImages,
         onStudioImageChange,
+        deletedGalleryImageIds,
+        setDeletedGalleryImageIds,
     } = props
     console.log('📌 StudioTab props:', props)
 
-    const serverImageUrl = (fileName: string) => `http://localhost:8090/api/v1/images/${fileName}`
+    const serverImageUrl = (fileName: string) => `http://localhost:8090/images/${fileName}`
 
     // 새 업로드 이미지 preview 생성
     const createPreview = (file: File | null) => (file ? URL.createObjectURL(file) : null)
@@ -91,11 +95,37 @@ export default function StudioTab(props: StudioTabProps) {
         (studio?.studioLogoImage?.imageUrl ? serverImageUrl(studio.studioLogoImage.imageUrl) : null)
 
     // 갤러리 이미지(새 파일 + 기존 이미지 합쳐서 미리보기)
+    /*
     const previewGalleryImages: string[] = [
         ...(studioImages?.STUDIO ?? []).map((f) => URL.createObjectURL(f)),
         ...(studio?.studioImages ?? []).map((img: any) => serverImageUrl(img.imageUrl)),
     ]
+    */
 
+    const previewGalleryImages: {
+        src: string
+        isNew: boolean
+        imageId?: number
+        newIndex?: number
+    }[] = [
+        // 🔹 새로 업로드된 이미지들
+        ...(studioImages?.STUDIO ?? []).map((file, index) => ({
+            src: URL.createObjectURL(file),
+            isNew: true,
+            newIndex: index,
+        })),
+
+        // 🔹 기존 이미지들 (삭제되지 않은 것만)
+        ...(studio?.studioImages ?? [])
+            .filter((img) => !props.deletedGalleryImageIds?.includes(img.id))
+            .map((img) => ({
+                src: serverImageUrl(img.imageFileName),
+                isNew: false,
+                imageId: img.id,
+            })),
+    ]
+    console.log('🖼 previewGalleryImages:', previewGalleryImages)
+    console.log('🗑 현재 삭제 리스트:', deletedGalleryImageIds)
     return (
         <div className="tab-content">
             {!isAuthenticated ? (
@@ -315,21 +345,32 @@ export default function StudioTab(props: StudioTabProps) {
                         />
                     )}
 
-                    {/* 기존 서버 이미지 */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                        {(studio?.studioImages ?? []).map((img) => (
-                            <img
-                                key={img.id}
-                                src={`http://localhost:8090/images/${img.imageFileName}`}
-                                style={{ width: 150, height: 150, objectFit: 'cover' }}
-                            />
-                        ))}
-                    </div>
-
                     {/* 새로 업로드한 미리보기 이미지 */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                        {previewGalleryImages.map((src, idx) => (
-                            <img key={idx} src={src} style={{ width: 150, height: 150, objectFit: 'cover' }} />
+                    <div className="gallery-wrapper">
+                        {previewGalleryImages.map((item, idx) => (
+                            <div key={idx} className="gallery-item">
+                                <img src={item.src} className="gallery-image" />
+
+                                {/* ❌ 삭제 버튼 (편집 모드일 때만 표시) */}
+                                {editMode.studio && (
+                                    <button
+                                        className="gallery-delete-btn"
+                                        onClick={() => {
+                                            if (item.isNew) {
+                                                // 🔥 새로 업로드한 이미지 삭제
+                                                const newList =
+                                                    studioImages?.STUDIO?.filter((_, i) => i !== item.newIndex) ?? []
+                                                onStudioImageChange?.('STUDIO', newList)
+                                            } else {
+                                                // 🔥 기존 이미지 삭제 목록에 추가 (id 기반)
+                                                props.setDeletedGalleryImageIds?.((prev) => [...prev, item.imageId!])
+                                            }
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                )}
+                            </div>
                         ))}
                     </div>
                 </div>
