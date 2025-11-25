@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.review.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.review.entity.Review;
 import lombok.AllArgsConstructor;
@@ -24,6 +26,8 @@ public class ReviewResponse {
     private Integer reviewLike;
     private Integer viewCount;
     private Boolean isActive;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdDate;
     private String createdBy;
     private String userNickName; // ✅ siteUser 닉네임만 노출

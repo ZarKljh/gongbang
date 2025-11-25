@@ -112,15 +112,17 @@ public class ReviewImageService {
     @Value("${custom.genFileDirPath}")
     private String uploadPath;
 
-    /**
-     * 리뷰 이미지 업로드
-     */
+    // 이미지 저장
     public RsData<ImageUploadResponse> uploadReviewImage(ImageUploadRequest request) {
+        System.out.println("📌 [UPLOAD REQ] refId = " + request.getRefId()
+                + ", refType = " + request.getRefType()
+                + ", sortOrder = " + request.getSortOrder()
+                + ", fileName = " + (request.getFile() != null ? request.getFile().getOriginalFilename() : "null"));
+
         try {
             MultipartFile file = request.getFile();
             if (file == null || file.isEmpty()) return RsData.of("400", "이미지 파일이 없습니다.");
 
-            // 디렉토리 생성 보장
             Files.createDirectories(Paths.get(uploadPath));
 
             // 파일명 생성
@@ -149,9 +151,7 @@ public class ReviewImageService {
         }
     }
 
-    /**
-     * 리뷰 이미지 조회
-     */
+    // 조회
     public List<ImageUploadResponse> getReviewImages(Long reviewId) {
         return imageRepository.findALLByRefIdAndRefType(reviewId, Image.RefType.REVIEW)
                 .stream()
@@ -159,9 +159,7 @@ public class ReviewImageService {
                 .toList();
     }
 
-    /**
-     * 리뷰 이미지 삭제
-     */
+    // 삭제
     public RsData<Void> deleteReviewImage(Long imageId) {
         return imageRepository.findById(imageId)
                 .map(image -> {
