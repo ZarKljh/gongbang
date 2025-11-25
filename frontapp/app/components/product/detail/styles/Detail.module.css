@@ -72,7 +72,7 @@
 
 /* 상품 타이틀 & 설명 */
 .productTitle {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 700;
     margin: 0;
     line-height: 1.35;
@@ -84,7 +84,7 @@
 }
 .productDesc p {
     margin: 4px 0 0;
-    font-size: 14px;
+    font-size: 16px;
     color: #6a5a47;
     line-height: 1.6;
 }
@@ -98,7 +98,7 @@
     padding: 12px 0;
     border-top: 1px solid #e5e5e5;
     border-bottom: 1px solid #e5e5e5;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .optionRow > span:first-child {
@@ -118,7 +118,7 @@
 /* 총합 영역 */
 .totalRow {
     text-align: right;
-    font-size: 15px;
+    font-size: 16px;
     margin-bottom: 4px;
 }
 .totalRow span {
@@ -210,7 +210,7 @@
 
 /* 팔로우 버튼: 브라운 포인트 */
 .btnFollow {
-    padding: 4px 12px;
+    padding: 4px 14px;
     font-size: 13px;
     border: none;
     background: #b3824a;
@@ -268,7 +268,7 @@
     background: linear-gradient(135deg, #cfa777, #b48754);
     font-weight: 700;
     font-size: 15px;
-    color: #2f1f12;
+    color: #fff;
     cursor: pointer;
 }
 .btnBuy:hover {
@@ -297,7 +297,7 @@
     align-items: center;
     justify-content: center;
     transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.05s;
-    color: #4a3a2a;
+    color: #8b5a2b;
 }
 
 .btnCart {
