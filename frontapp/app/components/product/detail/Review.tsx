@@ -518,7 +518,7 @@ export default function Review() {
                         )}
                     </div>
 
-                    <hr />
+                    <hr style={{border:'1px solid #E9DCC4'}}/>
                     <section className="photoReview-container">
                         <h3 className="photoReview-title">📸 포토 리뷰</h3>
 
