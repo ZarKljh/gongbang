@@ -9,8 +9,12 @@ import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
 export default function SellerSignupPage() {
     const [step, setStep] = useState(1)
     const router = useRouter()
-    const { errors, validate } = signupUserValidation()
-    const { errors: studioErrors, validate: validateStudio } = signupSellerValidation()
+    const { errors, validate, validateField: validateUserField } = signupUserValidation()
+    const {
+        errors: studioErrors,
+        validate: validateStudio,
+        validateField: validateStudioField,
+    } = signupSellerValidation()
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: '',
         password: '',
@@ -21,9 +25,15 @@ export default function SellerSignupPage() {
         birth: '',
         nickName: '',
         mobilePhone: '',
+        profileImageFile: null,
         profileImageUrl: '', // 이미지 URL (예: 서버에 업로드된 경로)
         profileImageName: '', // 이미지 파일명
     })
+
+    const [userNameCheckMsg, setUserNameCheckMsg] = useState('')
+    const [nickNameCheckMsg, setNickNameCheckMsg] = useState('')
+    const [isUserNameValid, setIsUserNameValid] = useState(false)
+    const [isNickNameValid, setIsNickNameValid] = useState(false)
 
     const [studioInfo, setStudioInfo] = useState<StudioInfo>({
         categoryId: '',
@@ -37,6 +47,9 @@ export default function SellerSignupPage() {
         studioAddPostNumber: '',
         studioAddMain: '',
         studioAddDetail: '',
+        studioMainImageFile: null,
+        studioLogoImageFile: null,
+        studioGalleryImageFiles: [],
         studioMainImageUrl: '',
         studioLogoImageUrl: '',
         studioGalleryImageUrls: [],
@@ -51,9 +64,52 @@ export default function SellerSignupPage() {
     const [previewLogoImage, setPreviewLogoImage] = useState<string | null>(null)
     const [previewGalleryImages, setPreviewGalleryImages] = useState<string[]>([])
 
+    const checkUserName = async () => {
+        if (!userInfo.userName.trim()) {
+            setUserNameCheckMsg('아이디를 입력해주세요.')
+            return
+        }
+
+        const res = await fetch(
+            `http://localhost:8090/api/v1/auth/signup/user/checkusername?userName=${userInfo.userName}`,
+        )
+        const body = await res.json()
+
+        setUserNameCheckMsg(body.msg)
+        setIsUserNameValid(body.data === true)
+    }
+
+    const checkNickName = async () => {
+        if (!userInfo.nickName.trim()) {
+            setNickNameCheckMsg('닉네임을 입력해주세요.')
+            return
+        }
+
+        const res = await fetch(
+            `http://localhost:8090/api/v1/auth/signup/user/checknickname?nickName=${userInfo.nickName}`,
+        )
+        const body = await res.json()
+
+        setNickNameCheckMsg(body.msg)
+        setIsNickNameValid(body.data === true)
+    }
+
     const handleUserChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
-        setUserInfo({ ...userInfo, [name]: value })
+        const newUser = { ...userInfo, [name]: value }
+        setUserInfo(newUser)
+
+        validateUserField(name as keyof UserInfo, value, newUser)
+
+        if (name === 'userName') {
+            setIsUserNameValid(false)
+            setUserNameCheckMsg('')
+        }
+        if (name === 'nickName') {
+            setIsNickNameValid(false)
+            setNickNameCheckMsg('')
+        }
+
         //setUserInfo((prev) => ({ ...prev, [name]: value }));
     }
 
@@ -61,15 +117,18 @@ export default function SellerSignupPage() {
     const handleUserImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-
+        const previewUrl = URL.createObjectURL(file)
+        /*
         const previewUrl = URL.createObjectURL(file)
         setPreviewProfileImage(previewUrl)
-
+        */
         setUserInfo((prev) => ({
             ...prev,
+            profileImageFile: file,
             profileImageUrl: previewUrl, // 서버 업로드 전 로컬 미리보기 URL
             profileImageName: file.name, // 파일명 저장
         }))
+        setPreviewProfileImage(previewUrl)
     }
 
     const handleStudioChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -77,19 +136,46 @@ export default function SellerSignupPage() {
         // 이미지파일 입력 처리
         if ('files' in e.target && e.target.files) {
             const files = e.target.files
+            const file = files[0]
+            const previewUrl = URL.createObjectURL(file)
 
             if (name === 'studioGalleryImages') {
                 const fileArray = Array.from(files).slice(0, 5)
-                const localUrls = fileArray.map((file) => URL.createObjectURL(file))
+                const previewUrls = fileArray.map((file) => URL.createObjectURL(file))
                 const fileNames = fileArray.map((file) => file.name) // ✅ 파일명 배열 생성
-
-                setStudioInfo((prev) => ({
-                    ...prev,
-                    studioGalleryImageUrls: localUrls,
+                const newStudio = {
+                    ...studioInfo,
+                    studioGalleryImageFiles: fileArray,
+                    studioGalleryImageUrls: previewUrls,
                     studioGalleryImageNames: fileNames,
-                }))
-                setPreviewGalleryImages(localUrls)
-            } else {
+                }
+                setStudioInfo(newStudio)
+                setPreviewGalleryImages(previewUrls)
+
+                validateStudioField('studioGalleryImageUrls', previewUrls, newStudio)
+            } else if (name === 'studioMainImage') {
+                const newStudio = {
+                    ...studioInfo,
+                    studioMainImageFile: file,
+                    studioMainImageUrl: previewUrl,
+                    studioMainImageName: file.name,
+                }
+                setStudioInfo(newStudio)
+                setPreviewMainImage(previewUrl)
+                validateStudioField('studioMainImageUrl', previewUrl, newStudio)
+            } else if (name === 'studioLogoImage') {
+                const newStudio = {
+                    ...studioInfo,
+                    studioLogoImageFile: file,
+                    studioLogoImageUrl: previewUrl,
+                    studioLogoImageName: file.name,
+                }
+                setStudioInfo(newStudio)
+                setPreviewLogoImage(previewUrl)
+                validateStudioField('studioLogoImageUrl', previewUrl, newStudio)
+            }
+            /*
+            else {
                 const file = files[0]
                 const localUrl = URL.createObjectURL(file)
 
@@ -109,9 +195,12 @@ export default function SellerSignupPage() {
                     setPreviewLogoImage(localUrl)
                 }
             }
+                */
             return
         }
-        setStudioInfo((prev) => ({ ...prev, [name]: value }))
+        const newStudio = { ...studioInfo, [name]: value }
+        setStudioInfo(newStudio)
+        validateStudioField(name as keyof StudioInfo, value, newStudio)
         //setStudioInfo((prev) => ({ ...prev, [name]: value }));
     }
 
@@ -122,6 +211,15 @@ export default function SellerSignupPage() {
             // 검증 실패 → UserForm에서 ErrorMessage 컴포넌트가 에러 표시함
             return
         }
+        if (!isUserNameValid) {
+            alert('아이디 중복확인을 해주세요.')
+            return
+        }
+
+        if (!isNickNameValid) {
+            alert('닉네임 중복확인을 해주세요.')
+            return
+        }
         setStep(2)
     }
     const handlePrev = () => {
@@ -129,8 +227,11 @@ export default function SellerSignupPage() {
     }
 
     const handleSubmit = async () => {
-        const { studioMainImageUrl, studioLogoImageUrl, studioGalleryImageUrls } = studioInfo
-        if (!studioMainImageUrl || !studioLogoImageUrl || studioGalleryImageUrls.length === 0) {
+        if (
+            !studioInfo.studioMainImageFile ||
+            !studioInfo.studioLogoImageFile ||
+            studioInfo.studioGalleryImageFiles.length === 0
+        ) {
             alert('이미지 업로드가 완료되지 않았습니다. 잠시 후 다시 시도해주세요.')
             return
         }
@@ -141,13 +242,43 @@ export default function SellerSignupPage() {
             role: 'SELLER',
         }
 
+        /*
+        const { studioMainImageUrl, studioLogoImageUrl, studioGalleryImageUrls } = studioInfo
+        if (!studioMainImageUrl || !studioLogoImageUrl || studioGalleryImageUrls.length === 0) {
+            alert('이미지 업로드가 완료되지 않았습니다. 잠시 후 다시 시도해주세요.')
+            return
+        }
+        
+    
+        */
+        const formData = new FormData()
+
+        // 🔥 1) request(JSON) 추가
+        formData.append('request', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
+
+        // 🔥 2) 파일 추가
+        if (userInfo.profileImageFile) {
+            formData.append('profileImage', userInfo.profileImageFile)
+        }
+
+        if (studioInfo.studioMainImageFile) {
+            formData.append('studioMainImage', studioInfo.studioMainImageFile)
+        }
+
+        if (studioInfo.studioLogoImageFile) {
+            formData.append('studioLogoImage', studioInfo.studioLogoImageFile)
+        }
+
+        studioInfo.studioGalleryImageFiles.forEach((file) => {
+            formData.append('studioGalleryImages', file)
+        })
+
         // ✅ 여기에서 콘솔로 확인
-        console.log('회원가입 요청 payload:', payload)
+        console.log('회원가입 요청 payload:', [...formData.entries()])
 
         const response = await fetch('http://localhost:8090/api/v1/auth/signup/seller', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            body: formData,
         })
 
         if (response.ok) {
@@ -171,15 +302,19 @@ export default function SellerSignupPage() {
                     setUserInfo={setUserInfo}
                     setPreviewProfileImage={setPreviewProfileImage}
                     errors={errors}
+                    validateField={validateUserField}
+                    checkUserName={checkUserName}
+                    checkNickName={checkNickName}
+                    userNameCheckMsg={userNameCheckMsg}
+                    nickNameCheckMsg={nickNameCheckMsg}
+                    isUserNameValid={isUserNameValid}
+                    isNickNameValid={isNickNameValid}
                 />
             )}
             {step === 2 && (
                 <StudioForm
                     studioInfo={studioInfo}
                     onChange={handleStudioChange}
-                    onMainImagePreview={handleStudioChange}
-                    onLogoImagePreview={handleStudioChange}
-                    onGalleryImagesPreview={handleStudioChange}
                     onSubmit={handleSubmit}
                     onPrev={handlePrev}
                     setStudioInfo={setStudioInfo}
@@ -187,6 +322,7 @@ export default function SellerSignupPage() {
                     previewLogoImage={previewLogoImage}
                     previewGalleryImages={previewGalleryImages}
                     errors={studioErrors}
+                    validateField={validateStudioField}
                 />
             )}
         </section>

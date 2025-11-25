@@ -57,6 +57,23 @@ export default function Main() {
         }
     }
 
+    useEffect(() => {
+        if (process.env.NODE_ENV !== 'production') return
+
+        const VISITED_KEY = 'main_visited'
+
+        if (sessionStorage.getItem(VISITED_KEY)) {
+            return
+        }
+
+        sessionStorage.setItem(VISITED_KEY, '1')
+
+        api.post('/admin/metrics/visit', {
+            path: '/',
+            referrer: document.referrer || null,
+        }).catch(() => {})
+    }, [])
+
     return (
         <>
             {/* 배너 */}

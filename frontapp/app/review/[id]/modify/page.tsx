@@ -8,6 +8,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 export default function ReviewModify() {
     const params = useParams()
     const router = useRouter()
+    const [imageFiles, setImageFiles] = useState([])
     const [review, setReview] = useState({
         rating: 0,
         content: '',
@@ -22,7 +23,13 @@ export default function ReviewModify() {
 
     const fetchReview = async () => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                },
+                credentials: 'include',
+            })
             const data = await res.json()
             if (res.ok) {
                 setReview(data.data)
@@ -49,47 +56,19 @@ export default function ReviewModify() {
             return
         }
 
-        const token = localStorage.getItem('accessToken')
-
+        // base64 미리보기만
         const previews = []
-        const uploadedUrls = []
-
         for (const file of files) {
-            // 1️⃣ 미리보기용 base64
-            const base64 = await toBase64(file)
-            previews.push(base64)
-
-            // 2️⃣ 서버 업로드
-            const formData = new FormData()
-            formData.append('file', file)
-
-            try {
-                const res = await fetch('http://localhost:8090/api/v1/images/upload', {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` },
-                    body: formData,
-                })
-                const url = await res.text()
-                uploadedUrls.push(url)
-            } catch (err) {
-                console.error('❌ 업로드 실패:', err)
-            }
+            previews.push(await toBase64(file))
         }
 
-        // 이미지 삭제
-        const handleRemoveImage = (index) => {
-            setReview((prev) => ({
-                ...prev,
-                imageUrls: prev.imageUrls.filter((_, i) => i !== index),
-            }))
-        }
-
-        // 3️⃣ base64 → 즉시 미리보기, url은 나중에 서버 저장용
         setReview((prev) => ({
             ...prev,
-            imagePreviews: [...(prev.imagePreviews || []), ...previews],
-            imageUrls: [...prev.imageUrls, ...uploadedUrls],
+            imageUrls: [...prev.imageUrls, ...previews],
         }))
+
+        // 나중에 서버 업로드용 파일만 따로 저장
+        setImageFiles((prev) => [...prev, ...files])
     }
 
     // base64 변환 유틸
@@ -112,32 +91,44 @@ export default function ReviewModify() {
     // 수정 요청
     const handleSubmit = async (e) => {
         e.preventDefault()
+
         const reviewToSend = {
             rating: review.rating,
             content: review.content,
-            imageUrls: review.imageUrls,
+             imageUrls: review.imageUrls.filter((url) => !url.startsWith('data:')), // base64 + 기존 저장된 URL
         }
 
-        try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+        // 1) 리뷰 본문 먼저 PATCH
+        const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            },
+            credentials: 'include',
+            body: JSON.stringify(reviewToSend),
+        })
+
+        if (!res.ok) return alert('리뷰 수정 실패')
+
+        // 2) 새로 추가된 파일만 업로드
+        for (let i = 0; i < imageFiles.length; i++) {
+            const formData = new FormData()
+            formData.append('file', imageFiles[i])
+            formData.append('refId', params.id.toString())
+            formData.append('refType', 'REVIEW')
+            formData.append('sortOrder', i.toString())
+
+            await fetch('http://localhost:8090/api/v1/images/upload', {
+                method: 'POST',
+                body: formData,
                 credentials: 'include',
-                body: JSON.stringify(reviewToSend),
             })
-
-            if (res.ok) {
-                alert('리뷰가 수정되었습니다.')
-                router.push(`/review/${params.id}`)
-            } else {
-                alert('리뷰 수정 실패')
-            }
-        } catch (err) {
-            console.error('❌ 수정 오류:', err)
         }
+
+        alert('리뷰가 수정되었습니다.')
+        router.push(`/review/${params.id}`)
     }
-
-
 
     return (
         <div
@@ -157,9 +148,7 @@ export default function ReviewModify() {
                 <form onSubmit={handleSubmit}>
                     {/* 별점 */}
                     <div style={{ marginBottom: '20px' }}>
-                        <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                            별점을 다시 선택해주세요.
-                        </p>
+                        <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>별점을 다시 선택해주세요.</p>
                         <div
                             style={{
                                 borderBottom: '1px solid #ccc',
@@ -190,9 +179,7 @@ export default function ReviewModify() {
 
                     {/* 내용 */}
                     <div style={{ marginBottom: '20px' }}>
-                        <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                            수정할 내용을 입력해주세요.
-                        </p>
+                        <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>수정할 내용을 입력해주세요.</p>
                         <textarea
                             name="content"
                             minLength={5}
@@ -250,9 +237,7 @@ export default function ReviewModify() {
                                                         boxShadow: snapshot.isDragging
                                                             ? '0 4px 12px rgba(0,0,0,0.3)'
                                                             : '0 2px 6px rgba(0,0,0,0.1)',
-                                                        transform: snapshot.isDragging
-                                                            ? 'scale(1.05)'
-                                                            : 'scale(1)',
+                                                        transform: snapshot.isDragging ? 'scale(1.05)' : 'scale(1)',
                                                         transition: 'all 0.2s ease',
                                                         backgroundColor: '#fff',
                                                         ...provided.draggableProps.style,
@@ -273,15 +258,12 @@ export default function ReviewModify() {
                                                     />
                                                     <button
                                                         type="button"
-                                                        onClick={() =>
-                                                            handleRemoveImage(index)
-                                                        }
+                                                        onClick={() => handleRemoveImage(index)}
                                                         style={{
                                                             position: 'absolute',
                                                             top: '6px',
                                                             right: '6px',
-                                                            background:
-                                                                'rgba(0,0,0,0.6)',
+                                                            background: 'rgba(0,0,0,0.6)',
                                                             color: 'white',
                                                             border: 'none',
                                                             borderRadius: '50%',
@@ -291,12 +273,10 @@ export default function ReviewModify() {
                                                             transition: '0.2s',
                                                         }}
                                                         onMouseEnter={(e) =>
-                                                            (e.currentTarget.style.background =
-                                                                'rgba(0,0,0,0.8)')
+                                                            (e.currentTarget.style.background = 'rgba(0,0,0,0.8)')
                                                         }
                                                         onMouseLeave={(e) =>
-                                                            (e.currentTarget.style.background =
-                                                                'rgba(0,0,0,0.6)')
+                                                            (e.currentTarget.style.background = 'rgba(0,0,0,0.6)')
                                                         }
                                                     >
                                                         <FaTimes size={10} />
@@ -325,14 +305,8 @@ export default function ReviewModify() {
                                                 backgroundColor: '#fafafa',
                                                 transition: '0.2s',
                                             }}
-                                            onMouseEnter={(e) =>
-                                                (e.currentTarget.style.borderColor =
-                                                    '#AD9263')
-                                            }
-                                            onMouseLeave={(e) =>
-                                                (e.currentTarget.style.borderColor =
-                                                    '#bbb')
-                                            }
+                                            onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#AD9263')}
+                                            onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#bbb')}
                                         >
                                             <FaPlus />
                                             <input

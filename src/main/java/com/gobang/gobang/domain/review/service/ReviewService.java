@@ -3,6 +3,8 @@ package com.gobang.gobang.domain.review.service;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
@@ -10,8 +12,6 @@ import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,9 +34,9 @@ public class ReviewService {
     private final SiteUserRepository siteUserRepository;
     private final ReviewImageService reviewImageService ;
     private final ReviewImageRepository reviewImageRepository;
+    private final ImageRepository imageRepository;
 
-
-    public Page<Review> getReviews(Long productId, int page, String sort, String keyword) {
+    public Page<Review> getReviews(Long productId, int page, String sort, List<String> kwTypes, String keyword) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
 
         Sort sortOption = switch (sort) {
@@ -49,11 +49,41 @@ public class ReviewService {
         };
 
         Pageable pageable = PageRequest.of(page, 10, sortOption);
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+//        boolean hasKwTypes = kwTypes != null && !kwTypes.isEmpty();
 
         // productId 기준 리뷰 조회
         Page<Review> reviewPage = (productId != null)
                 ? reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable)
                 : reviewRepository.findByIsActiveTrue(pageable);
+
+        if (hasKeyword) {
+            // 일단은 내용(content) 기준 검색만 처리 (kwTypes는 나중에 확장)
+            if (productId != null) {
+                // 특정 상품 + 키워드 검색
+                reviewPage = reviewRepository
+                        .findByProductIdAndContentContainingIgnoreCase(
+                                productId,
+                                keyword,
+                                pageable
+                        );
+            } else {
+                // 전체 리뷰 + 키워드 검색
+                reviewPage = reviewRepository
+                        .findByContentContainingIgnoreCase(
+                                keyword,
+                                pageable
+                        );
+            }
+        } else {
+            // 검색어 없을 때는 기존 로직 그대로
+            if (productId != null) {
+                reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
+            } else {
+                reviewPage = reviewRepository.findByIsActiveTrue(pageable);
+            }
+        }
+
 
         // 각 리뷰에 이미지 목록 수동 주입
         reviewPage.forEach(review -> {
@@ -99,7 +129,7 @@ public class ReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
 
         // 하나의 상품에 하나의 리뷰 허용
-        if (reviewRepository.existsBySiteUserAndProductId(user, req.getProductId())) {
+        if (reviewRepository.existsBySiteUserAndProductIdAndIsActiveTrue(user, req.getProductId())) {
             return RsData.of("400", "이미 리뷰를 작성했습니다.");
         }
 
@@ -121,9 +151,9 @@ public class ReviewService {
         reviewRepository.save(review);
 
         // 이미지가 존재하면 함께 저장
-        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
-            reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
-        }
+//        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
+//            reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
+//        }
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
@@ -222,7 +252,7 @@ public class ReviewService {
         }
 
         // 이미지 삭제
-        reviewImageService.deleteImagesByReviewId(reviewId);
+//        reviewImageService.deleteImagesByReviewId(reviewId);
 
         reviewRepository.delete(review);
         return RsData.of("200", "리뷰가 삭제되었습니다.", review);
@@ -231,7 +261,7 @@ public class ReviewService {
     public List<ReviewResponse> getReviewsByUserId(Long userId) {
         return reviewRepository.findBySiteUser_Id(userId)
                 .stream()
-                .map(ReviewResponse::fromEntity)
+                .map(item -> ReviewResponse.fromEntity(item, imageRepository))
                 .collect(Collectors.toList());
     }
 

@@ -114,7 +114,7 @@ export default function ReportButton({ targetType, targetId }: Props) {
                         >
                             {submitting ? '전송 중...' : '신고 보내기'}
                         </button>
-                        <button type="button" onClick={() => setOpen(false)} className={styles.cancelButton}>
+                        <button type="button" onClick={() => setOpen(false)} className={styles.closeButton}>
                             취소
                         </button>
                     </div>

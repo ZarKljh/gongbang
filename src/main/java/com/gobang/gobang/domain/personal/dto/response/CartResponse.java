@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
+import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.entity.Cart;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,8 +21,16 @@ public class CartResponse {
     private Integer price;
     private Long quantity;
     private LocalDateTime createdAt;
+    private String imageUrl;
 
-    public static CartResponse from(Cart cart) {
+    public static CartResponse from(Cart cart, ImageRepository imageRepository) {
+        String imageUrl = imageRepository
+                .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, cart.getProduct().getId())
+                .stream()
+                .findFirst()
+                .map(img -> "/api/v1/image/product/" + img.getImageFileName())
+                .orElse(null);
+
         return CartResponse.builder()
                 .cartId(cart.getCartId())
                 .userId(cart.getSiteUser().getId())
@@ -29,6 +39,7 @@ public class CartResponse {
                 .price(cart.getProduct().getBasePrice())
                 .quantity(cart.getQuantity())
                 .createdAt(cart.getCreatedAt())
+                .imageUrl(imageUrl)
                 .build();
     }
 }

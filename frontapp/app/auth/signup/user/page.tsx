@@ -24,7 +24,7 @@ export default function SignupUser() {
 
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
     const [profileImageFile, setProfileFile] = useState<File | null>(null)
-    const { errors, validate } = signupUserValidation()
+    const { errors, validate, validateField } = signupUserValidation()
 
     // 중복검사 결과 저장
     const [userNameCheckMsg, setUserNameCheckMsg] = useState('')
@@ -76,6 +76,15 @@ export default function SignupUser() {
             setIsNickNameValid(false)
             setNickNameCheckMsg('')
         }
+        // name 을 keyof SignupUser 로 캐스팅하여 전달
+        validateField(name as keyof SignupUser, value, { ...formData, [name]: value })
+    }
+
+    const generateRandomFileName = (originalName: string) => {
+        const ext = originalName.split('.').pop() // 확장자
+        const randomStr = Math.random().toString(36).substring(2, 10) // 8자리 랜덤
+        const timestamp = Date.now()
+        return `profile_${timestamp}_${randomStr}.${ext}`
     }
 
     const handleImagePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,6 +97,10 @@ export default function SignupUser() {
     const handleRemoveImage = () => {
         setProfileFile(null)
         setPreviewProfileImage(null)
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -119,23 +132,31 @@ export default function SignupUser() {
         try {
             const submitData = new FormData()
 
+            // 업로드 파일 이름 자동 변경
+            let fileToUpload = profileImageFile
+            let newFileName: string | null = null
+
+            if (profileImageFile) {
+                newFileName = generateRandomFileName(profileImageFile.name)
+                fileToUpload = new File([profileImageFile], newFileName, { type: profileImageFile.type })
+            }
+
             // JSON Blob으로 만들어서 'data'라는 이름으로 append
             const dataWithoutImage = {
                 ...formData,
-                profileImageName: profileImageFile ? profileImageFile.name : null,
-                birth: formData.birth || null
-            }
-            const blob = new Blob([JSON.stringify(dataWithoutImage)], { type: "application/json" })
-            submitData.append("data", blob)
-
-            // 파일이 있으면 별도 Part로 추가
-            if (profileImageFile) {
-                dataWithoutImage.profileImageName = profileImageFile.name
-                submitData.append("file", profileImageFile)
+                profileImageName: newFileName,
+                birth: formData.birth || null,
             }
 
-            const response = await fetch("http://localhost:8090/api/v1/auth/signup/user", {
-                method: "POST",
+            const blob = new Blob([JSON.stringify(dataWithoutImage)], { type: 'application/json' })
+            submitData.append('data', blob)
+
+            if (fileToUpload) {
+                submitData.append('file', fileToUpload)
+            }
+
+            const response = await fetch('http://localhost:8090/api/v1/auth/signup/user', {
+                method: 'POST',
                 body: submitData,
             })
 
@@ -144,12 +165,12 @@ export default function SignupUser() {
                 router.push('/')
             } else {
                 const error = await response.text()
-                console.error("회원가입 실패:", error)
+                console.error('회원가입 실패:', error)
                 alert('회원가입에 실패하였습니다')
             }
         } catch (err) {
             console.error(err)
-            alert("회원가입 에러")
+            alert('회원가입 에러')
         }
     }
 
@@ -173,8 +194,10 @@ export default function SignupUser() {
                             중복확인
                         </button>
                     </div>
-                    <ErrorMessage message={errors.userName} />
-                    <ErrorMessage message={userNameCheckMsg} success={isUserNameValid} />
+                    {errors.userName && <ErrorMessage message={errors.userName} />}
+                    {!errors.userName && userNameCheckMsg && (
+                        <ErrorMessage message={userNameCheckMsg} success={isUserNameValid} />
+                    )}
                     <div className="form-group">
                         <label className="form-label required">패스워드</label>
                         <input
@@ -248,8 +271,10 @@ export default function SignupUser() {
                             중복확인
                         </button>
                     </div>
-                    <ErrorMessage message={errors.nickName} />
-                    <ErrorMessage message={nickNameCheckMsg} success={isNickNameValid} />
+                    {errors.nickName && <ErrorMessage message={errors.nickName} />}
+                    {!errors.nickName && nickNameCheckMsg && (
+                        <ErrorMessage message={nickNameCheckMsg} success={isNickNameValid} />
+                    )}
                     <div className="form-group">
                         <label className="form-label required">휴대전화</label>
                         <input

@@ -79,11 +79,12 @@ public class SiteUserService {
         newUser.setRefreshToken(refreshToken);
 
         SiteUser savedSiteUser = siteUserRepository.save(newUser);
-
+        /*
         Image profileImage = buildProfileImagesFromRequest(signupUserRequest, savedSiteUser);
         if (profileImage != null) {
             imageRepository.save(profileImage);
         }
+         */
         return newUser;
     }
 
@@ -159,9 +160,11 @@ public class SiteUserService {
                 .nickName(signupSellerRequest.getNickName())
                 //초기 사업자 회원가입시 user권한으로 가입, 추후 admin입점심사 후 seller 권한 변경
                 .role(RoleType.USER)
+                .status(signupSellerRequest.getStatus())
                 .gender(signupSellerRequest.getGender())
                 .birth(signupSellerRequest.getBirth().atStartOfDay())
                 .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 //.profileImg(signupUserRequest.getProfileImg())
                 .build();
 
@@ -176,12 +179,14 @@ public class SiteUserService {
                 .studioEmail(signupSellerRequest.getStudioEmail())
                 .studioBusinessNumber(signupSellerRequest.getStudioBusinessNumber())
                 .studioAddPostNumber(signupSellerRequest.getStudioAddPostNumber())
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 .studioAddMain(signupSellerRequest.getStudioAddMain())
                 .studioAddDetail(signupSellerRequest.getStudioAddDetail())
                 .build();
 
         // ✅ 이미지 정보 → Image 엔티티 리스트로 변환
-        List<Image> studioImages = buildStudioImagesFromRequest(signupSellerRequest);
+        //List<Image> studioImages = buildStudioImagesFromRequest(signupSellerRequest);
 
         String refreshToken = jwtProvider.genRefreshToken(newUser);
         newUser.setRefreshToken(refreshToken);
@@ -190,7 +195,7 @@ public class SiteUserService {
         System.out.println("유저정보가 저장되었습니다");
 
         //studioService.createStudio(newStudio);
-        studioService.createStudio(newStudio, studioImages);
+        studioService.createStudio(newStudio);
         System.out.println("공방이 저장되었습니다");
         return newUser;
 
@@ -319,7 +324,7 @@ public class SiteUserService {
     private Image buildProfileImagesFromRequest(SignupUserRequest request, SiteUser savedSiteUser) {
 
         if (request.getProfileImageName() != null && !request.getProfileImageName().isEmpty()) {
-
+            System.out.println(request.getProfileImageName());
             Image profileImage = Image.builder()
                     .imageUrl(request.getProfileImageName())
                     .refId(savedSiteUser.getId())

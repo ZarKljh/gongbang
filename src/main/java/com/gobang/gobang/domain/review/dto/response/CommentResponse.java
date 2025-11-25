@@ -11,12 +11,14 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentResponse {
+    private Long userId;
     private Long commentId;
     private String reviewComment;
     private String createdBy;
     private Long reviewId;
 
     public CommentResponse(ReviewComment comment) {
+        this.userId = (comment.getSiteUser().getId());
         this.commentId = comment.getCommentId();
         this.reviewComment = comment.getReviewComment();
         this.createdBy = comment.getCreatedBy();

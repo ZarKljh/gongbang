@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.entity.Delivery;
 import com.gobang.gobang.domain.personal.entity.Orders;
 import lombok.AllArgsConstructor;
@@ -26,13 +27,12 @@ public class OrdersResponse {
     private String deliveryStatus;
     private String completedAt; // String으로 변경
     private String status;
-    private String cancelReason;
-    private String returnReason;
-    private String exchangeReason;
+    private String reason;
     private List<OrderItemResponse> items;
     private List<DeliveryResponse> deliveries;
 
     public static OrdersResponse from(Orders orders) {
+        final ImageRepository imageRepository = null;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         String createdDateStr = orders.getCreatedDate() != null
@@ -40,7 +40,7 @@ public class OrdersResponse {
                 : LocalDateTime.now().format(formatter);
 
         List<OrderItemResponse> items = orders.getOrderItems() != null
-                ? orders.getOrderItems().stream().map(OrderItemResponse::from).toList()
+                ? orders.getOrderItems().stream().map(item -> OrderItemResponse.from(item, imageRepository)).toList()
                 : Collections.emptyList();
 
         List<DeliveryResponse> deliveries = orders.getDeliveries() != null
@@ -68,9 +68,7 @@ public class OrdersResponse {
                 .deliveryStatus(deliveryStatus)
                 .completedAt(completedAt)
                 .status(orders.getStatus())
-                .cancelReason(orders.getCancelReason())
-                .returnReason(orders.getReturnReason())
-                .exchangeReason(orders.getExchangeReason())
+                .reason(orders.getReason())
                 .items(items)
                 .deliveries(deliveries)
                 .build();

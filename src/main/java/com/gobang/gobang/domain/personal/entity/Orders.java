@@ -42,23 +42,17 @@ public class Orders {
     private String status; // 취소, 반품, 교환, null
 
     // 취소, 반품, 교환 사유
-    @Column(name = "cancel_reason")
-    private String cancelReason;
-
-    @Column(name = "return_reason")
-    private String returnReason;
-
-    @Column(name = "exchange_reason")
-    private String exchangeReason;
+    @Column(name = "reason")
+    private String reason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
     private PaymentMethod paymentMethod;
 
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Delivery> deliveries = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 }

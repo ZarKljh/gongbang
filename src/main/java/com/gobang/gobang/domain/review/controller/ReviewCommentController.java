@@ -13,6 +13,8 @@ import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.rq.Rq;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +28,7 @@ public class ReviewCommentController {
     private final ReviewCommentService reviewCommentService;
     private final Rq rq;
 
-    // ✅ 댓글 등록
+    // 댓글 등록
     @PostMapping("/{reviewId}/comments")
     public RsData<CommentCreateResponse> createComment(
             @PathVariable Long reviewId,
@@ -55,7 +57,7 @@ public class ReviewCommentController {
                 .orElseGet(() -> RsData.of("404", "댓글이 존재하지 않습니다."));
     }
 
-    // ✅ 댓글 수정
+    // 댓글 수정
     @PatchMapping("/{reviewId}/comments/{commentId}")
     public RsData<CommentModifyResponse> modifyComment(
             @PathVariable Long reviewId,
@@ -68,14 +70,14 @@ public class ReviewCommentController {
             return RsData.of("404", "%d번 댓글이 존재하지 않습니다.".formatted(commentId));
         }
 
-        // ✅ 수정 권한 체크 (작성자 본인만 수정 가능)
+        // 수정 권한 체크 (작성자 본인만 수정 가능)
         SiteUser currentUser = rq.getSiteUser();
         ReviewComment comment = optComment.get();
         if (currentUser == null || !comment.getCreatedBy().equals(currentUser.getUserName())) {
             return RsData.of("403", "수정 권한이 없습니다.");
         }
 
-        // ✅ 실제 수정 처리
+        // 실제 수정 처리
         RsData<ReviewComment> modifyRs = reviewCommentService.modifyComment(comment, req.getReviewComment());
 
         return RsData.of(
@@ -90,18 +92,29 @@ public class ReviewCommentController {
     public RsData<?> deleteComment(
             @PathVariable Long reviewId,
             @PathVariable Long commentId
+
     ) {
+
+        // 로그인 사용자 확인
         SiteUser currentUser = rq.getSiteUser();
         if (currentUser == null) {
             return RsData.of("401", "로그인이 필요합니다.");
         }
 
-        // ✅ 현재 사용자 역할이 SELLER인지 확인
-        if (currentUser.getRole() != RoleType.SELLER) {
-            return RsData.of("403", "댓글 삭제 권한이 없습니다. (SELLER만 가능)");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+
+        RsData<Void> deleteRs = reviewCommentService.deleteComment(
+                reviewId,
+                commentId,
+                currentUser.getId(),
+                role
+        );
+
+        if (deleteRs.isFail()) {
+            return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
         }
 
-        RsData<Void> deleteRs = reviewCommentService.deleteComment(reviewId, commentId);
-        return RsData.of(deleteRs.getResultCode(), deleteRs.getMsg());
+        return RsData.of("200", "댓글이 성공적으로 삭제되었습니다.");
     }
 }

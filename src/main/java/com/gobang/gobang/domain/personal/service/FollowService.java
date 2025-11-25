@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.request.FollowRequest;
 import com.gobang.gobang.domain.personal.dto.response.FollowResponse;
 import com.gobang.gobang.domain.personal.entity.Follow;
@@ -20,13 +21,14 @@ import java.util.stream.Collectors;
 public class FollowService {
 
     private final FollowRepository followRepository;
+    private final ImageRepository imageRepository;
 
     // 사용자별 팔로우 목록 조회
     public List<FollowResponse> getFollowsByUserId(SiteUser siteUser) {
         List<Follow> follows = followRepository.findBySiteUser(siteUser);
 
         return follows.stream()
-                .map(FollowResponse::from)
+                .map(item -> FollowResponse.from(item, imageRepository))
                 .collect(Collectors.toList());
     }
 
@@ -35,7 +37,7 @@ public class FollowService {
         List<Follow> followers = followRepository.findByStudio(studio);
 
         return followers.stream()
-                .map(FollowResponse::from)
+                .map(item -> FollowResponse.from(item, imageRepository))
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +58,7 @@ public class FollowService {
                 .build();
 
         Follow saved = followRepository.save(follow);
-        return FollowResponse.from(saved);
+        return FollowResponse.from(saved, imageRepository);
     }
 
     // 팔로우 취소

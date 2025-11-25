@@ -12,6 +12,13 @@ interface Props {
     setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>
     setPreviewProfileImage: React.Dispatch<React.SetStateAction<string | null>>
     errors: any
+    validateField: (name: keyof UserInfo, value: any, user?: UserInfo) => void
+    checkUserName: () => void
+    checkNickName: () => void
+    userNameCheckMsg: string
+    nickNameCheckMsg: string
+    isUserNameValid: boolean
+    isNickNameValid: boolean
 }
 
 export default function UserForm({
@@ -23,11 +30,19 @@ export default function UserForm({
     setUserInfo,
     setPreviewProfileImage,
     errors,
+    validateField,
+    checkUserName,
+    checkNickName,
+    userNameCheckMsg,
+    nickNameCheckMsg,
+    isUserNameValid,
+    isNickNameValid,
 }: Props) {
     const fileInputRef = useRef<HTMLInputElement | null>(null)
     const handleRemoveProfileImage = () => {
         setUserInfo((prev) => ({
             ...prev,
+            profileImageFile: null,
             profileImageUrl: '',
             profileImageName: '',
         }))
@@ -35,10 +50,6 @@ export default function UserForm({
             fileInputRef.current.value = ''
         }
         setPreviewProfileImage(null)
-
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-        }
     }
 
     return (
@@ -54,8 +65,14 @@ export default function UserForm({
                     onChange={onChange}
                     placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
                 />
+                <button type="button" className="btn btn-secondary" onClick={checkUserName}>
+                    중복확인
+                </button>
             </div>
-            <ErrorMessage message={errors.userName} />
+            {errors.userName && <ErrorMessage message={errors.userName} />}
+            {!errors.userName && userNameCheckMsg && (
+                <ErrorMessage message={userNameCheckMsg} success={isUserNameValid} />
+            )}
             <div className="form-group">
                 <label className="form-label required">패스워드</label>
                 <input
@@ -124,8 +141,14 @@ export default function UserForm({
                     onChange={onChange}
                     placeholder="닉네임은 2글자 이상이어야합니다"
                 />
+                <button type="button" className="btn btn-secondary" onClick={checkNickName}>
+                    중복확인
+                </button>
             </div>
-            <ErrorMessage message={errors.nickName} />
+            {errors.nickName && <ErrorMessage message={errors.nickName} />}
+            {!errors.nickName && nickNameCheckMsg && (
+                <ErrorMessage message={nickNameCheckMsg} success={isNickNameValid} />
+            )}
             <div className="form-group">
                 <label className="form-label required">휴대전화</label>
                 <input
@@ -144,7 +167,7 @@ export default function UserForm({
                 <input
                     ref={fileInputRef}
                     type="file"
-                    name="profileImage"
+                    name="profileImageFile"
                     accept="image/*"
                     className="form-input"
                     onChange={onImagePreview}

@@ -55,7 +55,7 @@
     justify-content: center;
     padding: 2px 10px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 12px;
     background-color: #e5e7eb;
     color: #374151;
 }
@@ -108,15 +108,27 @@
     font-size: 14px;
 }
 
+.table thead {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
 .table thead tr {
-    background-color: #f9fafb;
+    box-sizing: border-box;
 }
 
 .table th,
 .table td {
+    text-align: center;
+
     padding: 12px 10px;
     border-bottom: 1px solid #edf2f7;
+    text-align: center;
+}
+
+.table .firstT {
     text-align: left;
+    width: 100px;
 }
 
 .table th {
@@ -175,6 +187,8 @@
     font-weight: 500;
     color: #111827;
     margin-bottom: 4px;
+    font-size: 16px;
+    width: 100%;
 }
 
 .desc {
@@ -254,6 +268,38 @@
     overflow: hidden;
 }
 
+/* 모달 박스 내부 + 추가 버튼 */
+.buttonSecondarySmall {
+    background: #2563eb;
+    color: #fff;
+    padding: 7px 12px;
+    font-size: 12px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    margin-right: 12px;
+}
+
+.buttonSecondarySmall:hover {
+    background: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+/* 모달 닫기 버튼 (×) */
+.modalCloseButton {
+    padding: 7px 12px;
+    font-size: 12px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.modalCloseButton:hover {
+    background: #d1d5db;
+}
+
 /* 사이즈별 너비 */
 .modalSm {
     max-width: 480px;
@@ -268,12 +314,10 @@
 }
 
 /* 헤더 영역 */
-.modalHeader {
+.modalHeaderRow {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 12px;
 }
 
 .modalTitle {
@@ -281,26 +325,6 @@
     font-size: 15px;
     font-weight: 600;
     color: #0f172a;
-}
-
-/* 닫기 버튼 (×) */
-.modalCloseButton {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    background-color: #ffffff;
-    cursor: pointer;
-    font-size: 16px;
-    color: #6b7280;
-    padding: 0;
-}
-
-.modalCloseButton:hover {
-    background-color: #f9fafb;
-    color: #111827;
 }
 
 .tableRowClickable {
@@ -319,6 +343,7 @@
 .detailCell {
     padding: 0;
     border-top: none;
+    border-bottom: 0 !important;
 }
 
 .slidePanel {
@@ -344,4 +369,82 @@
     background: #f9fafb;
     padding: 16px 16px 12px;
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.titleCell {
+    max-width: 280px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.answered {
+    border: 1px solid black;
+}
+
+.cellActions {
+    display: flex;
+    justify-content: center;
+}
+
+/* FAQ 슬라이드 카드 전체 */
+.formGrid {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 상단 헤더 */
+.formField {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.inlineEditorTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.inlineEditorHint {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* 본문 그리드 */
+.inlineEditorBody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inlineEditorGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+}
+
+.formFieldFull {
+    grid-column: 1 / -1;
+}
+
+/* 정렬/공개 한 줄 */
+.inlineEditorMetaRow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* 하단 버튼 */
+.inlineEditorFooter {
+    margin-top: 6px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }

@@ -46,7 +46,7 @@ export default function MyPage() {
         STUDIO_LOGO: null as File | null,
         STUDIO: [] as File[],
     })
-
+    const [deletedGalleryImageIds, setDeletedGalleryImageIds] = useState<number[]>([])
     // ======= 초기 로딩 =======
     useEffect(() => {
         const init = async () => {
@@ -184,6 +184,27 @@ export default function MyPage() {
             ...prev,
             [refType]: Array.isArray(files) ? files : files,
         }))
+        setTempData((prev) => {
+            const next = { ...prev }
+
+            if (refType === 'STUDIO_MAIN' && files instanceof File) {
+                next.studioMainImageName = files.name
+                next.studioMainImageUrl = URL.createObjectURL(files)
+            }
+
+            if (refType === 'STUDIO_LOGO' && files instanceof File) {
+                next.studioLogoImageName = files.name
+                next.studioLogoImageUrl = URL.createObjectURL(files)
+            }
+
+            if (refType === 'STUDIO') {
+                const fileArray = Array.isArray(files) ? files : [files]
+                next.studioGalleryImageNames = fileArray.map((f) => f.name)
+                next.studioGalleryImageUrls = fileArray.map((f) => URL.createObjectURL(f))
+            }
+
+            return next
+        })
     }
 
     /**
@@ -292,6 +313,61 @@ export default function MyPage() {
 
             // 3️⃣ 공방정보 수정
             else if (section === 'studio' || section === 'studioDesc') {
+                const form = new FormData()
+                const requestJson = {
+                    studioBusinessNumber: tempData.studioBusinessNumber,
+                    categoryId: tempData.categoryId,
+                    studioName: tempData.studioName,
+                    studioDescription: tempData.studioDescription,
+                    studioMobile: tempData.studioMobile,
+                    studioOfficeTell: tempData.studioOfficeTell,
+                    studioFax: tempData.studioFax,
+                    studioEmail: tempData.studioEmail,
+                    studioAddPostNumber: tempData.studioAddPostNumber,
+                    studioAddMain: tempData.studioAddMain,
+                    studioAddDetail: tempData.studioAddDetail,
+                    studioMainImageName: studioImages.STUDIO_MAIN ? studioImages.STUDIO_MAIN.name : '',
+                    studioLogoImageName: studioImages.STUDIO_LOGO ? studioImages.STUDIO_LOGO.name : '',
+                    studioGalleryImageNames: studioImages.STUDIO.map((f) => f.name),
+                }
+                form.append('request', new Blob([JSON.stringify(requestJson)], { type: 'application/json' }))
+                form.append('deletedGalleryImageIds', JSON.stringify(deletedGalleryImageIds))
+
+                if (studioImages.STUDIO_MAIN) {
+                    form.append('studioMainImage', studioImages.STUDIO_MAIN)
+                }
+                if (studioImages.STUDIO_LOGO) {
+                    form.append('studioLogoImage', studioImages.STUDIO_LOGO)
+                }
+                if (studioImages.STUDIO.length > 0) {
+                    studioImages.STUDIO.forEach((file) => {
+                        form.append('studioGalleryImages', file)
+                    })
+                }
+                /*
+                else {
+                    // 🔥 중요: key 자체가 없으면 서버에서 null 발생 → replace 함수가 정상 작동 안 함
+                    form.append('studioGalleryImages', new Blob([], { type: 'application/octet-stream' }))
+                }
+                */
+                const response = await axios.patch(`${API_BASE_URL}/studio/${studio.studioId}`, form, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true,
+                })
+
+                if (response.data.resultCode === '200') {
+                    alert('공방 정보가 수정되었습니다.')
+                    await fetchStudio(userData.id)
+                    setStudioImages({
+                        STUDIO_MAIN: null,
+                        STUDIO_LOGO: null,
+                        STUDIO: [],
+                    })
+                    setDeletedGalleryImageIds([])
+                    //setEditMode((prev) => ({ ...prev, studio: false }))
+                    setEditMode((prev) => ({ ...prev, [section]: false }))
+                }
+                /*
                 response = await axios.patch(
                     `${API_BASE_URL}/studio/${studio.studioId}`,
                     {
@@ -306,15 +382,21 @@ export default function MyPage() {
                         studioAddPostNumber: tempData.studioAddPostNumber,
                         studioAddMain: tempData.studioAddMain,
                         studioAddDetail: tempData.studioAddDetail,
+                        studioMainImageFile: null,
+                        studioLogoImageFile: null,
+                        studioGalleryImageFiles: [],
+
+                        studioMainImageUrl: studio.studioMainImage?.imageUrl || '',
+                        studioLogoImageUrl: studio.studioLogoImage?.imageUrl || '',
+                        studioGalleryImageUrls: studio.studioImages.map((i) => i.imageUrl),
+
+                        studioMainImageName: '',
+                        studioLogoImageName: '',
+                        studioGalleryImageNames: [],
                     },
                     { withCredentials: true },
                 )
-
-                if (response.data.resultCode === '200') {
-                    setStudio(response.data.data)
-                    setEditMode({ ...editMode, [section]: false })
-                    alert('공방 정보가 수정되었습니다.')
-                }
+                */
             }
             // 3) ⭐ 신규 공방 등록
             else if (section === 'studioAdd') {
@@ -432,6 +514,12 @@ export default function MyPage() {
         }
         if (section === 'studio') {
             setTempData({ ...studio })
+            setStudioImages({
+                STUDIO_MAIN: null,
+                STUDIO_LOGO: null,
+                STUDIO: [],
+            })
+            setDeletedGalleryImageIds([])
         }
         if (section === 'studioDesc') {
             setTempData({ ...studio })
@@ -506,6 +594,9 @@ export default function MyPage() {
                 studioImages={studioImages}
                 onStudioImageChange={handleStudioImageChange}
                 onStudioImagesUpload={uploadStudioImages}
+                deletedGalleryImageIds={deletedGalleryImageIds}
+                setDeletedGalleryImageIds={setDeletedGalleryImageIds}
+                setStudioImages={setStudioImages}
             />
         </div>
     )

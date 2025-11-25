@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -55,4 +56,8 @@ public class ReviewLikeService {
         }
     }
 
+    // 내가 좋아요를 눌렀는지 여부 확인용
+    public List<Long> getMyLikes(Long userId, Long productId) {
+        return reviewLikeRepository.findLikedReviewIds(userId, productId);
+    }
 }

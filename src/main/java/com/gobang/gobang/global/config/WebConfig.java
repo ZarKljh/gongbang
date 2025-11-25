@@ -1,13 +1,12 @@
 package com.gobang.gobang.global.config;
 
-import com.gobang.gobang.domain.metrics.interceptor.VisitorLogInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -16,9 +15,9 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-    private final VisitorLogInterceptor visitorLogInterceptor;
 
-
+    @Value("${custom.genFileDirPath}")
+    private String uploadPath;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -38,30 +37,15 @@ public class WebConfig implements WebMvcConfigurer {
     // 이미지 파일명 접근
      @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 🖼 로컬 이미지 폴더
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:C:/gongbangImg/");
+         // uploadPath 끝에 슬래시가 없으면 추가
+         String path = uploadPath.endsWith("/") ? uploadPath : uploadPath + "/";
+         registry.addResourceHandler("/images/**")
+                 .addResourceLocations("file:" + path);
 
-        // 📁 프로젝트 내부 uploads 폴더
-        String uploadPath = System.getProperty("user.dir") + "/uploads/";
+        // 프로젝트 내부 uploads 폴더 (테스트 데이터용으로 살려둠)
+        String staticUploadPath = System.getProperty("user.dir") + "/uploads/";
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadPath);
- 
+                .addResourceLocations("file:" + staticUploadPath);
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(visitorLogInterceptor)
-                // 방문 기록을 남길 URL 패턴
-                .addPathPatterns("/**")
-                // 여기서 다시 한 번 제외 패턴 지정해도 됨
-                .excludePathPatterns(
-                        "/api/v1/admin/**",
-                        "/api/v1/admin/metrics/**",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**",
-                        "/webjars/**"
-                );
-    }
 }
