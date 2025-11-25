@@ -176,8 +176,18 @@ export default function MyPage() {
         if (!id) return
 
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders`, {withCredentials: true,})
-            setOrders(data.data || [])
+            const { data } = await axios.get(`${API_BASE_URL}/orders`, {
+                withCredentials: true,
+            })
+            
+            if (data.resultCode === '200') {
+                const orderList = data.data || []
+                setOrders(Array.isArray(orderList) ? orderList : [])
+            } else {
+                console.warn('주문 조회 실패:', data.msg)
+                alert(data.msg || '주문 내역을 불러오는데 실패했습니다.')
+                setOrders([])
+            }
         } catch (error) {
             console.error('주문 내역 조회 실패:', error)
             setOrders([])
@@ -1278,22 +1288,48 @@ export default function MyPage() {
 
                             {/* ================= 배송 상태 요약 ================= */}
                             <div className="delivery-status-summary">
-                                {['배송준비중', '배송중', '배송완료'].map((status) => (
-                                    <div
-                                    key={status}
+                                {/* 배송준비중 - 전체 */}
+                                <div
                                     className="status-card"
                                     onClick={() => {
-                                        handleStatusClick(status)
+                                        handleStatusClick('배송준비중')
                                         setIsStatusModal(true)
                                     }}
-                                    >
-                                    <p>{status}</p>
-                                    <p>{orders.filter((o) =>
-                                        o.deliveryStatus?.replace(/\s/g, '') === status.replace(/\s/g, '') &&
+                                >
+                                    <p>배송준비중</p>
+                                    <p>{orders.filter((o) => 
+                                        o.deliveryStatus?.replace(/\s/g, '') === '배송준비중'
+                                    ).length}</p>
+                                </div>
+
+                                {/* 배송중 - 전체 */}
+                                <div
+                                    className="status-card"
+                                    onClick={() => {
+                                        handleStatusClick('배송중')
+                                        setIsStatusModal(true)
+                                    }}
+                                >
+                                    <p>배송중</p>
+                                    <p>{orders.filter((o) => 
+                                        o.deliveryStatus?.replace(/\s/g, '') === '배송중'
+                                    ).length}</p>
+                                </div>
+
+                                {/* 배송완료 - 7일 이내만 */}
+                                <div
+                                    className="status-card"
+                                    onClick={() => {
+                                        handleStatusClick('배송완료')
+                                        setIsStatusModal(true)
+                                    }}
+                                >
+                                    <p>배송완료</p>
+                                    <p>{orders.filter((o) => 
+                                        o.deliveryStatus?.replace(/\s/g, '') === '배송완료' &&
                                         isWithinSevenDays(o.completedAt)
                                     ).length}</p>
-                                    </div>
-                                ))}
+                                </div>
                             </div>
 
                             {/* ================= 주문 내역 ================= */}
@@ -2114,7 +2150,7 @@ export default function MyPage() {
                                                     })}
                                                 </span>
                                                 <button
-                                                    onClick={() => handleDeleteClick(item)}
+                                                    onClick={() => handleDeleteQna(item)}
                                                     className="link-btn delete"
                                                 >
                                                     삭제
