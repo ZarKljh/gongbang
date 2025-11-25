@@ -9,6 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import 'swiper/css/navigation'
 import '@/app/components/product/detail/styles/review.css'
 import ReportButton from '@/app/admin/components/ReportButton'
+import { Nanum_Brush_Script } from 'next/font/google'
 
 export default function Review() {
     // ================= 리뷰 =================
@@ -518,7 +519,7 @@ export default function Review() {
                         )}
                     </div>
 
-                    <hr style={{border:'1px solid #E9DCC4'}}/>
+                    <hr style={{ border: '1px solid #E9DCC4' }} />
                     <section className="photoReview-container">
                         <h3 className="photoReview-title">📸 포토 리뷰</h3>
 
@@ -660,8 +661,21 @@ export default function Review() {
                                                           day: '2-digit',
                                                       })
                                                     : '-'}{' '}
-                                                / 작성자 : {review.createdBy}
+                                                / 작성자 : &nbsp; {/* {review.createdBy} */}
                                             </span>
+                                            <div className="review-user">
+                                                <div className="review-user-avatar">
+                                                    {review.profileImageUrl && (
+                                                        <img
+                                                            src={`http://localhost:8090${review.profileImageUrl}`}
+                                                            alt="프로필"
+                                                        />
+                                                    )}
+                                                </div>
+                                                <span className="review-user-name">
+                                                    {review.createdBy}
+                                                </span>
+                                            </div>
                                         </div>
                                         {/* 별점 */}
                                         <div className="review-rating-row">

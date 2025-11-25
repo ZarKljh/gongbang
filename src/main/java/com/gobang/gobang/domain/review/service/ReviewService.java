@@ -36,6 +36,7 @@ public class ReviewService {
     private final ReviewImageRepository reviewImageRepository;
     private final ImageRepository imageRepository;
 
+    // 리뷰 목록 조회
     public Page<Review> getReviews(Long productId, int page, String sort, List<String> kwTypes, String keyword) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
 
@@ -50,33 +51,18 @@ public class ReviewService {
 
         Pageable pageable = PageRequest.of(page, 10, sortOption);
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
-//        boolean hasKwTypes = kwTypes != null && !kwTypes.isEmpty();
 
-        // productId 기준 리뷰 조회
         Page<Review> reviewPage = (productId != null)
                 ? reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable)
                 : reviewRepository.findByIsActiveTrue(pageable);
 
         if (hasKeyword) {
-            // 일단은 내용(content) 기준 검색만 처리 (kwTypes는 나중에 확장)
             if (productId != null) {
-                // 특정 상품 + 키워드 검색
-                reviewPage = reviewRepository
-                        .findByProductIdAndContentContainingIgnoreCase(
-                                productId,
-                                keyword,
-                                pageable
-                        );
+                reviewPage = reviewRepository.findByProductIdAndContentContainingIgnoreCase(productId, keyword, pageable);
             } else {
-                // 전체 리뷰 + 키워드 검색
-                reviewPage = reviewRepository
-                        .findByContentContainingIgnoreCase(
-                                keyword,
-                                pageable
-                        );
+                reviewPage = reviewRepository.findByContentContainingIgnoreCase(keyword, pageable);
             }
         } else {
-            // 검색어 없을 때는 기존 로직 그대로
             if (productId != null) {
                 reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
             } else {
@@ -84,8 +70,7 @@ public class ReviewService {
             }
         }
 
-
-        // 각 리뷰에 이미지 목록 수동 주입
+        // 각 리뷰에 이미지 주입
         reviewPage.forEach(review -> {
             List<Image> images = reviewImageRepository.findByRefTypeAndRefId(Image.RefType.REVIEW, review.getReviewId())
                     .stream()
@@ -98,11 +83,8 @@ public class ReviewService {
         return reviewPage;
     }
 
-
     // 리뷰 단건 조회
     public Optional<Review> getReviewById(Long id) {
-//        return reviewRepository.findById(id);
-
         Optional<Review> optionalReview = reviewRepository.findById(id);
 
         optionalReview.ifPresent(review -> {
@@ -116,6 +98,7 @@ public class ReviewService {
 
         return optionalReview;
     }
+
 
 
 
@@ -308,5 +291,16 @@ public class ReviewService {
 
         return map;
     }
+
+    // 유저 프로필 이미지 가져오기
+    private String getProfileImageUrl(Long userId) {
+        return imageRepository.findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.USER_PROFILE, userId)
+                .stream().findFirst()                     // List → 1개 선택
+                .map(Image::getImageUrl)
+                .orElse("/uploads/reviews/default_profile.jpg");   // 기본이미지
+    }
+
+
+
 
 }

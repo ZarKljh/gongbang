@@ -35,6 +35,13 @@ public class ReviewResponse {
     private final List<String> imageUrls;  // ✅ 이미지 포함
     private Long productId;
 
+    private String profileImageUrl;
+
+
+    public void setProfileImageUrl(String profileUrl) {
+        this.profileImageUrl = profileUrl;
+    }
+
     public static ReviewResponse fromEntity(Review review) {
         // review.getImages()가 LAZY라면 트랜잭션 내에서 호출되어야 함
         List<String> imageUrls = review.getImages() != null

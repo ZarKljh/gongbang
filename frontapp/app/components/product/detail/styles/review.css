@@ -313,6 +313,8 @@
 /* 정렬 + 검색 바 끝*/
 
 /* 리뷰 리스트 */
+
+
 .review-title {
     font-weight: 700;
     margin-bottom: 15px;
@@ -336,8 +338,34 @@
 
 .review-header {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     align-items: center;
+}
+
+.review-user {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.review-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #ddd; /* 기본 회색 배경 (이미지 없을 때) */
+    flex-shrink: 0;
+}
+
+.review-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.review-user-name {
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .review-meta {
