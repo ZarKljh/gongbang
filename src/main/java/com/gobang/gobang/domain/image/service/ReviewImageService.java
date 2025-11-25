@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -202,6 +203,7 @@ public class ReviewImageService {
 
         // 4) 이미지가 있는 리뷰만 필터링해서 DTO 변환
         return reviews.stream()
+                .sorted(Comparator.comparing(Review::getCreatedDate).reversed())
                 .filter(r -> representativeImageMap.containsKey(r.getReviewId()))
                 .map(r -> {
                     Image img = representativeImageMap.get(r.getReviewId());
