@@ -1267,7 +1267,7 @@ export default function MyPage() {
                         </ul>
                     </div>
                 </nav>
-                <a href="/persnal/seller" className='link-btn'>공방 페이지로 이동</a>
+                <a href="/personal/seller" className='link-btn'>공방 페이지로 이동</a>
             </div>
 
             {/* 오른쪽 콘텐츠 */}
