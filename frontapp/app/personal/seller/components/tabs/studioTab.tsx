@@ -124,6 +124,8 @@ export default function StudioTab(props: StudioTabProps) {
                 imageId: img.id,
             })),
     ]
+    console.log('🖼 previewGalleryImages:', previewGalleryImages)
+    console.log('🗑 현재 삭제 리스트:', deletedGalleryImageIds)
     return (
         <div className="tab-content">
             {!isAuthenticated ? (

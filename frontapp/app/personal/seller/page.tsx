@@ -331,7 +331,7 @@ export default function MyPage() {
                     studioGalleryImageNames: studioImages.STUDIO.map((f) => f.name),
                 }
                 form.append('request', new Blob([JSON.stringify(requestJson)], { type: 'application/json' }))
-                form.append('deletedGalleryIds', JSON.stringify(deletedGalleryImageIds))
+                form.append('deletedGalleryImageIds', JSON.stringify(deletedGalleryImageIds))
 
                 if (studioImages.STUDIO_MAIN) {
                     form.append('studioMainImage', studioImages.STUDIO_MAIN)
@@ -344,7 +344,12 @@ export default function MyPage() {
                         form.append('studioGalleryImages', file)
                     })
                 }
-
+                /*
+                else {
+                    // 🔥 중요: key 자체가 없으면 서버에서 null 발생 → replace 함수가 정상 작동 안 함
+                    form.append('studioGalleryImages', new Blob([], { type: 'application/octet-stream' }))
+                }
+                */
                 const response = await axios.patch(`${API_BASE_URL}/studio/${studio.studioId}`, form, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
@@ -359,7 +364,8 @@ export default function MyPage() {
                         STUDIO: [],
                     })
                     setDeletedGalleryImageIds([])
-                    setEditMode((prev) => ({ ...prev, studio: false }))
+                    //setEditMode((prev) => ({ ...prev, studio: false }))
+                    setEditMode((prev) => ({ ...prev, [section]: false }))
                 }
                 /*
                 response = await axios.patch(

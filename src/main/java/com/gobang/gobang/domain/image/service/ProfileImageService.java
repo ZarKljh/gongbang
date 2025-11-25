@@ -231,25 +231,29 @@ public class ProfileImageService {
     }
 
     @Transactional
-    public RsData<Void> replaceStudioGalleryImages(Long studioId, List<MultipartFile> newFiles) {
+    public RsData<Void> replaceStudioGalleryImages(Long studioId, List<MultipartFile> newFiles, List<Long> ids) {
 
-        // ⭐ 기존 갤러리 이미지 조회
-        List<Image> oldImages =
-                imageRepository.findALLByRefIdAndRefType(studioId, Image.RefType.STUDIO);
 
-        // ⭐ 기존 이미지 파일 삭제 + DB 삭제
-        for (Image old : oldImages) {
-            try {
-                Path oldPath = Paths.get(uploadPath, old.getImageFileName());
-                Files.deleteIfExists(oldPath);
-            } catch (Exception e) {
-                System.out.println("⚠ 갤러리 기존 파일 삭제 실패: " + e.getMessage());
+        // 삭제 대상 직접 조회
+        List<Image> deleteTargets = imageRepository.findAllById(ids);
+
+
+        for (Image img : deleteTargets) {
+            if (img.getRefId().equals(studioId) && img.getRefType() == Image.RefType.STUDIO) {
+
+                try {
+                    if (img.getImageFileName() != null) {
+                        Path oldPath = Paths.get(uploadPath, img.getImageFileName());
+                        Files.deleteIfExists(oldPath);
+                    }
+                } catch (Exception e) {
+                    System.out.println("⚠ 갤러리 기존 파일 삭제 실패 : " + e.getMessage());
+                }
+
+                imageRepository.delete(img);
             }
-
-            imageRepository.delete(old);
         }
-
-        // ⭐ 새 갤러리 이미지를 기존 upload 메서드로 업로드
+        // 새 갤러리 이미지를 기존 upload 메서드로 업로드
         return uploadStudioGalleryImages(studioId, newFiles);
     }
 }

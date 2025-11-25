@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.seller.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
@@ -83,8 +85,20 @@ public class StudioController {
             @PathVariable("id") Long studioId,
             @RequestPart(value = "studioMainImage", required = false) MultipartFile studioMainImage,
             @RequestPart(value = "studioLogoImage", required = false) MultipartFile studioLogoImage,
-            @RequestPart(value = "studioGalleryImages", required = false) List<MultipartFile> studioGalleryImages
+            @RequestPart(value = "studioGalleryImages", required = false) List<MultipartFile> studioGalleryImages,
+            @RequestPart(value = "deletedGalleryImageIds", required = false) String deletedGalleryImageIdsJson
             ){
+
+        List<Long> deletedGalleryIds = new ArrayList<>();
+
+        if (deletedGalleryImageIdsJson != null && !deletedGalleryImageIdsJson.isBlank()) {
+            try {
+                deletedGalleryIds = new ObjectMapper()
+                        .readValue(deletedGalleryImageIdsJson, new TypeReference<List<Long>>() {});
+            } catch (Exception e) {
+                throw new RuntimeException("JSON 파싱 실패: " + deletedGalleryImageIdsJson, e);
+            }
+        }
 
         Studio studio = studioService.getStudioById(studioId);
         if(studio == null){
@@ -101,7 +115,12 @@ public class StudioController {
         if(studioLogoImage != null && !studioLogoImage.isEmpty()){
             profileImageService.replaceStudioImage(studio.getStudioId(), studioLogoImage, Image.RefType.STUDIO_LOGO, 0);
         }
-        profileImageService.replaceStudioGalleryImages(studio.getStudioId(), studioGalleryImages);
+        System.out.println("삭제대상 이미지 아이디");
+        for(Long i : deletedGalleryIds){
+            System.out.println("삭제대상 이미지 아이디: " + i);
+        }
+
+        profileImageService.replaceStudioGalleryImages(studio.getStudioId(), studioGalleryImages, deletedGalleryIds);
 
         StudioResponse studioResponse = new StudioResponse(siteUser, studio);
         return  RsData.of("200", studio.getStudioName()+"의 공방정보가 수정되었습니다", studioResponse);
