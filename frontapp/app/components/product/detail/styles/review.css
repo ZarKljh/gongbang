@@ -111,7 +111,7 @@
     max-width: 1280px;
     height: 200px;
     border-radius: 12px;
-    background: linear-gradient(90deg, #ebc0c8e0, #EBC2CA);
+    background: linear-gradient(90deg, #ebc0c8e0, #ebc2ca);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -140,7 +140,7 @@
 }
 
 .review-write-btn {
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: white;
     border: none;
     border-radius: 8px;
@@ -152,7 +152,7 @@
 }
 
 .review-write-btn:hover {
-    background-color: rgba(177, 116, 87, 0.63)
+    background-color: rgba(177, 116, 87, 0.63);
 }
 
 /* 리뷰 평균 별점 (별 형식)*/
@@ -186,7 +186,6 @@
 
 .review-average-count {
     color: #777;
-    
 }
 /* 리뷰 평균 별점 (별 형식) 끝*/
 
@@ -268,7 +267,7 @@
 }
 
 .review-sort-btn.active {
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: white;
     font-weight: bold;
     padding: 8px 16px;
@@ -283,8 +282,6 @@
     transition: 0.3s;
 }
 
-
-
 /* 검색창 (필요 시 활성화) */
 .review-search-input {
     padding: 8px 16px;
@@ -295,7 +292,7 @@
 
 .review-search-btn {
     background-color: #ad9263;
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: white;
     border: none;
     border-radius: 8px;
@@ -306,7 +303,7 @@
 
 .review-search-btn:hover {
     background-color: #8f7851;
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     background-color: rgba(177, 116, 87, 0.63);
     transition: 0.3s;
 }
@@ -366,7 +363,7 @@
 /* 👍 좋아요 버튼 */
 .review-like-btn {
     background-color: #ff8080;
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: #555;
     color: white;
     border: none;
@@ -386,14 +383,14 @@
 
 .review-like-btn.liked {
     color: #5c3d1e;
-    background-color:#F4991A ;
+    background-color: #f4991a;
     transform: scale(1.05);
 }
 
 .review-like-btn.liked:hover {
     background-color: #bb9d71;
     background-color: rgba(177, 116, 87, 0.63);
-    background-color:#eeaf58 ;
+    background-color: #eeaf58;
 }
 /* 🗑️ 삭제 버튼 */
 .review-delete-btn {
@@ -485,8 +482,8 @@
 .review-comment-delete-btn,
 .review-comment-add-btn,
 .review-comment-save-btn,
-.review-comment-cancel-btn  {
-    background-color: #DAC0A3;
+.review-comment-cancel-btn {
+    background-color: #dac0a3;
     color: white;
     border: none;
     border-radius: 8px;
@@ -498,18 +495,18 @@
     transition: 0.3s;
 }
 .review-comment-delete-btn {
-    background-color:#F4991A ;
+    background-color: #f4991a;
 }
 
 .review-comment-edit-btn:hover,
 .review-comment-add-btn:hover,
 .review-comment-save-btn:hover {
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     background-color: rgba(177, 116, 87, 0.63);
 }
 
-.review-comment-delete-btn:hover{
-    background-color:#eeaf58 ;
+.review-comment-delete-btn:hover {
+    background-color: #eeaf58;
 }
 
 /* 댓글 수정/등록 박스 */
