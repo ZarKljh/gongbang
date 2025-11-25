@@ -586,14 +586,50 @@ export default function MyPage() {
         setOpenedOrderId((prev) => (prev === orderId ? null : orderId))
     }
 
-    const handleDeleteOrder = (orderId: number) => {
+    const handleDeleteOrder = async (orderId: number) => {
         if (!confirm("정말 삭제하시겠습니까?")) return
 
-        axios.delete(`/api/orders/${orderId}`)
-            .then(() => {
-                setFilteredOrders(prev => prev.filter(o => o.orderId !== orderId))
+        try {
+            console.log('🗑️ 삭제 요청 URL:', `${API_BASE_URL}/orders/${orderId}`)
+            
+            const { data } = await axios.delete(`${API_BASE_URL}/orders/${orderId}`, {
+                withCredentials: true,
             })
-            .catch(err => console.error(err))
+            
+            console.log('✅ 삭제 성공 응답:', data)
+
+            if (data.resultCode === '200') {
+                alert('주문이 삭제되었습니다.')
+                setOrders(prev => prev.filter(o => o.orderId !== orderId))
+            } else {
+                alert(`삭제 실패: ${data.msg}`)
+            }
+        } catch (error) {
+            console.error('❌ 주문 삭제 실패:', error)
+            
+            // ⭐ 더 자세한 에러 정보 출력
+            console.error('에러 전체:', {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                headers: error.response?.headers
+            })
+            
+            // 상태 코드별 처리
+            if (error.response?.status === 404) {
+                alert('주문을 찾을 수 없습니다.')
+            } else if (error.response?.status === 403) {
+                alert('삭제 권한이 없습니다.')
+            } else if (error.response?.status === 401) {
+                alert('로그인이 필요합니다.')
+                window.location.href = '/auth/login'
+            } else if (error.response?.status === 500) {
+                alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+            } else {
+                alert('주문 삭제 중 오류가 발생했습니다.')
+            }
+        }
     }
 
     // =============== 회원정보 ===============
