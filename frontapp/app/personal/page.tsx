@@ -590,13 +590,9 @@ export default function MyPage() {
         if (!confirm("정말 삭제하시겠습니까?")) return
 
         try {
-            console.log('🗑️ 삭제 요청 URL:', `${API_BASE_URL}/orders/${orderId}`)
-            
             const { data } = await axios.delete(`${API_BASE_URL}/orders/${orderId}`, {
                 withCredentials: true,
             })
-            
-            console.log('✅ 삭제 성공 응답:', data)
 
             if (data.resultCode === '200') {
                 alert('주문이 삭제되었습니다.')
@@ -605,30 +601,7 @@ export default function MyPage() {
                 alert(`삭제 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error('❌ 주문 삭제 실패:', error)
-            
-            // ⭐ 더 자세한 에러 정보 출력
-            console.error('에러 전체:', {
-                message: error.message,
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                data: error.response?.data,
-                headers: error.response?.headers
-            })
-            
-            // 상태 코드별 처리
-            if (error.response?.status === 404) {
-                alert('주문을 찾을 수 없습니다.')
-            } else if (error.response?.status === 403) {
-                alert('삭제 권한이 없습니다.')
-            } else if (error.response?.status === 401) {
-                alert('로그인이 필요합니다.')
-                window.location.href = '/auth/login'
-            } else if (error.response?.status === 500) {
-                alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
-            } else {
-                alert('주문 삭제 중 오류가 발생했습니다.')
-            }
+            console.error('주문 삭제 실패:', error)
         }
     }
 
@@ -985,32 +958,7 @@ export default function MyPage() {
     }
 
     // ================= 리뷰 =================
-    // 리뷰 이미지 업로드 핸들러
-    const handleUploadReviewImage = async (reviewId: number, file: File) => {
-        const formData = new FormData()
-        formData.append("image", file)
-
-        try {
-            const { data } = await axios.post(
-                `http://localhost:8090/api/v1/reviews/${reviewId}/image`,
-                formData,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                    withCredentials: true,
-                }
-            )
-
-            if (data.resultCode === "200") {
-                alert("이미지가 업로드되었습니다.")
-                await fetchMyReviews()
-            } else {
-                alert(`업로드 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error("리뷰 이미지 업로드 실패:", error)
-            alert("이미지 업로드 중 오류가 발생했습니다.")
-        }
-    }
+    
 
     // ================= Q&A 기능 =================
     // 문의 삭제
@@ -1267,7 +1215,10 @@ export default function MyPage() {
                         </ul>
                     </div>
                 </nav>
-                <a href="/personal/seller" className='link-btn'>공방 페이지로 이동</a>
+                {userData?.roleType === "SELLER" && (
+                    <a href="/personal/seller" className='link-btn'>공방 페이지로 이동</a>
+                )}
+                
             </div>
 
             {/* 오른쪽 콘텐츠 */}
@@ -2233,7 +2184,7 @@ export default function MyPage() {
                 </div>
             </div>
 
-            {/* ==================== 배송 상태별 주문 모달 ==================== */}
+            {/*  배송 상태별 주문 모달  */}
             {isStatusModal && (
                 <div className="modal-overlay" onClick={() => setIsStatusModal(false)}>
                     <div className="modal-container modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -2285,7 +2236,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* ==================== 배송지 추가 모달 ==================== */}
+            {/*  배송지 추가 모달  */}
             {isAddressModal && (
                 <div className="modal-overlay" onClick={() => setIsAddressModal(false)}>
                     <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -2376,7 +2327,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* ==================== 배송지 수정 모달 ==================== */}
+            {/*  배송지 수정 모달  */}
             {editAddressModal && editAddressData && (
                 <div className="modal-overlay" onClick={() => setEditAddressModal(false)}>
                     <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -2467,7 +2418,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* ==================== 결제수단 추가 모달 ==================== */}
+            {/*  결제수단 추가 모달  */}
             {isPaymentModal && (
                 <div className="modal-overlay" onClick={() => setIsPaymentModal(false)}>
                     <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -2579,7 +2530,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* ==================== 리뷰 수정 모달 ==================== */}
+            {/*  리뷰 수정 모달  */}
             {isEditReviewModal && (
                 <div className="modal-overlay" onClick={() => setIsEditReviewModal(false)}>
                     <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -2629,7 +2580,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* ==================== 리뷰 삭제 모달 ==================== */}
+            {/*  리뷰 삭제 모달  */}
             {isDeleteReviewModal && (
                 <div className="modal-overlay" onClick={() => setIsDeleteReviewModal(false)}>
                     <div className="modal-container modal-sm" onClick={(e) => e.stopPropagation()}>
@@ -2659,7 +2610,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* ==================== 사유 입력 모달 ==================== */}
+            {/*  사유 입력 모달  */}
             {isReasonModal && (
                 <div className="modal-overlay" onClick={() => setIsReasonModal(false)}>
                     <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -2705,7 +2656,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* ==================== 프로필 이미지 수정 모달 ==================== */}
+            {/*  프로필 이미지 수정 모달  */}
             {isProfileModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsProfileModalOpen(false)}>
                     <div className="modal-container modal-profile" onClick={(e) => e.stopPropagation()}>
@@ -2747,383 +2698,19 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setIsProfileModalOpen(false)}>
+                            <button className="btn-primary" onClick={() => setIsProfileModalOpen(false)}>
                                 취소
                             </button>
-                            <button className="btn btn-danger" onClick={handleProfileDelete}>
+                            <button className="btn-primary delete" onClick={handleProfileDelete}>
                                 삭제
                             </button>
-                            <button className="btn btn-primary" onClick={handleProfileUpload}>
+                            <button className="btn-primary" onClick={handleProfileUpload}>
                                 업로드
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* 배송 상태별 주문 모달
-            {isStatusModal && (
-                <div className="orders-modal" onClick={() => setIsStatusModal(false)}>
-                    <div className="orders-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="orders-modal-close" onClick={() => setIsStatusModal(false)}>
-                            X
-                        </button>
-                        <h2>{selectedStatus}</h2>
-
-                        {orders.filter(o =>
-                            o.deliveryStatus === selectedStatus &&
-                            (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
-                            ).length === 0 ? (
-                                <p>주문 내역이 없습니다.</p>
-                        ) : (
-                            orders
-                            .filter(o =>
-                                o.deliveryStatus === selectedStatus &&
-                                (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
-                            )
-                            .map((order) => (
-                                <div key={order.orderId} className="order-card">
-                                    <div className="deliverie-header">
-                                        <p>{order.createdDate} | 주문번호: {order.orderCode}</p>
-                                        <span>{order.productName}</span>
-                                        <span>{order.deliveryStatus}</span>
-                                    </div>
-                                    <div className="order-footer">
-                                        <p>총 {order.totalPrice?.toLocaleString()}원</p>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-            )}
-
-            배송지 추가 모달
-            {isAddressModal && (
-                <div key="new-user-address" className="address-modal" onClick={() => setIsAddressModal(false)}>
-                    <div className="address-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="address-modal-close" onClick={() => setIsAddressModal(false)}>
-                            X
-                        </button>
-
-                        <h2 style={{ marginBottom: '10px' }}>새 배송지 추가</h2>
-                        <input
-                            type="text"
-                            placeholder="수령인 이름"
-                            value={newAddress.recipientName}
-                            onChange={(e) => setNewAddress({ ...newAddress, recipientName: e.target.value })}
-                        />
-                        <br />
-
-                        <input
-                            type="text"
-                            id="sample6_postcode"
-                            placeholder="우편번호"
-                            value={newAddress.zipcode}
-                            readOnly
-                        />
-                        <input
-                            type="button"
-                            value="우편번호 찾기"
-                            onClick={sample6_execDaumPostcode}
-                            className="btn-primary"
-                        />
-                        <br />
-
-                        <input
-                            type="text"
-                            id="sample6_address"
-                            placeholder="주소"
-                            value={newAddress.baseAddress}
-                            readOnly
-                        />
-                        <input
-                            type="text"
-                            id="sample6_extraAddress"
-                            placeholder="참고항목"
-                            value={newAddress.extraAddress}
-                            onChange={(e) =>setEditAddressData({ ...newAddress, detailAddress: e.target.value })}
-                        />
-                        <input
-                            type="text"
-                            id="sample6_detailAddress"
-                            placeholder="상세주소"
-                            value={newAddress.detailAddress}
-                            onChange={(e) => setNewAddress({ ...newAddress, detailAddress: e.target.value })}
-                        />
-                        <br />
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={defaultAddress}
-                                onChange={(e) => setDefaultAddress(e.target.checked)}
-                            />
-                            기본 배송지로 설정
-                        </label>
-                        <br />
-
-                        <button className="btn-primary" onClick={handleSaveAddress}>
-                            저장
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            배송지 수정 모달
-            {editAddressModal && editAddressData && (
-                <div key={editAddressData.userAddressId} className="address-modal" onClick={() => setEditAddressModal(false)}>
-                    <div className="address-modal-content-m" onClick={(e) => e.stopPropagation()}>
-                        <button className="address-modal-close" onClick={() => setEditAddressModal(false)}>X</button>
-                        <h2>배송지 수정</h2>
-
-                        <input
-                            type="text"
-                            placeholder="수령인 이름"
-                            value={editAddressData.recipientName}
-                            onChange={(e) =>
-                                setEditAddressData({ ...editAddressData, recipientName: e.target.value })
-                            }
-                        />
-
-                        <input type="text" placeholder="우편번호" value={editAddressData.zipcode} readOnly />
-                        <input
-                            type="button"
-                            value="우편번호 찾기"
-                            onClick={sample6_execDaumPostcodeForEdit}
-                            className="btn-primary"
-                        />
-
-                        <input type="text" placeholder="주소" value={editAddressData.baseAddress} readOnly />
-
-                        <input
-                            type="text"
-                            placeholder="참고항목"
-                            value={editAddressData.extraAddress}
-                            onChange={(e) =>
-                                setEditAddressData({ ...editAddressData, extraAddress: e.target.value })
-                            }
-                        />
-
-                        <input
-                            type="text"
-                            placeholder="상세주소"
-                            value={editAddressData.detailAddress}
-                            onChange={(e) =>
-                                setEditAddressData({ ...editAddressData, detailAddress: e.target.value })
-                            }
-                        /><br />
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={defaultAddress}
-                                onChange={(e) => setDefaultAddress(e.target.checked)}
-                            />
-                            기본 배송지로 설정
-                        </label><br />
-                        <button className="btn-primary" onClick={handleUpdateAddress}>
-                            저장
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            결제수단 추가 모달
-            {isPaymentModal && (
-                <div className="payment-modal" onClick={() => setIsPaymentModal(false)}>
-                <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
-                    <button className="payment-modal-close" onClick={() => setIsPaymentModal(false)}>X</button>
-                    <h3>결제수단 추가</h3>
-
-                    <div className="form-group">
-                    <label>결제수단</label>
-                    <select value={paymentType} onChange={(e) => setPaymentType(e.target.value as any)}>
-                        <option value="BANK">은행 계좌</option>
-                        <option value="CARD">신용/체크카드</option>
-                    </select>
-                    </div>
-
-                    {paymentType === "BANK" && (
-                    <>
-                        <div className="form-group">
-                        <label>은행명</label>
-                        <input value={bankName} onChange={(e) => setBankName(e.target.value)} />
-                        </div>
-                        <div className="form-group">
-                        <label>계좌번호</label>
-                        <input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
-                        </div>
-                        <div className="form-group">
-                        <label>예금주</label>
-                        <input value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} />
-                        </div>
-                    </>
-                    )}
-
-                    {paymentType === "CARD" && (
-                    <>
-                        <div className="form-group">
-                        <label>카드사</label>
-                        <input value={cardCompany} onChange={(e) => setCardCompany(e.target.value)} />
-                        </div>
-                        <div className="form-group">
-                        <label>카드번호</label>
-                        <input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
-                        </div>
-                        <div className="form-group">
-                        <label>유효기간</label>
-                        <input value={cardExpire} onChange={(e) => setCardExpire(e.target.value)} placeholder="MM/YY" />
-                        </div>
-                    </>
-                    )}
-
-                    <div className="form-group">
-                    <label>
-                        <input type="checkbox" checked={defaultPayment} onChange={(e) => setDefaultPayment(e.target.checked)} />
-                        기본 결제수단으로 설정
-                    </label>
-                    </div>
-
-                    <div className="modal-actions">
-                    <div className='btn-primary' onClick={() => setIsPaymentModal(false)}>취소</div>
-                    <div className='btn-primary' onClick={handleSavePayment}>등록</div>
-                    </div>
-                </div>
-                </div>
-            )}
-
-            리뷰 수정 모달
-            {isEditReviewModal && (
-                <div className="review-modal" onClick={() => setIsEditReviewModal(false)}>
-                    <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="review-modal-close" onClick={() => setIsEditReviewModal(false)}>
-                            X
-                        </button>
-
-                        <h2>리뷰 수정</h2>
-
-                        <label>별점:</label>
-                        <select
-                            value={editReviewRating}
-                            onChange={(e) => setEditReviewRating(Number(e.target.value))}
-                        >
-                            {[1, 2, 3, 4, 5].map((num) => (
-                                <option key={num} value={num}>
-                                    {num}
-                                </option>
-                            ))}
-                        </select><br />
-
-                        <label>리뷰 내용:</label>
-                        <textarea
-                            value={editReviewContent}
-                            onChange={(e) => setEditReviewContent(e.target.value)}
-                        /> <br />
-
-                        <button className="btn-primary" onClick={handleSaveEdit}>
-                            저장
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            리뷰 삭제 모달
-            {isDeleteReviewModal && (
-                <div className="review-modal" onClick={() => setIsDeleteReviewModal(false)}>
-                    <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="review-modal-close" onClick={() => setIsDeleteReviewModal(false)}>
-                            X
-                        </button>
-
-                        <h2>리뷰 삭제</h2>
-                        <p>정말로 이 리뷰를 삭제하시겠습니까?</p>
-
-                        <button className="btn-primary" onClick={handleDeleteReview}>
-                            삭제
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            사유 입력 모달
-            {isReasonModal && (
-                <div className="address-modal" onClick={() => setIsReasonModal(false)}>
-                    <div
-                        className="address-modal-content"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* 닫기 버튼 */}
-                        {/* <button
-                            className="address-modal-close"
-                            onClick={() => setIsReasonModal(false)}
-                        >
-                            X
-                        </button> */}
-
-                        {/* 제목 */}
-                        {/* <h2 style={{ marginBottom: "10px" }}>{reasonModalTitle}</h2> */}
-
-                        {/* 사유 입력 */}
-                        {/* <textarea
-                            className="reason-textarea"
-                            placeholder="사유를 입력해주세요."
-                            value={reasonText}
-                            onChange={(e) => setReasonText(e.target.value)}
-                        /> */}
-
-                        {/* 제출 버튼 */}
-                        {/* <button
-                            className="btn-primary"
-                            onClick={() => {
-                                if (!reasonText.trim()) {
-                                    alert("사유를 입력해주세요.")
-                                    return
-                                }
-                                console.log("1. 함수 자체:", reasonModalOnSubmit);
-                                console.log("2. reason:", reasonText);
-                                reasonModalOnSubmit(reasonText) // 실제 취소/반품/교환 로직 호출
-                                setIsReasonModal(false)
-                                setReasonText("")
-                            }}
-                        >
-                            제출
-                        </button> */}
-                    {/* </div>
-                </div>
-            )}
-
-            프로필 이미지 수정 모달
-            {isProfileModalOpen && (
-                <div
-                    className="profile-img-modal"
-                    onClick={() => setIsProfileModalOpen(false)}
-                >
-                    <div
-                        className="profile-img-modal-content"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h3>프로필 이미지 수정</h3>
-
-                        {previewProfileImage ? (
-                            <img
-                                className='profile-img-priview'
-                                src={previewProfileImage}
-                                alt="미리보기"
-                            />
-                        ) : (
-                            <div className='empty-img' />
-                        )}
-
-                        <input type="file" accept="image/*" onChange={handleProfileFileChange} />
-
-                        <div className='profile-img-btn'>
-                            <button className='btn-primary' onClick={handleProfileUpload}>업로드 / 수정</button>
-                            <button className='btn-primary' onClick={handleProfileDelete}>삭제</button>
-                            <button className='btn-primary' onClick={() => setIsProfileModalOpen(false)}>취소</button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
         </div>
     )
 }
