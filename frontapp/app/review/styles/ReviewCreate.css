@@ -10,7 +10,8 @@
 
 .review-create-container {
     width: 1280px;
-    padding: 0 20px 80px;
+    margin: 0;
+    /* padding: 0 20px 80px; */
 }
 
 .review-back-link {
@@ -71,7 +72,7 @@
 }
 
 .review-create-submit-btn {
-    background-color: #AD9263;
+    background-color: #DAC0A3;
     font-size: 20 px;
     color: white;
     border: none;
@@ -83,7 +84,7 @@
 }
 
 .review-create-submit-btn:hover {
-    background-color: #916d3f;
+    background-color: rgba(177, 116, 87, 0.63);
 }
 
 
@@ -94,7 +95,8 @@
 }
 
 .review-create-textarea {
-    width: 95%;
+    box-sizing: border-box;
+    width: 100%;
     height: 200px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -109,9 +111,10 @@
 .review-image-upload-wrapper {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start !important;
     border-top: 1px solid #ccc;
     padding-top: 20px;
+    gap: 16px;
 }
 
 .review-image-list {
@@ -180,8 +183,9 @@
 }
 
 .review-image-guide {
-    
+    flex-shrink: 0;
     font-size: 14px;
+    white-space: nowrap;
     width: 100%;
     color: #777;
 }
@@ -221,3 +225,102 @@
     line-height: 1.6;
 }
  
+/* 반응형 위해 추가해봄 */
+/* ===================== 공통 레이아웃 ===================== */
+
+.review-create-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 60px;
+}
+
+.review-create-container {
+    width: 100%;
+    max-width: 1280px;
+    /* padding: 0 20px 80px; */
+}
+
+.review-back-link {
+    top: 20px;
+    left: 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.2s;
+}
+
+.review-back-link:hover {
+    color: #AD9263;
+}
+
+
+/* ===================== 왼쪽 영역 ===================== */
+.review-create-left {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+
+/* ===================== 반응형 ===================== */
+
+/* ---- 태블릿 (max-width: 1024px) ---- */
+@media (max-width: 1024px) {
+    .review-create-container {
+        padding: 0 15px 60px;
+    }
+
+    .review-create-left {
+        width: 90%;
+    }
+
+    .review-image-card,
+    .review-image-add-btn {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* ---- 모바일 (max-width: 600px) ---- */
+@media (max-width: 600px) {
+    .review-create-container {
+        padding: 0 10px 50px;
+    }
+
+    .review-create-title {
+        font-size: 20px;
+    }
+
+    .review-create-textarea {
+        width: 100%;
+        height: 160px;
+    }
+
+    .review-image-card,
+    .review-image-add-btn {
+        width: 90px;
+        height: 90px;
+    }
+
+    .review-create-submit-btn {
+        width: 100%;
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .review-image-upload-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .review-image-guide {
+        font-size: 12px;
+    }
+
+    .review-create-guide-box {
+        padding: 12px 5px;
+        font-size: 12px;
+    }
+}

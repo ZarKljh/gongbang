@@ -1,5 +1,6 @@
 'use client'
 
+import '@/app/components/product/detail/styles/review.css'
 import { useEffect, useState, useRef } from 'react'
 import { FaThumbsUp, FaRegThumbsUp, FaStar } from 'react-icons/fa'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -7,7 +8,6 @@ import { Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import 'swiper/css/navigation'
-import '@/app/components/product/detail/styles/review.css'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
 
@@ -590,7 +590,7 @@ export default function Review() {
                                 return (
                                     <div className="review-graph-row" key={label}>
                                         <span className="review-graph-label">
-                                            <FaStar size={22} color={'#FFD700'} style={{ marginRight: '3px' }} />
+                                            <FaStar size={20} color={'#FFD700'} style={{ marginRight: '3px' }} />
                                             {label}
                                         </span>
                                         <div className="review-graph-bar-bg">
@@ -653,28 +653,18 @@ export default function Review() {
                                 {reviews.map((review) => (
                                     <li key={review.reviewId} className="review-item">
                                         <div className="review-header">
-                                            <span className="review-meta">
-                                                {review.createdDate
-                                                    ? new Date(review.createdDate).toLocaleDateString('ko-KR', {
-                                                          year: 'numeric',
-                                                          month: '2-digit',
-                                                          day: '2-digit',
-                                                      })
-                                                    : '-'}{' '}
-                                                / 작성자 : &nbsp; {/* {review.createdBy} */}
-                                            </span>
-                                            <div className="review-user">
-                                                <div className="review-user-avatar">
-                                                    {review.profileImageUrl && (
-                                                        <img
-                                                            src={`http://localhost:8090${review.profileImageUrl}`}
-                                                            alt="프로필"
-                                                        />
-                                                    )}
-                                                </div>
-                                                <span className="review-user-name">
-                                                    {review.createdBy}
-                                                </span>
+                                            <div className="review-user-avatar">
+                                                {review.profileImageUrl && (
+                                                    <img
+                                                        src={`http://localhost:8090${review.profileImageUrl}`}
+                                                        alt="프로필"
+                                                    />
+                                                )}
+                                            </div>
+
+                                            <div className="review-user-info">
+                                                <span className="review-user-name">{review.createdBy}</span>
+                                                <span className="review-meta">{review.createdDate}</span>
                                             </div>
                                         </div>
                                         {/* 별점 */}
@@ -683,7 +673,7 @@ export default function Review() {
                                                 {[1, 2, 3, 4, 5].map((num) => (
                                                     <FaStar
                                                         key={num}
-                                                        size={22}
+                                                        size={28}
                                                         color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
                                                         style={{ marginRight: '3px' }}
                                                     />
@@ -722,7 +712,7 @@ export default function Review() {
                                         <h4 className="review-content-title"></h4>
                                         <div
                                             className="review-content-box"
-                                            onClick={() => (window.location.href = `/review/${review.reviewId}`)}
+                                            onClick={() => router.push(`/review/${review.reviewId}`)}
                                         >
                                             <p className="review-content-text">{review.content}</p>
                                             {review.imageUrls && review.imageUrls.length > 0 && (

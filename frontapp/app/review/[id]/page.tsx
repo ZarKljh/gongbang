@@ -11,7 +11,7 @@ import ReportButton from '@/app/admin/components/ReportButton'
 export default function ReviewDetail() {
     const params = useParams()
     const router = useRouter()
-    const [review, setReview] = useState({})
+    const [review, setReview] = useState(null)
     const [reviews, setReviews] = useState([])
     const [currentUserId, setCurrentUserId] = useState(null)
     const [selectedImageIndex, setSelectedImageIndex] = useState(null) // ✅ index 기반으로 변경
@@ -160,6 +160,10 @@ export default function ReviewDetail() {
 
     const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
 
+    if (!review) {
+        return null
+    }
+
     return (
         <div className="review-detail-container">
             {/* 리뷰 상세 */}
@@ -178,14 +182,10 @@ export default function ReviewDetail() {
 
                 {/* 작성자 정보 */}
                 <div className="review-author-box">
-                    <strong className="review-author-name">{review.userNickName}</strong> · 작성일:{' '}
-                    {review.createdDate
-                        ? new Date(review.createdDate).toLocaleDateString('ko-KR', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                          })
-                        : '-'}
+                    <strong className="review-author-name">{review.createdBy}</strong>
+                    &nbsp; / &nbsp;
+                    {review.createdDate}
+                    &nbsp;&nbsp;&nbsp; <ReportButton targetType="POST" targetId={review.review_id} />
                 </div>
 
                 {/* 리뷰 이미지 섹션 */}
@@ -217,7 +217,7 @@ export default function ReviewDetail() {
                 </div>
 
                 {/* 내용 */}
-                <div className="review-content-box">{review.content || '리뷰 내용이 없습니다.'}</div>
+                <div className="review-content-box-D">{review.content || '리뷰 내용이 없습니다.'}</div>
 
                 {/* 버튼 영역 */}
                 <div className="review-action-buttons">
@@ -229,7 +229,7 @@ export default function ReviewDetail() {
                             리뷰 수정하기
                         </button>
                     )}
-                    <ReportButton targetType="POST" targetId={review.review_id} />
+
                     {(Number(currentUserId) === Number(review.userId) || roleType === 'ADMIN') && (
                         <button className="review-delete-btn" onClick={() => handleDeleteClick(review.reviewId)}>
                             삭제
