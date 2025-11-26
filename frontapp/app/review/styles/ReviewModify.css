@@ -22,6 +22,18 @@
     margin-bottom: 8px;
 }
 
+.review-back-btn{
+
+    top: 20px;
+    left: 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.2s;
+}
+.review-back-btn:hover {
+    color: #AD9263;
+}
 
 /* ===================== 별점 ===================== */
 

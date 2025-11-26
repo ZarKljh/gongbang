@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { FaStar, FaPlus, FaTimes } from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import Link from 'next/link'
 
 export default function ReviewModify() {
     const params = useParams()
@@ -134,6 +135,12 @@ export default function ReviewModify() {
     return (
         <div className="review-modify-wrapper">
             <div className="review-modify-container">
+                    <Link
+                    href={`/review/${review?.reviewId}`}
+                    className="review-back-btn"
+                >
+                    ← 뒤로가기
+                </Link>
                 <h2 className="review-modify-title">리뷰 수정</h2>
 
                 <form onSubmit={handleSubmit}>
@@ -237,7 +244,6 @@ export default function ReviewModify() {
                             )}
                         </Droppable>
                     </DragDropContext>
-                </form>
                 <input type="submit" value="리뷰 수정하기" className="review-modify-submit-btn" />
                 {/* 안내 박스 (👇 ReviewCreate처럼 하단으로 이동 */}
                 <div className="review-modify-guide-box">
@@ -246,6 +252,7 @@ export default function ReviewModify() {
                         비속어, 타인 비방, 도배성 문구가 포함된 후기는 노출이 제한될 수 있습니다.
                     </p>
                 </div>
+                </form>
             </div>
         </div>
     )

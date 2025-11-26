@@ -175,7 +175,7 @@ export default function ReviewDetail() {
                     }}
                     className="review-back-btn"
                 >
-                    ← 목록으로 돌아가기
+                    ← 목록으로
                 </Link>
 
                 <h2 className="review-detail-title">리뷰 상세보기</h2>
