@@ -72,7 +72,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 32px;
-    width: 80%;
+    width: 100%;
 }
 
 /* === 차트 섹션 === */
@@ -527,7 +527,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 280px;
-    width: 270px;
+    width: 360px;
 }
 
 .recentUsersHeader {

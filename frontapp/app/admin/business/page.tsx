@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
 import styles from '@/app/admin/styles/AdminReports.module.css' // 신고랑 동일 스타일 재사용
@@ -78,15 +79,6 @@ export default function AdminBusinessPage() {
         }
     }
 
-    const changeStatus = async (id: number, status: SellerStatus) => {
-        try {
-            await api.patch(`/admin/shops/${id}/status`, { status })
-            await loadShops()
-        } catch (e: any) {
-            alert(e?.response?.data?.message ?? '상태 변경에 실패했습니다.')
-        }
-    }
-
     return (
         <div className={styles.page}>
             <Sidebar />
@@ -146,7 +138,6 @@ export default function AdminBusinessPage() {
                                                     <div>
                                                         <strong>{s.studioName}</strong>
                                                     </div>
-                                                    <div className={styles.meta}>{s.studioEmail ?? '-'}</div>
                                                 </div>
                                             </td>
                                             <td>
@@ -167,42 +158,12 @@ export default function AdminBusinessPage() {
                                                 </div>
                                             </td>
                                             <td>
-                                                <div className={styles.actions}>
-                                                    {s.status === 'PENDING' && (
-                                                        <>
-                                                            <button
-                                                                className={`${styles.btn} ${styles.btnPrimary}`}
-                                                                onClick={() => changeStatus(s.id, 'APPROVED')}
-                                                            >
-                                                                승인
-                                                            </button>
-                                                            <button
-                                                                className={`${styles.btn} ${styles.btnDanger}`}
-                                                                onClick={() => changeStatus(s.id, 'REJECTED')}
-                                                            >
-                                                                반려
-                                                            </button>
-                                                        </>
-                                                    )}
-
-                                                    {s.status === 'APPROVED' && (
-                                                        <button
-                                                            className={`${styles.btn} ${styles.btnGhost}`}
-                                                            onClick={() => changeStatus(s.id, 'PENDING')}
-                                                        >
-                                                            대기로 변경
-                                                        </button>
-                                                    )}
-
-                                                    {s.status === 'REJECTED' && (
-                                                        <button
-                                                            className={`${styles.btn} ${styles.btnGhost}`}
-                                                            onClick={() => changeStatus(s.id, 'PENDING')}
-                                                        >
-                                                            대기로 변경
-                                                        </button>
-                                                    )}
-                                                </div>
+                                                <Link
+                                                    className={`${styles.btn} ${styles.btnGhost}`}
+                                                    href={`/admin/business/${s.id}`}
+                                                >
+                                                    상세
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}
