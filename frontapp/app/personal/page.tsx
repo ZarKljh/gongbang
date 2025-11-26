@@ -2039,9 +2039,9 @@ export default function MyPage() {
                                                         )}
                                                         <p>{follow.studioName}</p>
                                                     </div>
-                                                    <button onClick={() => handleUnfollow(follow.studioId)}>
+                                                    <div className='link-btn delete' onClick={() => handleUnfollow(follow.studioId)}>
                                                         언팔로우
-                                                    </button>
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
