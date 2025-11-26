@@ -6,9 +6,9 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.personal.entity.Follow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,4 +32,13 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 팔로우 여부 확인
     boolean existsBySiteUser_AndStudio(SiteUser siteUser, Studio studio);
+
+    @Query("""
+        SELECT f.studio.id
+        FROM Follow f
+        WHERE f.createdAt >= :from
+        GROUP BY f.studio.id
+        ORDER BY COUNT(f.id) DESC
+        """)
+    List<Long> findTopStudiosByRecentFollows(LocalDateTime from);
 }
