@@ -1639,7 +1639,7 @@ export default function MyPage() {
                                                 </div>
 
                                                 <div className='cart-info'>
-                                                    <Link href={`/product/list/detail/${item.productId}`} className="product-name">
+                                                    <Link href={`/product/list/detail?productId=${item.productId}`} className="product-name">
                                                         {item.productName}
                                                     </Link>
                                                     <div className="product-unit-price">
@@ -1995,9 +1995,6 @@ export default function MyPage() {
                                                             <img 
                                                                 src={`http://localhost:8090${item.imageUrl}`}
                                                                 alt={item.productName}
-                                                                // onError={(e) => {
-                                                                //     e.currentTarget.src = '/default-product.png'
-                                                                // }}
                                                             />
                                                         ) : (
                                                             <div className="no-image">이미지 없음</div>
@@ -2036,9 +2033,6 @@ export default function MyPage() {
                                                                 src={`http://localhost:8090${follow.studioImageUrl}`}
                                                                 alt={follow.studioName}
                                                                 className="studio-image"
-                                                                onError={(e) => {
-                                                                    e.currentTarget.src = '/default-studio.png'
-                                                                }}
                                                             />
                                                         ) : (
                                                             <div className="studio-image-placeholder">🏪</div>
@@ -2071,7 +2065,7 @@ export default function MyPage() {
                                     {myReviews.map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
-                                                <Link href={`http://localhost:3000/product/list/detail/${review.productId}`} className="my-review-product-name">
+                                                <Link href={`http://localhost:3000/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
                                                     {review.productName}
                                                 </Link>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
@@ -2316,10 +2310,10 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="link-btn delete" onClick={() => setIsAddressModal(false)}>
+                            <button className="btn-primary delete" onClick={() => setIsAddressModal(false)}>
                                 취소
                             </button>
-                            <button className="link-btn" onClick={handleSaveAddress}>
+                            <button className="btn-primary" onClick={handleSaveAddress}>
                                 저장
                             </button>
                         </div>
@@ -2407,10 +2401,10 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="link-btn delete" onClick={() => setEditAddressModal(false)}>
+                            <button className="btn-primary delete" onClick={() => setEditAddressModal(false)}>
                                 취소
                             </button>
-                            <button className="link-btn" onClick={handleUpdateAddress}>
+                            <button className="btn-primary" onClick={handleUpdateAddress}>
                                 저장
                             </button>
                         </div>
@@ -2519,10 +2513,10 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="link-btn delete" onClick={() => setIsPaymentModal(false)}>
+                            <button className="btn-primary delete" onClick={() => setIsPaymentModal(false)}>
                                 취소
                             </button>
-                            <button className="link-btn" onClick={handleSavePayment}>
+                            <button className="btn-primary" onClick={handleSavePayment}>
                                 등록
                             </button>
                         </div>
@@ -2569,10 +2563,10 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={handleCloseModal}>
+                            <button className="btn-primary delete" onClick={handleCloseModal}>
                                 취소
                             </button>
-                            <button className="btn btn-primary" onClick={handleSaveEdit}>
+                            <button className="btn-primary" onClick={handleSaveEdit}>
                                 저장
                             </button>
                         </div>
