@@ -127,21 +127,57 @@ public class StudioController {
     }
 
     @PostMapping("/add")
-    public RsData<Map<String, Object>> studioAdd(@Valid @RequestBody StudioAddRequest studioAddRequest){
+    public RsData<Map<String, Object>> studioAdd(
+            @RequestPart("request") @Valid StudioAddRequest studioAddRequest,
+            @RequestPart(value = "studioMainImage", required = false) MultipartFile studioMainImage,
+            @RequestPart(value = "studioLogoImage", required = false) MultipartFile studioLogoImage,
+            @RequestPart(value = "studioGalleryImages", required = false) List<MultipartFile> studioGalleryImages
+        ){
 
         SiteUser seller = rq.getSiteUser();
-        Image studioLogoImage = new Image();
+
         if(seller == null){
             throw new IllegalArgumentException("판매자로그인 혹은 회원가입을 해주세요.");
         } else if( seller.getRole() != RoleType.SELLER){
             throw new IllegalArgumentException("판매자 전용 기능입니다. 판매자로 로그인해주세요.");
         }
+
         Studio newStudio = studioService.AddStudio(seller, studioAddRequest);
+        Long studioId = newStudio.getStudioId();
+
+        if (studioMainImage != null && !studioMainImage.isEmpty()) {
+            profileImageService.uploadStudioImage(
+                    studioId,
+                    studioMainImage,
+                    Image.RefType.STUDIO_MAIN,
+                    0
+            );
+        }
+
+        if (studioLogoImage != null && !studioLogoImage.isEmpty()) {
+            profileImageService.uploadStudioImage(
+                    studioId,
+                    studioLogoImage,
+                    Image.RefType.STUDIO_LOGO,
+                    0
+            );
+        }
+
+        if (studioGalleryImages != null && !studioGalleryImages.isEmpty()) {
+            for (int i = 0; i < studioGalleryImages.size(); i++) {
+                MultipartFile file = studioGalleryImages.get(i);
+                profileImageService.uploadStudioImage(
+                        studioId,
+                        file,
+                        Image.RefType.STUDIO,
+                        i
+                );
+            }
+        }
 
         List<StudioSimpleDto> studioList = new ArrayList<>();
         for (Studio s : seller.getStudioList()) {
-            studioLogoImage = studioService.getLogoImage(s.getStudioId());
-            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName(), studioLogoImage));
+            studioList.add(new StudioSimpleDto(s.getStudioId(), s.getStudioName(), studioService.getLogoImage(s.getStudioId())));
         }
 
         StudioResponse studioResponse = new StudioResponse(seller, newStudio);
@@ -150,7 +186,7 @@ public class StudioController {
         responseMap.put("studio", studioResponse);
         responseMap.put("studioList", studioList);
 
-        return  RsData.of("s-1", "신규공방이 등록되었습니다", responseMap);
+        return  RsData.of("200", "신규공방이 등록되었습니다", responseMap);
     }
 
 

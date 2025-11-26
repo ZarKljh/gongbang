@@ -86,8 +86,29 @@ export default function StudioTab(props: StudioTabProps) {
     } = props
 
     console.log('📌 StudioTab props:', props)
+
+    const studioTabFields: (keyof StudioInfo)[] = [
+        'studioName',
+        'studioMobile',
+        'studioOfficeTell',
+        'studioFax',
+        'studioEmail',
+        'studioAddPostNumber',
+        'studioAddMain',
+        'studioAddDetail',
+    ]
+
     const { errors, validateField, validateAll } = useStudioTabValidation()
-    const isFormValid = Object.values(errors).every((err) => !err)
+    const imageValid =
+        (studioImages.STUDIO_MAIN || studio?.studioMainImage) &&
+        (studioImages.STUDIO_LOGO || studio?.studioLogoImage) &&
+        (studioImages.STUDIO?.length ?? 0) + (studio.studioImages?.length ?? 0) - deletedGalleryImageIds.length > 0
+
+    const textValid = studioTabFields.every((f) => !!tempData[f])
+
+    const noErrors = Object.values(errors).every((e) => !e)
+
+    const isFormValid = editMode.studio && textValid && imageValid && noErrors
     const serverImageUrl = (fileName: string) => `http://localhost:8090/images/${fileName}`
 
     /** 🔥 부모 onTempChange + validation 함께 실행하는 wrapper */
@@ -103,19 +124,59 @@ export default function StudioTab(props: StudioTabProps) {
     useEffect(() => {
         if (!editMode.studio) return
 
+        // 텍스트 필드 전체 검증
         Object.keys(tempData).forEach((key) => {
-            const field = key as keyof StudioInfo
-            validateField(field, tempData[field], tempData)
+            validateField(key as keyof StudioInfo, tempData[key], tempData)
         })
-    }, [editMode.studio])
+
+        // 이미지 검증 추가
+        validateField(
+            'studioMainImageUrl',
+            studioImages.STUDIO_MAIN ? 'uploaded' : studio?.studioMainImage ? 'server' : null,
+            tempData,
+        )
+
+        validateField(
+            'studioLogoImageUrl',
+            studioImages.STUDIO_LOGO ? 'uploaded' : studio?.studioLogoImage ? 'server' : null,
+            tempData,
+        )
+
+        validateField(
+            'studioGalleryImageUrls',
+            [
+                ...(studioImages.STUDIO ?? []),
+                ...(studio.studioImages ?? []).filter((img) => !deletedGalleryImageIds.includes(img.id)),
+            ],
+            tempData,
+        )
+    }, [tempData, studioImages, deletedGalleryImageIds, editMode.studio])
 
     /** 🔥 저장 클릭 시 전체 확인 */
     const handleSave = () => {
-        const ok = validateAll(tempData)
+        const hasMain = !!studioImages.STUDIO_MAIN
+        const hasLogo = !!studioImages.STUDIO_LOGO
+        const hasGallery = studioImages.STUDIO.length > 0
+
+        const fullStudioInfo = {
+            ...tempData,
+            studioMainImageUrl: studioImages.STUDIO_MAIN ? 'uploaded' : studio?.studioMainImage ? 'server' : null,
+
+            studioLogoImageUrl: studioImages.STUDIO_LOGO ? 'uploaded' : studio?.studioLogoImage ? 'server' : null,
+
+            studioGalleryImageUrls: [
+                ...(studioImages.STUDIO ?? []),
+                ...(studio?.studioImages ?? []).filter((img) => !deletedGalleryImageIds.includes(img.id)),
+            ],
+        }
+
+        const ok = validateAll(fullStudioInfo as any)
+
         if (!ok) {
             alert('입력값을 확인해주세요.')
             return
         }
+
         onSave('studio')
     }
 

@@ -402,56 +402,70 @@ export default function MyPage() {
             else if (section === 'studioAdd') {
                 // 1) 스튜디오 기본 정보 저장
 
-                response = await axios.post(
-                    `${API_BASE_URL}/studio/add`,
-                    {
-                        siteUserId: userData.id,
-                        studioBusinessNumber: tempData.studioBusinessNumber,
-                        categoryId: tempData.categoryId,
-                        studioName: tempData.studioName,
-                        studioDescription: tempData.studioDescription,
-                        studioMobile: tempData.studioMobile,
-                        studioOfficeTell: tempData.studioOfficeTell,
-                        studioFax: tempData.studioFax,
-                        studioEmail: tempData.studioEmail,
-                        studioAddPostNumber: tempData.studioAddPostNumber,
-                        studioAddMain: tempData.studioAddMain,
-                        studioAddDetail: tempData.studioAddDetail,
+                const requestJson = {
+                    siteUserId: userData.id,
+                    studioBusinessNumber: tempData.studioBusinessNumber,
+                    categoryId: tempData.categoryId,
+                    studioName: tempData.studioName,
+                    studioDescription: tempData.studioDescription,
+                    studioMobile: tempData.studioMobile,
+                    studioOfficeTell: tempData.studioOfficeTell,
+                    studioFax: tempData.studioFax,
+                    studioEmail: tempData.studioEmail,
+                    studioAddPostNumber: tempData.studioAddPostNumber,
+                    studioAddMain: tempData.studioAddMain,
+                    studioAddDetail: tempData.studioAddDetail,
 
-                        // 이미지 파일명 + 프론트 미리보기 URL 포함
-                        studioMainImageUrl: tempData.studioMainImageUrl || '',
-                        studioMainImageName: studioImages.STUDIO_MAIN?.name || '',
+                    // 이미지 파일명만 전달
+                    studioMainImageName: studioImages.STUDIO_MAIN?.name ?? '',
+                    studioLogoImageName: studioImages.STUDIO_LOGO?.name ?? '',
+                    studioGalleryImageNames: studioImages.STUDIO.map((f) => f.name),
+                }
 
-                        studioLogoImageUrl: tempData.studioLogoImageUrl || '',
-                        studioLogoImageName: studioImages.STUDIO_LOGO?.name || '',
+                const form = new FormData()
+                form.append('request', new Blob([JSON.stringify(requestJson)], { type: 'application/json' }))
 
-                        studioGalleryImageUrls: tempData.studioGalleryImageUrls || [],
-                        studioGalleryImageNames: studioImages.STUDIO.map((f) => f.name),
-                    },
-                    { withCredentials: true },
-                )
+                // 3) 이미지 파일 추가
+                if (studioImages.STUDIO_MAIN) {
+                    form.append('studioMainImage', studioImages.STUDIO_MAIN)
+                }
+                if (studioImages.STUDIO_LOGO) {
+                    form.append('studioLogoImage', studioImages.STUDIO_LOGO)
+                }
+                if (studioImages.STUDIO.length > 0) {
+                    studioImages.STUDIO.forEach((file) => {
+                        form.append('studioGalleryImages', file)
+                    })
+                }
 
-                if (response.data.resultCode !== '200') {
+                // 🔥 FormData 출력
+                console.log('===== FormData 확인 =====')
+                for (let pair of form.entries()) {
+                    console.log(pair[0], pair[1])
+                }
+                console.log('===== /FormData =====')
+                console.log('🔥 requestJson:', requestJson)
+                const res = await axios.post(`${API_BASE_URL}/studio/add`, form, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true,
+                })
+
+                if (res.data.resultCode !== '200') {
                     alert('공방 등록 실패')
                     return
                 }
 
-                const newStudioId = response.data.data.studioId
+                const newStudioId = res.data.data.studioId
 
-                // 2) 이미지 업로드
-                await uploadStudioImages(newStudioId)
-
-                // 3) 리스트 재로드
-                await fetchStudioList(userData.id)
-                await fetchStudio(userData.id)
-
-                // 4) 입력값 초기화
                 setTempData({})
                 setStudioImages({
                     STUDIO_MAIN: null,
                     STUDIO_LOGO: null,
                     STUDIO: [],
                 })
+
+                await fetchStudioList(userData.id)
+                await fetchStudio(userData.id)
 
                 setEditMode((prev) => ({ ...prev, studioAdd: false }))
                 alert('새 공방이 성공적으로 등록되었습니다.')

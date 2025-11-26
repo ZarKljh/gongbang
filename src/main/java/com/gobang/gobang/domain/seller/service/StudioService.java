@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,6 +78,11 @@ public class StudioService {
                 .studioFax(studioAddRequest.getStudioFax())
                 .studioEmail(studioAddRequest.getStudioEmail())
                 .studioBusinessNumber(studioAddRequest.getStudioBusinessNumber())
+                .studioAddPostNumber(studioAddRequest.getStudioAddPostNumber())
+                .studioAddMain(studioAddRequest.getStudioAddMain())
+                .studioAddDetail(studioAddRequest.getStudioAddDetail())
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 .build();
 
         studioRepository.save(newStudio);
