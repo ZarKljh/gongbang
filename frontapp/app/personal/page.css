@@ -589,7 +589,7 @@ body {
     display: none;
 }
 
-/* 모달 */
+/* 모달
 .address-modal,
 .payment-modal,
 .orders-modal,
@@ -705,7 +705,7 @@ body {
     gap: 8px;
     justify-content: flex-end;
     margin-top: 20px;
-}
+} */
 
 /* 문의 */
 .qna-list {
@@ -1220,7 +1220,7 @@ body {
     margin-top: 20px;
 }
 
-/* 프로필 이미지 수정 */
+/* 프로필 이미지 수정 
 .profile-img-modal {
     position: fixed;
     top: 0;
@@ -1267,6 +1267,346 @@ body {
 
 .details {
     margin: 0 0;
+}
+*/
+
+/* 모달 */
+/* ==================== 모달 공통 스타일 ==================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.modal-container {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-container.modal-sm {
+    max-width: 400px;
+}
+
+.modal-container.modal-lg {
+    max-width: 700px;
+}
+
+.modal-container.modal-profile {
+    max-width: 450px;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 모달 헤더 */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 8px;
+    color: #6b7280;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+/* 모달 바디 */
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+/* 모달 푸터 */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #fafafa;
+}
+
+/* 폼 필드 */
+.form-field {
+    margin-bottom: 20px;
+}
+
+.form-field:last-child {
+    margin-bottom: 0;
+}
+
+.form-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field input[type="tel"],
+.form-field input[type="password"],
+.form-field textarea,
+.form-field .select-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field .select-input:focus {
+    outline: none;
+    border-color: #B17457;
+    box-shadow: 0 0 0 3px rgba(177, 116, 87, 0.1);
+}
+
+.form-field textarea {
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.6;
+}
+
+.form-field .select-input {
+    cursor: pointer;
+    background: white;
+}
+
+/* Input Group */
+.input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.input-group input {
+    flex: 1;
+}
+
+.input-group .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Checkbox Label */
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 400 !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #B17457;
+}
+
+.checkbox-label span {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* 모달 빈 상태 */
+.modal-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+}
+
+.modal-empty p {
+    font-size: 15px;
+    margin: 0;
+}
+
+/* 모달 확인 메시지 */
+.modal-confirm-message {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.modal-confirm-message p {
+    font-size: 16px;
+    color: #374151;
+    margin-bottom: 12px;
+}
+
+.modal-warning {
+    font-size: 14px !important;
+    color: #dc2626 !important;
+}
+
+/* 주문 모달 리스트 */
+.modal-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-order-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.modal-order-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.modal-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.order-date {
+    font-weight: 500;
+}
+
+.order-code {
+    color: #9ca3af;
+}
+
+.modal-order-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.modal-order-info .product-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    flex: 1;
+}
+
+.status-badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    background: #EBC2CA;
+    color: white;
+}
+
+.modal-order-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.order-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #B17457;
+}
+
+/* 프로필 미리보기 */
+.profile-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.profile-preview-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #e5e7eb;
+}
+
+.profile-preview-empty {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+    border: 2px dashed #d1d5db;
+}
+
+/* 파일 입력 */
+.file-input-label {
+    display: block;
+    cursor: pointer;
+}
+
+.file-input {
+    display: none;
 }
 
 /* 버튼 */
@@ -1359,6 +1699,39 @@ button.link-btn:disabled:hover {
     }
 
     .cart-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .modal-container {
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: 95vh;
+    }
+
+    .modal-header {
+        padding: 20px;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        padding: 16px 20px;
+        flex-direction: column-reverse;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group .btn {
         width: 100%;
     }
 }
