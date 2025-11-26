@@ -26,6 +26,7 @@ public class TopStudioResponse {
     public static class ProductDto {
         private Long productId;
         private String productName;
+        private String summary;
         private String imageUrl;
         private int price;
     }

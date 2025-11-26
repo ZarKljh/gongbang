@@ -63,6 +63,7 @@ public class HomeService {
                                 return TopStudioResponse.ProductDto.builder()
                                         .productId(p.getId())
                                         .productName(p.getName())
+                                        .summary(p.getSummary())
                                         .imageUrl(thumbUrl)
                                         .price(p.getBasePrice())
                                         .build();
