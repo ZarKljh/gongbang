@@ -654,12 +654,14 @@ export default function Review() {
                                     <li key={review.reviewId} className="review-item">
                                         <div className="review-header">
                                             <div className="review-user-avatar">
-                                                {review.profileImageUrl && (
-                                                    <img
-                                                        src={`http://localhost:8090${review.profileImageUrl}`}
-                                                        alt="프로필"
-                                                    />
-                                                )}
+                                                <img
+                                                    src={
+                                                        review.profileImageUrl
+                                                            ? `http://localhost:8090${review.profileImageUrl}`
+                                                            : '/images/default_profile.jpg'
+                                                    }
+                                                    alt="프로필"
+                                                />
                                             </div>
 
                                             <div className="review-user-info">
