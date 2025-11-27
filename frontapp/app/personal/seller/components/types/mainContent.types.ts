@@ -60,7 +60,7 @@ export interface MainContentProps {
     productLoading?: boolean
 
     setProductPage?: (page: number) => void
-
+    setProductPageSize?: (size: number) => void
     fetchStudioProducts?: (studioId: number, page?: number) => void
 
     /** 🔥 검색 조건 객체 전달 (필수) */

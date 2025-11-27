@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
@@ -28,6 +29,7 @@ public class StudioService {
     private final StudioRepository studioRepository;
     private final ProductOfStudioRepository productRepository;
     private final ImageRepository imageRepository;
+    private final CategoryRepository categoryRepository;
 
     public Page<ProductDto> getProductListByStudioId(Long studioId, Pageable pageable) {
         Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);

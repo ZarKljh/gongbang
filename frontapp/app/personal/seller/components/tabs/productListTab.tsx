@@ -12,6 +12,7 @@ export default function ProductListTab(props: MainContentProps) {
         productHasNext,
         productLoading,
         setProductPage,
+        setProductPageSize,
         fetchStudioProducts,
 
         // 🔐 인증 관련
@@ -318,6 +319,20 @@ export default function ProductListTab(props: MainContentProps) {
             <div className="table-actions">
                 <button onClick={handleDeleteSelected}>선택 삭제</button>
                 <button onClick={moveToAddPage}>신규 상품 등록</button>
+                <select
+                    value={productPageSize}
+                    onChange={(e) => {
+                        const size = Number(e.target.value)
+                        setProductPage(0) // 첫 페이지로 이동
+                        setProductPageSize(size) // 부모 상태 변경
+                        fetchStudioProducts(studio.studioId, 0) // 다시 호출
+                    }}
+                >
+                    <option value={5}>5개씩</option>
+                    <option value={10}>10개씩</option>
+                    <option value={20}>20개씩</option>
+                    <option value={30}>30개씩</option>
+                </select>
             </div>
 
             {/* =====================================================

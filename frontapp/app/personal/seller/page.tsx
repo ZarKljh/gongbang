@@ -174,7 +174,7 @@ export default function MyPage() {
                 status: productFilters.status.join(','),
             })
 
-            const response = await fetch(`${API_BASE_URL}/studio/${studioId}/products?${query.toString()}`, {
+            const response = await fetch(`${API_BASE_URL}/studio/${studioId}/studio-products?${query.toString()}`, {
                 method: 'GET',
                 credentials: 'include',
             })
@@ -209,6 +209,11 @@ export default function MyPage() {
 
         return () => clearTimeout(delay)
     }, [productFilters])
+
+    useEffect(() => {
+        if (!studio?.studioId) return
+        fetchStudioProducts(studio.studioId, 0)
+    }, [productPageSize])
 
     // =============== 🔐 회원정보 관련 함수 ===============
     const handleVerifyPassword = async () => {
@@ -695,6 +700,7 @@ export default function MyPage() {
                 fetchStudioProducts={fetchStudioProducts}
                 productFilters={productFilters}
                 setProductFilters={setProductFilters}
+                setProductPageSize={setProductPageSize}
             />
         </div>
     )
