@@ -39,8 +39,6 @@ public class ReviewResponse {
     private String profileImageUrl;
 
 
-
-
     public static ReviewResponse fromEntity(Review review, String profileImageUrl) {
 
         // review.getImages()가 LAZY라면 트랜잭션 내에서 호출되어야 함

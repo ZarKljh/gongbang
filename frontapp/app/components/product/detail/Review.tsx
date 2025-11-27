@@ -39,6 +39,9 @@ export default function Review() {
 
     // 포토 리뷰 가져오기
     const [photoReviews, setPhotoReviews] = useState<{ id: number; img: string; title: string }[]>([])
+    const [showModal, setShowModal] = useState()
+    // 모달에서 사용할 이미지 목록 (리뷰 전체)
+    const [modalImages, setModalImages] = useState([])
 
     // 상품Id 기준 리뷰 가져오기
     const searchParams = useSearchParams()
@@ -158,18 +161,37 @@ export default function Review() {
 
             const data = await res.json()
 
-            if (res.ok) {
-                const pr = data.data.map((r) => ({
+           if (res.ok && data.data) {
+                const formatted = data.data.map((r) => ({
                     id: r.reviewId,
-                    img: `http://localhost:8090${r.imageUrl}`, // 백엔드 필드명 맞춰
+                    img: `http://localhost:8090${r.imageUrl}`,
                     title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
                 }))
-
-                setPhotoReviews(pr)
+                setPhotoReviews(formatted)
             }
         } catch (e) {
             console.error('전체 포토 리뷰 조회 실패', e)
         }
+    }
+
+    useEffect(() => {
+        if (productId) fetchPhotoReviews()
+    }, [productId])
+
+    // 모달 열기 + 전체 이미지 세팅
+    const openPhotoModal = () => {
+        setModalImages(photoReviews) // 전체 포토 이미지 모달에 표시
+        setShowModal(true)
+    }
+
+    // 모달 닫기
+    const closePhotoModal = () => {
+        setShowModal(false)
+    }
+
+    // 모달 리뷰 이미지 클릭시 상세 리뷰 이동
+    const moveToDetail = (reviewId) => {
+        router.push(`/review/${reviewId}`)
     }
 
     // 포토 슬라이드 swiper 준비 된 후 네비게이션 연결
@@ -281,7 +303,7 @@ export default function Review() {
             }))
             console.log('comments:', comments[review.reviewId])
         } catch (err) {
-            console.error(`댓글(${reviewId}) 조회 실패:`, err)
+            // console.error(`댓글(${reviewId}) 조회 실패:`, err)
         }
     }
 
@@ -521,7 +543,7 @@ export default function Review() {
 
                     <hr style={{ border: '1px solid #E9DCC4' }} />
                     <section className="photoReview-container">
-                        <h3 className="photoReview-title">📸 포토 리뷰</h3>
+                        <h3 className="photoReview-title">포토 리뷰</h3>
 
                         <Swiper
                             modules={[Navigation]}
@@ -540,14 +562,69 @@ export default function Review() {
                         >
                             {photoReviews.map((r) => (
                                 <SwiperSlide key={r.id}>
-                                    <div className="photoCard" onClick={() => router.push(`/review/${r.id}`)}>
+                                    <div className="photoCard" onClick={openPhotoModal}>
                                         <img src={r.img} alt={r.title} />
+
                                         <p>{r.title}</p>
                                     </div>
                                 </SwiperSlide>
                             ))}
                         </Swiper>
 
+                        {/* 포토 모달 */}
+                        {showModal && (
+                            <div 
+                                style={{
+                                    position: 'fixed',
+                                    inset: 0,
+                                    background: 'rgba(0,0,0,0.7)',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    zIndex: 2000,
+                                }}
+                                onClick={closePhotoModal}
+                            >
+                                {/* 모달 내용 */}
+                                <div
+                                    style={{
+                                        background: 'white',
+                                        borderRadius: '12px',
+                                        padding: '20px',
+                                        width: '70%',
+                                        maxHeight: '80vh',
+                                        overflowY: 'auto',
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <h3 style={{ marginBottom: '15px' }}>포토 리뷰 전체 보기</h3>
+
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '12px',
+                                        }}
+                                    >
+                                        {modalImages.map((item) => (
+                                            <img
+                                                key={item.id}
+                                                src={item.img}
+                                                alt=""
+                                                style={{
+                                                    width: '160px',
+                                                    height: '160px',
+                                                    objectFit: 'cover',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                }}
+                                                onClick={() => moveToDetail(item.id)} // 🔥 클릭 → 상세 페이지 이동
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {/* 커스텀 네비게이션 */}
                         <div ref={prevRef} className="custom-prev">
                             <ChevronLeft size={26} strokeWidth={2.5} />
