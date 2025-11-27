@@ -4,6 +4,7 @@ import api from '@/app/utils/api'
 import { useEffect, useState } from 'react'
 import styles from './main.module.css'
 import Link from 'next/link'
+import ReviewRank from '@/app/utils/ReviewRank'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
@@ -229,6 +230,10 @@ export default function Main() {
                         </li>
                     </ul>
                 </div>
+            </section>
+            <section>
+            <ReviewRank />
+
             </section>
         </>
     )

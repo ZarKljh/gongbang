@@ -126,15 +126,6 @@ public class ReviewImageService {
                         (existing, duplicate) -> existing // 기존(first)의 순서를 유지
                 ));
 
-        // 3)
-//        Map<Long, List<String>> grouped =
-//                images.stream().collect(
-//                        Collectors.groupingBy(
-//                                Image::getRefId,
-//                                Collectors.mapping(Image::getImageUrl, Collectors.toList())
-//                        )
-//                );
-
         // 4) 이미지가 있는 리뷰만 필터링해서 DTO 변환
         return reviews.stream()
                 .sorted(Comparator.comparing(Review::getCreatedDate).reversed())
@@ -148,14 +139,6 @@ public class ReviewImageService {
                     );
                 })
                 .toList();
-        // 4)
-//        return reviews.stream()
-//                .filter(r -> grouped.containsKey(r.getReviewId()))
-//                .map(r -> new PhotoReviewResponse(
-//                        r.getReviewId(),
-//                        grouped.get(r.getReviewId()), // 이미지 여러 장 넣기
-//                        r.getContent()
-//                ))
-//                .toList();
     }
+
 }
