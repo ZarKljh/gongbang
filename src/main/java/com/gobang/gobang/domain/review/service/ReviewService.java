@@ -8,6 +8,7 @@ import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
+import com.gobang.gobang.domain.review.dto.response.ReviewPopularProductResponse;
 import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
@@ -318,7 +319,7 @@ public class ReviewService {
                 .orElse("/uploads/reviews/default_profile.jpg");   // 기본이미지
     }
 
-
-
-
+    public List<ReviewPopularProductResponse> getPopularReviewProducts() {
+        return reviewRepository.findPopularReviewProducts();
+    }
 }

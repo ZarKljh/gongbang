@@ -186,4 +186,12 @@ public class ReviewController {
         return RsData.of("200", "리뷰가 성공적으로 삭제되었습니다.");
     }
 
+    @GetMapping("/popular")
+    public RsData<List<ReviewPopularProductResponse>> getPopularReviewProducts() {
+        return RsData.of(
+                "200",
+                "리뷰 인기 상품 조회 성공",
+                reviewService.getPopularReviewProducts()
+        );
+    }
 }
