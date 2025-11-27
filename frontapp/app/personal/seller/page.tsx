@@ -47,6 +47,24 @@ export default function MyPage() {
         STUDIO: [] as File[],
     })
     const [deletedGalleryImageIds, setDeletedGalleryImageIds] = useState<number[]>([])
+
+    //상품리스트 관련 데이터상태
+    const [productList, setProductList] = useState<any[]>([]) // 현재 화면에 표시되는 상품 리스트 데이터
+    const [productPage, setProductPage] = useState(0) // 현재 페이지 번호 (백엔드의 page 파라미터와 동일, 0부터 시작)
+    const [productPageSize, setProductPageSize] = useState(5) // 한 페이지에 불러올 상품 개수 (페이지 사이즈)
+    const [productHasNext, setProductHasNext] = useState(true) // 다음 페이지가 존재하는지 여부 (백엔드 응답의 data.last 기반)
+    const [productLoading, setProductLoading] = useState(false) // 상품 데이터를 불러오는 중인지 여부 (로딩 스피너 / 중복 요청 방지용)
+
+    const [productFilters, setProductFilters] = useState({
+        keyword: '',
+        searchFields: ['name'], // ["name", "categoryName", "subcategoryName"]
+        priceMin: 0,
+        priceMax: 500000,
+        active: [], // true/false
+        stock: [], // ["inStock", "outOfStock"]
+        status: [], // ["PUBLISHED", "HIDDEN"]
+    })
+
     // ======= 초기 로딩 =======
     useEffect(() => {
         const init = async () => {
@@ -134,6 +152,63 @@ export default function MyPage() {
             setStudio(null) // 스튜디오 없음으로 처리
         }
     }
+
+    const fetchStudioProducts = async (studioId: number, page = 0) => {
+        if (!studioId) return
+        setProductLoading(true)
+
+        try {
+            const query = new URLSearchParams({
+                page: String(page),
+                size: String(productPageSize),
+
+                // 🔍 검색 필터
+                keyword: productFilters.keyword,
+                searchFields: productFilters.searchFields.join(','),
+
+                priceMin: String(productFilters.priceMin),
+                priceMax: String(productFilters.priceMax),
+
+                active: productFilters.active.join(','),
+                stock: productFilters.stock.join(','),
+                status: productFilters.status.join(','),
+            })
+
+            const response = await fetch(`${API_BASE_URL}/studio/${studioId}/products?${query.toString()}`, {
+                method: 'GET',
+                credentials: 'include',
+            })
+
+            const result = await response.json()
+            const data = result.data
+
+            // 페이지 교체 방식 (검색/페이징용)
+            setProductList(data.content ?? [])
+            setProductHasNext(!data.last)
+            setProductPage(data.number)
+        } catch (err) {
+            console.error('상품 목록 조회 실패:', err)
+            setProductList([])
+        } finally {
+            setProductLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        if (studio?.studioId) {
+            fetchStudioProducts(studio.studioId, 0)
+        }
+    }, [studio])
+
+    useEffect(() => {
+        if (!studio?.studioId) return
+
+        const delay = setTimeout(() => {
+            fetchStudioProducts(studio.studioId, 0)
+        }, 300)
+
+        return () => clearTimeout(delay)
+    }, [productFilters])
 
     // =============== 🔐 회원정보 관련 함수 ===============
     const handleVerifyPassword = async () => {
@@ -611,6 +686,15 @@ export default function MyPage() {
                 deletedGalleryImageIds={deletedGalleryImageIds}
                 setDeletedGalleryImageIds={setDeletedGalleryImageIds}
                 setStudioImages={setStudioImages}
+                productList={productList}
+                productPage={productPage}
+                productPageSize={productPageSize}
+                productHasNext={productHasNext}
+                productLoading={productLoading}
+                setProductPage={setProductPage}
+                fetchStudioProducts={fetchStudioProducts}
+                productFilters={productFilters}
+                setProductFilters={setProductFilters}
             />
         </div>
     )

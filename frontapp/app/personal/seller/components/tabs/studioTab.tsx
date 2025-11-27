@@ -3,6 +3,7 @@ import type { MainContentProps } from '../types/mainContent.types'
 import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
 import ErrorMessage from '@/app/auth/common/errorMessage'
 import { useStudioTabValidation } from '@/app/auth/hooks/updateStudioValidation'
+import ReactMarkdown from 'react-markdown'
 
 /*
 interface StudioTabProps {
@@ -383,6 +384,23 @@ export default function StudioTab(props: StudioTabProps) {
                         />
                     ) : (
                         <p>{studio.studioAddDetail}</p>
+                    )}
+                </div>
+                {/* 상세설명 출력 or 편집 */}
+                <div className="form-group">
+                    <label>공방 상세설명</label>
+                    {!editMode.studio ? (
+                        <div className="markdown-view">
+                            <ReactMarkdown>{studio.studioDescription || '등록된 상세설명이 없습니다.'}</ReactMarkdown>
+                        </div>
+                    ) : (
+                        <textarea
+                            className="markdown-editor editable"
+                            value={tempData.studioDescription || ''}
+                            onChange={(e) => handleValidatedChange('studioDescription', e.target.value)}
+                            placeholder="Markdown 문법으로 공방 상세설명을 작성하세요."
+                            rows={1}
+                        />
                     )}
                 </div>
                 {editMode.studio && <ErrorMessage message={errors.studioAddDetail} />}

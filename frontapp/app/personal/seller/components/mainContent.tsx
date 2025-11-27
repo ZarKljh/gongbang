@@ -13,6 +13,7 @@ import StudioTab from './tabs/studioTab'
 import ProfileTab from './tabs/profileTab'
 import StudioDescTab from './tabs/studioDescTab'
 import StudioAddTab from './tabs/studioAddTab'
+import ProductListTab from './tabs/productListTab'
 /*
 interface MainContentProps {
     activeTab: string
@@ -86,13 +87,14 @@ export default function MainContent(props: MainContentProps) {
                 </div>
                 {activeTab === 'studio' && <StudioTab {...props} />}
                 {activeTab === 'profile' && <ProfileTab {...props} />}
-                {activeTab === 'studioDesc' && <StudioDescTab {...props} />}
                 {activeTab === 'studioAdd' && <StudioAddTab {...props} />}
+                {activeTab === 'productList' && <ProductListTab {...props} />}
             </div>
         </div>
     )
 }
 /*
+                {activeTab === 'studioDesc' && <StudioDescTab {...props} />}
                 {activeTab === 'orders' && <OrdersTab {...props} />}
                 {activeTab === 'cart' && <CartTab {...props} />}
                 {activeTab === 'profile' && <ProfileTab {...props} />}
