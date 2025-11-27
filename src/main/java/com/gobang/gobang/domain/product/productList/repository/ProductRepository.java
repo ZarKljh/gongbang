@@ -101,5 +101,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     );
 
     List<Product> findTop3ByStudioIdOrderByCreatedDateDesc(Long studioId);
-
 }

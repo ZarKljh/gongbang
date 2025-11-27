@@ -40,6 +40,8 @@ public class HomeService {
                     Studio studio = studioRepository.findById(studioId).orElse(null);
                     if (studio == null) return null;
 
+                    int followerCount = followRepository.countByStudioStudioId(studio.getStudioId());
+
                     // 공방 대표 이미지 (STUDIO_MAIN)
                     String mainImageUrl = imageRepository
                             .findTopByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.STUDIO_MAIN, studioId)
@@ -74,6 +76,7 @@ public class HomeService {
                             .studioId(studio.getStudioId())
                             .studioName(studio.getStudioName())
                             .mainImageUrl(mainImageUrl)
+                            .followerCount(followerCount)
                             .recentProducts(productDtos)
                             .build();
                 })

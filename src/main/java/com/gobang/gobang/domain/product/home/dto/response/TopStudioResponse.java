@@ -16,6 +16,7 @@ public class TopStudioResponse {
     private Long studioId;
     private String studioName;
     private String mainImageUrl;
+    private Integer followerCount;
 
     private List<ProductDto> recentProducts;
 

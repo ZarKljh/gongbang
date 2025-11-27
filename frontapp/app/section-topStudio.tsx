@@ -3,11 +3,13 @@
 import api from '@/app/utils/api'
 import { useEffect, useState } from 'react'
 import styles from './main.module.css'
+import Link from 'next/link'
 
 type TopStudio = {
     studioId: number
     studioName: string
     mainImageUrl: string | null
+    followerCount: number
     recentProducts: {
         productId: number
         productName: string
@@ -44,15 +46,20 @@ export default function TopStudios() {
                     <p>오늘의 공방이 없습니다.</p>
                 ) : (
                     <div className={styles.topStudioList}>
-                        {topStudio.map((studio) => (
+                        {topStudio.map((studio, topStudio) => (
                             <div key={studio.studioId} className={styles.topStudioCard}>
-                                <img
-                                    src={studio.mainImageUrl ?? "/default-studio.jpg"}
-                                    alt={studio.studioName}
-                                    className={styles.topStudioMainImg}
-                                />
-
-                                <h3 className={styles.topStudioName}>{studio.studioName}</h3>
+                                <div className={styles.topStudioBox}>
+                                    <img
+                                        src={studio.mainImageUrl ?? "/default-studio.jpg"}
+                                        alt={studio.studioName}
+                                        className={styles.topStudioMainImg}
+                                    />
+                                    <h3 className={styles.topStudioName}>{studio.studioName}</h3>
+                                    <p className={styles.topStudioFollowers}>
+                                        팔로워 {studio.followerCount?.toLocaleString() || 0}명
+                                    </p>
+                                </div>
+                                
 
                                 <div className={styles.topStudioProductWrap}>
                                     {studio.recentProducts.map((p) => (
@@ -62,7 +69,9 @@ export default function TopStudios() {
                                                 alt={p.productName}
                                                 className={styles.topProductImgSmall}
                                             />
-                                            <p className={styles.topProductNameSmall}>{p.productName}</p>
+                                            <Link className={styles.topProductNameSmall} href={`http://localhost:3000/product/list/detail?productId=${p.productId}`}>
+                                                {p.productName}
+                                            </Link>
                                             <p className={styles.topProductsummary}>{p.summary}</p>
                                         </div>
                                     ))}

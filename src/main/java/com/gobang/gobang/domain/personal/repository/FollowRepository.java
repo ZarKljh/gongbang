@@ -41,4 +41,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
         ORDER BY COUNT(f.id) DESC
         """)
     List<Long> findTopStudiosByRecentFollows(LocalDateTime from);
+
+    // 특정 공방의 팔로워 수
+    int countByStudioStudioId(Long studioId);
 }

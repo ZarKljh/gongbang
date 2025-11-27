@@ -294,11 +294,18 @@ body {
   border-radius: 12px;
 }
 
+.topStudioBox {
+  display: flex;
+  flex-direction: column;
+}
+
 .topStudioMainImg {
   width: 100px;
   height: 100px;
   object-fit: cover;
   border-radius: 50%;
+  overflow: hidden;
+  background-color: #d3d3d3;
 }
 
 .topStudioName {
@@ -306,18 +313,26 @@ body {
   font-weight: 600;
   color: #6b5642;
   margin-top: 15px;
-  grid-column: 1;
+}
+
+.topStudioFollowers {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b5642;
+  /* margin-top: 10px; */
+  text-wrap: nowrap;
 }
 
 .topStudioProductWrap {
+  width: 100%;
   display: flex;
   gap: 20px;
-  grid-column: 2;
-  grid-row: 1 / 3;
 }
 
 .topProductCardSmall {
+  flex-direction: column;
   background: white;
+  width: 100%;
   border-radius: 12px;
   border: 1px solid #e5e5e5;
   overflow: hidden;
@@ -346,42 +361,5 @@ body {
   padding: 0 15px 12px;
   margin: 0;
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* 반응형 */
-@media (max-width: 1024px) {
-  .topStudioCard {
-    gap: 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .topStudioSection {
-    padding: 40px 15px;
-  }
-
-  .topSectionTitle {
-    font-size: 24px;
-    margin-bottom: 30px;
-  }
-
-  .topStudioCard {
-    padding: 20px;
-  }
-
-  .topStudioMainImg {
-    height: 300px;
-  }
-
-  .topStudioProductWrap {
-    gap: 15px;
-  }
-
-  .topProductImgSmall {
-    height: 150px;
-  }
 }
