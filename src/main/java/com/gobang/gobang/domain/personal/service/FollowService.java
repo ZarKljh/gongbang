@@ -32,15 +32,6 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    // 셀러의 팔로워 목록 조회
-    public List<FollowResponse> getFollowersBySellerId(Studio studio) {
-        List<Follow> followers = followRepository.findByStudio(studio);
-
-        return followers.stream()
-                .map(item -> FollowResponse.from(item, imageRepository))
-                .collect(Collectors.toList());
-    }
-
     // 팔로우 추가
     @Transactional
     public FollowResponse addFollow(FollowRequest request) {

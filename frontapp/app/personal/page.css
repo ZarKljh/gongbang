@@ -174,8 +174,7 @@ body {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #4b5563;
-    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #DAC0A3;
     overflow: hidden;
     cursor: pointer;
 }
