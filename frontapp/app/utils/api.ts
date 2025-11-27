@@ -10,10 +10,10 @@ export type AdminMe = {
     role?: string
 }
 
-const baseURL = process.env.NEXT_PUBLIC_ADMIN_API ?? 'http://172.30.1.29:8090'
+const baseURL = process.env.NEXT_PUBLIC_ADMIN_API ?? 'http://192.168.0.6:8090'
 
 export const api = axios.create({
-    baseURL: 'http://172.30.1.29:8090/api/v1',
+    baseURL: 'http://192.168.0.6:8090/api/v1',
     withCredentials: true, // 필요 없으면 제거해도 됩니다.
     timeout: 10000,
     headers: {

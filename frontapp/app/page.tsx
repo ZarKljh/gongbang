@@ -126,12 +126,12 @@ export default function Main() {
                     </div>
                 </nav>
 
-                <header className={styles.categoryHeader}>
+                {/* <header className={styles.categoryHeader}>
                     <div className={styles.headerLeft}>
                         <h2 className={styles.headerTitle}>세부 카테고리</h2>
-                    </div>
+                    </div> */}
 
-                    {/* <nav className={styles.headerNav} aria-label="상단 메뉴">
+                {/* <nav className={styles.headerNav} aria-label="상단 메뉴">
                     <ul className={styles.navList}>
                         <li className={styles.navItem}>
                             <a href="#">이벤트</a>
@@ -144,8 +144,8 @@ export default function Main() {
                         </li>
                     </ul>
                 </nav> */}
-                </header>
-
+                {/* </header> */}
+                {/* 
                 <div className={styles.categoryContainer}>
                     {categories.map((cat) => (
                         <ul className={styles.categoryList2} key={cat.id}>
@@ -169,40 +169,12 @@ export default function Main() {
                             </li>
                         </ul>
                     ))}
-                </div>
+                </div> */}
             </main>
             {/* 섹션 */}
             <section className={styles.recommendWrap}>
                 {/* 섹션 1 — 오늘의 추천 상품 */}
-                <div className={styles.sectionBox}>
-                    <h2 className={styles.sectionTitle}>오늘의 추천 상품</h2>
 
-                    <ul className={styles.productGrid}>
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품1</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품2</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품3</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
                 {/* 섹션2번 컴포넌트로 묶음*/}
                 <MainSection02 />
             </section>
