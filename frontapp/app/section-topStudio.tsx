@@ -43,27 +43,27 @@ export default function TopStudios() {
                 {topStudio.length === 0 ? (
                     <p>오늘의 공방이 없습니다.</p>
                 ) : (
-                    <div className={styles.studioList}>
+                    <div className={styles.topStudioList}>
                         {topStudio.map((studio) => (
-                            <div key={studio.studioId} className={styles.studioCard}>
+                            <div key={studio.studioId} className={styles.topStudioCard}>
                                 <img
                                     src={studio.mainImageUrl ?? "/default-studio.jpg"}
                                     alt={studio.studioName}
-                                    className={styles.studioMainImg}
+                                    className={styles.topStudioMainImg}
                                 />
 
-                                <h3 className={styles.studioName}>{studio.studioName}</h3>
+                                <h3 className={styles.topStudioName}>{studio.studioName}</h3>
 
-                                <div className={styles.studioProductWrap}>
+                                <div className={styles.topStudioProductWrap}>
                                     {studio.recentProducts.map((p) => (
-                                        <div key={p.productId} className={styles.productCardSmall}>
+                                        <div key={p.productId} className={styles.topProductCardSmall}>
                                             <img
                                                 src={p.imageUrl ?? "/default-product.png"}
                                                 alt={p.productName}
-                                                className={styles.productImgSmall}
+                                                className={styles.topProductImgSmall}
                                             />
-                                            <p className={styles.productNameSmall}>{p.productName}</p>
-                                            <p className={styles.productsummary}>{p.summary}</p>
+                                            <p className={styles.topProductNameSmall}>{p.productName}</p>
+                                            <p className={styles.topProductsummary}>{p.summary}</p>
                                         </div>
                                     ))}
                                 </div>
