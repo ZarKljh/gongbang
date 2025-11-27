@@ -182,6 +182,17 @@ export default function ReviewDetail() {
 
                 {/* 작성자 정보 */}
                 <div className="review-author-box">
+                    {/* <div className="review-user-avatar"> */}
+                    <img
+                        className="review-user-avatar"
+                        src={
+                            review.profileImageUrl
+                                ? `http://localhost:8090${review.profileImageUrl}`
+                                : '/images/default_profile.jpg'
+                        }
+                        alt="프로필"
+                    />
+                    {/* </div> */}
                     <strong className="review-author-name">{review.createdBy}</strong>
                     &nbsp; / &nbsp;
                     {review.createdDate}
