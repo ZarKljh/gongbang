@@ -96,7 +96,7 @@ public class Review {
     @Column(name = "updated_by")
     private String updatedBy;
 
-    // 이미지 리스트를 영속성 관계 제외
+    // 이미지 리스트를 영속성 관계 제외(임시, 엔티티에 추가x)
     @Transient
     private List<Image> images = new ArrayList<>();
 
@@ -104,4 +104,12 @@ public class Review {
     @JoinColumn(name = "product_id",  insertable = false, updatable = false)
     @JsonIgnore
     private Product product;
+
+    // 프로필 이미지를 영속성 관계 제외(임시, 엔티티에 추가x)
+    @Transient
+    private String profileImageUrl;
+    // 서비스에서 setter 채워넣음
+    public void setProfileImageUrl(String profileUrl) {
+        this.profileImageUrl = profileUrl;
+    }
 }

@@ -78,6 +78,14 @@ public class ReviewService {
                     .toList();
 
             review.setImages(images);
+
+            String profileUrl = imageRepository
+                    .findByRefTypeAndRefId(Image.RefType.USER_PROFILE, review.getSiteUser().getId())
+                    .map(Image::getImageUrl)
+                    .orElse(null);
+
+            // 엔티티에 없는 값이므로 직접 DTO 변환 후 설정
+            review.setProfileImageUrl(profileUrl);
         });
 
         return reviewPage;

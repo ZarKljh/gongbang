@@ -39,12 +39,9 @@ public class ReviewResponse {
     private String profileImageUrl;
 
 
-    // 서비스에서 setter 채워넣음
-    public void setProfileImageUrl(String profileUrl) {
-        this.profileImageUrl = profileUrl;
-    }
 
-    public static ReviewResponse fromEntity(Review review) {
+
+    public static ReviewResponse fromEntity(Review review, String profileImageUrl) {
 
         // review.getImages()가 LAZY라면 트랜잭션 내에서 호출되어야 함
         List<String> imageUrls = review.getImages() != null
@@ -67,6 +64,7 @@ public class ReviewResponse {
                 .userNickName(review.getSiteUser().getNickName())
                 .userId(review.getSiteUser().getId())
                 .imageUrls(imageUrls)
+                .profileImageUrl(profileImageUrl)
                 .productId(review.getProductId())
                 .build();
     }

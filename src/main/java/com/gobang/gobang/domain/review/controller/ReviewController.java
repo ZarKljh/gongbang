@@ -106,7 +106,7 @@ public class ReviewController {
 
         return reviewService.getReviewById(id)
                 .map(review -> {
-                    ReviewResponse response = ReviewResponse.fromEntity(review); // ✅ 안전하게 DTO 변환
+                    ReviewResponse response = ReviewResponse.fromEntity(review, review.getProfileImageUrl()); // ✅ 안전하게 DTO 변환
                     return RsData.of(
                             "200",
                             "단건 조회 성공",
