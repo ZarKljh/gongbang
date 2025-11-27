@@ -14,6 +14,7 @@ interface Props {
     previewLogoImage: string | null
     previewGalleryImages: string[]
     errors: any
+    validateField: (name: keyof StudioInfo, value: any, studio?: StudioInfo) => void
 }
 
 declare global {

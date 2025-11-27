@@ -11,6 +11,7 @@ export default function ReviewDetail() {
     const params = useParams()
     const router = useRouter()
     const [review, setReview] = useState({})
+    const [reviews, setReviews] = useState([])
     const [currentUserId, setCurrentUserId] = useState(null)
     const [selectedImageIndex, setSelectedImageIndex] = useState(null) // ✅ index 기반으로 변경
 
@@ -19,6 +20,10 @@ export default function ReviewDetail() {
 
     const productIdStr = searchParams.get('productId')
     const productId = productIdStr ? Number(productIdStr) : null
+
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+    const [roleType, setRoleType] = useState<string | null>(null)
 
     useEffect(() => {
         checkLoginStatus()
@@ -64,10 +69,12 @@ export default function ReviewDetail() {
             })
             if (res.ok) {
                 const data = await res.json()
+                setIsLoggedIn(true)
                 setCurrentUserId(data?.data?.id || null)
             }
         } catch (err) {
             console.error('로그인 확인 실패:', err)
+            setIsLoggedIn(false)
         }
     }
 
@@ -79,6 +86,56 @@ export default function ReviewDetail() {
             if (res.ok) setReview(data.data)
         } catch (err) {
             console.error('리뷰 상세 조회 실패:', err)
+        }
+    }
+
+    const handleDeleteClick = async (reviewId: number) => {
+        try {
+            if (!isLoggedIn) {
+                if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
+                    window.location.href = '/auth/login'
+                }
+                return
+            }
+
+            if (!confirm('리뷰를 삭제하시겠습니까?')) return
+
+            // 리뷰 삭제 전 미리 저장
+            const productId = review?.productId
+
+            const token = localStorage.getItem('accessToken') // 관리자 토큰 가져오기
+
+            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            })
+
+            const data = await res.json()
+            console.log('🗑️ 삭제 응답:', data)
+
+            if (res.ok && data.resultCode === '200') {
+                alert('리뷰가 삭제되었습니다.')
+                // 목록에서 제거
+                setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId))
+
+                // 상품 상세 이동
+                window.location.href = `/product/list/detail?productId=${productId}`
+
+                return
+            } else if (data.resultCode === '403') {
+                alert('삭제 권한이 없습니다.')
+            } else if (data.resultCode === '400') {
+                alert('리뷰가 존재하지 않습니다.')
+            } else {
+                alert('삭제 실패. 다시 시도해주세요.')
+            }
+        } catch (err) {
+            console.error('❌ 서버 오류:', err)
+            alert('서버 오류로 삭제 실패')
         }
     }
 
@@ -115,6 +172,25 @@ export default function ReviewDetail() {
         >
             {/* 리뷰 상세 */}
             <div style={{ width: '70%' }}>
+                <Link
+                    href={{
+                        pathname: '/product/list/detail',
+                        query: { productId: review?.productId },
+                    }}
+                    style={{
+                        display: 'inline-block',
+                        backgroundColor: '#ddd',
+                        color: '#333',
+                        textDecoration: 'none',
+                        borderRadius: '8px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d1d1d1')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ddd')}
+                >
+                    ← 목록으로 돌아가기
+                </Link>
                 <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>리뷰 상세보기</h2>
 
                 {/* 작성자 정보 */}
@@ -127,7 +203,7 @@ export default function ReviewDetail() {
                         paddingBottom: '8px',
                     }}
                 >
-                    <strong style={{ color: '#333' }}>{review.userNickName || '익명'}</strong> · 작성일:{' '}
+                    <strong style={{ color: '#333' }}>{review.userNickName}</strong> · 작성일:{' '}
                     {review.createdDate
                         ? new Date(review.createdDate).toLocaleDateString('ko-KR', {
                               year: 'numeric',
@@ -225,29 +301,12 @@ export default function ReviewDetail() {
                             리뷰 수정하기
                         </button>
                     )}
-
-
-                    <Link
-                        href={{
-                            pathname: '/product/list/detail',
-                            query: { productId: review?.productId },
-                        }}
-                        style={{
-                            display: 'inline-block',
-                            backgroundColor: '#ddd',
-                            color: '#333',
-                            textDecoration: 'none',
-                            borderRadius: '8px',
-                            padding: '10px 20px',
-                            fontWeight: 'bold',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d1d1d1')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ddd')}
-                    >
-                        ← 목록으로 돌아가기
-                    </Link>
-
                     <ReportButton targetType="POST" targetId={review.review_id} />
+                    {(Number(currentUserId) === Number(review.userId) || roleType === 'ADMIN') && (
+                        <button className="review-delete-btn" onClick={() => handleDeleteClick(review.reviewId)}>
+                            삭제
+                        </button>
+                    )}
                 </div>
             </div>
 

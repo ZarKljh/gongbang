@@ -17,7 +17,7 @@
 .categoryTree {
     position: sticky;
     top: 16px;
-    background: #7a6868;
+    background: #6d5847;
     color: #fff;
     border-radius: 8px;
     padding: 16px;
@@ -25,8 +25,9 @@
     overflow: auto;
 }
 
-.categoryTree h2 {
-    font-size: 16px;
+.catHeader {
+    font-size: 18px;
+    font-weight: 600;
     margin: 0 0 12px;
 }
 
@@ -45,14 +46,16 @@
 
 .categoryToggle {
     width: 100%;
+    font-size: 15px;
+    font-weight: 600;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 12px;
     border: 0;
     border-radius: 6px;
-    background: #fff;
-    color: #333;
+    background: #faf7f0;
+    color: #6b5642;
     cursor: pointer;
 }
 
@@ -64,12 +67,14 @@
 
 .subcategoryList li a {
     display: block;
+    font-size: 14px;
     padding: 8px 10px;
     border-radius: 6px;
     color: #fff;
     opacity: 0.9;
     text-decoration: none;
 }
+
 .subcategoryList li a:hover {
     background: rgba(255, 255, 255, 0.15);
 }
@@ -82,46 +87,30 @@
 }
 
 /* ====== 필터 영역 ====== */
-.filterArea {
-    background: #f6c1c1;
-    border-radius: 8px;
-    padding: 14px 16px;
-}
 
-#filterHeading {
-    margin: 0 0 10px;
+.filterHeading {
+    font-size: 26px;
+    margin: 0 0 20px;
 }
 
 .filterForm {
     margin: 0;
 }
 
-.chip,
-.prChip {
-    appearance: none;
-    border: 0;
-    border-radius: 999px;
-    padding: 8px 12px;
-    margin: 6px 8px 0 0;
-    background: #8d8d8d;
-    color: #fff;
-    cursor: pointer;
-    transition: transform 0.05s ease;
+.textSm {
+    padding: 100px 0;
+    text-align: center;
+    color: #7a6a58;
+    background: #f6f0e8;
+    border: 1px solid #e0d6ca;
+    border-radius: 8px;
+    margin-top: 12px;
 }
 
-.chip:active,
-.prChip:active {
-    transform: scale(0.98);
-}
-
-.active {
-    outline: 2px solid #333;
-}
-
-/* --- ----------------------------------------*/
+/* --- 카드 레이아웃 ----------------------------------------*/
 .cardGrid {
     display: grid;
-    max-width: 1280px; /* ✅ 최대 너비 제한 */
+    max-width: 1280px;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
@@ -156,10 +145,26 @@
 }
 
 .cardTitle {
-    margin: 8px 0 4px;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 10px 0 6px;
+    color: #4b3a2a;
+    letter-spacing: -0.2px;
 }
+
 .cardDesc {
-    margin: 0 0 12px;
+    font-size: 13.5px;
+    margin: 0 0 14px;
+    color: #7a6a58;
+    line-height: 1.45;
+}
+
+.cardDescPrice {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c46a48;
+    margin: 0 0 14px;
+    letter-spacing: -0.3px;
 }
 
 .cardActions {
@@ -172,115 +177,85 @@
     justify-content: space-between;
 }
 
-.chip {
-    display: block;
-    width: 40px;
-    height: 40px;
-    border: 1px solid #d6c8a4;
-    border-radius: 50%;
-}
-
-.chip.active {
-    border-color: blueviolet; /* 진한 베이지로 테두리 강조 */
-    transform: scale(0.95); /* 살짝 눌린 느낌 */
-}
-.chip:hover {
-    background-color: blue; /* 아이보리 톤 hover */
-}
-
-.prChip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 14px;
-    font-size: 14px;
-    border: 1px solid #d6c8a4;
+/* 좋아요 버튼 스타일 */
+.likeBtn {
+    margin: 0;
+    height: 31px;
+    border: 1px solid #ccc;
+    background: #fff;
     border-radius: 8px;
-    background-color: #fff;
-    color: #3f3a2b;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    user-select: none;
+    padding: 5px;
+    font-size: 14px;
 }
 
-.prChip.active {
-    background-color: #d6c8a4;
-    color: #3f3a2b;
-    border-color: blueviolet;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-    transform: translateY(1px); /* 눌린 듯한 느낌 */
+.likeBtn.active {
+    /* 필요하면 포인트색으로 변경 */
 }
 
 /* ===== 필터 바 ===== */
 .filterArea {
-    background: #f6c1c1; /* 연핑크 */
-    border-radius: 8px;
-    padding: 16px 20px;
+    background: #e9dac7; /* 따뜻한 베이지 */
+    border-radius: 16px;
+    padding: 18px 24px;
 }
 
-/* 그룹들을 가로로 배치 (색상 / 디자인 / 가격대 …) */
 .filterGroups {
     display: flex;
-    gap: 48px; /* 그룹들 사이 간격 */
-    flex-wrap: wrap; /* 좁아지면 다음 줄로 */
+    gap: 40px; /* 색상 / 디자인 / 가격대 간 간격 */
     align-items: flex-start;
-    margin: 8px 0 0;
-    padding: 0;
-    list-style: none;
 }
 
-/* 각 그룹(ul>li의 li 하나)에 적용할 래퍼 */
 .filterGroup {
-    min-width: 200px; /* 너무 좁아지지 않게 */
+    min-width: 160px;
 }
 
 /* 그룹 타이틀(예: 색상 / 디자인 / 가격대) */
 .groupTitle {
-    display: block;
+    font-size: 18px;
     font-weight: 600;
-    margin: 0 0 8px;
+    color: #4b3a2a;
+    margin-bottom: 8px;
 }
 
-/* 그룹 내부 옵션 리스트 */
 .optionList {
     display: flex;
-    gap: 10px 14px;
+    gap: 8px 14px;
+    align-items: center;
     flex-wrap: wrap;
-    padding: 0;
-    margin: 0;
-    list-style: none;
 }
 
-/* ===== 칩 스타일 ===== */
+/* 라벨(옵션 이름) */
+.optLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #333;
+    margin-right: 8px;
+}
+
+/* ===== 칩 공통 스타일 ===== */
 .chip,
 .prChip {
     appearance: none;
     border: 0;
     border-radius: 999px;
     padding: 8px 12px;
-    background: #8d8d8d;
-    color: #fff;
+    margin: 6px 8px 0 0;
+    background: #f9f5ed;
     cursor: pointer;
-    transition: transform 0.05s ease, box-shadow 0.15s ease;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.05s ease, box-shadow 0.15s ease;
     line-height: 1;
-}
-.chip:active,
-.prChip:active {
-    transform: scale(0.98);
-}
-
-.active {
-    outline: 2px solid #333; /* 선택 상태 */
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08) inset;
 }
 
 /* 색상 전용 원형 버튼(배경색으로 표시) */
 .chip {
     width: 32px;
     height: 32px;
-    padding: 0; /* 원형이므로 내부 패딩 제거 */
+    padding: 0;
     border-radius: 50%;
-    background: #8d8d8d; /* 기본값, 실제 색상은 style={{backgroundColor}}로 덮어씀 */
+    background: #8d8d8d; /* 실제 색상은 inline style로 덮어쓰기 */
     border: 2px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
@@ -292,14 +267,71 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #faf6f6;
-    color: #333;
-    border: 1px solid #e7dede;
+    background: #f7f1e7;
+    color: #4b3a2a;
+    border: 1px solid #c4b7a5;
+    font-size: 13px;
+    user-select: none;
 }
 
-/* 라벨(옵션 이름) */
-.optLabel {
-    font-size: 13px;
-    color: #333;
-    margin-right: 8px;
+.prChip:hover {
+    background: #efe3d3;
+}
+
+/* 칩 선택 상태 */
+.chip.active,
+.prChip.active {
+    background: #7a5a46;
+    color: #fff;
+    border-color: #7a5a46;
+    transform: scale(0.98);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 필요 시 다른 요소에서도 쓰는 공통 active */
+.active {
+    outline: none;
+}
+
+/* 체크박스 스타일 */
+.checkWrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #4b3a2a;
+}
+
+/* 기본 박스 모양 */
+.checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border-radius: 3px;
+    border: 1px solid #c4b7a5;
+    background: #f9f4ec;
+    position: relative;
+}
+
+/* 체크된 상태 */
+.checkbox:checked {
+    background: #7a5a46; /* 포인트 색 */
+    border-color: #7a5a46;
+}
+
+/* 체크마크 그리기 */
+.checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 6px;
+    height: 10px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
 }

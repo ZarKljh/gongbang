@@ -3,6 +3,8 @@ package com.gobang.gobang.domain.review.service;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.domain.personal.dto.response.ReviewResponse;
 import com.gobang.gobang.domain.review.dto.request.ReviewCreateRequest;
 import com.gobang.gobang.domain.review.dto.request.ReviewModifyRequest;
@@ -10,8 +12,6 @@ import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,7 +34,7 @@ public class ReviewService {
     private final SiteUserRepository siteUserRepository;
     private final ReviewImageService reviewImageService ;
     private final ReviewImageRepository reviewImageRepository;
-
+    private final ImageRepository imageRepository;
 
     public Page<Review> getReviews(Long productId, int page, String sort, List<String> kwTypes, String keyword) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
@@ -151,9 +151,9 @@ public class ReviewService {
         reviewRepository.save(review);
 
         // 이미지가 존재하면 함께 저장
-        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
-            reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
-        }
+//        if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
+//            reviewImageService.saveImages(review.getReviewId(), req.getImageUrls());
+//        }
 
         return RsData.of("200","리뷰가 등록되었습니다.", review);
     }
@@ -252,7 +252,7 @@ public class ReviewService {
         }
 
         // 이미지 삭제
-        reviewImageService.deleteImagesByReviewId(reviewId);
+//        reviewImageService.deleteImagesByReviewId(reviewId);
 
         reviewRepository.delete(review);
         return RsData.of("200", "리뷰가 삭제되었습니다.", review);
@@ -261,7 +261,7 @@ public class ReviewService {
     public List<ReviewResponse> getReviewsByUserId(Long userId) {
         return reviewRepository.findBySiteUser_Id(userId)
                 .stream()
-                .map(ReviewResponse::fromEntity)
+                .map(item -> ReviewResponse.fromEntity(item, imageRepository))
                 .collect(Collectors.toList());
     }
 

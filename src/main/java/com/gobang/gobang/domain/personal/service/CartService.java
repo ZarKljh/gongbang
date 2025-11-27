@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.personal.service;
 
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.request.CartRequest;
 import com.gobang.gobang.domain.personal.dto.response.CartResponse;
 import com.gobang.gobang.domain.personal.entity.Cart;
@@ -23,6 +24,7 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final ImageRepository imageRepository;
 
     // 사용자별 장바구니 목록 조회
     @Transactional(readOnly = true)
@@ -30,7 +32,7 @@ public class CartService {
         List<Cart> carts = cartRepository.findByUserIdWithProduct(siteUser.getId());
 
         return carts.stream()
-                .map(this::convertToResponse)
+                .map(item -> CartResponse.from(item, imageRepository))
                 .collect(Collectors.toList());
     }
 
@@ -51,7 +53,7 @@ public class CartService {
             cart.setQuantity(cart.getQuantity() + request.getQuantity());
 
             Cart saved = cartRepository.save(cart);
-            return convertToResponse(saved);
+            return CartResponse.from(saved, imageRepository);
         } else {
             // 없으면 새로 추가
             Cart cart = Cart.builder()
@@ -61,7 +63,7 @@ public class CartService {
                     .build();
 
             Cart saved = cartRepository.save(cart);
-            return convertToResponse(saved);
+            return CartResponse.from(saved, imageRepository);
         }
     }
 
@@ -72,7 +74,7 @@ public class CartService {
                 .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다."));
 
         cart.setQuantity(quantity);
-        return convertToResponse(cart);
+        return CartResponse.from(cart, imageRepository);
     }
 
     // 장바구니 항목 삭제
@@ -93,23 +95,5 @@ public class CartService {
     // 장바구니 개수 조회
     public long getCartCount(SiteUser siteUser) {
         return cartRepository.sumQuantityBySiteUser(siteUser);
-    }
-
-    // Entity -> Response DTO 변환
-    private CartResponse convertToResponse(Cart cart) {
-        return CartResponse.builder()
-                .cartId(cart.getCartId())
-                .userId(cart.getSiteUser().getId())
-                .productId(cart.getProduct().getId())
-                .productName(cart.getProduct() != null ? cart.getProduct().getName() : null)
-                .quantity(cart.getQuantity())
-                .price(cart.getProduct().getBasePrice())
-                .createdAt(cart.getCreatedAt())
-                .build();
-    }
-
-    public Cart getCartByCartId(Long cartId) {
-        return cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 장바구니가 존재하지 않습니다. ID: " + cartId));
     }
 }

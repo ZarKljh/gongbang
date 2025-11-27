@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.request.WishListRequest;
 import com.gobang.gobang.domain.personal.dto.response.WishListResponse;
 import com.gobang.gobang.domain.personal.entity.WishList;
@@ -22,13 +23,14 @@ public class WishListService {
 
     private final WishListRepository wishListRepository;
     private final ProductRepository productRepository;
+    private final ImageRepository imageRepository;
 
     // 사용자별 위시 목록 조회
     public List<WishListResponse> getWishListByUser(SiteUser siteUser) {
         List<WishList> wishLists = wishListRepository.findBySiteUser(siteUser);
 
         return wishLists.stream()
-                .map(WishListResponse::from)
+                .map(item -> WishListResponse.from(item, imageRepository))
                 .collect(Collectors.toList());
     }
 
@@ -49,7 +51,7 @@ public class WishListService {
                 .build();
 
         WishList saved = wishListRepository.save(wishList);
-        return WishListResponse.from(saved);
+        return WishListResponse.from(saved, imageRepository);
     }
 
     // 위시 삭제

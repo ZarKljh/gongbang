@@ -13,6 +13,7 @@ export default function ReviewCreate() {
     const searchParams = useSearchParams()
     const productIdParam = searchParams.get('productId')
     const productId = productIdParam ? Number(productIdParam) : null
+
     const [idCounter, setIdCounter] = useState({
         orderId: 1,
         orderItemId: 1,
@@ -24,8 +25,11 @@ export default function ReviewCreate() {
         productId: productId,
         rating: 0,
         content: '',
-        imageUrls: [],
+        imageUrls: [], // base64 미리보기용
     })
+
+    // 실제 파일 저장용 배열
+    const [imageFiles, setImageFiles] = useState([])
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -42,6 +46,11 @@ export default function ReviewCreate() {
         const [moved] = reordered.splice(result.source.index, 1)
         reordered.splice(result.destination.index, 0, moved)
         setReview((prev) => ({ ...prev, imageUrls: reordered }))
+        // 파일 배열도 동일하게 정렬
+        const reorderedFiles = Array.from(imageFiles)
+        const [fileMoved] = reorderedFiles.splice(result.source.index, 1)
+        reorderedFiles.splice(result.destination.index, 0, fileMoved)
+        setImageFiles(reorderedFiles)
     }
 
     useEffect(() => {
@@ -50,86 +59,69 @@ export default function ReviewCreate() {
         }
     }, [productId])
 
+    // 리뷰 + 이미지 업로드 전체 완료
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if (review.rating < 1) {
-            alert('별점을 선택해주세요. (1~5)')
-            return
-        }
-        if (!review.content.trim()) {
-            alert('내용을 입력해주세요.')
-            return
+        if (review.rating < 1) return alert('별점을 선택해주세요.')
+        if (!review.content.trim()) return alert('내용을 입력해주세요.')
+
+        const res = await api.post('/reviews', review)
+        if (!res.data?.resultCode?.startsWith('200')) {
+            return alert(res.data?.msg || '리뷰 등록 실패')
         }
 
-        const nextIds = {
-            orderId: idCounter.orderId + 1,
-            orderItemId: idCounter.orderItemId + 1,
+        const reviewId = res.data.data.reviewId
+
+        // 이미지 업로드
+        for (let i = 0; i < imageFiles.length; i++) {
+            const formData = new FormData()
+            formData.append('file', imageFiles[i])
+            formData.append('refId', reviewId.toString())
+            formData.append('refType', 'REVIEW')
+            formData.append('sortOrder', i.toString())
+
+            await fetch('http://localhost:8090/api/v1/images/upload', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+            })
         }
 
-        const reviewToSend = {
-            ...review,
-            ...nextIds,
-        }
-
-        const res = await api.post('/reviews', reviewToSend)
-
-        if (res.data?.resultCode?.startsWith('200')) {
-            alert('리뷰가 등록되었습니다.')
-            router.push(`/product/list/detail?productId=${review.productId}`)
-        } else {
-            alert(res.data?.msg || '리뷰 등록 실패')
-        }
+        alert('리뷰가 등록되었습니다.')
+        router.push(`/product/list/detail?productId=${review.productId}`)
     }
 
+    // 🔥 이미지 선택 + base64 미리보기 + 파일 저장
     const handleFileChange = async (e) => {
         const files = Array.from(e.target.files)
-        if (review.imageUrls.length + files.length > 5) {
+
+        if (imageFiles.length + files.length > 5) {
             alert('이미지는 최대 5장까지 등록할 수 있습니다.')
             return
         }
 
-        const token = localStorage.getItem('accessToken')
-
         const previews = []
-        const uploadedUrls = []
-
         for (const file of files) {
-            // 1️⃣ 미리보기용 base64
             const base64 = await toBase64(file)
             previews.push(base64)
-
-            // 2️⃣ 서버 업로드
-            const formData = new FormData()
-            formData.append('file', file)
-
-            try {
-                const res = await fetch('http://localhost:8090/api/v1/images/upload', {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` },
-                    body: formData,
-                })
-                const url = await res.text()
-                uploadedUrls.push(url)
-            } catch (err) {
-                console.error('❌ 업로드 실패:', err)
-            }
         }
 
-        // 이미지 삭제
-        const handleRemoveImage = (index) => {
-            setReview((prev) => ({
-                ...prev,
-                imageUrls: prev.imageUrls.filter((_, i) => i !== index),
-            }))
-        }
-
-        // 3️⃣ base64 → 즉시 미리보기, url은 나중에 서버 저장용
         setReview((prev) => ({
             ...prev,
-            imagePreviews: [...(prev.imagePreviews || []), ...previews],
-            imageUrls: [...prev.imageUrls, ...uploadedUrls],
+            imageUrls: [...prev.imageUrls, ...previews],
         }))
+
+        setImageFiles((prev) => [...prev, ...files])
+    }
+
+    // 이미지 삭제 시 파일목록도 삭제
+    const handleRemoveImage = (index) => {
+        setReview((prev) => ({
+            ...prev,
+            imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+        }))
+        setImageFiles((prev) => prev.filter((_, i) => i !== index))
     }
 
     // base64 변환 유틸
@@ -214,11 +206,7 @@ export default function ReviewCreate() {
                                                         style={prov.draggableProps.style}
                                                     >
                                                         <img
-                                                            src={
-                                                                url.startsWith('data:')
-                                                                    ? url
-                                                                    : `http://localhost:8090${url}`
-                                                            }
+                                                            src={url}
                                                             alt={`리뷰 이미지 ${index + 1}`}
                                                             className="review-image"
                                                         />

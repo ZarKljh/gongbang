@@ -160,9 +160,11 @@ public class SiteUserService {
                 .nickName(signupSellerRequest.getNickName())
                 //초기 사업자 회원가입시 user권한으로 가입, 추후 admin입점심사 후 seller 권한 변경
                 .role(RoleType.USER)
+                .status(signupSellerRequest.getStatus())
                 .gender(signupSellerRequest.getGender())
                 .birth(signupSellerRequest.getBirth().atStartOfDay())
                 .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 //.profileImg(signupUserRequest.getProfileImg())
                 .build();
 
@@ -177,6 +179,8 @@ public class SiteUserService {
                 .studioEmail(signupSellerRequest.getStudioEmail())
                 .studioBusinessNumber(signupSellerRequest.getStudioBusinessNumber())
                 .studioAddPostNumber(signupSellerRequest.getStudioAddPostNumber())
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 .studioAddMain(signupSellerRequest.getStudioAddMain())
                 .studioAddDetail(signupSellerRequest.getStudioAddDetail())
                 .build();

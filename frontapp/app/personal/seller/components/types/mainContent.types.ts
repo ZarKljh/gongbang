@@ -36,9 +36,9 @@ export interface MainContentProps {
     // ====== 이미지 업로드 공통 핸들링 ======
     /** 현재 업로드된 이미지 파일들 저장용 */
     studioImages?: {
-        studioMain?: File | null
-        studioLogo?: File | null
-        studioGallery?: File[] // 여러장
+        STUDIO_MAIN: File | null
+        STUDIO_LOGO: File | null
+        STUDIO: File[]
     }
 
     /** 이미지 변경 핸들러 */
@@ -46,4 +46,8 @@ export interface MainContentProps {
 
     /** 스튜디오 저장 후 호출되는 이미지 업로드 함수 */
     onStudioImagesUpload?: (studioId: number) => Promise<void>
+
+    deletedGalleryImageIds?: number[]
+    setDeletedGalleryImageIds?: (ids: number[]) => void
+    setStudioImages?: (updater: any) => void
 }

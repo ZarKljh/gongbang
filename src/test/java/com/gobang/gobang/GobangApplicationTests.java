@@ -6,17 +6,14 @@ import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.review.entity.Review;
-import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest

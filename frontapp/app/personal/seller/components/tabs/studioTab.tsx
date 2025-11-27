@@ -41,6 +41,10 @@ export type StudioTabProps = Pick<
     | 'studioList'
     | 'studio'
     | 'onAddressSearch'
+    | 'studioImages'
+    | 'onStudioImageChange'
+    | 'deletedGalleryImageIds'
+    | 'setDeletedGalleryImageIds'
 >
 
 /*
@@ -70,8 +74,58 @@ export default function StudioTab(props: StudioTabProps) {
         onNewPasswordChange,
         onConfirmPasswordChange,
         onAddressSearch,
+        studioImages,
+        onStudioImageChange,
+        deletedGalleryImageIds,
+        setDeletedGalleryImageIds,
     } = props
     console.log('📌 StudioTab props:', props)
+
+    const serverImageUrl = (fileName: string) => `http://localhost:8090/images/${fileName}`
+
+    // 새 업로드 이미지 preview 생성
+    const createPreview = (file: File | null) => (file ? URL.createObjectURL(file) : null)
+
+    const previewMainImage =
+        createPreview(studioImages?.STUDIO_MAIN ?? null) ||
+        (studio?.studioMainImage?.imageUrl ? serverImageUrl(studio.studioMainImage.imageUrl) : null)
+
+    const previewLogoImage =
+        createPreview(studioImages?.STUDIO_LOGO ?? null) ||
+        (studio?.studioLogoImage?.imageUrl ? serverImageUrl(studio.studioLogoImage.imageUrl) : null)
+
+    // 갤러리 이미지(새 파일 + 기존 이미지 합쳐서 미리보기)
+    /*
+    const previewGalleryImages: string[] = [
+        ...(studioImages?.STUDIO ?? []).map((f) => URL.createObjectURL(f)),
+        ...(studio?.studioImages ?? []).map((img: any) => serverImageUrl(img.imageUrl)),
+    ]
+    */
+
+    const previewGalleryImages: {
+        src: string
+        isNew: boolean
+        imageId?: number
+        newIndex?: number
+    }[] = [
+        // 🔹 새로 업로드된 이미지들
+        ...(studioImages?.STUDIO ?? []).map((file, index) => ({
+            src: URL.createObjectURL(file),
+            isNew: true,
+            newIndex: index,
+        })),
+
+        // 🔹 기존 이미지들 (삭제되지 않은 것만)
+        ...(studio?.studioImages ?? [])
+            .filter((img) => !props.deletedGalleryImageIds?.includes(img.id))
+            .map((img) => ({
+                src: serverImageUrl(img.imageFileName),
+                isNew: false,
+                imageId: img.id,
+            })),
+    ]
+    console.log('🖼 previewGalleryImages:', previewGalleryImages)
+    console.log('🗑 현재 삭제 리스트:', deletedGalleryImageIds)
     return (
         <div className="tab-content">
             {!isAuthenticated ? (
@@ -221,6 +275,104 @@ export default function StudioTab(props: StudioTabProps) {
                     ) : (
                         <p>{studio.studioAddDetail}</p>
                     )}
+                </div>
+                <div className="form-group">
+                    <label>메인화면</label>
+                    {editMode.studio && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                    onStudioImageChange?.('STUDIO_MAIN', e.target.files[0])
+                                }
+                            }}
+                        />
+                    )}
+                    {previewMainImage && (
+                        <img
+                            src={
+                                studioImages?.STUDIO_MAIN
+                                    ? URL.createObjectURL(studioImages.STUDIO_MAIN)
+                                    : studio?.studioMainImage?.imageFileName
+                                    ? `http://localhost:8090/images/${studio.studioMainImage.imageUrl}`
+                                    : '/default-main.png'
+                            }
+                            alt="대표 이미지"
+                            style={{ maxWidth: '250px', marginTop: '10px' }}
+                        />
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>로고이미지</label>
+                    {editMode.studio && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                    onStudioImageChange?.('STUDIO_LOGO', e.target.files[0])
+                                }
+                            }}
+                        />
+                    )}
+                    {previewLogoImage && (
+                        <img
+                            src={
+                                studioImages?.STUDIO_LOGO
+                                    ? URL.createObjectURL(studioImages.STUDIO_LOGO)
+                                    : studio?.studioLogoImage?.imageFileName
+                                    ? `http://localhost:8090/images/${studio.studioLogoImage.imageUrl}`
+                                    : '/default-logo.png'
+                            }
+                            alt="공방 로고 이미지"
+                        />
+                    )}
+                </div>
+                <div className="form-group">
+                    <label>공방이미지</label>
+
+                    {editMode.studio && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                                if (e.target.files) {
+                                    onStudioImageChange?.('STUDIO', Array.from(e.target.files))
+                                }
+                            }}
+                        />
+                    )}
+
+                    {/* 새로 업로드한 미리보기 이미지 */}
+                    <div className="gallery-wrapper">
+                        {previewGalleryImages.map((item, idx) => (
+                            <div key={idx} className="gallery-item">
+                                <img src={item.src} className="gallery-image" />
+
+                                {/* ❌ 삭제 버튼 (편집 모드일 때만 표시) */}
+                                {editMode.studio && (
+                                    <button
+                                        className="gallery-delete-btn"
+                                        onClick={() => {
+                                            if (item.isNew) {
+                                                // 🔥 새로 업로드한 이미지 삭제
+                                                const newList =
+                                                    studioImages?.STUDIO?.filter((_, i) => i !== item.newIndex) ?? []
+                                                onStudioImageChange?.('STUDIO', newList)
+                                            } else {
+                                                // 🔥 기존 이미지 삭제 목록에 추가 (id 기반)
+                                                props.setDeletedGalleryImageIds?.((prev) => [...prev, item.imageId!])
+                                            }
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <p>{/*JSON.stringify(studio)*/}</p>
             </div>
