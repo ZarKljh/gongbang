@@ -1,32 +1,45 @@
 package com.gobang.gobang.domain.admin.controller;
 
 import com.gobang.gobang.domain.admin.dto.AdminRecentShopDto;
+import com.gobang.gobang.domain.admin.dto.AdminShopDetailDto;
 import com.gobang.gobang.domain.admin.dto.AdminShopListDto;
 import com.gobang.gobang.domain.admin.repository.request.AdminShopStatusUpdateRequest;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
+import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.inquiry.service.InquiryService;
+import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
+import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.seller.model.StudioStatus;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/admin/shops")
 public class AdminShopController {
 
     private final StudioRepository studioRepository;
+    private final CategoryRepository categoryRepository;
+    private final ImageRepository imageRepository;
 
 
-
-
-    public AdminShopController(StudioRepository studioRepository) {
+    public AdminShopController(StudioRepository studioRepository,
+                               CategoryRepository categoryRepository,
+                               ImageRepository imageRepository) {
         this.studioRepository = studioRepository;
+        this.categoryRepository = categoryRepository;
+        this.imageRepository = imageRepository;
     }
 
     @GetMapping("/recent")
@@ -69,9 +82,52 @@ public class AdminShopController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> detail(@PathVariable Long id) {
         Studio s = studioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Studio not found: " + id));
-        return ResponseEntity.ok(Map.of("data", AdminShopListDto.of(s)));
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Studio not found: " + id)
+                );
+
+        Category category = null;
+        if (s.getCategoryId() != null) {
+            category = categoryRepository.findById(s.getCategoryId())
+                    .orElse(null);
+        }
+
+        AdminShopDetailDto dto = AdminShopDetailDto.of(s, category);
+
+        // 대표 이미지
+        imageRepository.findByRefIdAndRefType(s.getStudioId(), Image.RefType.STUDIO_MAIN)
+                .ifPresent(img -> {
+                    dto.setStudioMainImageUrl(img.getImageUrl());
+                    dto.setStudioMainImageName(img.getImageFileName());
+                });
+
+        // 대표 이미지 (로고)
+        imageRepository.findByRefIdAndRefType(s.getStudioId(), Image.RefType.STUDIO_LOGO)
+                .ifPresent(img -> {
+                    dto.setStudioLogoImageUrl(img.getImageUrl());
+                    dto.setStudioLogoImageName(img.getImageFileName());
+                });
+
+        // 3) 공방 내부 갤러리 이미지들
+        List<Image> galleryImages = imageRepository.findALLByRefIdAndRefType(s.getStudioId(), Image.RefType.STUDIO);
+
+        // sort_order 기준으로 정렬해서 내려주기 (안 하면 DB 순서 그대로)
+        galleryImages.sort(Comparator.comparing(Image::getSortOrder));
+
+        dto.setStudioGalleryImageUrls(
+                galleryImages.stream()
+                        .map(Image::getImageUrl)
+                        .collect(Collectors.toList())
+        );
+        dto.setStudioGalleryImageNames(
+                galleryImages.stream()
+                        .map(Image::getImageFileName)
+                        .collect(Collectors.toList())
+        );
+
+        return ResponseEntity.ok(Map.of("data", dto));
     }
+
 
     // 상태 변경 (PENDING -> APPROVED/REJECTED 등)
     @PatchMapping("/{id}/status")

@@ -136,7 +136,6 @@ export default function ClientNav() {
 
     return (
         <>
-            {/* 상단 네비게이션에 들어가는 버튼 */}
             <div className={styles.inquiryNavWrapper}>
                 <button type="button" onClick={() => setOpen(true)} className={styles.inquiryButton}>
                     1:1 문의하기

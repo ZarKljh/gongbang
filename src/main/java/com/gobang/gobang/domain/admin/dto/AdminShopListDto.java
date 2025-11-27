@@ -13,7 +13,7 @@ public record AdminShopListDto(
         String ownerUserName,
         String ownerEmail,
         String status,
-        LocalDateTime createdAt) {
+        LocalDateTime createdDate) {
     public static AdminShopListDto of(Studio s) {
         return new AdminShopListDto(
                 s.getStudioId(),

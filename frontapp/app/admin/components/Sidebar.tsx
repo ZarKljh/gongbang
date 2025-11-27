@@ -16,6 +16,9 @@ export default function Sidebar() {
                 <Link className={styles.navItem} href="/admin/admin_account">
                     🏠 Home
                 </Link>
+                <Link className={styles.navItem} href="/">
+                    🏠 Main
+                </Link>
                 <Link className={styles.navItem} href="/admin/business">
                     🏪 입점 신청
                 </Link>

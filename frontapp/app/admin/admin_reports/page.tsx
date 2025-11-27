@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
 import Modal from '@/app/admin/components/Modal'
@@ -28,6 +28,9 @@ export default function AdminReportsPage() {
 
     // ✅ 미처리(PENDING) 건 수
     const [totalPending, setTotalPending] = useState<number>(0)
+
+    // ✅ 검색어 상태
+    const [search, setSearch] = useState('')
 
     // ✅ 모달 상태
     const [detailOpen, setDetailOpen] = useState(false)
@@ -100,6 +103,20 @@ export default function AdminReportsPage() {
         }
     }
 
+    const filteredReports = useMemo(() => {
+        const q = search.trim().toLowerCase()
+        if (!q) return reports
+
+        return reports.filter((r) => {
+            const email = r.reporterEmail?.toLowerCase() ?? ''
+            const targetType = r.targetType?.toLowerCase() ?? ''
+            const reason = r.reason?.toLowerCase() ?? ''
+            const desc = r.description?.toLowerCase() ?? ''
+
+            return email.includes(q) || targetType.includes(q) || reason.includes(q) || desc.includes(q)
+        })
+    }, [reports, search])
+
     // 상태 변경(목록에서 바로)
     const changeStatus = async (id: number, status: ReportStatus) => {
         try {
@@ -158,6 +175,16 @@ export default function AdminReportsPage() {
                             <span className={styles.counterValue}>{totalPending}건</span>
                         </div>
 
+                        {/* ✅ 검색 박스 */}
+                        <div className={styles.searchBox}>
+                            <input
+                                className={styles.searchInput}
+                                placeholder="신고자 / 대상 / 사유 / 내용 검색"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+
                         {/* ✅ 상태 필터 셀렉트 */}
                         <div>
                             <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>상태 필터</div>
@@ -180,7 +207,7 @@ export default function AdminReportsPage() {
 
                     {loading ? (
                         <div className={styles.empty}>불러오는 중...</div>
-                    ) : reports.length === 0 ? (
+                    ) : filteredReports.length === 0 ? (
                         <div className={styles.empty}>현재 조건에 맞는 신고가 없습니다.</div>
                     ) : (
                         <div className={styles.tableWrapper}>
@@ -196,7 +223,7 @@ export default function AdminReportsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {reports.map((r) => (
+                                    {filteredReports.map((r) => (
                                         <tr key={r.id}>
                                             <td className={styles.firstT}>
                                                 <span className={statusBadgeClass(r.status)}>

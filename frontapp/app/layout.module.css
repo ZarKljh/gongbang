@@ -1,0 +1,146 @@
+:link {
+    text-decoration: none;
+}
+
+body {
+    margin: 0;
+    background-color: #faf7f0;
+}
+
+.Fsection {
+    background-color: #fcf6ea;
+}
+
+.FirstC {
+    display: flex;
+    width: 1280px;
+    justify-content: space-between;
+    margin: auto;
+    padding-bottom: 12px;
+    padding-top: 12px;
+}
+
+.FirstC div {
+    display: flex;
+    align-items: center;
+}
+
+.navButton {
+    all: unset;
+    padding: 8px 6px;
+    cursor: pointer;
+}
+
+.Logo {
+    display: block;
+    width: 160px;
+    height: 80px;
+    color: white;
+}
+
+.LogoIcon {
+    width: 100%;
+    height: 100%;
+}
+
+.categoryHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f9f9f9;
+    padding: 0px 20px;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.headerTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #6b5642;
+}
+
+.navList {
+    display: flex;
+    gap: 16px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navItem a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+}
+
+.categoryContainer {
+    position: relative;
+    z-index: 1000;
+    background-color: #fcf6ea;
+    height: 25px;
+}
+
+.categoryBackContainer {
+    width: 100%;
+    background-color: #fcf6ea;
+    height: 25px;
+    overflow: hidden;
+    position: absolute;
+    z-index: 999;
+    transition: height 0.5s ease-in-out;
+}
+
+.categoryBackContainer:hover {
+    height: 140px;
+}
+
+.categorySubContainer {
+    display: flex;
+    width: 1280px;
+    justify-content: space-between;
+
+    overflow: hidden;
+    background-color: #fcf6ea;
+    margin: auto;
+}
+
+.categoryList2 {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-width: 150px;
+}
+
+.categoryTitle {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #6b5642;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.subcategoryList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.subcategoryList a {
+    text-decoration: none;
+    color: #8a7661;
+    font-size: 16px;
+}
+
+.subcategoryList a:hover {
+    color: #745f45;
+}

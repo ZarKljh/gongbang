@@ -1,4 +1,3 @@
-// app/admin/business/[id]/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -6,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
 import styles from '@/app/admin/styles/AdminReports.module.css'
+import detailStyles from '@/app/admin/styles/AdminBusinessDetail.module.css'
 
 type SellerStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | string
 
@@ -26,6 +26,9 @@ type Shop = {
     studioOfficeTell?: string
     studioAddDetail?: string
     studioAddMain?: string
+    studioMainImageUrl?: string
+    studioLogoImageUrl?: string
+    studioGalleryImageUrls?: string[]
 }
 
 const statusKoreanLabel = (status: SellerStatus) => {
@@ -45,6 +48,7 @@ export default function AdminBusinessDetailPage() {
     const params = useParams()
     const router = useRouter()
     const id = Number(params?.id)
+    const IMAGE_BASE = '/images/'
 
     const [shop, setShop] = useState<Shop | null>(null)
     const [loading, setLoading] = useState(true)
@@ -137,6 +141,13 @@ export default function AdminBusinessDetailPage() {
         )
     }
 
+    const createdLabel = shop.createdAt ? new Date(shop.createdAt).toLocaleString() : '-'
+
+    const hasAnyImage =
+        !!shop.studioMainImageUrl ||
+        !!shop.studioLogoImageUrl ||
+        (shop.studioGalleryImageUrls && shop.studioGalleryImageUrls.length > 0)
+
     return (
         <div className={styles.page}>
             <Sidebar />
@@ -152,7 +163,7 @@ export default function AdminBusinessDetailPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <span style={{ fontSize: 12, color: '#6b7280' }}>현재 상태</span>
+                        <span className={detailStyles.statusLabel}>현재 상태</span>
                         <span
                             className={(() => {
                                 switch (shop.status) {
@@ -173,38 +184,99 @@ export default function AdminBusinessDetailPage() {
                 </div>
 
                 {/* 내용 카드 */}
-                <section className={styles.card}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {/* 기본 정보 */}
-                        <DetailRow label="스튜디오명">{shop.studioName}</DetailRow>
+                <section className={`${styles.card} ${detailStyles.detailCard}`}>
+                    <div className={detailStyles.detailLayout}>
+                        {/* 왼쪽: 이미지 영역 */}
+                        <div className={detailStyles.imageColumn}>
+                            <div className={detailStyles.imageSectionHeader}>
+                                <h2 className={detailStyles.sectionTitle}>이미지</h2>
+                                <p className={detailStyles.sectionSubtitle}>
+                                    스튜디오 대표 이미지, 로고, 내부 사진을 확인할 수 있습니다.
+                                </p>
+                            </div>
 
-                        <DetailRow label="스튜디오 이메일">{shop.studioEmail ?? '-'}</DetailRow>
+                            <div className={detailStyles.mainImageWrapper}>
+                                {shop.studioMainImageUrl ? (
+                                    <img
+                                        src={shop.studioMainImageUrl ? IMAGE_BASE + shop.studioMainImageUrl : undefined}
+                                        alt={`${shop.studioName} 대표 이미지`}
+                                        className={detailStyles.mainImage}
+                                    />
+                                ) : (
+                                    <div className={detailStyles.mainImagePlaceholder}>대표 이미지가 없습니다.</div>
+                                )}
 
-                        <DetailRow label="카테고리">
-                            {shop.categoryLabel ?? (shop.categoryId ? `카테고리 #${shop.categoryId}` : '-')}
-                        </DetailRow>
+                                {shop.studioLogoImageUrl && (
+                                    <div className={detailStyles.logoChip}>
+                                        <img
+                                            src={shop.studioLogoImageUrl}
+                                            alt={`${shop.studioName} 로고`}
+                                            className={detailStyles.logoImage}
+                                        />
+                                        <span className={detailStyles.logoLabel}>로고</span>
+                                    </div>
+                                )}
+                            </div>
 
-                        <DetailRow label="신청자">
-                            {shop.ownerUserName ?? '-'}
-                            {shop.ownerEmail ? ` (${shop.ownerEmail})` : ''}
-                        </DetailRow>
+                            <div className={detailStyles.galleryWrapper}>
+                                <div className={detailStyles.galleryHeader}>
+                                    <span className={detailStyles.galleryTitle}>스튜디오 내부 사진</span>
+                                    {shop.studioGalleryImageUrls && shop.studioGalleryImageUrls.length > 0 && (
+                                        <span className={detailStyles.galleryCount}>
+                                            {shop.studioGalleryImageUrls.length}장
+                                        </span>
+                                    )}
+                                </div>
 
-                        <DetailRow label="신청일">
-                            {shop.createdAt ? new Date(shop.createdAt).toLocaleString() : '-'}
-                        </DetailRow>
+                                {shop.studioGalleryImageUrls && shop.studioGalleryImageUrls.length > 0 ? (
+                                    <div className={detailStyles.galleryGrid}>
+                                        {shop.studioGalleryImageUrls.map((url, idx) => (
+                                            <button
+                                                type="button"
+                                                key={url + idx}
+                                                className={detailStyles.galleryItem}
+                                                onClick={() => window.open(url, '_blank')}
+                                            >
+                                                <img
+                                                    src={url}
+                                                    alt={`스튜디오 내부 사진 ${idx + 1}`}
+                                                    className={detailStyles.galleryImage}
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className={detailStyles.galleryEmpty}>등록된 내부 사진이 없습니다.</div>
+                                )}
+                            </div>
+                        </div>
 
-                        {/* 사업자/연락처/주소 섹션 */}
-                        <div
-                            style={{
-                                marginTop: 12,
-                                paddingTop: 12,
-                                borderTop: '1px solid #e5e7eb',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 12,
-                            }}
-                        >
-                            <h2 style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>사업자 / 연락처 / 주소</h2>
+                        {/* 오른쪽: 상세 정보 */}
+                        <div className={detailStyles.infoColumn}>
+                            <div className={detailStyles.sectionHeader}>
+                                <h2 className={detailStyles.sectionTitle}>기본 정보</h2>
+                            </div>
+
+                            <DetailRow label="스튜디오명">{shop.studioName}</DetailRow>
+
+                            <DetailRow label="스튜디오 이메일">{shop.studioEmail ?? '-'}</DetailRow>
+
+                            <DetailRow label="카테고리">
+                                {shop.categoryLabel ?? (shop.categoryId ? `카테고리 #${shop.categoryId}` : '-')}
+                            </DetailRow>
+
+                            <DetailRow label="신청자">
+                                {shop.ownerUserName ?? '-'}
+                                {shop.ownerEmail ? ` (${shop.ownerEmail})` : ''}
+                            </DetailRow>
+
+                            <DetailRow label="신청일">{createdLabel}</DetailRow>
+
+                            <div className={detailStyles.sectionDivider} />
+
+                            <div className={detailStyles.sectionHeader}>
+                                <h2 className={detailStyles.sectionTitle}>사업자 / 연락처 / 주소</h2>
+                            </div>
 
                             <DetailRow label="사업자번호">{shop.studioBusinessNumber || '-'}</DetailRow>
 
@@ -223,15 +295,7 @@ export default function AdminBusinessDetailPage() {
                     </div>
 
                     {/* 하단 버튼 영역 */}
-                    <div
-                        style={{
-                            marginTop: 24,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            gap: 12,
-                        }}
-                    >
+                    <div className={detailStyles.footerRow}>
                         <button
                             type="button"
                             className={`${styles.btn} ${styles.btnGhost}`}
@@ -240,8 +304,7 @@ export default function AdminBusinessDetailPage() {
                             목록으로 돌아가기
                         </button>
 
-                        <div style={{ display: 'flex', gap: 8 }}>
-                            {/* 반려 */}
+                        <div className={detailStyles.footerActions}>
                             <button
                                 type="button"
                                 className={`${styles.btn} ${styles.btnDanger}`}
@@ -251,7 +314,6 @@ export default function AdminBusinessDetailPage() {
                                 {saving && statusDraft === 'REJECTED' ? '처리 중...' : '반려'}
                             </button>
 
-                            {/* 승인 */}
                             <button
                                 type="button"
                                 className={`${styles.btn} ${styles.btnPrimary}`}
@@ -270,18 +332,9 @@ export default function AdminBusinessDetailPage() {
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <div
-                style={{
-                    width: 120,
-                    fontSize: 13,
-                    color: '#6b7280',
-                    flexShrink: 0,
-                }}
-            >
-                {label}
-            </div>
-            <div style={{ fontSize: 14 }}>{children}</div>
+        <div className={detailStyles.detailRow}>
+            <div className={detailStyles.detailLabel}>{label}</div>
+            <div className={detailStyles.detailValue}>{children}</div>
         </div>
     )
 }
