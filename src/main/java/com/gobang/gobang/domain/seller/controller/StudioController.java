@@ -9,6 +9,7 @@ import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.service.ProfileImageService;
 import com.gobang.gobang.domain.product.dto.ProductDto;
+import com.gobang.gobang.domain.seller.dto.ProductListOfStudioResponse;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
 import com.gobang.gobang.domain.seller.dto.StudioResponse;
 import com.gobang.gobang.domain.seller.dto.StudioSimpleDto;
@@ -76,6 +77,19 @@ public class StudioController {
 
         return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
     }
+
+    @GetMapping("/{id}/studio-products")
+    public RsData<Page<ProductListOfStudioResponse>> getProductListWithCategory(
+            @PathVariable("id") Long studioId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String keyword
+    ){
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<ProductListOfStudioResponse> productPage = studioService.getProductListByStudioIdWithCategory(studioId, keyword, pageable);
+        return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
+    }
+
 
     //공방정보 수정
     //studioId로 공방검색

@@ -22,6 +22,7 @@ export default function ProductListTab(props: MainContentProps) {
         onVerifyPassword,
         productFilters,
         setProductFilters,
+        categoryOptions,
     } = props
 
     console.log('📦 현재 productList:', props.productList)
@@ -79,7 +80,7 @@ export default function ProductListTab(props: MainContentProps) {
         if (checkedItems.length === productList.length) {
             setCheckedItems([])
         } else {
-            setCheckedItems(productList.map((p) => p.id))
+            setCheckedItems(productList.map((p) => p.product.id))
         }
     }
 
@@ -191,7 +192,25 @@ export default function ProductListTab(props: MainContentProps) {
                         서브카테고리
                     </label>
                 </div>
-
+                <div className="filter-row">
+                    {/* 카테고리 선택 */}
+                    <select
+                        value={productFilters.category}
+                        onChange={(e) =>
+                            setProductFilters((prev) => ({
+                                ...prev,
+                                category: e.target.value,
+                            }))
+                        }
+                    >
+                        <option value="">전체 카테고리</option>
+                        {categoryOptions.map((cat) => (
+                            <option key={cat} value={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 {/* 가격 범위 */}
                 <div className="price-range-box">
                     <h4>가격 범위</h4>
@@ -366,24 +385,24 @@ export default function ProductListTab(props: MainContentProps) {
                         </tr>
                     ) : (
                         productList.map((item) => (
-                            <tr key={item.id}>
+                            <tr key={item.product.id}>
                                 <td>
                                     <input
                                         type="checkbox"
-                                        checked={checkedItems.includes(item.id)}
-                                        onChange={() => toggleItem(item.id)}
+                                        checked={checkedItems.includes(item.product.id)}
+                                        onChange={() => toggleItem(item.product.id)}
                                     />
                                 </td>
-                                <td>{item.name}</td>
+                                <td>{item.product.name}</td>
                                 <td>{item.categoryName}</td>
                                 <td>{item.subcategoryName}</td>
-                                <td>{item.basePrice.toLocaleString()}원</td>
-                                <td>{item.stockQuantity}</td>
-                                <td>{item.active ? 'ON' : 'OFF'}</td>
-                                <td>{item.status}</td>
+                                <td>{item.product.basePrice.toLocaleString()}원</td>
+                                <td>{item.product.stockQuantity}</td>
+                                <td>{item.product.active ? 'ON' : 'OFF'}</td>
+                                <td>{item.product.status}</td>
                                 <td>
-                                    <button onClick={() => moveToEditPage(item.id)}>수정</button>
-                                    <button onClick={() => handleDelete(item.id)}>삭제</button>
+                                    <button onClick={() => moveToEditPage(item.product.id)}>수정</button>
+                                    <button onClick={() => handleDelete(item.product.id)}>삭제</button>
                                 </td>
                             </tr>
                         ))

@@ -16,6 +16,6 @@ public interface ProductOfStudioRepository extends JpaRepository<Product, Long> 
     Page<Product> findByStudioId(Long studioId, Pageable pageable);
 
 
-
+    Page<Product> findByStudioIdAndNameContaining(Long studioId, String keyword, Pageable pageable);
 
 }

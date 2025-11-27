@@ -6,8 +6,12 @@ import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
+import com.gobang.gobang.domain.product.category.repository.SubCategoryRepository;
 import com.gobang.gobang.domain.product.dto.ProductDto;
+import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.product.entity.Subcategory;
+import com.gobang.gobang.domain.seller.dto.ProductListOfStudioResponse;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
 import com.gobang.gobang.domain.seller.model.StudioStatus;
 import com.gobang.gobang.domain.seller.repository.ProductOfStudioRepository;
@@ -19,8 +23,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +35,72 @@ public class StudioService {
     private final ProductOfStudioRepository productRepository;
     private final ImageRepository imageRepository;
     private final CategoryRepository categoryRepository;
+    private final SubCategoryRepository subCategoryRepository;
 
     public Page<ProductDto> getProductListByStudioId(Long studioId, Pageable pageable) {
         Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);
         return productPage.map(ProductDto::fromEntity);
     }
+    public Page<ProductListOfStudioResponse> getProductListByStudioIdWithCategory(Long studioId, String keyword, Pageable pageable) {
+
+        Page<Product> product;
+        Page<ProductDto> productPage;
+        //Page<ProductDto> productPage = getProductListByStudioId(studioId, pageable);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            // 검색
+            product = productRepository
+                    .findByStudioIdAndNameContaining(studioId, keyword, pageable);
+        } else {
+            // 검색어 없으면 전체 조회
+            product = productRepository.findByStudioId(studioId, pageable);
+
+        }
+        productPage = product.map(ProductDto::fromEntity);
+        Set<Long> categoryIds = productPage.getContent().stream()
+                .map(ProductDto::getCategoryId)
+                .collect(Collectors.toSet());
+
+        Set<Long> subcategoryIds = productPage.getContent().stream()
+                .map(ProductDto::getSubcategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, String> categoryNameMap = buildNameMap(
+                categoryIds,
+                ids -> categoryRepository.findAllById(ids),
+                Category::getId,
+                Category::getName
+        );
+
+        Map<Long, String> subcategoryNameMap = buildNameMap(
+                subcategoryIds,
+                ids -> subCategoryRepository.findAllById(ids),
+                Subcategory::getId,
+                Subcategory::getName
+        );
+
+            return productPage.map(dto -> ProductListOfStudioResponse.from(
+                    dto,
+                    categoryNameMap.get(dto.getCategoryId()),
+                    subcategoryNameMap.get(dto.getSubcategoryId())
+            ));
+    }
+
+    private <T, ID> Map<ID, String> buildNameMap(
+            Set<ID> ids,
+            Function<Iterable<ID>, List<T>> finder,
+            Function<T, ID> idExtractor,
+            Function<T, String> nameExtractor
+    ) {
+        if (ids == null || ids.isEmpty()) return Map.of();
+
+        List<T> list = finder.apply(ids);
+
+        return list.stream().collect(
+                Collectors.toMap(idExtractor, nameExtractor)
+        );
+    }
+
     @Transactional
     public void createStudio(Studio newStudio) {
         System.out.println("공방정보가 서비스로 넘어왔습니다");

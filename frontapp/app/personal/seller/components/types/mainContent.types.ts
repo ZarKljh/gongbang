@@ -75,4 +75,7 @@ export interface MainContentProps {
     }
 
     setProductFilters?: (updater: any) => void
+
+    categoryOptions?: string[]
+    subcategoryOptions?: string[]
 }

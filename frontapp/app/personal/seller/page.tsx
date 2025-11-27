@@ -63,7 +63,10 @@ export default function MyPage() {
         active: [], // true/false
         stock: [], // ["inStock", "outOfStock"]
         status: [], // ["PUBLISHED", "HIDDEN"]
+        category: '',
+        subcategory: '',
     })
+    const [categoryOptions, setCategoryOptions] = useState<string[]>([])
 
     // ======= 초기 로딩 =======
     useEffect(() => {
@@ -214,6 +217,17 @@ export default function MyPage() {
         if (!studio?.studioId) return
         fetchStudioProducts(studio.studioId, 0)
     }, [productPageSize])
+
+    useEffect(() => {
+        if (!productList || productList.length === 0) {
+            setCategoryOptions([])
+            return
+        }
+
+        const categories = Array.from(new Set(productList.map((item) => item.categoryName)))
+
+        setCategoryOptions(categories)
+    }, [productList])
 
     // =============== 🔐 회원정보 관련 함수 ===============
     const handleVerifyPassword = async () => {
@@ -701,6 +715,7 @@ export default function MyPage() {
                 productFilters={productFilters}
                 setProductFilters={setProductFilters}
                 setProductPageSize={setProductPageSize}
+                categoryOptions={categoryOptions}
             />
         </div>
     )
