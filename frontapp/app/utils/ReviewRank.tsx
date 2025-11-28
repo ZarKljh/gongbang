@@ -7,7 +7,7 @@ import { FaStar } from 'react-icons/fa'
 import Link from 'next/link'
 
 interface ReviewRank {
-    img?: string
+    thumbnail?: string
     productId: number
     name: string
     rating: number
@@ -63,8 +63,8 @@ export default function ReviewRank() {
                         href={{ pathname: '/product/list/detail', query: { productId: p.productId } }}
                     >
                         <div className="review-rank-image-wrapper">
-                            {p.img ? (
-                                <img src={p.img} alt="상품 이미지" />
+                            {p.thumbnail ? (
+                                <img src={`http://localhost:8090${p.thumbnail}`} />
                             ) : (
                                 <span className="review-rank-image-placeholder">이미지 없음</span>
                             )}
@@ -78,8 +78,8 @@ export default function ReviewRank() {
 
                         {/* 별점 + 리뷰수 */}
                         <div className="review-rank-rating">
-                            <FaStar></FaStar>
-                            {p.rating} ({p.reviewCount.toLocaleString()}개)
+                            <FaStar style={{color: '#FFD700'}}></FaStar>
+                            {p.rating} ({p.reviewCount.toLocaleString()})
                         </div>
                     </Link>
 

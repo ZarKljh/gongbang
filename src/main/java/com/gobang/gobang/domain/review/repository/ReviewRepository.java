@@ -71,7 +71,8 @@ SELECT new com.gobang.gobang.domain.review.dto.response.ReviewPopularProductResp
     p.name,
     p.basePrice,
     ROUND(AVG(r.rating), 1),
-    COUNT(r.reviewId)
+    COUNT(r.reviewId),
+    ''
 )
 FROM Review r
 JOIN Product p ON p.id = r.productId

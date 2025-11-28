@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -312,23 +313,36 @@ public class ReviewService {
     }
 
     // 유저 프로필 이미지 가져오기
-    private String getProfileImageUrl(Long userId) {
-        return imageRepository.findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.USER_PROFILE, userId)
-                .stream().findFirst()                     // List → 1개 선택
-                .map(Image::getImageUrl)
-                .orElse("/uploads/reviews/default_profile.jpg");   // 기본이미지
-    }
+    public List<ReviewPopularProductResponse> getProfileImageUrl() {
 
-    public List<ReviewPopularProductResponse> getPopularReviewProducts() {
         List<ReviewPopularProductResponse> list = reviewRepository.findPopularReviewProducts();
 
-        // 10개 이하라면 그대로 반환
-        if (list.size() <= 10) return list;
+        for (ReviewPopularProductResponse p : list) {
 
-        // 랜덤 10개만 가져오기
+            String basePath = "C:/Users/SBS/Desktop/jhy/gobang/uploads/products/";
+            // 너의 실제 로컬 절대 경로로 변경!
+
+            String prefix = p.getName();
+            String thumbnail = null;
+
+            for (int i = 1; i <= 5; i++) {
+                File file = new File(basePath + prefix + i + ".jfif");
+                if (file.exists()) {
+                    thumbnail = "/uploads/products/" + prefix + i + ".jfif";
+                    break;
+                }
+            }
+
+            // 아무 이미지도 없으면 기본 이미지
+            if (thumbnail == null) {
+                thumbnail = "/uploads/products/no-image-soft.png";
+            }
+
+            p.setThumbnail(thumbnail);
+        }
+
+        // 하루 랜덤 리스트 유지용 셔플
         Collections.shuffle(list);
-
-        return list.subList(0, 10);
+        return list.size() > 10 ? list.subList(0, 10) : list;
     }
-
 }

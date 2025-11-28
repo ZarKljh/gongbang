@@ -191,7 +191,7 @@ public class ReviewController {
         return RsData.of(
                 "200",
                 "리뷰 인기 상품 조회 성공",
-                reviewService.getPopularReviewProducts()
+                reviewService.getProfileImageUrl()
         );
     }
 }
