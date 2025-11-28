@@ -320,6 +320,15 @@ public class ReviewService {
     }
 
     public List<ReviewPopularProductResponse> getPopularReviewProducts() {
-        return reviewRepository.findPopularReviewProducts();
+        List<ReviewPopularProductResponse> list = reviewRepository.findPopularReviewProducts();
+
+        // 10개 이하라면 그대로 반환
+        if (list.size() <= 10) return list;
+
+        // 랜덤 셔플 + 10개만 가져오기
+        Collections.shuffle(list);
+
+        return list.subList(0, 10);
     }
+
 }

@@ -618,7 +618,7 @@ export default function Review() {
                                                     borderRadius: '8px',
                                                     cursor: 'pointer',
                                                 }}
-                                                onClick={() => moveToDetail(item.id)} // 🔥 클릭 → 상세 페이지 이동
+                                                onClick={() => moveToDetail(item.id)} // 클릭 → 상세 페이지 이동
                                             />
                                         ))}
                                     </div>
