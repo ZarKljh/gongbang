@@ -556,8 +556,8 @@ export default function Review() {
                             breakpoints={{
                                 1200: { slidesPerView: 5, slidesPerGroup: 5, spaceBetween: 20 },
                                 992: { slidesPerView: 4, slidesPerGroup: 4, spaceBetween: 16 },
-                                768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 12 },
-                                0: { slidesPerView: 2, slidesPerGroup: 2, spaceBetween: 10 },
+                                // 768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 12 },
+                                // 0: { slidesPerView: 2, slidesPerGroup: 2, spaceBetween: 10 },
                             }}
                         >
                             {photoReviews.map((r) => (

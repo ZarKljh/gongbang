@@ -37,7 +37,7 @@
 .review-rank-card {
     /* flex: 0 0 calc((100% - 60px) / 4);
   min-width: 300px; */
-  border-radius: 10px;
+  /* border-radius: 10px; */
   overflow: hidden;
   cursor: pointer;
   background: white;
@@ -52,7 +52,7 @@
 /* 이미지 영역 */
 .review-rank-card img {
   width: 100%;
-  height: 220px;
+  height: 250px;
   object-fit: cover;
   /* border-bottom: 1px solid #f1f1f1; */
 }
@@ -78,7 +78,7 @@
 /* === 리뷰용 이미지 빈 공간 === */
 .review-rank-image-wrapper {
   width: 100%;
-  height: 200px;
+  height: 250px;
   border-radius: 8px;
   /* border: 1px solid #e8e8e8; */
   background: #f8f8f8;

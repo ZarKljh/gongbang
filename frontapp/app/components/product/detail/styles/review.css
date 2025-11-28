@@ -7,7 +7,7 @@
 }
 
 .photoReview-container {
-    width: 1280px;
+    width: 100%;
     margin: 0 auto;
     position: relative;
     /* padding: 20px 0; */
@@ -20,11 +20,18 @@
 }
 
 .photoReview-swiper {
+    overflow: hidden !important;
     width: 100%;
-    padding: 15px 0 40px;
+    padding: 15px 0 40px ;
 }
 
+/* .photoReview-swiper .swiper-wrapper {
+  overflow: hidden !important;
+} */
+
 .swiper-slide {
+    flex-shrink: 0;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -43,7 +50,6 @@
     transition: all 0.3s ease;
     gap: 5px;
     /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); */
-    font-family: 'P-Regular';
 }
 
 .photoCard:hover {
@@ -103,7 +109,7 @@
 
 .photoReview-swiper .swiper-wrapper {
     display: flex;
-    padding: 0 20px;
+    /* padding: 0 20px; */
 }
 /* 포토 리뷰 슬라이드 영역 끝*/
 
