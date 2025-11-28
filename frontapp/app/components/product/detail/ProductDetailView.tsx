@@ -7,6 +7,10 @@ import { useMemo, useState } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
 import { queryClient } from '@/app/utils/ReactQueryProviders'
+//토스페이먼츠
+import { loadPaymentWidget, ANONYMOUS } from '@tosspayments/payment-widget-sdk'
+import { useCallback } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 
 type ProductDetail = {
     id: number
@@ -87,6 +91,11 @@ type CommonResponse<T> = {
 export default function ProductDetailView() {
     const searchParams = useSearchParams()
     const productId = searchParams.get('productId') // string | null
+
+    //위젯
+    const [widgetLoaded, setWidgetLoaded] = useState(false)
+    const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
+    const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
 
     const [count, setCount] = useState(1)
     const { data, isLoading, isError, error } = useQuery<ProductDetailApiResponse>({
@@ -255,6 +264,29 @@ export default function ProductDetailView() {
     const inc = () => setCount((v) => v + 1)
     const dec = () => setCount((v) => (v > 1 ? v - 1 : 1))
 
+    const main = async () => {
+        // 1) PaymentWidget 불러오기
+        const paymentWidget = await loadPaymentWidget(clientKey, customerKey)
+
+        // 2) 금액 설정 (지금은 예시로 15000원)
+        paymentWidget.renderPaymentMethods('#payment-method', {
+            value: 15000,
+        })
+
+        // 3) 약관 UI 렌더링
+        paymentWidget.renderAgreement('#agreement')
+
+        setWidgetLoaded(true)
+
+        // 4) 결제요청
+        await paymentWidget.requestPayment({
+            orderId: 'order_' + uuidv4(),
+            orderName: '공예담 무드등',
+            successUrl: `${window.location.origin}/pay/success`,
+            failUrl: `${window.location.origin}/pay/fail`,
+        })
+    }
+
     return (
         <div className={styles.detailPage}>
             <div className={styles.layout}>
@@ -330,7 +362,41 @@ export default function ProductDetailView() {
                     )}
 
                     <div className={styles.buttonRow}>
-                        <button className={styles.btnBuy}>바로구매하기</button>
+                        <button className={styles.btnBuy} onClick={main}>
+                            바로구매하기
+                        </button>
+                        {/* 결제 UI가 들어갈 영역 */}
+                        {widgetLoaded && (
+                            <div className={styles.modalOverlay}>
+                                <div className={styles.modal}>
+                                    <div className={styles.modalHeader}>
+                                        <h2 className={styles.modalTitle}>결제하기</h2>
+                                        <button
+                                            type="button"
+                                            onClick={() => setWidgetLoaded(false)}
+                                            className={styles.modalCloseBtn}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+
+                                    {/* 결제 UI가 들어갈 영역 */}
+                                    <div className={styles.paymentBody}>
+                                        <div id="payment-method" className={styles.paymentMethods} />
+                                        <div id="agreement" className={styles.paymentAgreement} />
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        // onClick={handleRequestPayment}
+                                        className={styles.paymentSubmitBtn}
+                                        disabled={!widgetLoaded}
+                                    >
+                                        결제하기
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         <div className={styles.subButtons}>
                             <button
