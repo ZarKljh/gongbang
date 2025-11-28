@@ -27,16 +27,16 @@ export default function ProductListTab(props: MainContentProps) {
     } = props
 
     console.log('📦 현재 productList:', props.productList)
-    // ===================== 검색 상태 =====================
-    const [searchFields, setSearchFields] = useState({
-        name: true,
-        category: true,
-        subcategory: true,
-    })
+    // // ===================== 검색 상태 =====================
+    // const [searchFields, setSearchFields] = useState({
+    //     name: true,
+    //     category: true,
+    //     subcategory: true,
+    // })
 
     // 가격 범위
-    const [minPrice, setMinPrice] = useState(0)
-    const [maxPrice, setMaxPrice] = useState(200000)
+    const minPrice = productFilters.priceMin
+    const maxPrice = productFilters.priceMax
 
     // 체크박스 조건들
     const [stockOption, setStockOption] = useState({ in: false, out: false })
@@ -55,9 +55,9 @@ export default function ProductListTab(props: MainContentProps) {
         setProductFilters((prev) => ({
             ...prev,
             //keyword: prev.keyword, // 이미 state 입력창에서 업데이트됨
-            searchFields: Object.entries(searchFields)
-                .filter(([k, v]) => v)
-                .map(([k]) => k),
+            // searchFields: Object.entries(searchFields)
+            //     .filter(([k, v]) => v)
+            //     .map(([k]) => k),
 
             priceMin: minPrice,
             priceMax: maxPrice,
@@ -159,79 +159,35 @@ export default function ProductListTab(props: MainContentProps) {
                         type="text"
                         value={productFilters.keyword}
                         onChange={(e) => setProductFilters((prev) => ({ ...prev, keyword: e.target.value }))}
-                        placeholder="검색어 입력"
+                        placeholder="상품명을 입력해주세요"
                     />
                     <button onClick={handleSearch}>검색</button>
                 </div>
 
-                {/* 검색 필드 */}
-                <div className="filter-row">
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={searchFields.name}
-                            onChange={(e) => setSearchFields({ ...searchFields, name: e.target.checked })}
-                        />{' '}
-                        상품명
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={searchFields.category}
-                            onChange={(e) => setSearchFields({ ...searchFields, category: e.target.checked })}
-                        />{' '}
-                        카테고리
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={searchFields.subcategory}
-                            onChange={(e) => setSearchFields({ ...searchFields, subcategory: e.target.checked })}
-                        />{' '}
-                        서브카테고리
-                    </label>
-                </div>
-
-                {/* 카테고리 + 서브카테고리 통합 필터 */}
+                {/* 카테고리 선택 */}
                 <div className="filter-row">
                     <select
                         value={productFilters.category}
-                        onChange={(e) =>
-                            setProductFilters((prev) => ({
-                                ...prev,
-                                category: e.target.value, // "CAT:생활용품" 또는 "SUB:목공" 같은 형태
-                            }))
-                        }
+                        onChange={(e) => setProductFilters((prev) => ({ ...prev, category: e.target.value }))}
                     >
                         <option value="">전체 카테고리</option>
 
-                        {/* 카테고리 구분 */}
-                        {categoryOptions.length > 0 && (
-                            <>
-                                <option disabled>── 카테고리 ──</option>
-                                {categoryOptions.map((cat) => (
-                                    <option key={`cat-${cat}`} value={`CAT:${cat}`}>
-                                        {cat}
-                                    </option>
-                                ))}
-                            </>
-                        )}
+                        {categoryOptions.map((cat) => (
+                            <optgroup key={cat.id} label={cat.name}>
+                                {/* 카테고리 자체 선택 */}
+                                <option value={`CAT:${cat.id}`}>{cat.name}</option>
 
-                        {/* 서브카테고리 구분 */}
-                        {subcategoryOptions.length > 0 && (
-                            <>
-                                <option disabled>── 서브카테고리 ──</option>
-                                {subcategoryOptions.map((sub) => (
-                                    <option key={`sub-${sub}`} value={`SUB:${sub}`}>
-                                        {sub}
+                                {/* 서브카테고리 나열 */}
+                                {cat.subcategories.map((sub) => (
+                                    <option key={sub.id} value={`SUB:${sub.id}`}>
+                                        └ {sub.name}
                                     </option>
                                 ))}
-                            </>
-                        )}
+                            </optgroup>
+                        ))}
                     </select>
                 </div>
+
                 {/* 가격 범위 */}
                 <div className="price-range-box">
                     <h4>가격 범위</h4>
@@ -241,10 +197,15 @@ export default function ProductListTab(props: MainContentProps) {
                             <label>최저가</label>
                             <input
                                 type="number"
-                                value={minPrice}
+                                value={productFilters.priceMin}
                                 min={0}
-                                max={maxPrice}
-                                onChange={(e) => setMinPrice(Number(e.target.value))}
+                                max={productFilters.priceMax}
+                                onChange={(e) => {
+                                    const v = Number(e.target.value)
+                                    if (v <= productFilters.priceMax) {
+                                        setProductFilters((prev) => ({ ...prev, priceMin: v }))
+                                    }
+                                }}
                             />
                         </div>
 
@@ -252,10 +213,15 @@ export default function ProductListTab(props: MainContentProps) {
                             <label>최대가</label>
                             <input
                                 type="number"
-                                value={maxPrice}
-                                min={minPrice}
+                                value={productFilters.priceMax}
+                                min={productFilters.priceMin}
                                 max={1000000}
-                                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const v = Number(e.target.value)
+                                    if (v >= productFilters.priceMin) {
+                                        setProductFilters((prev) => ({ ...prev, priceMax: v }))
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -264,16 +230,26 @@ export default function ProductListTab(props: MainContentProps) {
                         <input
                             type="range"
                             min="0"
-                            max="1000000"
-                            value={minPrice}
-                            onChange={(e) => setMinPrice(Number(e.target.value))}
+                            max="100000"
+                            value={productFilters.priceMin}
+                            onChange={(e) => {
+                                const v = Number(e.target.value)
+                                if (v <= productFilters.priceMax) {
+                                    setProductFilters((prev) => ({ ...prev, priceMin: v }))
+                                }
+                            }}
                         />
                         <input
                             type="range"
                             min="0"
-                            max="1000000"
-                            value={maxPrice}
-                            onChange={(e) => setMaxPrice(Number(e.target.value))}
+                            max="100000"
+                            value={productFilters.priceMax}
+                            onChange={(e) => {
+                                const v = Number(e.target.value)
+                                if (v >= productFilters.priceMin) {
+                                    setProductFilters((prev) => ({ ...prev, priceMax: v }))
+                                }
+                            }}
                         />
                     </div>
 
@@ -448,3 +424,36 @@ export default function ProductListTab(props: MainContentProps) {
         </div>
     )
 }
+
+/*
+
+                <div className="filter-row">
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={searchFields.name}
+                            onChange={(e) => setSearchFields({ ...searchFields, name: e.target.checked })}
+                        />{' '}
+                        상품명
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={searchFields.category}
+                            onChange={(e) => setSearchFields({ ...searchFields, category: e.target.checked })}
+                        />{' '}
+                        카테고리
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={searchFields.subcategory}
+                            onChange={(e) => setSearchFields({ ...searchFields, subcategory: e.target.checked })}
+                        />{' '}
+                        서브카테고리
+                    </label>
+                </div>
+
+*/

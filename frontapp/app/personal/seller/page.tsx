@@ -57,17 +57,16 @@ export default function MyPage() {
 
     const [productFilters, setProductFilters] = useState({
         keyword: '',
-        searchFields: ['name'], // ["name", "categoryName", "subcategoryName"]
         priceMin: 0,
         priceMax: 500000,
         active: [], // true/false
         stock: [], // ["inStock", "outOfStock"]
         status: [], // ["PUBLISHED", "HIDDEN"]
         category: '',
-        subcategory: '',
+        //searchFields: ['name'], // ["name", "categoryName", "subcategoryName"]
     })
-    const [categoryOptions, setCategoryOptions] = useState<string[]>([])
-    const [subcategoryOptions, setSubcategoryOptions] = useState<string[]>([])
+    const [categoryOptions, setCategoryOptions] = useState<any[]>([])
+    const [subcategoryOptions, setSubcategoryOptions] = useState<any[]>([])
 
     // ======= 초기 로딩 =======
     useEffect(() => {
@@ -168,7 +167,7 @@ export default function MyPage() {
 
                 // 🔍 검색 필터
                 keyword: productFilters.keyword,
-                searchFields: productFilters.searchFields.join(','),
+                //searchFields: productFilters.searchFields.join(','),
 
                 priceMin: String(productFilters.priceMin),
                 priceMax: String(productFilters.priceMax),
@@ -177,6 +176,10 @@ export default function MyPage() {
                 stock: productFilters.stock.join(','),
                 status: productFilters.status.join(','),
             })
+
+            if (productFilters.category) {
+                query.set('category', productFilters.category)
+            }
 
             const response = await fetch(`${API_BASE_URL}/studio/${studioId}/studio-products?${query.toString()}`, {
                 method: 'GET',
@@ -224,7 +227,11 @@ export default function MyPage() {
         if (!studio?.studioId) return
 
         const delay = setTimeout(() => {
+            // 상품 목록 갱신
             fetchStudioProducts(studio.studioId, 0)
+
+            // 카테고리 select 갱신 (전체 범위용)
+            fetchCategorySummary(studio.studioId)
         }, 300)
 
         return () => clearTimeout(delay)

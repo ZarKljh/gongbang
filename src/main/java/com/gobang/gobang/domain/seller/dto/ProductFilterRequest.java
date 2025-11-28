@@ -7,8 +7,8 @@ import java.util.List;
 @Data
 public class ProductFilterRequest {
     private String keyword;        // 상품명 검색
-    private String category;       // categoryName
-    private String subcategory;    // subcategoryName
+    private Long categoryId;       // categoryName
+    private Long subcategoryId;    // subcategoryName
 
     private Integer priceMin;
     private Integer priceMax;
@@ -19,8 +19,8 @@ public class ProductFilterRequest {
 
     public ProductFilterRequest(
         String keyword,
-        String category,
-        String subcategory,
+        Long categoryId,
+        Long subcategoryId,
         Integer priceMin,
         Integer priceMax,
         List<String> active,
@@ -28,8 +28,8 @@ public class ProductFilterRequest {
         List<String> status
     ) {
         this.keyword = keyword;
-        this.category = category;
-        this.subcategory = subcategory;
+        this.categoryId = categoryId;
+        this.subcategoryId = subcategoryId;
         this.priceMin = priceMin;
         this.priceMax = priceMax;
         this.active = active;

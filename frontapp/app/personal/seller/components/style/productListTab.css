@@ -93,13 +93,13 @@
     height: 24px;
 }
 
-.product-list-tab > .search-box > .price-range-box > .price-slider > input[type='range'] {
+.product-list-tab > .search-box > .price-range-box > .price-slider input[type='range'] {
     width: 100%;
     position: absolute;
     top: 0;
     height: 24px;
     background: none;
-    pointer-events: none;
+    pointer-events: auto;
 }
 
 .product-list-tab > .search-box > .price-range-box > .price-display {

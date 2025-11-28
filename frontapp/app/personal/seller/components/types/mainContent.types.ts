@@ -66,12 +66,12 @@ export interface MainContentProps {
     /** 🔥 검색 조건 객체 전달 (필수) */
     productFilters?: {
         keyword: string
-        searchFields: string[]
         priceMin: number
         priceMax: number
         active: any[]
         stock: any[]
         status: any[]
+        //searchFields: string[]
     }
 
     setProductFilters?: (updater: any) => void

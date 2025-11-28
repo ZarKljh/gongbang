@@ -79,7 +79,6 @@ public class StudioController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String subcategory,
             @RequestParam(required = false) Integer priceMin,
             @RequestParam(required = false) Integer priceMax,
             @RequestParam(required = false) String active,
@@ -93,12 +92,21 @@ public class StudioController {
         List<String> stockList = convertToList(stock);
         List<String> statusList = convertToList(status);
 
-        ProductFilterRequest filterRequest = new ProductFilterRequest( keyword, category, subcategory, priceMin, priceMax, activeList, stockList, statusList);
+        ProductFilterRequest filterRequest = new ProductFilterRequest(
+                keyword, parseCategoryId(category), parseSubcategoryId(category), priceMin, priceMax, activeList, stockList, statusList);
 
         Page<ProductListOfStudioResponse> productPage = studioService.getProductListByStudioIdWithFilter(studioId, filterRequest, pageable);
+        //Page<ProductListOfStudioResponse> productPage = studioService.getProductListByStudioIdWithCategory(studioId, keyword, pageable);
         return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
     }
 
+    @GetMapping("/{id}/category-summary")
+    public RsData<CategoryTreeResponse> getCategorySummary(@PathVariable("id") Long studioId) {
+
+        CategoryTreeResponse response = studioService.getCategorySummary(studioId);
+
+        return RsData.of("s-1", "카테고리 요약을 조회했습니다.", response);
+    }
 
     //공방정보 수정
     //studioId로 공방검색
@@ -218,6 +226,22 @@ public class StudioController {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
+    }
+
+    private Long parseCategoryId(String input) {
+        if (input == null || input.isBlank()) return null;
+        if ( input.startsWith("CAT:")){
+            return Long.valueOf(input.substring(4)); // CAT: 뒤의 값만 반환
+        }
+        return null;
+    }
+
+    private Long parseSubcategoryId(String input) {
+        if (input == null || input.isBlank()) return null;
+        if (input.startsWith("SUB:")) {
+            return Long.valueOf(input.substring(4)); // SUB: 뒤의 값만 반환
+        }
+        return null;
     }
 
 
