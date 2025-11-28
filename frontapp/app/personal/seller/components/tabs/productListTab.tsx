@@ -1,7 +1,9 @@
 'use client'
 import { useState } from 'react'
 import { MainContentProps } from '../types/mainContent.types'
+
 import '../style/productListTab.css'
+import 'rc-slider/assets/index.css'
 
 export default function ProductListTab(props: MainContentProps) {
     const {
@@ -227,8 +229,16 @@ export default function ProductListTab(props: MainContentProps) {
                     </div>
 
                     <div className="price-slider">
+                        <div
+                            className="slider-track"
+                            style={{
+                                left: `${(productFilters.priceMin / 100000) * 100}%`,
+                                right: `${100 - (productFilters.priceMax / 100000) * 100}%`,
+                            }}
+                        ></div>
                         <input
                             type="range"
+                            className="min"
                             min="0"
                             max="100000"
                             value={productFilters.priceMin}
@@ -241,6 +251,7 @@ export default function ProductListTab(props: MainContentProps) {
                         />
                         <input
                             type="range"
+                            className="max"
                             min="0"
                             max="100000"
                             value={productFilters.priceMax}

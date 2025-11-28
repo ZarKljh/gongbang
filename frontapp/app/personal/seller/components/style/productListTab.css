@@ -93,19 +93,77 @@
     height: 24px;
 }
 
+.product-list-tab > .search-box > .price-range-box > .price-slider {
+    position: relative;
+    height: 24px;
+}
+
+/* 공통 range 스타일 */
 .product-list-tab > .search-box > .price-range-box > .price-slider input[type='range'] {
     width: 100%;
     position: absolute;
     top: 0;
     height: 24px;
     background: none;
+    -webkit-appearance: none;
+    margin: 0;
+    z-index: 2; /* 트랙보다 위 */
+    pointer-events: none;
+}
+
+/* 왼쪽/오른쪽 슬라이더는 같은 레벨 */
+.price-slider input[type='range'].min {
+    z-index: 2;
+}
+.price-slider input[type='range'].max {
+    z-index: 2;
+}
+
+/* thumb 모양 */
+.price-slider input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #0078d7;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    z-index: 3; /* 항상 최상단 */
+    pointer-events: auto; /* thumb만 이벤트 허용 */
+}
+.price-slider input[type='range']::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #0078d7;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    z-index: 3;
     pointer-events: auto;
 }
 
-.product-list-tab > .search-box > .price-range-box > .price-display {
-    margin-top: 8px;
+/* 기본 트랙 */
+.product-list-tab > .search-box > .price-range-box > .price-slider input[type='range']::-webkit-slider-runnable-track {
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
+}
+.product-list-tab > .search-box > .price-range-box > .price-slider input[type='range']::-moz-range-track {
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
 }
 
+/* 선택된 범위 강조용 트랙 */
+.price-slider .slider-track {
+    position: absolute;
+    top: 9px;
+    height: 6px;
+    background: #0078d7;
+    border-radius: 3px;
+    z-index: 1; /* 항상 맨 뒤 */
+}
 /* ===========================================================
    버튼 그룹
 =========================================================== */
