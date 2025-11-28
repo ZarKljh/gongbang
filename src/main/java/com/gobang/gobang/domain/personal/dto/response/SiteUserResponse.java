@@ -21,6 +21,7 @@ public class SiteUserResponse {
     private String gender;
     private String profileImg;
     private LocalDateTime birth;
+    private String roleType;
 
     public SiteUserResponse(SiteUser siteUser) {
         this.id = siteUser.getId();
@@ -33,5 +34,6 @@ public class SiteUserResponse {
         this.gender = siteUser.getGender();
         this.profileImg = siteUser.getProfileImg();
         this.birth = siteUser.getBirth();
+        this.roleType = siteUser.getRole().name();
     }
 }

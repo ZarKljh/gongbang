@@ -18,8 +18,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     // 사용자별 팔로우 목록 조회
     List<Follow> findBySiteUser(SiteUser siteUser);
 
-    // 특정 셀러의 팔로워 목록 조회
-    List<Follow> findByStudio(Studio studio);
+    void deleteBySiteUserIdAndStudioStudioId(Long siteUserId, Long studioId);
 
     // 사용자가 특정 셀러를 팔로우하는지 확인
     Optional<Follow> findBySiteUserAndStudio(SiteUser siteUser, Studio studio);

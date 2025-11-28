@@ -74,7 +74,7 @@ export default function TopStudios() {
                                     <div className='topStudioTxtBox'>
                                         <Link
                                             className='topStudioName'
-                                            href={`/product/list/detail?productId=${p.productId}`}
+                                            href={`/studio/${studio.studioId}`}
                                         >
                                             {studio.studioName}
                                         </Link>
@@ -99,6 +99,7 @@ export default function TopStudios() {
                                                 {p.productName}
                                             </Link>
                                             <p className='topProductsummary'>{p.summary}</p>
+                                            <p className='topProductsummary'>{p.price}</p>
                                         </div>
                                     ))}
                                 </div>

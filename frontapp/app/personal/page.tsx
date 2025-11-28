@@ -5,11 +5,19 @@ import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { fetchPosts, resetPosts } from '@/app/personal/postsSlice'
+import useInfiniteScroll from '@/app/personal/useInfiniteScroll'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/app/personal/store'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 export default function MyPage() {
     const searchParams = useSearchParams()
+    const dispatch = useDispatch<any>()
+    const { items, loading: postLoading, hasMore, lastPostId } = useSelector(
+        (state: RootState) => state.posts
+    )
 
     // =============== State 관리 ===============
     // 사용자 정보
@@ -19,16 +27,10 @@ export default function MyPage() {
         totalQna: 0,
         totalReviews: 0,
     })
-    const [errors, setErrors] = useState({
-        nickName: '',
-        newPassword: '',
-        confirmPassword: '',
-        email: '',
-        mobilePhone: '',
-    })
+    const [errors, setErrors] = useState<any>({})
 
     // UI 상태
-    const [loading, setLoading] = useState(true)
+    const [pageLoading, setPageLoading] = useState(true)
     const [activeTab, setActiveTab] = useState("orders")
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
@@ -46,7 +48,6 @@ export default function MyPage() {
     const [isStatusModal, setIsStatusModal] = useState(false)
     const [activeFilter, setActiveFilter] = useState('전체')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
-    const [filteredOrder, setFilteredOrders] = useState<any[]>([])
     const [isReasonModal, setIsReasonModal] = useState(false)
     const [reasonModalTitle, setReasonModalTitle] = useState("")
     const [reasonModalOnSubmit, setReasonModalOnSubmit] = useState<(reason: string) => void>(() => {})
@@ -107,7 +108,7 @@ export default function MyPage() {
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
-            setLoading(true)
+            setPageLoading(true)
             try {
                 const user = await fetchUser()
                 if (!user || !user.id) return
@@ -116,7 +117,7 @@ export default function MyPage() {
             } catch (error) {
                 console.error('초기 데이터 로딩 실패:', error)
             } finally {
-                setLoading(false)
+                setPageLoading(false)
             }
         }
 
@@ -151,6 +152,8 @@ export default function MyPage() {
                 fetchCart(userId),
                 fetchQna(userId),
                 fetchProfileImage(userId),
+                dispatch(resetPosts()),
+                dispatch(fetchPosts(null)),
             ])
         } catch (error) {
             console.error('데이터 로드 실패:', error)
@@ -160,6 +163,7 @@ export default function MyPage() {
     const fetchUser = async () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
+            console.log("USER DATA:", data.data)
             if (data.code === '401') {
                 window.location.href = '/auth/login'
                 return null
@@ -305,7 +309,6 @@ export default function MyPage() {
                 params: { userId },
                 withCredentials: true,
             })
-            console.log(response.data)
             const list = Array.isArray(response.data.data) ? response.data.data : []
             setQna(list)
             setStats((prev) => ({
@@ -891,6 +894,42 @@ export default function MyPage() {
         return num.replace(/\d(?=\d{4})/g, "*")
     }
 
+    const validatePayment = () => {
+        const newErrors: any = {}
+
+        // 공통: BANK or CARD
+        if (paymentType === "BANK") {
+            if (!bankName.trim()) newErrors.bankName = "은행명을 입력해주세요."
+            if (!accountNumber.trim()) {
+                newErrors.accountNumber = "계좌번호를 입력해주세요."
+            } else if (!/^[0-9]{6,20}$/.test(accountNumber)) {
+                newErrors.accountNumber = "계좌번호는 숫자 6~20자리여야 합니다."
+            }
+
+            if (!accountHolder.trim()) newErrors.accountHolder = "예금주명을 입력해주세요."
+        }
+
+        if (paymentType === "CARD") {
+            if (!cardCompany.trim()) newErrors.cardCompany = "카드사를 입력해주세요."
+
+            if (!cardNumber.trim()) {
+                newErrors.cardNumber = "카드번호를 입력해주세요."
+            } else if (!/^[0-9]{14,16}$/.test(cardNumber.replace(/-/g, ""))) {
+                newErrors.cardNumber = "카드번호는 숫자 14~16자리여야 합니다."
+            }
+
+            if (!cardExpire.trim()) {
+                newErrors.cardExpire = "유효기간을 입력해주세요."
+            } else if (!/^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(cardExpire)) {
+                newErrors.cardExpire = "유효기간은 MM/YY 형식이어야 합니다."
+            }
+        }
+
+        setErrors(newErrors)
+
+        return Object.keys(newErrors).length === 0 // 에러 없으면 true
+    }
+
     // =============== 리뷰 ===============
     const handleEditClick = (review: any) => {
         setEditReview(review)
@@ -957,9 +996,6 @@ export default function MyPage() {
         }
     }
 
-    // ================= 리뷰 =================
-    
-
     // ================= Q&A 기능 =================
     // 문의 삭제
     const handleDeleteQna = async (qnaId: number) => {
@@ -996,7 +1032,7 @@ export default function MyPage() {
             })
 
             if (data.resultCode === '200') {
-                alert('언팔로우 성공')
+                alert('공방을 언팔로우 했습니다.')
                 await fetchFollowList(userData.id)
             } else {
                 alert(`언팔로우 실패: ${data.msg}`)
@@ -1103,8 +1139,19 @@ export default function MyPage() {
         setIsStatusModal(true)
     }
 
+    // =============== 무한 스크롤 ===============
+    useInfiniteScroll({
+        loading: postLoading,
+        hasMore,
+        onLoadMore: () => {
+            if (!postLoading && hasMore) {
+                dispatch(fetchPosts(lastPostId))
+            }
+        },
+    })
+
     // =============== 렌더링 조건 ===============
-    if (loading) {
+    if (pageLoading) {
         return <div>로딩중...</div>
     }
 
@@ -1218,7 +1265,6 @@ export default function MyPage() {
                 {userData?.roleType === "SELLER" && (
                     <a href="/personal/seller" className='link-btn'>공방 페이지로 이동</a>
                 )}
-                
             </div>
 
             {/* 오른쪽 콘텐츠 */}
@@ -1469,6 +1515,8 @@ export default function MyPage() {
                                 </div>
                             ))
                             )}
+                            {postLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
+                            {!hasMore && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
                         </div>
                     )}
 
@@ -2446,6 +2494,7 @@ export default function MyPage() {
                                             value={bankName} 
                                             onChange={(e) => setBankName(e.target.value)} 
                                         />
+                                        {errors.bankName && <p className="error-msg">{errors.bankName}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>계좌번호</label>
@@ -2455,6 +2504,7 @@ export default function MyPage() {
                                             value={accountNumber} 
                                             onChange={(e) => setAccountNumber(e.target.value)} 
                                         />
+                                        {errors.accountNumber && <p className="error-msg">{errors.accountNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>예금주</label>
@@ -2464,6 +2514,7 @@ export default function MyPage() {
                                             value={accountHolder} 
                                             onChange={(e) => setAccountHolder(e.target.value)} 
                                         />
+                                        
                                     </div>
                                 </>
                             )}
@@ -2487,6 +2538,7 @@ export default function MyPage() {
                                             value={cardNumber} 
                                             onChange={(e) => setCardNumber(e.target.value)} 
                                         />
+                                        {errors.cardNumber && <p className="error-msg">{errors.cardNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>유효기간</label>
@@ -2496,6 +2548,7 @@ export default function MyPage() {
                                             value={cardExpire} 
                                             onChange={(e) => setCardExpire(e.target.value)} 
                                         />
+                                        {errors.cardExpire && <p className="error-msg">{errors.cardExpire}</p>}
                                     </div>
                                 </>
                             )}
@@ -2516,7 +2569,14 @@ export default function MyPage() {
                             <button className="btn-primary delete" onClick={() => setIsPaymentModal(false)}>
                                 취소
                             </button>
-                            <button className="btn-primary" onClick={handleSavePayment}>
+                            <button
+                                className="btn-primary"
+                                onClick={() => {
+                                    if (validatePayment()) {
+                                        handleSavePayment();
+                                    }
+                                }}
+                            >
                                 등록
                             </button>
                         </div>
@@ -2692,15 +2752,15 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn-primary" onClick={() => setIsProfileModalOpen(false)}>
+                            <div className="btn-primary" onClick={() => setIsProfileModalOpen(false)}>
                                 취소
-                            </button>
-                            <button className="btn-primary delete" onClick={handleProfileDelete}>
+                            </div>
+                            <div className="btn-primary delete" onClick={handleProfileDelete}>
                                 삭제
-                            </button>
-                            <button className="btn-primary" onClick={handleProfileUpload}>
+                            </div>
+                            <div className="btn-primary" onClick={handleProfileUpload}>
                                 업로드
-                            </button>
+                            </div>
                         </div>
                     </div>
                 </div>

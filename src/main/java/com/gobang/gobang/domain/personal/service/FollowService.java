@@ -54,11 +54,8 @@ public class FollowService {
 
     // 팔로우 취소
     @Transactional
-    public void unfollow(SiteUser siteUser, Studio studio) {
-        Follow follow = followRepository.findBySiteUserAndStudio(siteUser, studio)
-                .orElseThrow(() -> new IllegalArgumentException("팔로우 정보를 찾을 수 없습니다."));
-
-        followRepository.delete(follow);
+    public void unfollow(SiteUser siteUser, Long studioId) {
+        followRepository.deleteBySiteUserIdAndStudioStudioId(siteUser.getId(), studioId);
     }
 
     // 팔로우 여부 확인

@@ -94,7 +94,7 @@ body {
 /* 인증 배너 */
 .auth-banner {
     padding: 16px;
-    background: #f9fafb;
+    background: #dac0a340;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -125,15 +125,16 @@ body {
 
 .auth-banner-btn {
     padding: 8px 16px;
-    background: #B17457;
+    background: #DAC0A3;
     color: white;
     border: none;
     font-size: 12px;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .auth-banner-btn:hover {
-    background: rgba(212, 139, 105, 0.9);
+    background: #C99F8A;
 }
 
 /* 통계 테이블 */
@@ -174,7 +175,7 @@ body {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #DAC0A3;
+    background: #C99F8A;
     overflow: hidden;
     cursor: pointer;
 }
@@ -808,7 +809,7 @@ body {
 .empty-state-link {
     display: inline-block;
     padding: 12px 24px;
-    background: #B17457;
+    background: #DAC0A3;
     color: white;
     text-decoration: none;
     border-radius: 8px;
@@ -817,7 +818,7 @@ body {
 }
 
 .empty-state-link:hover {
-    background: #9a6249;
+    background: #C99F8A;
     transform: translateY(-2px);
 }
 
@@ -1206,6 +1207,7 @@ body {
 .modal-footer {
     display: flex;
     justify-content: flex-end;
+
     gap: 12px;
     padding: 20px 24px;
     border-top: 1px solid #e5e7eb;
@@ -1423,6 +1425,12 @@ body {
     border: 2px dashed #d1d5db;
 }
 
+/* 에러 메세지 */
+.error-msg {
+    font-size: 14px;
+    color: red;
+}
+
 /* 파일 입력 */
 .file-input-label {
     display: block;
@@ -1436,13 +1444,15 @@ body {
 /* 버튼 */
 .btn-primary {
     padding: 8px 16px;
-    background: #B17457;
+    background: #dac0a3;
     color: white;
     border: none;
     font-size: 14px;
     font-weight: semi-bold;
     cursor: pointer;
     border-radius: 8px;
+    transition: all 0.2s;
+    text-align: center;
 }
 
 .btn-primary.delete {
@@ -1450,7 +1460,12 @@ body {
 }
 
 .btn-primary:hover {
-    opacity: 0.8;
+    background: #C99F8A;
+}
+
+.btn-primary.delete:hover {
+    background: #dc2626;
+    text-decoration: underline;
 }
 
 /* 버튼 disabled 상태 */
@@ -1470,11 +1485,13 @@ button.link-btn:disabled:hover {
 .link-btn {
     padding: 6px 10px;
     font-size: 12px;
-    background: #B17457;
+    background: #dac0a3;
     color: white;
     border-radius: 8px;
     border: none;
     cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
 }
 
 .link-btn.delete {
@@ -1482,7 +1499,12 @@ button.link-btn:disabled:hover {
 }
 
 .link-btn:hover {
-    opacity: 0.8;
+    background: #C99F8A;
+}
+
+.link-btn.delete:hover {
+    background: #dc2626;
+    text-decoration: underline;
 }
 
 /* 반응형 */
@@ -1544,11 +1566,6 @@ button.link-btn:disabled:hover {
 
     .modal-body {
         padding: 20px;
-    }
-
-    .modal-footer {
-        padding: 16px 20px;
-        flex-direction: column-reverse;
     }
 
     .modal-footer .btn {
