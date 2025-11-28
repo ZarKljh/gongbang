@@ -23,6 +23,7 @@ export default function ProductListTab(props: MainContentProps) {
         productFilters,
         setProductFilters,
         categoryOptions,
+        subcategoryOptions,
     } = props
 
     console.log('📦 현재 productList:', props.productList)
@@ -192,23 +193,43 @@ export default function ProductListTab(props: MainContentProps) {
                         서브카테고리
                     </label>
                 </div>
+
+                {/* 카테고리 + 서브카테고리 통합 필터 */}
                 <div className="filter-row">
-                    {/* 카테고리 선택 */}
                     <select
                         value={productFilters.category}
                         onChange={(e) =>
                             setProductFilters((prev) => ({
                                 ...prev,
-                                category: e.target.value,
+                                category: e.target.value, // "CAT:생활용품" 또는 "SUB:목공" 같은 형태
                             }))
                         }
                     >
                         <option value="">전체 카테고리</option>
-                        {categoryOptions.map((cat) => (
-                            <option key={cat} value={cat}>
-                                {cat}
-                            </option>
-                        ))}
+
+                        {/* 카테고리 구분 */}
+                        {categoryOptions.length > 0 && (
+                            <>
+                                <option disabled>── 카테고리 ──</option>
+                                {categoryOptions.map((cat) => (
+                                    <option key={`cat-${cat}`} value={`CAT:${cat}`}>
+                                        {cat}
+                                    </option>
+                                ))}
+                            </>
+                        )}
+
+                        {/* 서브카테고리 구분 */}
+                        {subcategoryOptions.length > 0 && (
+                            <>
+                                <option disabled>── 서브카테고리 ──</option>
+                                {subcategoryOptions.map((sub) => (
+                                    <option key={`sub-${sub}`} value={`SUB:${sub}`}>
+                                        {sub}
+                                    </option>
+                                ))}
+                            </>
+                        )}
                     </select>
                 </div>
                 {/* 가격 범위 */}

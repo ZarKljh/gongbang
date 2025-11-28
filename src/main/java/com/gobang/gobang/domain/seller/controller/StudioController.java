@@ -9,10 +9,7 @@ import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.service.ProfileImageService;
 import com.gobang.gobang.domain.product.dto.ProductDto;
-import com.gobang.gobang.domain.seller.dto.ProductListOfStudioResponse;
-import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
-import com.gobang.gobang.domain.seller.dto.StudioResponse;
-import com.gobang.gobang.domain.seller.dto.StudioSimpleDto;
+import com.gobang.gobang.domain.seller.dto.*;
 import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
 import com.gobang.gobang.global.rq.Rq;
@@ -25,10 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/studio")
@@ -83,10 +77,25 @@ public class StudioController {
             @PathVariable("id") Long studioId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String subcategory,
+            @RequestParam(required = false) Integer priceMin,
+            @RequestParam(required = false) Integer priceMax,
+            @RequestParam(required = false) String active,
+            @RequestParam(required = false) String stock,
+            @RequestParam(required = false) String status
+
     ){
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<ProductListOfStudioResponse> productPage = studioService.getProductListByStudioIdWithCategory(studioId, keyword, pageable);
+
+        List<String> activeList = convertToList(active);
+        List<String> stockList = convertToList(stock);
+        List<String> statusList = convertToList(status);
+
+        ProductFilterRequest filterRequest = new ProductFilterRequest( keyword, category, subcategory, priceMin, priceMax, activeList, stockList, statusList);
+
+        Page<ProductListOfStudioResponse> productPage = studioService.getProductListByStudioIdWithFilter(studioId, filterRequest, pageable);
         return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
     }
 
@@ -203,6 +212,13 @@ public class StudioController {
         return  RsData.of("200", "신규공방이 등록되었습니다", responseMap);
     }
 
+    private List<String> convertToList(String str) {
+        if (str == null || str.isBlank()) return List.of();
+        return Arrays.stream(str.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
 
 
 }

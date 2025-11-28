@@ -11,6 +11,7 @@ import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.entity.Subcategory;
+import com.gobang.gobang.domain.seller.dto.ProductFilterRequest;
 import com.gobang.gobang.domain.seller.dto.ProductListOfStudioResponse;
 import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
 import com.gobang.gobang.domain.seller.model.StudioStatus;
@@ -41,6 +42,12 @@ public class StudioService {
         Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);
         return productPage.map(ProductDto::fromEntity);
     }
+
+    public Page<ProductListOfStudioResponse> getProductListByStudioIdWithFilter(Long studioId, ProductFilterRequest filterRequest, Pageable pageable){
+
+        return
+    }
+
     public Page<ProductListOfStudioResponse> getProductListByStudioIdWithCategory(Long studioId, String keyword, Pageable pageable) {
 
         Page<Product> product;

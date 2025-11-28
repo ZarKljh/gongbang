@@ -67,6 +67,7 @@ export default function MyPage() {
         subcategory: '',
     })
     const [categoryOptions, setCategoryOptions] = useState<string[]>([])
+    const [subcategoryOptions, setSubcategoryOptions] = useState<string[]>([])
 
     // ======= 초기 로딩 =======
     useEffect(() => {
@@ -196,6 +197,22 @@ export default function MyPage() {
             setProductLoading(false)
         }
     }
+    const fetchCategorySummary = async (studioId: number) => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/studio/${studioId}/category-summary`, {
+                withCredentials: true,
+            })
+
+            const { categories, subcategories } = res.data.data
+
+            setCategoryOptions(categories) // [{id,name}]
+            setSubcategoryOptions(subcategories) // [{id,name}]
+        } catch (err) {
+            console.error('카테고리 옵션 조회 실패:', err)
+            setCategoryOptions([])
+            setSubcategoryOptions([])
+        }
+    }
 
     useEffect(() => {
         if (studio?.studioId) {
@@ -219,15 +236,9 @@ export default function MyPage() {
     }, [productPageSize])
 
     useEffect(() => {
-        if (!productList || productList.length === 0) {
-            setCategoryOptions([])
-            return
-        }
-
-        const categories = Array.from(new Set(productList.map((item) => item.categoryName)))
-
-        setCategoryOptions(categories)
-    }, [productList])
+        if (!studio?.studioId) return
+        fetchCategorySummary(studio.studioId) // ★ 추가
+    }, [studio])
 
     // =============== 🔐 회원정보 관련 함수 ===============
     const handleVerifyPassword = async () => {
@@ -716,6 +727,7 @@ export default function MyPage() {
                 setProductFilters={setProductFilters}
                 setProductPageSize={setProductPageSize}
                 categoryOptions={categoryOptions}
+                subcategoryOptions={subcategoryOptions}
             />
         </div>
     )
