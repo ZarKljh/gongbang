@@ -5,19 +5,45 @@ import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { fetchPosts, resetPosts } from '@/app/personal/postsSlice'
-import useInfiniteScroll from '@/app/personal/useInfiniteScroll'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '@/app/personal/store'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
+interface Post {
+  id: number
+  title: string
+  content: string
+  imageUrl?: string
+}
+
+interface Order {
+  orderId: number
+  orderCode: string
+  createdDate: string
+  deliveryStatus: string
+  totalPrice: number
+  completedAt?: string
+  items?: any[]
+  deliveries?: any[]
+}
+
+interface WishItem {
+  wishlistId: number
+  productName: string
+  price: number
+  imageUrl?: string
+}
+
+interface CartItem {
+  cartId: number
+  productName: string
+  price: number
+  quantity: number
+  imageUrl?: string
+  productId: number
+}
+
 export default function MyPage() {
     const searchParams = useSearchParams()
-    const dispatch = useDispatch<any>()
-    const { items, loading: postLoading, hasMore, lastPostId } = useSelector(
-        (state: RootState) => state.posts
-    )
 
     // =============== State 관리 ===============
     // 사용자 정보
@@ -34,6 +60,24 @@ export default function MyPage() {
     const [activeTab, setActiveTab] = useState("orders")
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
+
+    //무한스크롤
+    const [infiniteOrders, setInfiniteOrders] = useState<Order[]>([])
+    const [infiniteOrdersLoading, setInfiniteOrdersLoading] = useState(false)
+    const [infiniteOrdersHasMore, setInfiniteOrdersHasMore] = useState(true)
+    const [infiniteOrdersLastId, setInfiniteOrdersLastId] = useState<number | null>(null)
+
+    const [infiniteWishList, setInfiniteWishList] = useState<WishItem[]>([])
+    const [infiniteWishLoading, setInfiniteWishLoading] = useState(false)
+    const [infiniteWishHasMore, setInfiniteWishHasMore] = useState(true)
+    const [infiniteWishLastId, setInfiniteWishLastId] = useState<number | null>(null)
+
+    const [infiniteCart, setInfiniteCart] = useState<CartItem[]>([])
+    const [infiniteCartLoading, setInfiniteCartLoading] = useState(false)
+    const [infiniteCartHasMore, setInfiniteCartHasMore] = useState(true)
+    const [infiniteCartLastId, setInfiniteCartLastId] = useState<number | null>(null)
+
+    const SIZE = 10
 
     // 인증
     const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -152,8 +196,6 @@ export default function MyPage() {
                 fetchCart(userId),
                 fetchQna(userId),
                 fetchProfileImage(userId),
-                dispatch(resetPosts()),
-                dispatch(fetchPosts(null)),
             ])
         } catch (error) {
             console.error('데이터 로드 실패:', error)
@@ -1140,15 +1182,162 @@ export default function MyPage() {
     }
 
     // =============== 무한 스크롤 ===============
-    useInfiniteScroll({
-        loading: postLoading,
-        hasMore,
-        onLoadMore: () => {
-            if (!postLoading && hasMore) {
-                dispatch(fetchPosts(lastPostId))
+    const fetchInfiniteOrders = async (lastId: number | null) => {
+        setInfiniteOrdersLoading(true)
+        try {
+            const res = await axios.get(`${API_BASE_URL}/orders/infinite`, {
+                params: {
+                    lastOrderId: lastId ?? Number.MAX_SAFE_INTEGER,
+                    size: SIZE,
+                },
+                withCredentials: true,
+            })
+            
+            const newOrders = res.data.data
+
+            if (newOrders.length < SIZE) {
+                setInfiniteOrdersHasMore(false)
             }
-        },
-    })
+
+            setInfiniteOrders(prev => [...prev, ...newOrders])
+
+            if (newOrders.length > 0) {
+                setInfiniteOrdersLastId(newOrders[newOrders.length - 1].orderId)
+            }
+        } catch (error) {
+            console.error('주문 로드 실패:', error)
+        } finally {
+            setInfiniteOrdersLoading(false)
+        }
+    }
+
+    const resetInfiniteOrders = () => {
+        setInfiniteOrders([])
+        setInfiniteOrdersHasMore(true)
+        setInfiniteOrdersLastId(null)
+    }
+
+    const fetchInfiniteWishList = async (lastId: number | null) => {
+        setInfiniteWishLoading(true)
+        try {
+            const res = await axios.get(`${API_BASE_URL}/wishlist/infinite`, {
+                params: {
+                    lastWishlistId: lastId ?? Number.MAX_SAFE_INTEGER,
+                    size: SIZE,
+                },
+                withCredentials: true,
+            })
+            
+            const newWishList = res.data.data
+
+            if (newWishList.length < SIZE) {
+                setInfiniteWishHasMore(false)
+            }
+
+            setInfiniteWishList(prev => [...prev, ...newWishList])
+
+            if (newWishList.length > 0) {
+                setInfiniteWishLastId(newWishList[newWishList.length - 1].wishlistId)
+            }
+        } catch (error) {
+            console.error('위시리스트 로드 실패:', error)
+        } finally {
+            setInfiniteWishLoading(false)
+        }
+    }
+
+    const resetInfiniteWishList = () => {
+        setInfiniteWishList([])
+        setInfiniteWishHasMore(true)
+        setInfiniteWishLastId(null)
+    }
+
+    const fetchInfiniteCart = async (lastId: number | null) => {
+        setInfiniteCartLoading(true)
+        try {
+            const res = await axios.get(`${API_BASE_URL}/cart/infinite`, {
+                params: {
+                    lastCartId: lastId ?? Number.MAX_SAFE_INTEGER,
+                    size: SIZE,
+                },
+                withCredentials: true,
+            })
+            
+            const newCart = res.data.data
+
+            if (newCart.length < SIZE) {
+                setInfiniteCartHasMore(false)
+            }
+
+            setInfiniteCart(prev => [...prev, ...newCart])
+
+            if (newCart.length > 0) {
+                setInfiniteCartLastId(newCart[newCart.length - 1].cartId)
+            }
+        } catch (error) {
+            console.error('장바구니 로드 실패:', error)
+        } finally {
+            setInfiniteCartLoading(false)
+        }
+    }
+
+    const resetInfiniteCart = () => {
+        setInfiniteCart([])
+        setInfiniteCartHasMore(true)
+        setInfiniteCartLastId(null)
+    }
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY
+            const viewportHeight = window.innerHeight
+            const fullHeight = document.documentElement.scrollHeight
+
+            if (scrollTop + viewportHeight >= fullHeight - 50) {
+                // 탭에 따라 다른 fetch 함수 실행
+                if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
+                    fetchInfiniteOrders(infiniteOrdersLastId)
+                } else if (activeTab === 'like' && activeSubTab === 'product' && !infiniteWishLoading && infiniteWishHasMore) {
+                    fetchInfiniteWishList(infiniteWishLastId)
+                } else if (activeTab === 'cart' && !infiniteCartLoading && infiniteCartHasMore) {
+                    fetchInfiniteCart(infiniteCartLastId)
+                }
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll)
+        window.addEventListener('touchmove', handleScroll)
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            window.removeEventListener('touchmove', handleScroll)
+        }
+    }, [
+        activeTab, 
+        activeSubTab,
+        infiniteOrdersLoading, 
+        infiniteOrdersHasMore, 
+        infiniteOrdersLastId,
+        infiniteWishLoading,
+        infiniteWishHasMore,
+        infiniteWishLastId,
+        infiniteCartLoading,
+        infiniteCartHasMore,
+        infiniteCartLastId
+    ])
+
+    useEffect(() => {
+        if (activeTab === 'orders' && infiniteOrders.length === 0) {
+            resetInfiniteOrders()
+            fetchInfiniteOrders(null)
+        } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
+            resetInfiniteWishList()
+            fetchInfiniteWishList(null)
+        } else if (activeTab === 'cart' && infiniteCart.length === 0) {
+            resetInfiniteCart()
+            fetchInfiniteCart(null)
+        }
+    }, [activeTab, activeSubTab])
 
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
@@ -1319,7 +1508,7 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송준비중</p>
-                                    <p>{orders.filter((o) => 
+                                    <p>{infiniteOrders.filter((o) => 
                                         o.deliveryStatus?.replace(/\s/g, '') === '배송준비중'
                                     ).length}</p>
                                 </div>
@@ -1333,7 +1522,7 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송중</p>
-                                    <p>{orders.filter((o) => 
+                                    <p>{infiniteOrders.filter((o) => 
                                         o.deliveryStatus?.replace(/\s/g, '') === '배송중'
                                     ).length}</p>
                                 </div>
@@ -1347,7 +1536,7 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송완료</p>
-                                    <p>{orders.filter((o) => 
+                                    <p>{infiniteOrders.filter((o) => 
                                         o.deliveryStatus?.replace(/\s/g, '') === '배송완료' &&
                                         isWithinSevenDays(o.completedAt)
                                     ).length}</p>
@@ -1356,167 +1545,145 @@ export default function MyPage() {
 
                             {/* ================= 주문 내역 ================= */}
                             <div className="section-header">
-                            <h2>주문 내역</h2>
+                                <h2>주문 내역</h2>
                             </div>
 
-                            {orders.length === 0 ? (
-                            <p>주문 내역이 없습니다.</p>
+                            {infiniteOrders.length === 0 ? (
+                                <p>주문 내역이 없습니다.</p>
                             ) : (
-                            orders.map((order) => (
-                                <div
-                                key={order.orderId}
-                                className="order-card"
-                                >
-                                {/* 주문 요약 (클릭해서 아코디언 열기) */}
-                                <div
-                                    className="order-header"
-                                    onClick={() => toggleOrder(order.orderId)}
-                                >
-                                    <div className='order-title'>
-                                        <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
-                                        <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
-                                    </div>
-                                    <div className='order-img'>
-                                        {(order.items || []).slice(0, 4).map((item, idx) => (
-                                            <img
-                                                key={idx}
-                                                src={item.imageUrl || '/default-product.png'}
-                                                alt={item.productName}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
+                                infiniteOrders.map((order) => (
+                                    <div
+                                        key={order.orderId}
+                                        className="order-card"
+                                    >
+                                        {/* 주문 요약 (클릭해서 아코디언 열기) */}
+                                        <div
+                                            className="order-header"
+                                            onClick={() => toggleOrder(order.orderId)}
+                                        >
+                                            <div className='order-title'>
+                                                <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
+                                                <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
+                                            </div>
+                                            <div className='order-img'>
+                                                {(order.items || []).slice(0, 4).map((item, idx) => (
+                                                    <img
+                                                        key={idx}
+                                                        src={item.imageUrl || '/default-product.png'}
+                                                        alt={item.productName}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
 
-                                {/* 아코디언 상세 영역 */}
-                                {openOrderId === order.orderId && (
-                                    <div className="order-accordion">
+                                        {/* 아코디언 상세 영역 */}
+                                        {openOrderId === order.orderId && (
+                                            <div className="order-accordion">
 
-                                        {/* 상품 내역 */}
-                                        <h3>상품 내역</h3>
-                                        {(order.items || []).map((item: any, idx: any) => (
-                                            <div key={`${item.orderItemId}-${idx}`} className="order-item">
-                                                {/* 상품 이미지 */}
-                                                {/* <div className='order-img'>
-                                                    {item.imageUrl && (
-                                                        <img
-                                                            src={item.imageUrl}
-                                                            alt={item.productName}
-                                                            className="order-item-img"
-                                                        />
+                                                {/* 상품 내역 */}
+                                                <h3>상품 내역</h3>
+                                                {(order.items || []).map((item: any, idx: any) => (
+                                                    <div key={`${item.orderItemId}-${idx}`} className="order-item">
+                                                        <div className="order-item-text">
+                                                            <p className="order-item-name">{item.productName}</p>
+                                                            <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                {/* 주문 상세 정보 */}
+                                                <div className="order-info">
+                                                    <p>주문일자: {order.createdDate}</p>
+                                                    <p>주문번호: {order.orderCode}</p>
+                                                    <p>배송상태: {order.deliveryStatus}</p>
+
+                                                    {order.deliveries?.length > 0 && (() => {
+                                                        const d = order.deliveries[0]
+                                                        return (
+                                                            <>
+                                                                <p>운송장번호: {d.trackingNumber || '없음'}</p>
+                                                                <p>수령인: {d.recipientName || '정보 없음'}</p>
+                                                                <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
+                                                                <p>우편번호: {d.zipcode || ''}</p>
+                                                            </>
+                                                        )
+                                                    })()}
+
+                                                    {order.deliveryStatus === '배송완료' && order.completedAt && (
+                                                        <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
                                                     )}
-                                                    {(order.items || []).slice(0, 4).map((item, idx) => (
-                                                        <img
-                                                            key={idx}
-                                                            src={item.imageUrl 
-                                                                ? `http://localhost:8090${item.imageUrl}` 
-                                                                : '/default-product.png'}
-                                                            alt={item.productName}
-                                                            // onError={(e) => {
-                                                            //     e.currentTarget.src = '/default-product.png'
-                                                            // }}
-                                                        />
-                                                    ))}
-                                                </div> */}
-                                                <div className="order-item-text">
-                                                <p className="order-item-name">{item.productName}</p>
-                                                <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
+                                                </div>
+
+                                                {/* 버튼 영역 */}
+                                                <div className="order-actions" style={{ marginTop: 15 }}>
+                                                    {order.deliveryStatus === "배송준비중" && (
+                                                        <div
+                                                            className="btn-primary"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                openReasonModal(
+                                                                    "주문 취소 사유",
+                                                                    (reason: any) => handleCancelOrder(order.orderId, reason)
+                                                                )
+                                                            }}
+                                                        >
+                                                            주문 취소
+                                                        </div>
+                                                    )}
+
+                                                    {order.deliveryStatus === "배송완료" &&
+                                                        isWithinSevenDays(order.completedAt) && (
+                                                            <>
+                                                                <div
+                                                                    className="btn-primary"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        openReasonModal("반품 사유", (reason: any) =>
+                                                                            handleReturnOrder(order.orderId, reason)
+                                                                        )
+                                                                    }}
+                                                                >
+                                                                    반품 신청
+                                                                </div>
+
+                                                                <div
+                                                                    className="btn-primary"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        openReasonModal("교환 사유", (reason: any) =>
+                                                                            handleExchangeOrder(order.orderId, reason)
+                                                                        )
+                                                                    }}
+                                                                >
+                                                                    교환 신청
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                </div>
+
+                                                <div className="order-actions" style={{ marginTop: 15 }}>
+                                                    <button
+                                                        className="link-btn delete"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            handleDeleteOrder(order.orderId)
+                                                        }}
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                </div>
+
+                                                {/* 아코디언 하단 금액 */}
+                                                <div className="order-footer">
+                                                    <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
                                                 </div>
                                             </div>
-                                        ))}
-
-                                        {/* 주문 상세 정보 */}
-                                        <div className="order-info">
-                                            <p>주문일자: {order.createdDate}</p>
-                                            <p>주문번호: {order.orderCode}</p>
-                                            <p>배송상태: {order.deliveryStatus}</p>
-
-                                            {order.deliveries?.length > 0 && (() => {
-                                            const d = order.deliveries[0]
-                                            return (
-                                                <>
-                                                <p>운송장번호: {d.trackingNumber || '없음'}</p>
-                                                <p>수령인: {d.recipientName || '정보 없음'}</p>
-                                                <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
-                                                <p>우편번호: {d.zipcode || ''}</p>
-                                                </>
-                                            )
-                                            })()}
-
-                                            {order.deliveryStatus === '배송완료' && order.completedAt && (
-                                            <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
-                                            )}
-                                        </div>
-
-                                        {/* 버튼 영역 */}
-                                        <div className="order-actions" style={{ marginTop: 15 }}>
-                                            {order.deliveryStatus === "배송준비중" && (
-                                            <div
-                                                className="btn-primary"
-                                                onClick={(e) => {
-                                                e.stopPropagation()
-                                                openReasonModal(
-                                                    "주문 취소 사유",
-                                                    (reason: any) => handleCancelOrder(order.orderId, reason)
-                                                )
-                                                }}
-                                            >
-                                                주문 취소
-                                            </div>
-                                            )}
-
-                                            {order.deliveryStatus === "배송완료" &&
-                                            isWithinSevenDays(order.completedAt) && (
-                                                <>
-                                                <div
-                                                    className="btn-primary"
-                                                    onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    openReasonModal("반품 사유", (reason: any) =>
-                                                        handleReturnOrder(order.orderId, reason)
-                                                    )
-                                                    }}
-                                                >
-                                                    반품 신청
-                                                </div>
-
-                                                <div
-                                                    className="btn-primary"
-                                                    onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    openReasonModal("교환 사유", (reason: any) =>
-                                                        handleExchangeOrder(order.orderId, reason)
-                                                    )
-                                                    }}
-                                                >
-                                                    교환 신청
-                                                </div>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        <div className="order-actions" style={{ marginTop: 15 }}>
-                                            <button
-                                                className="link-btn delete"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleDeleteOrder(order.orderId)
-                                                }}
-                                            >
-                                                삭제
-                                            </button>
-                                        </div>
-
-                                        {/* 아코디언 하단 금액 */}
-                                        <div className="order-footer">
-                                            <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
-                                        </div>
+                                        )}
                                     </div>
-                                )}
-                                </div>
-                            ))
+                                ))
                             )}
-                            {postLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!hasMore && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
+                            {infiniteOrdersLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
+                            {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
                         </div>
                     )}
 
@@ -1629,7 +1796,7 @@ export default function MyPage() {
                                 <h2>장바구니</h2>
                             </div>
 
-                            {cart.length === 0 ? (
+                            {infiniteCart.length === 0 ? (
                                 <div className="empty-state">
                                     <div className="empty-state-icon">🛒</div>
                                     <p>장바구니에 담은 상품이 없습니다.</p>
@@ -1645,7 +1812,7 @@ export default function MyPage() {
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={selectedItems.length === cart.length && cart.length > 0}
+                                                    checked={selectedItems.length === infiniteCart.length && infiniteCart.length > 0}
                                                     onChange={handleToggleSelectAll}
                                                 />
                                                 전체 선택
@@ -1665,7 +1832,7 @@ export default function MyPage() {
 
                                     {/* 장바구니 목록 */}
                                     <div className="cart-list">
-                                        {cart.map((item) => (
+                                        {infiniteCart.map((item) => (
                                             <div key={item.cartId} className="cart-product">
                                                 <div className="cart-checkbox">
                                                     <input
@@ -1735,7 +1902,7 @@ export default function MyPage() {
                                                 <span className="summary-value">
                                                     {selectedItems.length === 0
                                                         ? 0
-                                                        : cart
+                                                        : infiniteCart
                                                             .filter(item => selectedItems.includes(item.cartId))
                                                             .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
                                                             .toLocaleString()}원
@@ -1750,7 +1917,7 @@ export default function MyPage() {
                                                 <span className="summary-value">
                                                     {selectedItems.length === 0
                                                         ? 0
-                                                        : cart
+                                                        : infiniteCart
                                                             .filter(item => selectedItems.includes(item.cartId))
                                                             .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
                                                             .toLocaleString()}원
@@ -1767,6 +1934,8 @@ export default function MyPage() {
                                     </div>
                                 </>
                             )}
+                            {infiniteCartLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
+                            {!infiniteCartHasMore && infiniteCart.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
                         </div>
                     )}
 
@@ -2032,11 +2201,11 @@ export default function MyPage() {
 
                             {activeSubTab === 'product' && (
                                 <div className="subtab-content">
-                                    {wishList.length === 0 ? (
+                                    {infiniteWishList.length === 0 ? (
                                         <div className="empty-state">좋아요한 상품이 없습니다.</div>
                                     ) : (
                                         <div className="wishlist-grid">
-                                            {wishList.map((item) => (
+                                            {infiniteWishList.map((item) => (
                                                 <div key={item.wishlistId} className="wishlist-item">
                                                     <div className="wishlist-image">
                                                         {item.imageUrl ? (
@@ -2064,6 +2233,8 @@ export default function MyPage() {
                                             ))}
                                         </div>
                                     )}
+                                    {infiniteWishLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
+                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
                                 </div>
                             )}
 
