@@ -231,10 +231,7 @@ export default function Main() {
                     </ul>
                 </div>
             </section>
-            <section>
             <ReviewRank />
-
-            </section>
         </>
     )
 }

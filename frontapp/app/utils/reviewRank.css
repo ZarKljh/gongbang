@@ -1,16 +1,13 @@
 /* 컨테이너 */
 .review-rank-container {
   max-width: 1280px;
-  margin: 50px auto;
-  margin-top: 150px;
+  margin: 150px auto 50px;
   padding: 0 20px;
+  position: relative;
 }
 
-/* 섹션 헤더 */
+/* 헤더 */
 .review-rank-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-weight: 800;
   font-size: 26px;
   margin-bottom: 8px;
@@ -23,26 +20,39 @@
   margin-bottom: 20px;
 }
 
-/* 카드 리스트 */
-.review-rank-list {
-  display: grid;
-   grid-template-columns: repeat(4, 1fr);
-   grid-template-columns: repeat(4, minmax(clamp(200px, 25vw, 300px), 1fr));
-  gap: 20px;
+/* ============================= Swiper ============================= */
+.review-rank-swiper {
+  width: 100%;
   overflow: hidden;
-  /* padding-bottom: 10px; */
+  padding: 15px 0 40px;
 }
 
-/* 카드 */
+/* flex 방향이 세로로 잡히는 것을 100% 차단 */
+.review-rank-swiper .swiper-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+/* 슬라이드는 가로로 4개씩 정렬됨 */
+.review-rank-swiper .swiper-slide {
+  /* width: auto !important;  */
+   width: calc((100% - 60px) / 4);
+  display: flex;
+  justify-content: center;
+  /* align-items: flex-start; */
+  /* flex-direction: row; */
+  flex-shrink: 0;
+}
+
+/* ============================= 카드 ============================= */
 .review-rank-card {
-    /* flex: 0 0 calc((100% - 60px) / 4);
-  min-width: 300px; */
-  /* border-radius: 10px; */
-  overflow: hidden;
-  cursor: pointer;
+  width: 100%;
   background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
   transition: 0.2s ease;
-  border: 1px solid rgb(229, 229, 229);
+  display: block !important; /* flex column 되는 것 방지 */
 }
 
 .review-rank-card:hover {
@@ -50,47 +60,15 @@
 }
 
 /* 이미지 영역 */
-.review-rank-card img {
-  width: 100%;
-  height: 250px;
-  object-fit: cover;
-  /* border-bottom: 1px solid #f1f1f1; */
-}
-
-/* 내용 */
-.review-rank-card-body {
-  padding: 14px;
-
-}
-
-.review-rank-price-old {
-  font-size: 14px;
-  color: #9c9c9c;
-  text-decoration: line-through;
-}
-
-.review-rank-discount {
-  color: #ff3f6c;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-/* === 리뷰용 이미지 빈 공간 === */
 .review-rank-image-wrapper {
   width: 100%;
   height: 250px;
+  background: #fafafa;
   border-radius: 8px;
-  /* border: 1px solid #e8e8e8; */
-  background: #f8f8f8;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-p {
-  margin: 0;
 }
 
 .review-rank-image-wrapper img {
@@ -99,43 +77,73 @@ p {
   object-fit: cover;
 }
 
-.review-rank-image-placeholder {
-  color: #999;
-  font-size: 16px;
-}
-
-/* 상품명 */
+/* 텍스트 */
 .review-rank-title {
   font-size: 15px;
   font-weight: 600;
   color: #8a7661;
-  margin-bottom: 4px;
+  margin: 10px;
 }
 
-/* 별점 + 리뷰수 */
-.review-rank-rating {
-  font-size: 14px;
-  color: #777;
-
-}
-
-/* 가격 */
 .review-rank-price {
   font-size: 16px;
   font-weight: 700;
   color: #8a7661;
-    margin-bottom: 6px;
+  margin: 0 10px 6px;
 }
 
-@media (max-width: 1023px) {
-  .review-rank-list {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-columns: 1fr;
-  }
+.review-rank-rating {
+  font-size: 14px;
+  color: #777;
+  margin: 0 10px 16px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 
-@media (max-width: 600px) {
+/* ============================= 커스텀 화살표 ============================= */
+.review-rank-prev,
+.review-rank-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.review-rank-prev { left: 10px; }
+.review-rank-next { right: 10px; }
+
+.review-rank-prev:hover,
+.review-rank-next:hover {
+  transform: translateY(-50%) scale(1.1);
+  background: #f1f1f1;
+}
+
+/* 반응형 */
+
+@media (max-width: 992px) {
   .review-rank-card {
-    flex: 0 0 calc((100% - 40px) / 3); /* 3개 유지 */
+    width: 220px !important;
   }
 }
+
+/* @media (max-width: 768px) {
+  .review-rank-card {
+    width: 180px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .review-rank-card {
+    width: 150px !important;
+  }
+} */
