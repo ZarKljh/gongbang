@@ -121,7 +121,8 @@ export default function ProductListTab(props: MainContentProps) {
 
     const moveToEditPage = (id: number) => {
         if (!isAuthenticated) return requireAuth()
-        window.location.href = `/product/edit/${id}`
+        onTabClick('productModify')
+        onEdit('productModify', id)
     }
 
     // ======================= 페이지 이동 =======================
@@ -412,7 +413,16 @@ export default function ProductListTab(props: MainContentProps) {
                                 <td>{item.product.active ? 'ON' : 'OFF'}</td>
                                 <td>{item.product.status}</td>
                                 <td>
-                                    <button onClick={() => moveToEditPage(item.product.id)}>수정</button>
+                                    <button
+                                        onClick={() => {
+                                            onTempChange?.('productId', item.product.id)
+                                            setSelectedProductId(item.product.id)
+                                            onTabClick?.('productModify')
+                                            onEdit?.('productModify')
+                                        }}
+                                    >
+                                        수정
+                                    </button>
                                     <button onClick={() => handleDelete(item.product.id)}>삭제</button>
                                 </td>
                             </tr>

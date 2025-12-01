@@ -88,4 +88,7 @@ export interface MainContentProps {
 
     onProductImageChange?: (type: 'PRODUCT_MAIN' | 'PRODUCT', files: File | File[] | null) => void
     onTabClick?: (tab: string) => void
+
+    selectedProductId?: number | null
+    setSelectedProductId?: (id: number | null) => void
 }

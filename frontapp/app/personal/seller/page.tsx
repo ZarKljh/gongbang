@@ -76,6 +76,8 @@ export default function MyPage() {
         PRODUCT: [] as File[],
     })
 
+    const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
+
     // ======= 초기 로딩 =======
     useEffect(() => {
         const init = async () => {
@@ -234,6 +236,42 @@ export default function MyPage() {
             setGlobalSubcategoryOptions(subcategories)
         } catch (error) {
             console.error('전역 카테고리 조회 실패', error)
+        }
+    }
+
+    const fetchProductDetail = async (productId: number) => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/studio/product/${productId}`, {
+                withCredentials: true,
+            })
+
+            const p = res.data.data
+
+            setTempData({
+                productId: p.id,
+                name: p.name,
+                slug: p.slug,
+                subtitle: p.subtitle,
+                basePrice: p.basePrice,
+                stockQuantity: p.stockQuantity,
+                backorderable: String(p.backorderable),
+                active: String(p.active),
+                status: p.status,
+                categoryId: p.categoryId,
+                subcategoryId: p.subcategoryId,
+
+                // 기존 이미지 URL
+                productMainImageUrl: p.mainImageUrl,
+                productGalleryImageUrls: p.galleryImages.map((g: any) => g.imageUrl),
+                productGalleryImageNames: p.galleryImages.map((g: any) => g.imageFileName),
+            })
+
+            setProductImages({
+                PRODUCT_MAIN: null,
+                PRODUCT: [],
+            })
+        } catch (err) {
+            console.error('상품 상세 조회 실패:', err)
         }
     }
 
@@ -446,6 +484,13 @@ export default function MyPage() {
         }
         if (section === 'productAdd') {
             setTempData({})
+        }
+        if (section === 'productModify') {
+            setEditMode((prev) => ({ ...prev, productModify: true }))
+            fetchProductDetail(selectedProductId!)
+            fetchGlobalCategories()
+            setActiveTab('productModify')
+            return
         }
     }
 
@@ -664,6 +709,82 @@ export default function MyPage() {
 
                 // 상품 목록 갱신
                 fetchStudioProducts(studio.studioId, 0)
+            } else if (section === 'productModify') {
+                if (!studio?.studioId) {
+                    alert('공방 정보가 없습니다.')
+                    return
+                }
+
+                if (!tempData.productId) {
+                    alert('상품 ID가 없습니다.')
+                    return
+                }
+
+                const requestJson = {
+                    productId: tempData.productId, // ⭐ Modify 필수
+                    studioId: studio.studioId,
+                    name: tempData.name,
+                    slug: tempData.slug,
+                    categoryId: tempData.categoryId,
+                    subcategoryId: tempData.subcategoryId || null,
+                    subtitle: tempData.subtitle || '',
+                    basePrice: Number(tempData.basePrice || 0),
+                    stockQuantity: Number(tempData.stockQuantity || 0),
+                    backorderable: tempData.backorderable === 'true',
+                    active: tempData.active === 'true',
+                    status: tempData.status,
+
+                    // ⭐ 기존 이미지 이름 유지
+                    productMainImageName: productImages.PRODUCT_MAIN?.name || tempData.productMainImageName || '',
+
+                    productGalleryImageNames: [
+                        ...(tempData.productGalleryImageNames || []),
+                        ...productImages.PRODUCT.map((f) => f.name),
+                    ],
+                }
+
+                const form = new FormData()
+                form.append('request', new Blob([JSON.stringify(requestJson)], { type: 'application/json' }))
+
+                // 새 대표 이미지만 업로드
+                if (productImages.PRODUCT_MAIN) {
+                    form.append('productMainImage', productImages.PRODUCT_MAIN)
+                }
+
+                // 새 갤러리 이미지 업로드
+                if (productImages.PRODUCT.length > 0) {
+                    productImages.PRODUCT.forEach((f) => form.append('productGalleryImages', f))
+                }
+
+                const res = await axios.patch(`${API_BASE_URL}/studio/product/${tempData.productId}`, form, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true,
+                })
+
+                if (res.data.resultCode !== '200') {
+                    alert('상품 수정 실패')
+                    return
+                }
+
+                alert('상품이 성공적으로 수정되었습니다.')
+
+                // 초기화
+                setProductImages({
+                    PRODUCT_MAIN: null,
+                    PRODUCT: [],
+                })
+
+                setTempData({})
+
+                // ⭐ 수정 모드 종료
+                setEditMode((prev) => ({ ...prev, productModify: false }))
+                setSelectedProductId(null)
+
+                // ⭐ Product List로 돌아가기
+                onTabClick?.('productList')
+
+                // ⭐ 목록 다시 불러오기
+                fetchStudioProducts(studio.studioId, 0)
             }
         } catch (err) {
             console.error('저장 실패:', err)
@@ -695,6 +816,11 @@ export default function MyPage() {
                 PRODUCT_MAIN: null,
                 PRODUCT: [],
             })
+        }
+        if (section === 'productModify') {
+            setEditMode((prev) => ({ ...prev, productModify: false }))
+            setTempData({})
+            setProductImages({ PRODUCT_MAIN: null, PRODUCT: [] })
         }
     }
 
@@ -786,6 +912,8 @@ export default function MyPage() {
                 globalSubcategoryOptions={globalSubcategoryOptions}
                 productImages={productImages}
                 onProductImageChange={handleProductImageChange}
+                selectedProductId={selectedProductId}
+                setSelectedProductId={setSelectedProductId}
             />
         </div>
     )
