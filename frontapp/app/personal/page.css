@@ -538,10 +538,13 @@ body {
 .wishlist-image {
     aspect-ratio: 1;
     background: #f3f4f6;
+    border-radius: 8px;
 }
 
 .wishlist-info {
     padding: 16px;
+    background: #fff;
+    border-radius: 8px;
 }
 
 .wishlist-info p {
