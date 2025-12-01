@@ -336,134 +336,69 @@
 .modalOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
     z-index: 9999;
 }
 
-/* === 모달 박스 === */
-.modal {
+.modalContainer {
     width: 100%;
-    max-width: 480px;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 20px 20px 24px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-width: 520px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px 20px 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
     box-sizing: border-box;
 }
 
-/* === 헤더 영역 (타이틀 + 닫기버튼) === */
+/* 헤더 – 제목 왼쪽, 닫기 버튼 오른쪽 */
 .modalHeader {
     display: flex;
-    justify-content: flex-end; /* 🔥 버튼을 오른쪽 끝으로 정렬 */
-    padding: 12px 16px 4px;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 12px;
 }
 
 .modalTitle {
-    margin: 0;
     font-size: 18px;
     font-weight: 600;
+    margin: 0;
 }
 
-/* 닫기 버튼 */
 .modalCloseBtn {
-    background: transparent;
     border: none;
-    font-size: 22px;
+    background: none;
+    font-size: 20px;
     cursor: pointer;
-
-    /* 🔥 기본 상태 */
-    color: #111;
-    padding: 6px;
-    border-radius: 8px;
-
-    transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+    line-height: 1;
 }
 
-/* 🔥 hover 강조 */
-.modalCloseBtn:hover {
-    color: #111;
-    background: rgba(0, 0, 0, 0.05);
-    transform: scale(1.05);
+/* 한 섹션 카드 */
+.modalSection {
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: #faf6f1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
-/* 🔥 클릭(액티브) 강조 */
-.modalCloseBtn:active {
-    background: rgba(0, 0, 0, 0.1);
-    transform: scale(0.93);
-}
-
-/* 🔥 포커스(접근성 향상) */
-.modalCloseBtn:focus-visible {
-    outline: 2px solid #6a4df5; /* 브랜드 포인트 컬러 */
-    outline-offset: 4px;
-}
-
-/* === 결제 위젯 영역 === */
-.paymentBody {
-    margin-top: 8px;
-    border-radius: 12px;
-}
-
-.paymentMethods {
-    /* 필요하면 여기에 여백, 배경 등 추가 가능 */
-    border-radius: 12px;
-}
-
-.paymentAgreement {
-    margin-top: 16px;
-}
-
-/* === 결제 버튼 === */
-.paymentSubmitBtn {
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px 0;
-    border-radius: 999px;
-    border: none;
-    background: #0064ff;
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s ease, transform 0.05s ease;
-}
-
-.paymentSubmitBtn:hover:not(:disabled) {
-    opacity: 0.95;
-    transform: translateY(-1px);
-}
-
-.paymentSubmitBtn:disabled {
-    cursor: default;
-    opacity: 0.6;
-}
-
-/* 상품 요약 박스 */
+/* 상품 요약 레이아웃 */
 .modalProductSummary {
     display: flex;
-    gap: 12px;
-    padding: 12px 14px;
-    margin-bottom: 16px;
-    border-radius: 12px;
-    background: #faf7fb; /* 살짝 보랏빛/크림톤 */
-    border: 1px solid #efe7fb;
+    gap: 14px;
+    align-items: flex-start;
 }
 
 .summaryThumb {
-    width: 64px;
-    height: 64px;
-    border-radius: 10px;
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
     overflow: hidden;
+    background: #eee;
     flex-shrink: 0;
-    background: #f3f3f3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .summaryThumb img {
@@ -482,79 +417,116 @@
 .summaryTitle {
     font-size: 15px;
     font-weight: 600;
-    color: #333;
 }
 
 .summaryDesc {
-    font-size: 12px;
+    font-size: 13px;
     color: #777;
-    max-height: 34px;
-    line-height: 1.3;
+    max-height: 40px;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
 }
 
+/* 수량/금액 줄 */
 .summaryRow {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     margin-top: 2px;
     font-size: 13px;
 }
 
 .summaryLabel {
-    color: #777;
+    color: #666;
 }
 
 .summaryValue {
     font-weight: 500;
-    color: #444;
 }
 
 .summaryTotal {
     font-weight: 700;
-    color: #5b3fe6; /* 포인트 컬러 */
     font-size: 14px;
 }
 
+/* 상품 요약과 위젯 사이 구분선 */
+.sectionDivider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* 토스 위젯 박스 */
 .paymentBox {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-    background: #faf9fe;
-    border: 1px solid #ece8fb;
-    border-radius: 16px;
+    gap: 8px;
+}
+
+.paymentMethods {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.paymentAgreement {
+    margin-top: 4px;
+}
+
+/* 푸터 */
+.modalFooter {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.paymentSubmitBtn {
+    width: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 11px 0;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #282633;
+    color: #fff;
+}
+
+.paymentSubmitBtn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* 결제 상태 텍스트 – 오른쪽 정렬 + 강조 */
+.paymentStatus {
+    font-size: 13px;
+    text-align: right; /* 👉 오른쪽 정렬 */
+    margin: 0;
+}
+
+.paymentStatusSuccess {
+    color: #1a7f37; /* 초록 */
+    font-weight: 600;
+}
+
+.paymentStatusFail {
+    color: #d93025; /* 빨강 */
+    font-weight: 600;
+}
+
+/* 모바일 대응 */
+@media (max-width: 480px) {
+    .modalContainer {
+        max-width: calc(100% - 24px);
+        padding: 16px 14px 14px;
+    }
+
+    .modalSection {
+        padding: 12px 12px;
+    }
+
+    .summaryThumb {
+        width: 64px;
+        height: 64px;
+    }
 }
 /* --------------------------------------------------------- */
-/* 결제 수단 박스 */
-.paymentMethods {
-    background: #ffffff;
-    border: 1px solid #e8e6f3;
-    border-radius: 12px;
-    padding: 14px 12px;
-    box-shadow: 0 2px 4px rgba(112, 96, 184, 0.08);
-}
-
-/* 약관 박스 */
-.paymentAgreement {
-    background: #ffffff;
-    border: 1px solid #e8e6f3;
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 2px 4px rgba(112, 96, 184, 0.05);
-}
-
-/* 토스 위젯 내부 요소 정리 */
-.paymentMethods * {
-    font-family: inherit;
-    color: #333 !important;
-}
-
-.paymentAgreement * {
-    font-family: inherit;
-    color: #555 !important;
-}
