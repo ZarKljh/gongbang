@@ -45,6 +45,19 @@ public class Orders {
     @Column(name = "reason")
     private String reason;
 
+    //hj - 결제이력 정보 컬럼추가
+    @Column(name = "payment_key")
+    private String paymentKey;
+
+    @Column(name = "payment_method_name")
+    private String paymentMethodName;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+    //--결제이력 정보 컬럼추가--
+
+
+    //hj- 결제api추가하고 보니 안쓰게 될 것 같은데?.. 일단 보류할 것!
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
     private PaymentMethod paymentMethod;

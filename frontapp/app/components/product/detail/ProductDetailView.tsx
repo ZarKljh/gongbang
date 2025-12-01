@@ -10,6 +10,7 @@ import { queryClient } from '@/app/utils/ReactQueryProviders'
 // 토스페이먼츠
 import { loadPaymentWidget /*, ANONYMOUS*/ } from '@tosspayments/payment-widget-sdk'
 import { v4 as uuidv4 } from 'uuid'
+import { usePrepareOrder } from '@/app/utils/api/order'
 
 type ProductDetail = {
     id: number
@@ -278,6 +279,9 @@ export default function ProductDetailView() {
         }
     }
 
+    // React Query mutation 훅
+    const { mutateAsync: prepareOrderMutation } = usePrepareOrder()
+
     const handleRequestPayment = async () => {
         console.log('🧾 결제 버튼 클릭, paymentWidget:', paymentWidget)
         if (!paymentWidget || !product) {
@@ -286,6 +290,12 @@ export default function ProductDetailView() {
         }
 
         try {
+            // 1️⃣ 먼저 서버에 임시 주문 생성 요청
+            const prepare = await prepareOrderMutation({
+                productId: product.id,
+                quantity: count,
+            })
+
             await paymentWidget.requestPayment({
                 amount: total, // 🔥 총 금액 (수량 반영)
                 orderId: 'order_' + uuidv4(),
@@ -380,7 +390,7 @@ export default function ProductDetailView() {
                                                 followMutation.mutate(sellerinfo.studioId)
                                             }}
                                         >
-                                            {isFollowed ? '팔로잉' : '+ 팔로우'}
+                                            {isFollowed ? '언팔로우' : '+ 팔로우'}
                                         </button>
                                         <Link href={`/seller/studio/${sellerinfo.studioId}`} className={styles.btnHome}>
                                             작가홈
@@ -401,7 +411,6 @@ export default function ProductDetailView() {
                             바로구매하기
                         </button>
 
-                        {/* 결제 모달 */}
                         {/* 결제 모달 */}
                         {isModalOpen && (
                             <div className={styles.modalOverlay}>
