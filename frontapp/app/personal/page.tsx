@@ -205,7 +205,6 @@ export default function MyPage() {
     const fetchUser = async () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
-            console.log("USER DATA:", data.data)
             if (data.code === '401') {
                 window.location.href = '/auth/login'
                 return null
@@ -1499,8 +1498,11 @@ export default function MyPage() {
                                                 <img
                                                     src={
                                                         previewProfileImage ||
-                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : '/images/default_profile.jpg') // 서버 이미지
+                                                        stats.profileImageUrl || `http://localhost:8090${stats.profileImageUrl}` // 서버 이미지
                                                     }
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = "/images/default_profile.jpg"
+                                                    }}
                                                     alt="프로필 이미지"
                                                 />
                                         </div>

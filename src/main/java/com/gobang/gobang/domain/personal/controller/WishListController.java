@@ -65,4 +65,15 @@ public class WishListController {
         long count = wishListService.getUserWishCount(siteUser);
         return RsData.of("200", "사용자의 위시 개수 조회 성공", count);
     }
+
+    @GetMapping("/wishlist/infinite")
+    public RsData<List<WishListResponse>> getInfiniteWishlist(
+            @RequestParam(required = false) Long lastWishId,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        List<WishListResponse> list = wishListService.getInfiniteWishlist(user, lastWishId, size);
+        return RsData.of("200", "위시리스트 무한스크롤 조회 성공", list);
+    }
+
 }

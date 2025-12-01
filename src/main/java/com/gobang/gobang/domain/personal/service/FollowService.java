@@ -8,6 +8,8 @@ import com.gobang.gobang.domain.personal.dto.response.FollowResponse;
 import com.gobang.gobang.domain.personal.entity.Follow;
 import com.gobang.gobang.domain.personal.repository.FollowRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,5 +73,19 @@ public class FollowService {
     // 팔로잉 수 조회
     public long getFollowingCount(SiteUser siteUser) {
         return followRepository.countBySiteUser(siteUser);
+    }
+
+    public List<FollowResponse> getInfiniteFollowList(SiteUser user, Long lastFollowId, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        List<Follow> follows = followRepository.findInfiniteFollowList(
+                user.getId(),
+                lastFollowId,
+                pageable
+        );
+
+        return follows.stream()
+                .map(follow -> FollowResponse.from(follow, imageRepository))
+                .toList();
     }
 }
