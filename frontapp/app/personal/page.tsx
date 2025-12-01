@@ -242,12 +242,26 @@ export default function MyPage() {
 
     const fetchCart = async (id?: number) => {
         if (!id) return
+
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/cart`, {withCredentials: true,})
-            setCart(Array.isArray(data.data) ? data.data : data)
+            const { data } = await axios.get(`${API_BASE_URL}/cart`, {
+                withCredentials: true,
+            })
+
+            const list = Array.isArray(data.data) ? data.data : []
+
+            // 기존 cart 저장
+            setCart(list)
+
+            // 화면 렌더링용 infiniteCart에도 저장
+            setInfiniteCart(list)
+            setInfiniteCartLastId(list.length ? list[list.length - 1].cartId : null)
+            setInfiniteCartHasMore(false) // 장바구니는 일반적으로 페이징 안함
+
         } catch (error) {
             console.error('장바구니 목록 조회 실패:', error)
             setCart([])
+            setInfiniteCart([])
         }
     }
 
@@ -288,11 +302,19 @@ export default function MyPage() {
     const fetchWishList = async (id?: number) => {
         if (!id) return
         try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true, })
-            setWishList(Array.isArray(data.data) ? data.data : data)
+            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true })
+
+            const list = Array.isArray(data.data) ? data.data : []
+
+            setWishList(list)             // 기존 state
+            setInfiniteWishList(list)     // 화면 렌더링용
+            setInfiniteWishLastId(list.length ? list[list.length - 1].wishlistId : null)
+            setInfiniteWishHasMore(false) // 기본적으로 페이지가 없다고 처리
+
         } catch (error) {
             console.error('위시 목록 조회 실패:', error)
             setWishList([])
+            setInfiniteWishList([])
         }
     }
 
