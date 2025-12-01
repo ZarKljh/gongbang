@@ -644,6 +644,7 @@ export default function MyPage() {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
                 })
+                console.log('📌 상품 등록 응답 ', res.data)
 
                 if (res.data.resultCode !== '200') {
                     alert('상품 등록 실패')

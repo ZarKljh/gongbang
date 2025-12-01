@@ -11,10 +11,10 @@ public class ProductAddRequest {
     private Long studioId;
     private String name;
     private String slug;
-    private Long categornId;
+    private Long categoryId;
     private Long subcategoryId;
     private String subtitle;
-    private Integer basePrives;
+    private Integer basePrice;
     private Integer StockQuantity;
     private Boolean backorderable;
     private Boolean active;

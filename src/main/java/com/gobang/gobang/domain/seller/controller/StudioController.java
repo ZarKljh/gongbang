@@ -264,7 +264,7 @@ public class StudioController {
     }
 
     @PostMapping("/product/add")
-    public RsData<Map<String, Object>> addProduc(
+    public RsData<ProductAddResponse> addProduct(
             @RequestPart("request") ProductAddRequest request,
             @RequestPart(value = "productMainImage", required = false) MultipartFile productMainImage,
             @RequestPart(value = "productGalleryImages", required = false) List<MultipartFile> galleryImages
@@ -283,15 +283,16 @@ public class StudioController {
         }
 
         Product newProduct = studioService.productAdd(request, studio);
+
         if( productMainImage != null && !productMainImage.isEmpty()) {
             profileImageService.uploadProductImage(
-                    studio,
-                    seller,
+                    newProduct.getId(),
                     productMainImage,
                     Image.RefType.PRODUCT,
                     0
             );
         }
+        return RsData.of("200","신규상품이 등록되었습니다", new ProductAddResponse(newProduct));
 
     }
 

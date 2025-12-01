@@ -7,6 +7,7 @@ import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
 import com.gobang.gobang.domain.product.category.repository.SubCategoryRepository;
+import com.gobang.gobang.domain.product.common.ProductStatus;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
@@ -56,6 +57,7 @@ public class StudioService {
                 .filter(p -> matchesActive(p, filter))        // 판매 활성
                 .filter(p -> matchesStock(p, filter))         // 재고 여부
                 .filter(p -> matchesStatus(p, filter))        // 상태 필터
+                .sorted((p1, p2) -> Long.compare(p2.getId(), p1.getId()))
                 .toList();
 
         int start = (int) pageable.getOffset();
@@ -383,5 +385,28 @@ public class StudioService {
                 .sorted(Comparator.comparing(Subcategory::getDisplayOrder))
                 .map(GlobalSubcategoryDto::new)
                 .toList();
+    }
+
+    public Product productAdd(ProductAddRequest request, Studio studio) {
+        Subcategory subcategory = subCategoryRepository.findById(request.getSubcategoryId()).get();
+
+        Product newProduct = Product.builder()
+                .studioId(studio.getStudioId())
+                .themeId(1L)
+                .categoryId(request.getCategoryId())
+                .subcategory(subcategory)
+                .name(request.getName())
+                .slug(request.getSlug())
+                .subtitle(request.getSubtitle())
+                .basePrice(request.getBasePrice())
+                .stockQuantity(request.getStockQuantity())
+                .backorderable(request.getBackorderable())
+                .status(ProductStatus.DRAFT)
+                .active(request.getActive())
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        Product product = productRepository.save(newProduct);
+        return product;
     }
 }

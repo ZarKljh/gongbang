@@ -27,14 +27,6 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                         <li>
                             <button
-                                className={`nav-btn ${activeTab === 'studioAdd' ? 'active' : ''}`}
-                                onClick={() => onTabClick('studioAdd')}
-                            >
-                                신규 공방등록
-                            </button>
-                        </li>
-                        <li>
-                            <button
                                 className={`nav-btn ${activeTab === 'productList' ? 'active' : ''}`}
                                 onClick={() => onTabClick('productList')}
                             >
@@ -142,4 +134,13 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                     </ul>
                 </div>
+
+                <li>
+                            <button
+                                className={`nav-btn ${activeTab === 'studioAdd' ? 'active' : ''}`}
+                                onClick={() => onTabClick('studioAdd')}
+                            >
+                                신규 공방등록
+                            </button>
+                        </li>
 */
