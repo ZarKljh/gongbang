@@ -28,7 +28,7 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
 
     List<Inquiry> findByWriter_Id(Long writerId);
 
-    @Query("SELECT i FROM Inquiry i LEFT JOIN FETCH i.writer WHERE i.writer = :writer")
+    @Query("SELECT i FROM Inquiry i LEFT JOIN FETCH i.writer WHERE i.writer = :writer ORDER BY i.createdAt DESC")
     List<Inquiry> findAllByWriterWithFetchJoin(@Param("writer") SiteUser writer);
 
     Optional<Inquiry> findByIdAndWriter(Long id, SiteUser writer);
@@ -36,8 +36,6 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
     List<Inquiry> findByWriterAndAnswered(SiteUser writer, boolean answered);
 
     List<Inquiry> findByWriterAndType(SiteUser writer, InquiryType type);
-
-    List<Inquiry> findByWriterAndTypeAndAnswered(SiteUser writer, InquiryType type, boolean answered);
 
     long countByWriter_Id(Long writerId);
 }

@@ -14,5 +14,5 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     Optional<Image> findByRefTypeAndRefId(Image.RefType refType, Long refId);
 
     List<Image> findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType refType, Long refId);
-    void deleteByRefTypeAndRefId(Image.RefType refType, Long refId);
+    Optional<Image> findTopByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType refType, Long refId);
 }
