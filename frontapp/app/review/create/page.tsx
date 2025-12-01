@@ -188,6 +188,7 @@ export default function ReviewCreate() {
                         <DragDropContext onDragEnd={handleDragEnd}>
                             <Droppable droppableId="images" direction="horizontal">
                                 {(provided) => (
+                                    <>
                                     <div
                                         ref={provided.innerRef}
                                         {...provided.droppableProps}
@@ -237,9 +238,11 @@ export default function ReviewCreate() {
                                                 />
                                             </label>
                                         )}
-                                        <p className="review-image-guide">이미지를 등록해주세요.( 최대 5장 )</p>
+                                       
                                     </div>
-                                )}
+                                    <p className="review-image-guide">이미지를 등록해주세요.( 최대 5장 )</p>
+                                    </>
+                                )} 
                             </Droppable>
                         </DragDropContext>
                     </div>

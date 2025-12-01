@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class ReviewResponse {
 //    private final Review review;
 
+
     private Long reviewId;
     private String content;
     private Integer rating;
@@ -35,7 +36,11 @@ public class ReviewResponse {
     private final List<String> imageUrls;  // ✅ 이미지 포함
     private Long productId;
 
-    public static ReviewResponse fromEntity(Review review) {
+    private String profileImageUrl;
+
+
+    public static ReviewResponse fromEntity(Review review, String profileImageUrl) {
+
         // review.getImages()가 LAZY라면 트랜잭션 내에서 호출되어야 함
         List<String> imageUrls = review.getImages() != null
                 ? review.getImages().stream()
@@ -57,6 +62,7 @@ public class ReviewResponse {
                 .userNickName(review.getSiteUser().getNickName())
                 .userId(review.getSiteUser().getId())
                 .imageUrls(imageUrls)
+                .profileImageUrl(profileImageUrl)
                 .productId(review.getProductId())
                 .build();
     }

@@ -23,7 +23,8 @@ public class ReviewsResponse {
     public static ReviewsResponse fromPage(Page<Review> page) {
         List<ReviewResponse> reviewResponses = page.getContent()
                 .stream()
-                .map(ReviewResponse::fromEntity)
+//                .map(ReviewResponse::fromEntity)
+                .map(review -> ReviewResponse.fromEntity(review, review.getProfileImageUrl()))
                 .collect(Collectors.toList());
 
         return new ReviewsResponse(
