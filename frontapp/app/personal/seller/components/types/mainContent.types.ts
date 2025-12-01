@@ -78,4 +78,14 @@ export interface MainContentProps {
 
     categoryOptions?: string[]
     subcategoryOptions?: string[]
+    globalCategoryOptions?: string[]
+    globalSubcategoryOptions?: string[]
+
+    productImages?: {
+        PRODUCT_MAIN: File | null
+        PRODUCT: File[]
+    }
+
+    onProductImageChange?: (type: 'PRODUCT_MAIN' | 'PRODUCT', files: File | File[] | null) => void
+    onTabClick?: (tab: string) => void
 }

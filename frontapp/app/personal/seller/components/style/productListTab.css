@@ -216,3 +216,10 @@
 .product-list-tab > .pagination > button {
     padding: 6px 10px;
 }
+
+/* 필수 입력 항목용 빨간 별표 */
+.form-label.required::after {
+    content: ' *';
+    color: #dc2626; /* red-600 */
+    font-weight: 700;
+}

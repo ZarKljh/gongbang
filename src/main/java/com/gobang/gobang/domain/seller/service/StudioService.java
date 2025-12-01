@@ -11,10 +11,7 @@ import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.entity.Subcategory;
-import com.gobang.gobang.domain.seller.dto.CategoryTreeResponse;
-import com.gobang.gobang.domain.seller.dto.ProductFilterRequest;
-import com.gobang.gobang.domain.seller.dto.ProductListOfStudioResponse;
-import com.gobang.gobang.domain.seller.dto.StudioAddRequest;
+import com.gobang.gobang.domain.seller.dto.*;
 import com.gobang.gobang.domain.seller.model.StudioStatus;
 import com.gobang.gobang.domain.seller.repository.ProductOfStudioRepository;
 import jakarta.transaction.Transactional;
@@ -360,4 +357,31 @@ public class StudioService {
         return new CategoryTreeResponse(nodes);
     }
 
+    public List<GlobalCategoryDto> getAllCategories() {
+        List<Category> categoryList = categoryRepository.findAll();
+        /*
+        List<GlobalCategoryDto> gc = new ArrayList<>();
+
+        for(Category category : categoryList) {
+            GlobalCategoryDto dto = new GlobalCategoryDto(category);
+            gc.add(dto);
+        }
+        */
+
+        return categoryList.stream()
+                .filter(Category::getActive)
+                .sorted(Comparator.comparing(Category::getDisplayOrder))
+                .map(GlobalCategoryDto::new)
+                .toList();
+    }
+
+    public List<GlobalSubcategoryDto> getAllSubcategories() {
+        List<Subcategory> subcatoryList = subCategoryRepository.findAll();
+
+        return subcatoryList.stream()
+                .filter(Subcategory::getActive)
+                .sorted(Comparator.comparing(Subcategory::getDisplayOrder))
+                .map(GlobalSubcategoryDto::new)
+                .toList();
+    }
 }

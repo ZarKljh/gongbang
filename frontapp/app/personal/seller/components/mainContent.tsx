@@ -11,9 +11,9 @@ import QnaTab from './tabs/QnaTab'
 */
 import StudioTab from './tabs/studioTab'
 import ProfileTab from './tabs/profileTab'
-import StudioDescTab from './tabs/studioDescTab'
 import StudioAddTab from './tabs/studioAddTab'
 import ProductListTab from './tabs/productListTab'
+import AddProductTab from './tabs/addProductTab'
 /*
 interface MainContentProps {
     activeTab: string
@@ -89,6 +89,7 @@ export default function MainContent(props: MainContentProps) {
                 {activeTab === 'profile' && <ProfileTab {...props} />}
                 {activeTab === 'studioAdd' && <StudioAddTab {...props} />}
                 {activeTab === 'productList' && <ProductListTab {...props} />}
+                {activeTab === 'productAdd' && <AddProductTab {...props} />}
             </div>
         </div>
     )

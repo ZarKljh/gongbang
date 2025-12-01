@@ -33,6 +33,7 @@ public class StudioController {
     private final Rq rq;
     private final ProfileImageService profileImageService;
 
+
     @GetMapping("/{id}")
     public RsData<Map<String, Object>> getStudioAndStuidioList(@PathVariable("id") Long id){
         Studio studio = studioService.getStudioById(id);
@@ -244,5 +245,25 @@ public class StudioController {
         return null;
     }
 
+    @GetMapping("/globalCategories")
+    public RsData<Map<String, Object>> getGlobalCategories() {
+
+        List<GlobalCategoryDto> categories = studioService.getAllCategories();
+        List<GlobalSubcategoryDto> subcategories = studioService.getAllSubcategories();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("categories", categories);
+        result.put("subcategories", subcategories);
+
+        return RsData.of(
+                "200",
+                "전역 카테고리 목록 조회 성공",
+                result
+        );
+    }
+    /*
+    @PostMapping("/product/add")
+    public RsData<>
+    */
 
 }

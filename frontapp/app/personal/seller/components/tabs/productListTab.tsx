@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { MainContentProps } from '../types/mainContent.types'
 
 import '../style/productListTab.css'
-import 'rc-slider/assets/index.css'
 
 export default function ProductListTab(props: MainContentProps) {
     const {
@@ -26,6 +25,8 @@ export default function ProductListTab(props: MainContentProps) {
         setProductFilters,
         categoryOptions,
         subcategoryOptions,
+        onTabClick,
+        onEdit,
     } = props
 
     console.log('📦 현재 productList:', props.productList)
@@ -113,7 +114,9 @@ export default function ProductListTab(props: MainContentProps) {
 
     const moveToAddPage = () => {
         if (!isAuthenticated) return requireAuth()
-        window.location.href = '/product/add'
+        //window.location.href = '/product/add'
+        onTabClick('productAdd')
+        onEdit('productAdd')
     }
 
     const moveToEditPage = (id: number) => {
