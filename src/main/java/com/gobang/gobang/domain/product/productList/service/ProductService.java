@@ -12,10 +12,7 @@ import com.gobang.gobang.domain.personal.entity.WishList;
 import com.gobang.gobang.domain.personal.repository.CartRepository;
 import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.product.common.ProductStatus;
-import com.gobang.gobang.domain.product.dto.ProductDto;
-import com.gobang.gobang.domain.product.dto.ProductImageDto;
-import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
-import com.gobang.gobang.domain.product.dto.StudioDto;
+import com.gobang.gobang.domain.product.dto.*;
 import com.gobang.gobang.domain.product.dto.response.*;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductImageRepository;
@@ -30,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -226,6 +224,27 @@ public class ProductService {
 
         return new ProductDetailResponse(productDto, pdImageDto, studioDto, gbImageEntity, followInfo, cartInfo, productLikeInfo);
     }
+
+    public List<HotProductDto> getHotProductsInLastDays(int days, int size) {
+        LocalDateTime to = LocalDateTime.now();
+        LocalDateTime from = to.minusDays(days);
+
+        int minLikes = 1; // 또는 3
+
+        return productRepository
+                .findHotProductsByLikes(from, to, minLikes, size)
+                .stream()
+                .map(p -> HotProductDto.builder()
+                        .productId(p.getProductId())
+                        .basePrice(p.getBasePrice())
+                        .productName(p.getProductName())
+                        .thumbnailUrl(p.getThumbnailUrl())
+                        .recentLikes(p.getRecentLikes())
+                        .build())
+                .toList();
+    }
+
+
 
 
     //필터 파라미터용 유틸코드
