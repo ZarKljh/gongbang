@@ -9,6 +9,7 @@ import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.service.ProfileImageService;
 import com.gobang.gobang.domain.product.dto.ProductDto;
+import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.seller.dto.*;
 import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
@@ -261,9 +262,38 @@ public class StudioController {
                 result
         );
     }
-    /*
+
     @PostMapping("/product/add")
-    public RsData<>
-    */
+    public RsData<Map<String, Object>> addProduc(
+            @RequestPart("request") ProductAddRequest request,
+            @RequestPart(value = "productMainImage", required = false) MultipartFile productMainImage,
+            @RequestPart(value = "productGalleryImages", required = false) List<MultipartFile> galleryImages
+    ){
+        SiteUser seller = rq.getSiteUser();
+        if(seller == null){
+            throw new IllegalArgumentException("판매자로그인 혹은 회원가입을 해주세요.");
+        } else if( seller.getRole() != RoleType.SELLER) {
+            throw new IllegalArgumentException("판매자 전용 기능입니다. 판매자로 로그인해주세요.");
+        }
+        Studio studio = studioService.getStudioById(request.getStudioId());
+        if(studio == null){
+            throw new IllegalArgumentException("요청하신 공방을 찾을 수 없습니다. 다시 확인해주세요.");
+        } else if( seller.getRole() != RoleType.SELLER) {
+            throw new IllegalArgumentException("판매자 전용 기능입니다. 판매자로 로그인해주세요.");
+        }
+
+        Product newProduct = studioService.productAdd(request, studio);
+        if( productMainImage != null && !productMainImage.isEmpty()) {
+            profileImageService.uploadProductImage(
+                    studio,
+                    seller,
+                    productMainImage,
+                    Image.RefType.PRODUCT,
+                    0
+            );
+        }
+
+    }
+
 
 }
