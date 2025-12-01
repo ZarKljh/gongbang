@@ -1,0 +1,160 @@
+/* 전체 섹션 */
+.sectionBox {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+/* 헤더: 타이틀 + 버튼 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sectionTitle {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: #6b5642;
+}
+
+/* 🔘 버튼 영역 */
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.navBtn {
+    border: 1px solid #e2d8ca;
+    background: #faf8f5;
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #6b5642;
+    transition: all 0.2s ease;
+}
+
+.navBtn:hover {
+    background: #f0e7dd;
+}
+
+.navBtn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.viewport {
+    padding-bottom: 4px;
+    scroll-behavior: smooth;
+    overflow-x: auto; /* ✅ 가로 스크롤 허용 */
+    scrollbar-width: none; /* ✅ 파이어폭스에서 스크롤바 숨기기 */
+}
+
+/* WebKit 브라우저(Chrome, Edge, Safari)에서 스크롤바 숨기기 */
+.viewport::-webkit-scrollbar {
+    display: none; /* ✅ 실제 스크롤은 되는데 바만 안 보임 */
+}
+.viewport::-webkit-scrollbar-track {
+    background: transparent;
+}
+.viewport::-webkit-scrollbar-thumb {
+    background: #d6c8b8;
+    border-radius: 999px;
+}
+
+.track {
+    display: flex;
+    gap: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* overflow-x: auto;  🔴 이건 제거 */
+    scroll-snap-type: x mandatory;
+}
+/* 개별 상품 아이템 */
+.productItem {
+    flex: 0 0 300px; /* 🔥 슬라이더 핵심: 가로 고정폭 */
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+}
+
+/* 상품 카드 */
+.productCard {
+    width: 100%;
+    height: 180px;
+    background: #faf8f5;
+    border-radius: 10px;
+    border: 1px solid #e8e1d8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.productCard img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 상품 정보 */
+.productInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.productTitle {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0;
+    color: #7d6957;
+}
+
+.productPrice {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    color: #6b5642;
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+    .productItem {
+        flex: 0 0 200px;
+    }
+    .productCard {
+        height: 170px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sectionTitle {
+        font-size: 20px;
+    }
+    .productItem {
+        flex: 0 0 160px;
+    }
+    .productCard {
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .productItem {
+        flex: 0 0 140px;
+    }
+    .productCard {
+        height: 130px;
+    }
+}

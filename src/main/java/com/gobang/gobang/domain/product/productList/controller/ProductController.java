@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.product.productList.controller;
 
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.product.dto.HotProductDto;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.request.ProductCartRequest;
 import com.gobang.gobang.domain.product.dto.response.*;
@@ -151,5 +152,18 @@ public class ProductController {
 
         return RsData.of("200", "장바구니 성공.", res);
     }
+
+    @GetMapping("/hot/likes")
+    @Operation(summary = "최근 N일간 좋아요 많이 받은 상품")
+    public RsData<List<HotProductDto>> getHotProducts(
+            @RequestParam(defaultValue = "3") int days,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        List<HotProductDto> result =
+                productService.getHotProductsInLastDays(days, size);
+
+        return RsData.of("200", "최근 " + days + "일간 인기 상품 조회 성공", result);
+    }
+
 
 }

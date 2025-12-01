@@ -4,7 +4,10 @@ import api from '@/app/utils/api'
 import { useEffect, useState } from 'react'
 import styles from './main.module.css'
 import Link from 'next/link'
+import TopStudios from './mainComponents/section-topStudio'
 import ReviewRank from '@/app/utils/ReviewRank'
+// 컴포넌트 참조
+import MainSection02 from '@/app/components/main/sec02/MainSection02'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
@@ -104,6 +107,7 @@ export default function Main() {
                                         }}
                                         prefetch={false}
                                     >
+                                        {/*이미지 파일명을 c01, c02, c03 규칙으로 해뒀음  */}
                                         <img
                                             src={`http://localhost:8090/uploads/c${String(index + 1).padStart(
                                                 2,
@@ -171,67 +175,11 @@ export default function Main() {
             </main>
             {/* 섹션 */}
             <section className={styles.recommendWrap}>
-                {/* 섹션 1 — 오늘의 추천 상품 */}
-                <div className={styles.sectionBox}>
-                    <h2 className={styles.sectionTitle}>오늘의 추천 상품</h2>
-
-                    <ul className={styles.productGrid}>
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품1</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품2</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품3</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                {/* 섹션 2 — 인기 소품 */}
-                <div className={styles.sectionBox}>
-                    <h2 className={styles.sectionTitle}>지금 인기 있는 소품</h2>
-
-                    <ul className={styles.productGrid}>
-                        <li>
-                            <li className={styles.productCard}>상품1</li>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-                        <li>
-                            <li className={styles.productCard}>상품2</li>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-                        <li>
-                            <li className={styles.productCard}>상품3</li>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
+                {/* 섹션2번 컴포넌트로 묶음*/}
+                <MainSection02 />
+                <TopStudios />
+                <ReviewRank />
             </section>
-            <ReviewRank />
         </>
     )
 }
