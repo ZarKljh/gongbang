@@ -3,13 +3,12 @@
 import { useSearchParams } from 'next/navigation'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import api from '@/app/utils/api'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
 import { queryClient } from '@/app/utils/ReactQueryProviders'
-//토스페이먼츠
-import { loadPaymentWidget, ANONYMOUS } from '@tosspayments/payment-widget-sdk'
-import { useCallback } from 'react'
+// 토스페이먼츠
+import { loadPaymentWidget /*, ANONYMOUS*/ } from '@tosspayments/payment-widget-sdk'
 import { v4 as uuidv4 } from 'uuid'
 
 type ProductDetail = {
@@ -92,12 +91,16 @@ export default function ProductDetailView() {
     const searchParams = useSearchParams()
     const productId = searchParams.get('productId') // string | null
 
-    //위젯
+    // 토스 위젯 관련 상태
+    const [paymentWidget, setPaymentWidget] = useState<any | null>(null)
     const [widgetLoaded, setWidgetLoaded] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
     const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
     const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
 
     const [count, setCount] = useState(1)
+
     const { data, isLoading, isError, error } = useQuery<ProductDetailApiResponse>({
         queryKey: ['productDetail', productId],
         queryFn: async () => {
@@ -111,15 +114,13 @@ export default function ProductDetailView() {
         },
         enabled: !!productId,
         retry: 1,
-
-        // 🔥 렌더(마운트)·포커스 때마다 항상 새로 가져오도록
-        staleTime: 0, // 항상 금방 stale 취급
-        refetchOnMount: 'always', // 컴포넌트 마운트될 때마다 refetch
-        refetchOnWindowFocus: 'always', // 창 포커스 돌아올 때마다 refetch
-        refetchOnReconnect: 'always', // 네트워크 재연결 시도 때 refetch
+        staleTime: 0,
+        refetchOnMount: 'always',
+        refetchOnWindowFocus: 'always',
+        refetchOnReconnect: 'always',
     })
 
-    // 🟡 2) data에서 바로 값 꺼내쓰기
+    // 🟡 2) data에서 값 꺼내쓰기
     const product = data?.productDetailList
     const detailImage = data?.detailImage
     const sellerinfo = data?.studioDetail
@@ -146,7 +147,7 @@ export default function ProductDetailView() {
     const followMutation = useMutation({
         mutationFn: (studioId: number) =>
             api
-                .post<CommonResponse<{ followed: boolean; followerCount: number }>>(`product/${studioId}/follow`)
+                .post<CommonResponse<{ followed: boolean; followerCount: number }>>(`/product/${studioId}/follow`)
                 .then((res) => res.data),
         onSuccess: (resData) => {
             const { resultCode, msg, data: followData } = resData
@@ -158,7 +159,6 @@ export default function ProductDetailView() {
 
             if (!productId) return
 
-            // ✅ productDetail 캐시를 직접 업데이트
             queryClient.setQueryData<ProductDetailApiResponse>(['productDetail', productId], (old) =>
                 old
                     ? {
@@ -181,7 +181,7 @@ export default function ProductDetailView() {
         },
     })
 
-    // 🟡 4) 장바구니 토글 뮤테이션 (캐시 직접 수정)
+    // 🟡 4) 장바구니 토글 뮤테이션
     const cartMutation = useMutation({
         mutationFn: ([prodId, quantity]: [number, number]) =>
             api.post(`/product/${prodId}/cart`, { quantity }).then((res) => res.data),
@@ -189,7 +189,6 @@ export default function ProductDetailView() {
             const { resultCode, data: cartData } = resData
 
             if (resultCode !== '200') return
-
             if (!productId) return
 
             queryClient.setQueryData(['productDetail', productId], (old: any) =>
@@ -202,6 +201,7 @@ export default function ProductDetailView() {
                       }
                     : old,
             )
+
             console.log('🧾 cartData:', cartData)
             alert('장바구니에 담았습니다.')
         },
@@ -209,17 +209,17 @@ export default function ProductDetailView() {
             if (err?.response?.status === 401) {
                 alert('로그인이 필요합니다.')
             } else {
-                alert('로그인이 필요합니다.')
+                alert('장바구니 처리 중 오류가 발생했습니다.')
                 console.error('장바구니 에러:', err)
             }
         },
     })
 
-    // 🟡 4) 좋아요(WishList) 토글 뮤테이션 (캐시 직접 수정)
+    // 🟡 5) 좋아요 토글 뮤테이션
     const likeMutation = useMutation({
         mutationFn: (prodId: number) =>
             api
-                .post<CommonResponse<{ liked: boolean; likeCount: number }>>(`product/${prodId}/like`)
+                .post<CommonResponse<{ liked: boolean; likeCount: number }>>(`/product/${prodId}/like`)
                 .then((res) => res.data),
         onSuccess: (resData) => {
             const { resultCode, msg, data: likeData } = resData
@@ -231,7 +231,6 @@ export default function ProductDetailView() {
 
             if (!productId) return
 
-            // ✅ productDetail 캐시를 직접 업데이트
             queryClient.setQueryData<ProductDetailApiResponse>(['productDetail', productId], (old) =>
                 old
                     ? {
@@ -248,11 +247,64 @@ export default function ProductDetailView() {
             if (err?.response?.status === 401) {
                 alert('로그인이 필요합니다.')
             } else {
-                alert('로그인이 필요합니다.')
-                console.error('팔로우 에러:', err)
+                alert('좋아요 처리 중 오류가 발생했습니다.')
+                console.error('좋아요 에러:', err)
             }
         },
     })
+
+    // ✅ 토스 위젯 초기화 / 렌더 함수
+    const main = async () => {
+        try {
+            console.log('🧩 main 실행, 현재 paymentWidget:', paymentWidget)
+
+            let widget = paymentWidget
+
+            // 1) 위젯 인스턴스가 없으면 처음 한 번만 생성
+            if (!widget) {
+                widget = await loadPaymentWidget(clientKey, customerKey)
+                setPaymentWidget(widget)
+            }
+
+            // 2) 모달이 열릴 때마다 DOM에 다시 붙이기
+            widget.renderPaymentMethods('#payment-method', { value: 15000 })
+            widget.renderAgreement('#agreement')
+
+            setWidgetLoaded(true)
+        } catch (e) {
+            console.error('토스 위젯 초기화 중 오류:', e)
+            setWidgetLoaded(false)
+        }
+    }
+
+    const handleRequestPayment = async () => {
+        console.log('🧾 결제 버튼 클릭, paymentWidget:', paymentWidget)
+        if (!paymentWidget) {
+            console.warn('❗ paymentWidget이 없습니다.')
+            return
+        }
+
+        try {
+            await paymentWidget.requestPayment({
+                orderId: 'order_' + uuidv4(),
+                orderName: '공예담 무드등',
+                successUrl: `${window.location.origin}/pay/success`,
+                failUrl: `${window.location.origin}/pay/fail`,
+            })
+        } catch (e) {
+            console.error('결제 요청 중 오류:', e)
+        }
+    }
+
+    // 🔥 모달이 열렸을 때 main() 실행 (⚠️ 훅이니까 if/return 위에 둔 것!)
+    useEffect(() => {
+        console.log('🎯 isModalOpen 변경:', isModalOpen)
+        if (!isModalOpen) return
+        main()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isModalOpen])
+
+    // ────────────────── 여기까지가 "모든 훅 구역" ──────────────────
 
     if (isLoading) return <p>로딩 중...</p>
 
@@ -264,27 +316,8 @@ export default function ProductDetailView() {
     const inc = () => setCount((v) => v + 1)
     const dec = () => setCount((v) => (v > 1 ? v - 1 : 1))
 
-    const main = async () => {
-        // 1) PaymentWidget 불러오기
-        const paymentWidget = await loadPaymentWidget(clientKey, customerKey)
-
-        // 2) 금액 설정 (지금은 예시로 15000원)
-        paymentWidget.renderPaymentMethods('#payment-method', {
-            value: 15000,
-        })
-
-        // 3) 약관 UI 렌더링
-        paymentWidget.renderAgreement('#agreement')
-
-        setWidgetLoaded(true)
-
-        // 4) 결제요청
-        await paymentWidget.requestPayment({
-            orderId: 'order_' + uuidv4(),
-            orderName: '공예담 무드등',
-            successUrl: `${window.location.origin}/pay/success`,
-            failUrl: `${window.location.origin}/pay/fail`,
-        })
+    const openPaymentModal = () => {
+        setIsModalOpen(true)
     }
 
     return (
@@ -362,25 +395,30 @@ export default function ProductDetailView() {
                     )}
 
                     <div className={styles.buttonRow}>
-                        <button className={styles.btnBuy} onClick={main}>
+                        <button className={styles.btnBuy} onClick={openPaymentModal}>
                             바로구매하기
                         </button>
-                        {/* 결제 UI가 들어갈 영역 */}
-                        {widgetLoaded && (
+
+                        {/* 결제 모달 */}
+                        {isModalOpen && (
                             <div className={styles.modalOverlay}>
                                 <div className={styles.modal}>
                                     <div className={styles.modalHeader}>
                                         <h2 className={styles.modalTitle}>결제하기</h2>
                                         <button
                                             type="button"
-                                            onClick={() => setWidgetLoaded(false)}
+                                            onClick={() => {
+                                                setIsModalOpen(false)
+                                                setWidgetLoaded(false)
+                                                // 필요하면 setPaymentWidget(null) 해서 완전 새로 로드하게 할 수도 있음
+                                            }}
                                             className={styles.modalCloseBtn}
                                         >
                                             ✕
                                         </button>
                                     </div>
 
-                                    {/* 결제 UI가 들어갈 영역 */}
+                                    {/* 결제 UI 영역 */}
                                     <div className={styles.paymentBody}>
                                         <div id="payment-method" className={styles.paymentMethods} />
                                         <div id="agreement" className={styles.paymentAgreement} />
@@ -388,7 +426,7 @@ export default function ProductDetailView() {
 
                                     <button
                                         type="button"
-                                        // onClick={handleRequestPayment}
+                                        onClick={handleRequestPayment}
                                         className={styles.paymentSubmitBtn}
                                         disabled={!widgetLoaded}
                                     >
@@ -410,18 +448,17 @@ export default function ProductDetailView() {
                                     cartMutation.mutate([product.id, count])
                                 }}
                             >
-                                {'장바구니'}
+                                장바구니
                             </button>
                             <button
                                 className={styles.btnFav}
                                 onClick={(e) => {
                                     e.preventDefault()
                                     if (!product?.id) return
-
                                     likeMutation.mutate(product.id)
                                 }}
                             >
-                                {liked ? '❤️' : '🤍'}
+                                {liked ? '❤️' : '🤍'} ({likeCount})
                             </button>
                         </div>
                     </div>
