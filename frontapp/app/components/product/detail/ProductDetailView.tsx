@@ -108,7 +108,7 @@ export default function ProductDetailView() {
                 throw new Error('productId가 없습니다.')
             }
 
-            const res = await api.get(`/product/${productId}/detail`)
+            const res = await api.get(`product/${productId}/detail`)
             console.log('🔁 fetch product detail:', res.data.data)
             return res.data.data as ProductDetailApiResponse
         },
@@ -147,7 +147,7 @@ export default function ProductDetailView() {
     const followMutation = useMutation({
         mutationFn: (studioId: number) =>
             api
-                .post<CommonResponse<{ followed: boolean; followerCount: number }>>(`/product/${studioId}/follow`)
+                .post<CommonResponse<{ followed: boolean; followerCount: number }>>(`product/${studioId}/follow`)
                 .then((res) => res.data),
         onSuccess: (resData) => {
             const { resultCode, msg, data: followData } = resData
@@ -159,6 +159,7 @@ export default function ProductDetailView() {
 
             if (!productId) return
 
+            // ✅ productDetail 캐시를 직접 업데이트
             queryClient.setQueryData<ProductDetailApiResponse>(['productDetail', productId], (old) =>
                 old
                     ? {
@@ -181,7 +182,7 @@ export default function ProductDetailView() {
         },
     })
 
-    // 🟡 4) 장바구니 토글 뮤테이션
+    // 🟡 4) 장바구니 토글 뮤테이션 (캐시 직접 수정)
     const cartMutation = useMutation({
         mutationFn: ([prodId, quantity]: [number, number]) =>
             api.post(`/product/${prodId}/cart`, { quantity }).then((res) => res.data),
@@ -189,6 +190,7 @@ export default function ProductDetailView() {
             const { resultCode, data: cartData } = resData
 
             if (resultCode !== '200') return
+
             if (!productId) return
 
             queryClient.setQueryData(['productDetail', productId], (old: any) =>
@@ -201,7 +203,6 @@ export default function ProductDetailView() {
                       }
                     : old,
             )
-
             console.log('🧾 cartData:', cartData)
             alert('장바구니에 담았습니다.')
         },
@@ -209,17 +210,16 @@ export default function ProductDetailView() {
             if (err?.response?.status === 401) {
                 alert('로그인이 필요합니다.')
             } else {
-                alert('장바구니 처리 중 오류가 발생했습니다.')
+                alert('로그인이 필요합니다.')
                 console.error('장바구니 에러:', err)
             }
         },
     })
-
-    // 🟡 5) 좋아요 토글 뮤테이션
+    // 🟡 4) 좋아요(WishList) 토글 뮤테이션 (캐시 직접 수정)
     const likeMutation = useMutation({
         mutationFn: (prodId: number) =>
             api
-                .post<CommonResponse<{ liked: boolean; likeCount: number }>>(`/product/${prodId}/like`)
+                .post<CommonResponse<{ liked: boolean; likeCount: number }>>(`product/${prodId}/like`)
                 .then((res) => res.data),
         onSuccess: (resData) => {
             const { resultCode, msg, data: likeData } = resData
@@ -231,6 +231,7 @@ export default function ProductDetailView() {
 
             if (!productId) return
 
+            // ✅ productDetail 캐시를 직접 업데이트
             queryClient.setQueryData<ProductDetailApiResponse>(['productDetail', productId], (old) =>
                 old
                     ? {
@@ -247,8 +248,8 @@ export default function ProductDetailView() {
             if (err?.response?.status === 401) {
                 alert('로그인이 필요합니다.')
             } else {
-                alert('좋아요 처리 중 오류가 발생했습니다.')
-                console.error('좋아요 에러:', err)
+                alert('로그인이 필요합니다.')
+                console.error('팔로우 에러:', err)
             }
         },
     })
