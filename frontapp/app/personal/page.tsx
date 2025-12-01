@@ -1221,7 +1221,14 @@ export default function MyPage() {
                 setInfiniteOrdersHasMore(false)
             }
 
-            setInfiniteOrders(prev => [...prev, ...newOrders])
+            setInfiniteOrders(prev => {
+                const merged = [...prev, ...newOrders]
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(t => t.orderId === item.orderId)
+                )
+                return unique
+            })
 
             if (newOrders.length > 0) {
                 setInfiniteOrdersLastId(newOrders[newOrders.length - 1].orderId)
@@ -1256,7 +1263,14 @@ export default function MyPage() {
                 setInfiniteWishHasMore(false)
             }
 
-            setInfiniteWishList(prev => [...prev, ...newWishList])
+            setInfiniteWishList(prev => {
+                const merged = [...prev, ...newWishList]
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(t => t.wishlistId === item.wishlistId)
+                )
+                return unique
+            })
 
             if (newWishList.length > 0) {
                 setInfiniteWishLastId(newWishList[newWishList.length - 1].wishlistId)
@@ -1291,7 +1305,14 @@ export default function MyPage() {
                 setInfiniteCartHasMore(false)
             }
 
-            setInfiniteCart(prev => [...prev, ...newCart])
+            setInfiniteCart(prev => {
+                const merged = [...prev, ...newCart]
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(t => t.cartId === item.cartId)
+                )
+                return unique
+            })
 
             if (newCart.length > 0) {
                 setInfiniteCartLastId(newCart[newCart.length - 1].cartId)
@@ -2312,18 +2333,15 @@ export default function MyPage() {
                                             </div>
 
                                             {review.images && review.images.length > 0 && (
-                                                <div className="my-review-images">
-                                                    <img
-                                                        src={
-                                                            previewProfileImage ||
-                                                            stats.profileImageUrl || `http://localhost:8090${stats.profileImageUrl}` // 서버 이미지
-                                                        }
-                                                        onError={(e) => {
-                                                            e.currentTarget.src = "/images/default_profile.jpg"
-                                                        }}
-                                                        alt="리뷰 이미지"
-                                                        className="review-image-item"
-                                                    />
+                                                <div key={review.reviewId} className="my-review-images">
+                                                    {review.images.map((url, i) => (
+                                                        <img
+                                                            key={i}
+                                                            src={`http://localhost:8090${url}`}
+                                                            alt={`리뷰 이미지 ${i + 1}`}
+                                                            className="review-image-item"
+                                                        />
+                                                    ))}
                                                 </div>
                                             )}
 

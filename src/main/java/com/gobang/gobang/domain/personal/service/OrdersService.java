@@ -120,7 +120,7 @@ public class OrdersService {
         List<Orders> orders = ordersRepository.findInfiniteOrders(user.getId(), lastOrderId, size);
 
         return orders.stream()
-                .map(OrdersResponse::from)  // 엔티티 → DTO 변환
+                .map(OrdersResponse::from)
                 .toList();
     }
 
