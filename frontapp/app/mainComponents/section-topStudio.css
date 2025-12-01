@@ -2,6 +2,7 @@
 /* 오늘의 공방 */
 .topStudioSection {
   max-width: 1280px;
+  margin: 0 auto;
 }
 
 .sectionTitle {
