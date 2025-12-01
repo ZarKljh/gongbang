@@ -20,6 +20,22 @@
   margin-bottom: 20px;
 }
 
+/* 데이터가 없을 때 */
+.review-rank-empty {
+    text-align: center;
+    padding: 60px 0;
+}
+
+.review-rank-empty-text {
+    font-size: 18px;
+    color: #7e7e7e;
+    margin-top: 30px;
+    font-weight: 500;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
 /* ============================= Swiper ============================= */
 .review-rank-swiper {
   width: 100%;
@@ -48,7 +64,6 @@
 .review-rank-card {
   width: 100%;
   background: white;
-  border-radius: 10px;
   overflow: hidden;
   border: 1px solid #e5e5e5;
   transition: 0.2s ease;
@@ -108,10 +123,10 @@
   top: 50%;
   transform: translateY(-50%);
   background: white;
+  color: #8a7661;
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -127,6 +142,7 @@
   transform: translateY(-50%) scale(1.1);
   background: #f1f1f1;
 }
+
 
 /* 반응형 */
 

@@ -61,65 +61,71 @@ export default function ReviewRank() {
             <div className="review-rank-header">'강추' 리뷰 100개 이상!</div>
             <div className="review-rank-sub">리뷰가 보장하는 상품이에요</div>
 
-            <Swiper
-                modules={[Navigation]}
-                // slidesPerView={4}
-                slidesPerView="auto"
-                slidesPerGroup={4}
-                spaceBetween={20}
-                loop={false}
-                navigation={{
-                    prevEl: prevRef.current,
-                    nextEl: nextRef.current,
-                }}
-                onBeforeInit={(swiper) => {
-                    swiper.params.navigation.prevEl = prevRef.current
-                    swiper.params.navigation.nextEl = nextRef.current
-                }}
-                className="review-rank-swiper"
-                breakpoints={{
-                    1200: { slidesPerView: 4, slidesPerGroup: 4 },
-                    992: { slidesPerView: 3, slidesPerGroup: 3 },
-                    768: { slidesPerView: 3, slidesPerGroup: 3 },
-                    0: { slidesPerView: 3, slidesPerGroup: 3 },
-                }}
-            >
-                {products.map((p) => (
-                    <SwiperSlide key={p.productId}>
-                        <Link
-                            className="review-rank-card"
-                            href={{
-                                pathname: '/product/list/detail',
-                                query: { productId: p.productId },
-                            }}
-                        >
-                            <div className="review-rank-image-wrapper">
-                                {p.thumbnail ? (
-                                    <img src={`http://localhost:8090${p.thumbnail}`} />
-                                ) : (
-                                    <span className="review-rank-image-placeholder">준비 중</span>
-                                )}
-                            </div>
+            {products.length === 0 && <div className="review-rank-empty-text">아직 인기 리뷰 상품이 없습니다.</div>}
+            
+            {products.length > 0 && (
+                <div className="review-rank-slider-wrapper">
+                    <Swiper
+                        modules={[Navigation]}
+                        // slidesPerView={4}
+                        slidesPerView="auto"
+                        slidesPerGroup={4}
+                        spaceBetween={20}
+                        loop={false}
+                        navigation={{
+                            prevEl: prevRef.current,
+                            nextEl: nextRef.current,
+                        }}
+                        onBeforeInit={(swiper) => {
+                            swiper.params.navigation.prevEl = prevRef.current
+                            swiper.params.navigation.nextEl = nextRef.current
+                        }}
+                        className="review-rank-swiper"
+                        breakpoints={{
+                            1200: { slidesPerView: 4, slidesPerGroup: 4 },
+                            992: { slidesPerView: 3, slidesPerGroup: 3 },
+                            768: { slidesPerView: 3, slidesPerGroup: 3 },
+                            0: { slidesPerView: 3, slidesPerGroup: 3 },
+                        }}
+                    >
+                        {products.map((p) => (
+                            <SwiperSlide key={p.productId}>
+                                <Link
+                                    className="review-rank-card"
+                                    href={{
+                                        pathname: '/product/list/detail',
+                                        query: { productId: p.productId },
+                                    }}
+                                >
+                                    <div className="review-rank-image-wrapper">
+                                        {p.thumbnail ? (
+                                            <img src={`http://localhost:8090${p.thumbnail}`} />
+                                        ) : (
+                                            <span className="review-rank-image-placeholder">준비 중</span>
+                                        )}
+                                    </div>
 
-                            <p className="review-rank-title">{p.name}</p>
-                            <p className="review-rank-price">{p.price.toLocaleString()}원</p>
+                                    <p className="review-rank-title">{p.name}</p>
+                                    <p className="review-rank-price">{p.price.toLocaleString()}원</p>
 
-                            <div className="review-rank-rating">
-                                <FaStar style={{ color: '#FFD700' }} />
-                                {p.rating} ({p.reviewCount.toLocaleString()})
-                            </div>
-                        </Link>
-                    </SwiperSlide>
-                ))}
-            </Swiper>
+                                    <div className="review-rank-rating">
+                                        <FaStar style={{ color: '#FFD700' }} />
+                                        {p.rating} ({p.reviewCount.toLocaleString()})
+                                    </div>
+                                </Link>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
 
-            {/* 커스텀 화살표 */}
-            <div ref={prevRef} className="review-rank-prev">
-                <ChevronLeft size={26} strokeWidth={2.5} />
-            </div>
-            <div ref={nextRef} className="review-rank-next">
-                <ChevronRight size={26} strokeWidth={2.5} />
-            </div>
+                    {/* 커스텀 화살표 */}
+                    <div ref={prevRef} className="review-rank-prev">
+                        <ChevronLeft size={26} strokeWidth={2.5} />
+                    </div>
+                    <div ref={nextRef} className="review-rank-next">
+                        <ChevronRight size={26} strokeWidth={2.5} />
+                    </div>
+                </div>
+            )}
         </section>
     )
 }
