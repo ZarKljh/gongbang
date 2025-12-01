@@ -32,15 +32,6 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    // 셀러의 팔로워 목록 조회
-    public List<FollowResponse> getFollowersBySellerId(Studio studio) {
-        List<Follow> followers = followRepository.findByStudio(studio);
-
-        return followers.stream()
-                .map(item -> FollowResponse.from(item, imageRepository))
-                .collect(Collectors.toList());
-    }
-
     // 팔로우 추가
     @Transactional
     public FollowResponse addFollow(FollowRequest request) {
@@ -63,11 +54,8 @@ public class FollowService {
 
     // 팔로우 취소
     @Transactional
-    public void unfollow(SiteUser siteUser, Studio studio) {
-        Follow follow = followRepository.findBySiteUserAndStudio(siteUser, studio)
-                .orElseThrow(() -> new IllegalArgumentException("팔로우 정보를 찾을 수 없습니다."));
-
-        followRepository.delete(follow);
+    public void unfollow(SiteUser siteUser, Long studioId) {
+        followRepository.deleteBySiteUserIdAndStudioStudioId(siteUser.getId(), studioId);
     }
 
     // 팔로우 여부 확인

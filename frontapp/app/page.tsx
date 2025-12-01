@@ -4,6 +4,8 @@ import api from '@/app/utils/api'
 import { useEffect, useState } from 'react'
 import styles from './main.module.css'
 import Link from 'next/link'
+import TopStudios from './mainComponents/section-topStudio'
+import ReviewRank from '@/app/utils/ReviewRank'
 // 컴포넌트 참조
 import MainSection02 from '@/app/components/main/sec02/MainSection02'
 
@@ -126,12 +128,12 @@ export default function Main() {
                     </div>
                 </nav>
 
-                {/* <header className={styles.categoryHeader}>
+                <header className={styles.categoryHeader}>
                     <div className={styles.headerLeft}>
                         <h2 className={styles.headerTitle}>세부 카테고리</h2>
-                    </div> */}
+                    </div>
 
-                {/* <nav className={styles.headerNav} aria-label="상단 메뉴">
+                    {/* <nav className={styles.headerNav} aria-label="상단 메뉴">
                     <ul className={styles.navList}>
                         <li className={styles.navItem}>
                             <a href="#">이벤트</a>
@@ -144,8 +146,8 @@ export default function Main() {
                         </li>
                     </ul>
                 </nav> */}
-                {/* </header> */}
-                {/* 
+                </header>
+
                 <div className={styles.categoryContainer}>
                     {categories.map((cat) => (
                         <ul className={styles.categoryList2} key={cat.id}>
@@ -169,14 +171,14 @@ export default function Main() {
                             </li>
                         </ul>
                     ))}
-                </div> */}
+                </div>
             </main>
             {/* 섹션 */}
             <section className={styles.recommendWrap}>
-                {/* 섹션 1 — 오늘의 추천 상품 */}
-
                 {/* 섹션2번 컴포넌트로 묶음*/}
                 <MainSection02 />
+                <TopStudios />
+                <ReviewRank />
             </section>
         </>
     )

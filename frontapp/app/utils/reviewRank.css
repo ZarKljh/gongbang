@@ -1,0 +1,141 @@
+/* 컨테이너 */
+.review-rank-container {
+  max-width: 1280px;
+  margin: 50px auto;
+  margin-top: 150px;
+  padding: 0 20px;
+}
+
+/* 섹션 헤더 */
+.review-rank-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 26px;
+  margin-bottom: 8px;
+  color: #6B5642;
+}
+
+.review-rank-sub {
+  font-size: 14px;
+  color: #7e7e7e;
+  margin-bottom: 20px;
+}
+
+/* 카드 리스트 */
+.review-rank-list {
+  display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   grid-template-columns: repeat(4, minmax(clamp(200px, 25vw, 300px), 1fr));
+  gap: 20px;
+  overflow: hidden;
+  /* padding-bottom: 10px; */
+}
+
+/* 카드 */
+.review-rank-card {
+    /* flex: 0 0 calc((100% - 60px) / 4);
+  min-width: 300px; */
+  /* border-radius: 10px; */
+  overflow: hidden;
+  cursor: pointer;
+  background: white;
+  transition: 0.2s ease;
+  border: 1px solid rgb(229, 229, 229);
+}
+
+.review-rank-card:hover {
+  transform: scale(1.03);
+}
+
+/* 이미지 영역 */
+.review-rank-card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  /* border-bottom: 1px solid #f1f1f1; */
+}
+
+/* 내용 */
+.review-rank-card-body {
+  padding: 14px;
+
+}
+
+.review-rank-price-old {
+  font-size: 14px;
+  color: #9c9c9c;
+  text-decoration: line-through;
+}
+
+.review-rank-discount {
+  color: #ff3f6c;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* === 리뷰용 이미지 빈 공간 === */
+.review-rank-image-wrapper {
+  width: 100%;
+  height: 250px;
+  border-radius: 8px;
+  /* border: 1px solid #e8e8e8; */
+  background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+p {
+  margin: 0;
+}
+
+.review-rank-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.review-rank-image-placeholder {
+  color: #999;
+  font-size: 16px;
+}
+
+/* 상품명 */
+.review-rank-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #8a7661;
+  margin-bottom: 4px;
+}
+
+/* 별점 + 리뷰수 */
+.review-rank-rating {
+  font-size: 14px;
+  color: #777;
+
+}
+
+/* 가격 */
+.review-rank-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #8a7661;
+    margin-bottom: 6px;
+}
+
+@media (max-width: 1023px) {
+  .review-rank-list {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .review-rank-card {
+    flex: 0 0 calc((100% - 40px) / 3); /* 3개 유지 */
+  }
+}

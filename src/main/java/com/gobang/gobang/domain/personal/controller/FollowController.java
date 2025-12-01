@@ -35,9 +35,9 @@ public class FollowController {
     }
 
     @DeleteMapping
-    public RsData<Void> unfollow(@RequestParam Studio studio) {
+    public RsData<Void> unfollow(@RequestParam Long studioId) {
         SiteUser siteUser = siteUserService.getCurrentUser();
-        followService.unfollow(siteUser, studio);
+        followService.unfollow(siteUser, studioId);
         return RsData.of("200", "삭제 성공");
     }
 

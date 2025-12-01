@@ -106,7 +106,7 @@ public class ReviewController {
 
         return reviewService.getReviewById(id)
                 .map(review -> {
-                    ReviewResponse response = ReviewResponse.fromEntity(review); // ✅ 안전하게 DTO 변환
+                    ReviewResponse response = ReviewResponse.fromEntity(review, review.getProfileImageUrl()); // ✅ 안전하게 DTO 변환
                     return RsData.of(
                             "200",
                             "단건 조회 성공",
@@ -186,4 +186,12 @@ public class ReviewController {
         return RsData.of("200", "리뷰가 성공적으로 삭제되었습니다.");
     }
 
+    @GetMapping("/popular")
+    public RsData<List<ReviewPopularProductResponse>> getPopularReviewProducts() {
+        return RsData.of(
+                "200",
+                "리뷰 인기 상품 조회 성공",
+                reviewService.getProfileImageUrl()
+        );
+    }
 }
