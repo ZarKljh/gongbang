@@ -2313,16 +2313,17 @@ export default function MyPage() {
 
                                             {review.images && review.images.length > 0 && (
                                                 <div className="my-review-images">
-                                                    {review.images.map((imgUrl, idx) => (
-                                                        <img 
-                                                            key={idx} 
-                                                            src={`http://localhost:8090${imgUrl}`}
-                                                            alt={`리뷰 이미지 ${idx + 1}`}
-                                                            // onError={(e) => {
-                                                            //     e.currentTarget.src = '/default-image.png'
-                                                            // }}
-                                                        />
-                                                    ))}
+                                                    <img
+                                                        src={
+                                                            previewProfileImage ||
+                                                            stats.profileImageUrl || `http://localhost:8090${stats.profileImageUrl}` // 서버 이미지
+                                                        }
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = "/images/default_profile.jpg"
+                                                        }}
+                                                        alt="리뷰 이미지"
+                                                        className="review-image-item"
+                                                    />
                                                 </div>
                                             )}
 
