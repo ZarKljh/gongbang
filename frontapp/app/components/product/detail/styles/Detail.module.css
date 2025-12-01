@@ -357,7 +357,8 @@
 /* === 헤더 영역 (타이틀 + 닫기버튼) === */
 .modalHeader {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* 🔥 버튼을 오른쪽 끝으로 정렬 */
+    padding: 12px 16px 4px;
     align-items: center;
     margin-bottom: 12px;
 }
@@ -370,12 +371,36 @@
 
 /* 닫기 버튼 */
 .modalCloseBtn {
+    background: transparent;
     border: none;
-    background: none;
-    font-size: 18px;
+    font-size: 22px;
     cursor: pointer;
-    line-height: 1;
-    padding: 4px;
+
+    /* 🔥 기본 상태 */
+    color: #111;
+    padding: 6px;
+    border-radius: 8px;
+
+    transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+/* 🔥 hover 강조 */
+.modalCloseBtn:hover {
+    color: #111;
+    background: rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+}
+
+/* 🔥 클릭(액티브) 강조 */
+.modalCloseBtn:active {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(0.93);
+}
+
+/* 🔥 포커스(접근성 향상) */
+.modalCloseBtn:focus-visible {
+    outline: 2px solid #6a4df5; /* 브랜드 포인트 컬러 */
+    outline-offset: 4px;
 }
 
 /* === 결제 위젯 영역 === */
