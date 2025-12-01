@@ -268,7 +268,7 @@ export default function ProductDetailView() {
             }
 
             // 2) 모달이 열릴 때마다 DOM에 다시 붙이기
-            widget.renderPaymentMethods('#payment-method', { value: 15000 })
+            widget.renderPaymentMethods('#payment-method', { value: total })
             widget.renderAgreement('#agreement')
 
             setWidgetLoaded(true)
@@ -280,15 +280,16 @@ export default function ProductDetailView() {
 
     const handleRequestPayment = async () => {
         console.log('🧾 결제 버튼 클릭, paymentWidget:', paymentWidget)
-        if (!paymentWidget) {
-            console.warn('❗ paymentWidget이 없습니다.')
+        if (!paymentWidget || !product) {
+            console.warn('❗ paymentWidget 또는 product 정보가 없습니다.')
             return
         }
 
         try {
             await paymentWidget.requestPayment({
+                amount: total, // 🔥 총 금액 (수량 반영)
                 orderId: 'order_' + uuidv4(),
-                orderName: '공예담 무드등',
+                orderName: product.name, // 🔥 상품명
                 successUrl: `${window.location.origin}/pay/success`,
                 failUrl: `${window.location.origin}/pay/fail`,
             })
@@ -299,11 +300,11 @@ export default function ProductDetailView() {
 
     // 🔥 모달이 열렸을 때 main() 실행 (⚠️ 훅이니까 if/return 위에 둔 것!)
     useEffect(() => {
-        console.log('🎯 isModalOpen 변경:', isModalOpen)
+        console.log('🎯 isModalOpen / total 변경:', isModalOpen, total)
         if (!isModalOpen) return
         main()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isModalOpen])
+    }, [isModalOpen, total])
 
     // ────────────────── 여기까지가 "모든 훅 구역" ──────────────────
 
@@ -403,15 +404,14 @@ export default function ProductDetailView() {
                         {/* 결제 모달 */}
                         {isModalOpen && (
                             <div className={styles.modalOverlay}>
-                                <div className={styles.modal}>
+                                <div className={styles.modalContainer}>
                                     <div className={styles.modalHeader}>
-                                        <h2 className={styles.modalTitle}>결제하기</h2>
                                         <button
                                             type="button"
                                             onClick={() => {
                                                 setIsModalOpen(false)
                                                 setWidgetLoaded(false)
-                                                // 필요하면 setPaymentWidget(null) 해서 완전 새로 로드하게 할 수도 있음
+                                                // 필요하면 setPaymentWidget(null) 도 가능
                                             }}
                                             className={styles.modalCloseBtn}
                                         >
@@ -419,20 +419,49 @@ export default function ProductDetailView() {
                                         </button>
                                     </div>
 
-                                    {/* 결제 UI 영역 */}
-                                    <div className={styles.paymentBody}>
-                                        <div id="payment-method" className={styles.paymentMethods} />
-                                        <div id="agreement" className={styles.paymentAgreement} />
+                                    {/* ✅ 상품 요약 + 결제 UI 영역 */}
+                                    <div className={styles.modalContent}>
+                                        {/* 🔹 상품 정보 요약 */}
+                                        <div className={styles.modalProductSummary}>
+                                            <div className={styles.summaryThumb}>
+                                                <img src={pdImageUrl} alt={product?.name} />
+                                            </div>
+                                            <div className={styles.summaryText}>
+                                                <div className={styles.summaryTitle}>{product?.name}</div>
+                                                <div className={styles.summaryDesc}>
+                                                    {product?.description ?? '상품 설명이 없습니다.'}
+                                                </div>
+                                                <div className={styles.summaryRow}>
+                                                    <span className={styles.summaryLabel}>수량</span>
+                                                    <span className={styles.summaryValue}>{count}개</span>
+                                                </div>
+                                                <div className={styles.summaryRow}>
+                                                    <span className={styles.summaryLabel}>총 결제 금액</span>
+                                                    <span className={styles.summaryTotal}>
+                                                        {total.toLocaleString()}원
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 🔹 토스 결제 위젯 영역 */}
+                                        <div className={styles.paymentBox}>
+                                            <div id="payment-method" className={styles.paymentMethods} />
+                                            <div id="agreement" className={styles.paymentAgreement} />
+                                        </div>
                                     </div>
 
-                                    <button
-                                        type="button"
-                                        onClick={handleRequestPayment}
-                                        className={styles.paymentSubmitBtn}
-                                        disabled={!widgetLoaded}
-                                    >
-                                        결제하기
-                                    </button>
+                                    {/* 하단 결제 버튼 */}
+                                    <div className={styles.modalFooter}>
+                                        <button
+                                            type="button"
+                                            onClick={handleRequestPayment}
+                                            className={styles.paymentSubmitBtn}
+                                            disabled={!widgetLoaded}
+                                        >
+                                            {widgetLoaded ? '결제하기' : '결제 준비중…'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
