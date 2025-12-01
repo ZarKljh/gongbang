@@ -13,25 +13,25 @@ body {
 /* 사이드바 */
 .mypage-sidebar {
     width: 200px;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid #e9dcc4;
     padding: 32px;
 }
 
 .mypage-sidebar h1 {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 32px;
+    margin-bottom: 36px;
 }
 
 .nav-section {
-    margin-bottom: 24px;
+    margin-bottom: 30px;
 }
 
 .nav-section h2 {
-    font-size: 12px;
+    font-size: 18px;
     font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 12px;
+    color: #333;
+    /* margin-bottom: 30px; */
     text-transform: uppercase;
 }
 
@@ -40,13 +40,13 @@ body {
 }
 
 .nav-section li {
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .nav-section button {
     background: none;
     border: none;
-    color: #6b7280;
+    color: #80736b;
     font-size: 14px;
     cursor: pointer;
     padding: 4px 0;
@@ -54,6 +54,7 @@ body {
 
 .nav-section button:hover {
     color: #000;
+    text-decoration: underline;
 }
 
 .nav-section button.active {
@@ -84,7 +85,7 @@ body {
 .error button {
     margin-top: 20px;
     padding: 10px 20px;
-    background: #000;
+    background: #dac0a3;
     color: white;
     border: none;
     cursor: pointer;
@@ -135,6 +136,7 @@ body {
 
 .auth-banner-btn:hover {
     background: #C99F8A;
+    text-decoration: underline;
 }
 
 /* 통계 테이블 */
@@ -157,6 +159,11 @@ body {
     font-weight: bold;
     color: #000;
     border-bottom: 1px solid #E9DCC4;
+    border-right: 1px solid #E9DCC4;
+}
+
+.stats-table th:last-child {
+    border-right: none;
 }
 
 .stats-table td:first-child {
@@ -169,6 +176,11 @@ body {
     padding: 16px;
     font-size: 24px;
     font-weight: bold;
+    border-right: 1px solid #E9DCC4;
+}
+
+.stats-table td:last-child {
+    border-right: none;
 }
 
 .profile-image {
@@ -215,7 +227,8 @@ body {
     display: flex;
     padding: 0;
     margin-bottom: 24px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e9dcc4;
+    border-radius: 8px;
 }
 
 .status-card {
@@ -223,9 +236,13 @@ body {
     text-align: center;
     padding: 16px;
     margin: 10px 0;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid #e9dcc4;
     cursor: pointer;
     transition: background 0.2s;
+}
+
+.status-card:last-child {
+    border-right: none;
 }
 
 .status-card:hover {
@@ -257,7 +274,6 @@ body {
 
 /* 주문 카드 */
 .order-card {
-    border: 1px solid #e5e7eb;
     padding: 24px;
     margin-bottom: 16px;
     border-radius: 8px;
@@ -424,9 +440,10 @@ body {
 /* 배송지/결제수단 카드 */
 .address-card,
 .payment-card {
-    border: 1px solid #e5e7eb;
     padding: 24px;
     margin-bottom: 16px;
+    background-color: #fff;
+    border-radius: 8px;
 }
 
 .payment-card .card-header {
@@ -475,14 +492,14 @@ body {
     display: flex;
     gap: 32px;
     margin-bottom: 24px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e9dcc4;
 }
 
 .tab-nav button {
     background: none;
     border: none;
     font-size: 14px;
-    color: #6b7280;
+    color: #806e6b;
     padding: 8px 0;
     cursor: pointer;
     position: relative;
@@ -511,7 +528,6 @@ body {
 }
 
 .wishlist-item {
-    border: 1px solid #e5e7eb;
     transition: transform 0.2s;
 }
 
@@ -548,7 +564,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #e5e7eb;
     padding: 24px;
     margin-bottom: 16px;
 }
@@ -595,7 +610,6 @@ body {
 
 .qna-card {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   cursor: pointer;
@@ -720,7 +734,6 @@ body {
 }
 
 .my-review-card {
-  border: 1px solid #ddd;
   border-radius: 10px;
   padding: 16px;
   background-color: #fff;
@@ -820,6 +833,7 @@ body {
 .need-login button:hover {
     background: #1f2937;
     transform: translateY(-2px);
+    text-decoration: underline;
 }
 
 .need-login button:active {
@@ -832,7 +846,6 @@ body {
     text-align: center;
     padding: 80px 20px;
     background: white;
-    border: 1px solid #e5e7eb;
     border-radius: 12px;
 }
 
@@ -1120,20 +1133,6 @@ body {
     font-size: 15px;
     font-weight: 500;
     margin: 0;
-}
-
-.follow-card button {
-    padding: 8px 16px;
-    background: white;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.follow-card button:hover {
-    background: #f9fafb;
-    border-color: #000;
 }
 
 /* 서브탭 콘텐츠 */
@@ -1497,12 +1496,13 @@ body {
     text-align: center;
 }
 
-.btn-primary.delete {
+/* .btn-primary.delete {
     background: #dc2626;
-}
+} */
 
 .btn-primary:hover {
     background: #C99F8A;
+    text-decoration: underline;
 }
 
 .btn-primary.delete:hover {
@@ -1536,12 +1536,13 @@ button.link-btn:disabled:hover {
     text-align: center;
 }
 
-.link-btn.delete {
+/* .link-btn.delete {
     background: #dc2626;
-}
+} */
 
 .link-btn:hover {
     background: #C99F8A;
+    text-decoration: underline;
 }
 
 .link-btn.delete:hover {
