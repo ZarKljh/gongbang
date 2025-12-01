@@ -11,10 +11,15 @@ import com.gobang.gobang.domain.product.productList.service.ProductService;
 import com.gobang.gobang.domain.product.productList.service.ProductWishListService;
 import com.gobang.gobang.domain.seller.service.SellerFollowService;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.config.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -165,5 +170,16 @@ public class ProductController {
         return RsData.of("200", "최근 " + days + "일간 인기 상품 조회 성공", result);
     }
 
+    //로그인 확인용으로만 일단 구현함
+    @PostMapping("/buyBtn")
+    public ResponseEntity<PrepareOrderResponse> BuyBtn(
+            @AuthenticationPrincipal SecurityUser user //  프로젝트에 맞게 타입 수정
+    ) {
+        if (user == null) {
+            // 방법 1: 예외 던지기
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        return null;
+    }
 
 }

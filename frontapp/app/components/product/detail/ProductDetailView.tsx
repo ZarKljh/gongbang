@@ -7,10 +7,11 @@ import { useMemo, useState, useEffect } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
 import { queryClient } from '@/app/utils/ReactQueryProviders'
+import { useRouter } from 'next/navigation'
 // 토스페이먼츠
 import { loadPaymentWidget /*, ANONYMOUS*/ } from '@tosspayments/payment-widget-sdk'
 import { v4 as uuidv4 } from 'uuid'
-import { usePrepareOrder } from '@/app/utils/api/order'
+import { useBuyBtn, usePrepareOrder } from '@/app/utils/api/order'
 
 type ProductDetail = {
     id: number
@@ -91,6 +92,7 @@ type CommonResponse<T> = {
 export default function ProductDetailView() {
     const searchParams = useSearchParams()
     const productId = searchParams.get('productId') // string | null
+    const router = useRouter()
 
     // 토스 위젯 관련 상태
     const [paymentWidget, setPaymentWidget] = useState<any | null>(null)
@@ -281,6 +283,8 @@ export default function ProductDetailView() {
 
     // React Query mutation 훅
     const { mutateAsync: prepareOrderMutation } = usePrepareOrder()
+    // React Query mutation 훅
+    const { mutateAsync: buyBtnMutation } = useBuyBtn()
 
     const handleRequestPayment = async () => {
         console.log('🧾 결제 버튼 클릭, paymentWidget:', paymentWidget)
@@ -328,8 +332,16 @@ export default function ProductDetailView() {
     const inc = () => setCount((v) => v + 1)
     const dec = () => setCount((v) => (v > 1 ? v - 1 : 1))
 
-    const openPaymentModal = () => {
-        setIsModalOpen(true)
+    // 바로구매하기버튼
+    const openPaymentModal = async () => {
+        try {
+            const result = await buyBtnMutation()
+            setIsModalOpen(true)
+        } catch (e) {
+            console.error(e)
+            alert('로그인이 필요한 서비스입니다.')
+            router.push('/auth/login')
+        }
     }
 
     return (

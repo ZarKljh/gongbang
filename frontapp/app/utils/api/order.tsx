@@ -25,3 +25,16 @@ export const usePrepareOrder = () => {
         mutationFn: prepareOrder,
     })
 }
+
+// 간단 POST 요청용
+export const buyBtnRequest = async () => {
+    const res = await api.post('product/buyBtn')
+    return res.data
+}
+
+// React Query Mutation 훅
+export const useBuyBtn = () => {
+    return useMutation({
+        mutationFn: buyBtnRequest, // 매개변수 없음
+    })
+}
