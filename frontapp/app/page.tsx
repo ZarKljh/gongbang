@@ -175,37 +175,6 @@ export default function Main() {
             </main>
             {/* 섹션 */}
             <section className={styles.recommendWrap}>
-                {/* 섹션 1 — 오늘의 추천 상품 */}
-                <div className={styles.sectionBox}>
-                    <h2 className={styles.sectionTitle}>오늘의 추천 상품</h2>
-
-                    <ul className={styles.productGrid}>
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품1</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품2</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-
-                        <li className={styles.productItem}>
-                            <div className={styles.productCard}>상품3</div>
-                            <div className={styles.productInfo}>
-                                <p className={styles.productTitle}>미소빵빵 GF 쌀로 만든 한입간식</p>
-                                <p className={styles.productPrice}>3,300원</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
                 {/* 섹션2번 컴포넌트로 묶음*/}
                 <MainSection02 />
                 <TopStudios />
