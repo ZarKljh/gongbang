@@ -50,4 +50,42 @@ export interface MainContentProps {
     deletedGalleryImageIds?: number[]
     setDeletedGalleryImageIds?: (ids: number[]) => void
     setStudioImages?: (updater: any) => void
+
+    /** 삼품관련 props*/
+    // ====== 상품 리스트 / 검색 / 페이징 관련 ======
+    productList?: any[]
+    productPage?: number
+    productPageSize?: number
+    productHasNext?: boolean
+    productLoading?: boolean
+
+    setProductPage?: (page: number) => void
+    setProductPageSize?: (size: number) => void
+    fetchStudioProducts?: (studioId: number, page?: number) => void
+
+    /** 🔥 검색 조건 객체 전달 (필수) */
+    productFilters?: {
+        keyword: string
+        priceMin: number
+        priceMax: number
+        active: any[]
+        stock: any[]
+        status: any[]
+        //searchFields: string[]
+    }
+
+    setProductFilters?: (updater: any) => void
+
+    categoryOptions?: string[]
+    subcategoryOptions?: string[]
+    globalCategoryOptions?: string[]
+    globalSubcategoryOptions?: string[]
+
+    productImages?: {
+        PRODUCT_MAIN: File | null
+        PRODUCT: File[]
+    }
+
+    onProductImageChange?: (type: 'PRODUCT_MAIN' | 'PRODUCT', files: File | File[] | null) => void
+    onTabClick?: (tab: string) => void
 }
