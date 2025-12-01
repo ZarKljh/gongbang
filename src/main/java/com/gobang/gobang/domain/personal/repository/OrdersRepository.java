@@ -25,4 +25,13 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     @Query("SELECT o FROM Orders o LEFT JOIN FETCH o.deliveries d LEFT JOIN FETCH d.address WHERE o.orderId = :orderId")
     Optional<Orders> findByIdWithDeliveries(@Param("orderId") Long orderId);
 
+    @Query("""
+        SELECT o
+        FROM Orders o
+        WHERE o.siteUser.id = :userId
+          AND (:lastOrderId IS NULL OR o.orderId < :lastOrderId)
+        ORDER BY o.orderId DESC
+        """)
+    List<Orders> findInfiniteOrders(Long userId, Long lastOrderId, int size);
+
 }

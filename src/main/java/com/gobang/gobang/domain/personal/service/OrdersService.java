@@ -115,4 +115,13 @@ public class OrdersService {
 
         return OrdersResponse.from(order);
     }
+
+    public List<OrdersResponse> getInfiniteOrders(SiteUser user, Long lastOrderId, int size) {
+        List<Orders> orders = ordersRepository.findInfiniteOrders(user.getId(), lastOrderId, size);
+
+        return orders.stream()
+                .map(OrdersResponse::from)  // 엔티티 → DTO 변환
+                .toList();
+    }
+
 }

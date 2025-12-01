@@ -223,6 +223,7 @@ export default function MyPage() {
 
         try {
             const { data } = await axios.get(`${API_BASE_URL}/orders`, {
+                params: { lastOrderId: infiniteOrdersLastId, size: SIZE },
                 withCredentials: true,
             })
             
@@ -1495,17 +1496,13 @@ export default function MyPage() {
                                 <tr>
                                     <td>
                                         <div className="profile-image" onClick={handleProfileClick}>
-                                            {stats.profileImageUrl ? (
                                                 <img
                                                     src={
                                                         previewProfileImage ||
-                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : 'null') // 서버 이미지
+                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : '/images/default_profile.jpg') // 서버 이미지
                                                     }
                                                     alt="프로필 이미지"
                                                 />
-                                            ) : (
-                                                <div className="placeholder"></div>
-                                            )}
                                         </div>
                                     </td>
                                     <td>{stats.totalQna}</td>
