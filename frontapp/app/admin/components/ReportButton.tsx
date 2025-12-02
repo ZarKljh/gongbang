@@ -6,28 +6,57 @@ import api from '@/app/utils/api'
 import Modal from '@/app/admin/components/Modal'
 import Image from 'next/image'
 
+// 🔹 백엔드 enum과 맞춘 타입들
+type ReportTargetType = 'USER' | 'POST' | 'COMMENT' | 'PRODUCT' | 'ORDER' | 'OTHER'
+type ReportReason = 'SPAM' | 'ABUSE' | 'FRAUD' | 'COPYRIGHT' | 'PRIVACY' | 'OTHER'
+
 type Props = {
-    targetType: 'REVIEW' | 'COMMENT'
-    targetId: number
+    targetType: ReportTargetType // 예: 상품이면 'PRODUCT', 댓글이면 'COMMENT'
+    targetId: number // 신고 대상의 id (상품 id, 댓글 id 등)
+}
+
+type Me = {
+    id: number
+    email: string
+    userName: string
 }
 
 export default function ReportButton({ targetType, targetId }: Props) {
     const [open, setOpen] = useState(false)
-    const [reason, setReason] = useState('SPAM')
+    const [reason, setReason] = useState<ReportReason>('SPAM')
     const [detail, setDetail] = useState('')
     const [submitting, setSubmitting] = useState(false)
 
+    // 🔹 신고자 정보 저장
+    const [me, setMe] = useState<Me | null>(null)
+
     const handleClick = async () => {
-        // 🔹 신고 버튼은 항상 보이게 하고,
-        //    눌렀을 때 로그인 안 되어 있으면 그때 로그인 유도
         try {
             const res = await api.get('/auth/me', { withCredentials: true })
-            if (res.status !== 200) {
+
+            if (res.status !== 200 || !res.data) {
                 if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
                     window.location.href = '/auth/login'
                 }
                 return
             }
+
+            // 백엔드 응답 구조에 맞게 파싱 (siteUser / data / etc)
+            const raw = res.data
+            const user: Me =
+                raw?.data?.siteUser ??
+                raw?.data?.siteUserDto ??
+                raw?.data ?? // 혹시 그냥 data에 바로 있는 경우
+                raw
+
+            if (!user?.id) {
+                if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
+                    window.location.href = '/auth/login'
+                }
+                return
+            }
+
+            setMe(user)
             setOpen(true)
         } catch {
             if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
@@ -38,6 +67,11 @@ export default function ReportButton({ targetType, targetId }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!me?.id) {
+            alert('로그인 정보가 없습니다. 다시 시도해주세요.')
+            return
+        }
+
         if (!detail.trim()) {
             alert('신고 사유를 구체적으로 입력해주세요.')
             return
@@ -48,9 +82,11 @@ export default function ReportButton({ targetType, targetId }: Props) {
             await api.post(
                 '/reports',
                 {
-                    targetType,
-                    targetId: String(targetId),
-                    reason,
+                    // 🔹 백엔드 DTO에 맞게 필드 추가
+                    reporterId: me.id, // ✅ 신고자 아이디
+                    targetType, // ✅ enum 값 (PRODUCT, COMMENT 등)
+                    targetId: String(targetId), // 백엔드가 String이면 이렇게, Long이면 그냥 number로
+                    reason, // ✅ enum: SPAM / ABUSE ...
                     description: detail,
                 },
                 { withCredentials: true },
@@ -74,18 +110,20 @@ export default function ReportButton({ targetType, targetId }: Props) {
 
     return (
         <>
+            {/* 신고 버튼 */}
             <button type="button" className={styles.reportButton} onClick={handleClick}>
-                <Image src="/images/siren.png" alt="신고 이미지" width={33} height={33}></Image>
+                <Image src="/images/siren.png" alt="신고 이미지" width={33} height={33} />
             </button>
 
-            <Modal open={open} onClose={() => setOpen(false)} title="리뷰 신고" size="sm">
+            {/* 신고 모달 */}
+            <Modal open={open} onClose={() => setOpen(false)} title="신고하기" size="sm">
                 <form onSubmit={handleSubmit} className={styles.reportForm} noValidate>
                     <div className={styles.formRow}>
                         <label className={styles.label}>신고 유형</label>
                         <select
                             className={styles.select}
                             value={reason}
-                            onChange={(e) => setReason(e.target.value as any)}
+                            onChange={(e) => setReason(e.target.value as ReportReason)}
                         >
                             <option value="SPAM">스팸/광고</option>
                             <option value="ABUSE">욕설/비하</option>

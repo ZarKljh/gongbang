@@ -62,6 +62,12 @@
     height: 93%;
 }
 
+.purchaseHeadSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 /* 버튼이 항상 아래에 위치하도록 */
 .buttonRow {
     display: flex;

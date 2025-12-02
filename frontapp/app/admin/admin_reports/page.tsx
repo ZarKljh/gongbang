@@ -15,6 +15,7 @@ type Report = {
     reason: string
     description: string
     reporterEmail: string
+    reporterUserName?: string // 🔹 로그인 아이디(영문 아이디)
     status: ReportStatus
     createdAt: string
 }
@@ -35,10 +36,6 @@ function resolveTargetUrl(r: Report): string | null {
         case 'INQUIRY':
             // 예: QnA 상세 (있다면)
             return `/mypage?tab=qna&id=${r.targetId}`
-
-        // 필요하면 추가:
-        // case 'USER':
-        //     return `/admin/users/${r.targetId}`
 
         default:
             return null
@@ -134,11 +131,18 @@ export default function AdminReportsPage() {
 
         return reports.filter((r) => {
             const email = r.reporterEmail?.toLowerCase() ?? ''
+            const userName = r.reporterUserName?.toLowerCase() ?? ''
             const targetType = r.targetType?.toLowerCase() ?? ''
             const reason = r.reason?.toLowerCase() ?? ''
             const desc = r.description?.toLowerCase() ?? ''
 
-            return email.includes(q) || targetType.includes(q) || reason.includes(q) || desc.includes(q)
+            return (
+                email.includes(q) ||
+                userName.includes(q) ||
+                targetType.includes(q) ||
+                reason.includes(q) ||
+                desc.includes(q)
+            )
         })
     }, [reports, search])
 
@@ -214,7 +218,7 @@ export default function AdminReportsPage() {
                         <div className={styles.searchBox}>
                             <input
                                 className={styles.searchInput}
-                                placeholder="신고자 / 대상 / 사유 / 내용 검색"
+                                placeholder="신고자 아이디 / 이메일 / 대상 / 사유 / 내용 검색"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -277,7 +281,15 @@ export default function AdminReportsPage() {
                                                 <div className={styles.desc}>{r.description}</div>
                                             </td>
                                             <td>
-                                                <div className={styles.meta}>{r.reporterEmail}</div>
+                                                <div className={styles.meta}>
+                                                    {r.reporterUserName || '(탈퇴 또는 알 수 없음)'}
+                                                </div>
+                                                <div
+                                                    className={styles.meta}
+                                                    style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}
+                                                >
+                                                    {r.reporterEmail}
+                                                </div>
                                             </td>
                                             <td>
                                                 <div className={styles.meta}>
@@ -339,7 +351,15 @@ export default function AdminReportsPage() {
                             </select>
                         </Row>
 
-                        <Row label="신고자">{selectedReport.reporterEmail}</Row>
+                        <Row label="신고자">
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span>{selectedReport.reporterUserName || '(탈퇴 또는 알 수 없음)'}</span>
+                                <span style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                                    {selectedReport.reporterEmail}
+                                </span>
+                            </div>
+                        </Row>
+
                         <Row label="대상">
                             {selectedReport.targetType} / {selectedReport.targetId}
                         </Row>

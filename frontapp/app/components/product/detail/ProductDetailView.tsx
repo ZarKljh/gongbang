@@ -11,6 +11,7 @@ import { queryClient } from '@/app/utils/ReactQueryProviders'
 import { loadPaymentWidget, ANONYMOUS } from '@tosspayments/payment-widget-sdk'
 import { useCallback } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+import ReportButton from '@/app/admin/components/ReportButton'
 
 type ProductDetail = {
     id: number
@@ -301,7 +302,10 @@ export default function ProductDetailView() {
 
                 {/* 우: 구매 패널 */}
                 <section className={styles.purchaseSection}>
-                    <h3 className={styles.productTitle}>{product?.name}</h3>
+                    <div className={styles.purchaseHeadSection}>
+                        <h3 className={styles.productTitle}>{product?.name}</h3>
+                        {product?.id && <ReportButton targetType="PRODUCT" targetId={product.id} />}
+                    </div>
 
                     <div className={styles.productDesc}>
                         <p>{product?.description ?? '상품 설명이 없습니다.'}</p>

@@ -511,6 +511,10 @@
     border-bottom: 1px solid #f3f4f6;
 }
 
+.detailBody .detailRow {
+    display: flex;
+}
+
 .detailinquiries:last-of-type {
     border-bottom: none;
 }
@@ -521,6 +525,7 @@
     font-size: 13px;
     color: #6b7280;
     flex-shrink: 0;
+    display: block;
 }
 
 .detailContentWrap {
