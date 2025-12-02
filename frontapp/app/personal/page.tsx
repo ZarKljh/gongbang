@@ -2375,7 +2375,7 @@ export default function MyPage() {
                                                     <span className="order-code">주문번호: {order.orderCode}</span>
                                                 </div>
                                                 <div className="modal-order-info">
-                                                    <span className="product-name">{order.productName}</span>
+                                                    <span className="product-name">{order.items?.[0]?.productName || "상품 없음"}</span>
                                                     <span className={`status-badge ${order.deliveryStatus}`}>
                                                         {order.deliveryStatus}
                                                     </span>

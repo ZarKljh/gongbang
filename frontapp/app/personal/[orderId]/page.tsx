@@ -115,122 +115,122 @@ export default function OrderDetailPage() {
     if (!order) return <p>주문 정보가 없습니다.</p>
 
     return (
-        <div className="order-detail-container">
-            <h2>주문 상세 보기</h2>
+        <>
+            <h2 className='order-detail-title'>주문 상세 보기</h2>
+            <div className="order-detail-container">
+                {/* 주문 기본 정보 */}
+                <div className="order-detail-box">
+                    <p><strong>주문일자:</strong> {order.createdDate}</p>
+                    <p><strong>주문번호:</strong> {order.orderCode}</p>
+                    <p>
+                        <strong>배송상태:</strong>
+                        <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
+                    </p>
 
-            {/* 주문 기본 정보 */}
-            <div className="order-detail-box">
-                <p><strong>주문일자:</strong> {order.createdDate}</p>
-                <p><strong>주문번호:</strong> {order.orderCode}</p>
-                <p>
-                    <strong>배송상태:</strong>
-                    <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
-                </p>
+                    {order.deliveries?.length > 0 && (
+                        <>
+                            <p><strong>운송장번호:</strong> {order.deliveries[0].trackingNumber || "없음"}</p>
+                            <p><strong>수령인:</strong> {order.deliveries[0].recipientName}</p>
+                            <p>
+                                <strong>주소:</strong>{" "}
+                                {order.deliveries[0].baseAddress} {order.deliveries[0].detailAddress}
+                            </p>
+                            <p><strong>우편번호:</strong> {order.deliveries[0].zipcode}</p>
+                        </>
+                    )}
 
-                {order.deliveries?.length > 0 && (
-                    <>
-                        <p><strong>운송장번호:</strong> {order.deliveries[0].trackingNumber || "없음"}</p>
-                        <p><strong>수령인:</strong> {order.deliveries[0].recipientName}</p>
-                        <p>
-                            <strong>주소:</strong>{" "}
-                            {order.deliveries[0].baseAddress} {order.deliveries[0].detailAddress}
-                        </p>
-                        <p><strong>우편번호:</strong> {order.deliveries[0].zipcode}</p>
-                    </>
-                )}
-
-                {order.deliveryStatus === '배송완료' && order.completedAt && (
-                    <p><strong>배송완료일:</strong> {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
-                )}
-            </div>
-
-            {/* 상품 목록 */}
-            <h3>상품 목록</h3>
-            <div className="order-items-list">
-                {order.items?.map((item: any) => (
-                    <div key={item.orderItemId} className="order-detail-item">
-                        <img src={item.imageUrl || '/default-product.png'} alt="" />
-                        <div>
-                            <Link href={`http://localhost:3000/product/list/detail?productId=${item.productId}`} className="my-review-product-name">
-                                <p className="item-name">{item.productName}</p>
-                            </Link>
-                            <p>{item.price.toLocaleString()}원 / {item.quantity}개</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* 총 금액 */}
-            <div className="order-total">
-                <p><strong>총 결제금액:</strong> {order.totalPrice?.toLocaleString()}원</p>
-            </div>
-
-            {/* 주문 상태 버튼 */}
-            <div className="order-actions">
-                {order.deliveryStatus === '배송준비중' && (
-                    <button className="btn-primary" onClick={() => openReasonModal("주문 취소 사유")}>
-                        주문 취소
-                    </button>
-                )}
-
-                {order.deliveryStatus === '배송완료' && isWithinSevenDays(order.completedAt) && (
-                    <>
-                        <button className="btn-primary" onClick={() => openReasonModal("반품 사유")}>
-                            반품 신청
-                        </button>
-
-                        <button className="btn-primary" onClick={() => openReasonModal("교환 사유")}>
-                            교환 신청
-                        </button>
-                    </>
-                )}
-            </div>
-
-            {/* 뒤로가기 */}
-            <button
-                className="back-btn"
-                onClick={() => router.push('/personal?tab=orders')}
-            >
-                ← 주문 목록으로
-            </button>
-
-            {/* 모달 */}
-            {isReasonModal && (
-                <div className="reason-modal">
-                    <div className="modal-content">
-                        <h3>{reasonModalTitle}</h3>
-                        <textarea
-                            value={reasonText}
-                            onChange={(e) => setReasonText(e.target.value)}
-                        />
-                        <div className="modal-actions">
-                            {reasonModalTitle.includes("취소") && (
-                                <button className="btn-primary" onClick={submitCancel}>
-                                    제출
-                                </button>
-                            )}
-                            {reasonModalTitle.includes("반품") && (
-                                <button className="btn-primary" onClick={submitReturn}>
-                                    제출
-                                </button>
-                            )}
-                            {reasonModalTitle.includes("교환") && (
-                                <button className="btn-primary" onClick={submitExchange}>
-                                    제출
-                                </button>
-                            )}
-
-                            <button
-                                className="btn-secondary"
-                                onClick={() => setIsReasonModal(false)}
-                            >
-                                닫기
-                            </button>
-                        </div>
-                    </div>
+                    {order.deliveryStatus === '배송완료' && order.completedAt && (
+                        <p><strong>배송완료일:</strong> {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
+                    )}
                 </div>
-            )}
 
-        </div>
+                {/* 상품 목록 */}
+                <h3>상품 목록</h3>
+                <div className="order-items-list">
+                    {order.items?.map((item: any) => (
+                        <div key={item.orderItemId} className="order-detail-item">
+                            <img src={item.imageUrl || '/default-product.png'} alt="" />
+                            <div>
+                                <Link href={`http://localhost:3000/product/list/detail?productId=${item.productId}`} className="my-review-product-name">
+                                    <p className="item-name">{item.productName}</p>
+                                </Link>
+                                <p>{item.price.toLocaleString()}원 / {item.quantity}개</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* 총 금액 */}
+                <div className="order-total">
+                    <p><strong>총 결제금액:</strong> {order.totalPrice?.toLocaleString()}원</p>
+                </div>
+
+                {/* 주문 상태 버튼 */}
+                <div className="order-actions">
+                    {order.deliveryStatus === '배송준비중' && (
+                        <button className="btn-primary" onClick={() => openReasonModal("주문 취소 사유")}>
+                            주문 취소
+                        </button>
+                    )}
+
+                    {order.deliveryStatus === '배송완료' && isWithinSevenDays(order.completedAt) && (
+                        <>
+                            <button className="btn-primary" onClick={() => openReasonModal("반품 사유")}>
+                                반품 신청
+                            </button>
+
+                            <button className="btn-primary" onClick={() => openReasonModal("교환 사유")}>
+                                교환 신청
+                            </button>
+                        </>
+                    )}
+                </div>
+
+                {/* 뒤로가기 */}
+                <button
+                    className="back-btn"
+                    onClick={() => router.push('/personal?tab=orders')}
+                >
+                    ← 주문 목록으로
+                </button>
+
+                {/* 모달 */}
+                {isReasonModal && (
+                    <div className="reason-modal">
+                        <div className="modal-content">
+                            <h3>{reasonModalTitle}</h3>
+                            <textarea
+                                value={reasonText}
+                                onChange={(e) => setReasonText(e.target.value)}
+                            />
+                            <div className="modal-actions">
+                                {reasonModalTitle.includes("취소") && (
+                                    <button className="btn-primary" onClick={submitCancel}>
+                                        제출
+                                    </button>
+                                )}
+                                {reasonModalTitle.includes("반품") && (
+                                    <button className="btn-primary" onClick={submitReturn}>
+                                        제출
+                                    </button>
+                                )}
+                                {reasonModalTitle.includes("교환") && (
+                                    <button className="btn-primary" onClick={submitExchange}>
+                                        제출
+                                    </button>
+                                )}
+
+                                <button
+                                    className="btn-secondary"
+                                    onClick={() => setIsReasonModal(false)}
+                                >
+                                    닫기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     )
 }

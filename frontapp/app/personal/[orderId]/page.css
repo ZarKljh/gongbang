@@ -1,27 +1,18 @@
+.order-detail-title {
+    margin: 40px auto;
+    text-align: center;
+}
+
 /* ===============================
    주문 상세 페이지 컨테이너
 ================================ */
 .order-detail-container {
-    max-width: 900px;
+    max-width: 1280px;
     margin: 40px auto;
-    padding: 20px;
+    padding: 40px;
     color: #333;
     background: #fff;
     border-radius: 8px;
-}
-
-/* 뒤로가기 버튼 */
-.back-btn {
-    background: none;
-    border: none;
-    font-size: 14px;
-    color: #80736b;
-    margin-top: 20px;
-    cursor: pointer;
-}
-.back-btn:hover {
-    color: #000;
-    text-decoration: underline;
 }
 
 /* 제목 */
@@ -156,6 +147,20 @@
     background: #bfc3c9;
 }
 
+/* 뒤로가기 버튼 */
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #80736b;
+    margin-top: 20px;
+    cursor: pointer;
+}
+.back-btn:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
 /* ===============================
    사유 입력 모달
 ================================ */
@@ -186,7 +191,7 @@
 }
 
 .modal-content textarea {
-    width: 100%;
+    width: calc(100% - 30px);
     height: 120px;
     padding: 12px;
     border: 1px solid #E9DCC4;
