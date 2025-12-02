@@ -1530,8 +1530,8 @@ export default function MyPage() {
                                                 />
                                         </div>
                                     </td>
-                                    <td>{stats.totalQna}</td>
-                                    <td>{stats.totalReviews}</td>
+                                    <td className='shortcut-btn' onClick={() => handleTabClick('qna')}>{stats.totalQna}</td>
+                                    <td className='shortcut-btn' onClick={() => handleTabClick('reviews')}>{stats.totalReviews}</td>
                                 </tr>
                             </tbody>
                         </table>

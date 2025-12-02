@@ -1581,6 +1581,14 @@ button.link-btn:disabled:hover {
     text-decoration: underline;
 }
 
+.shortcut-btn {
+    cursor: pointer;
+}
+
+.shortcut-btn:hover {
+    text-decoration: underline;
+}
+
 /* 반응형 */
 @media (max-width: 968px) {
     .cart-product {
