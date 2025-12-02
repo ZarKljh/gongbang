@@ -1600,10 +1600,10 @@ export default function MyPage() {
                                         key={order.orderId}
                                         className="order-card"
                                     >
-                                        {/* 주문 요약 (클릭해서 아코디언 열기) */}
+                                        {/* 주문 요약 */}
                                         <div
                                             className="order-header"
-                                            onClick={() => toggleOrder(order.orderId)}
+                                            onClick={() => router.push(`/personal/${order.orderId}`)}
                                         >
                                             <div className='order-title'>
                                                 <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
@@ -1619,110 +1619,6 @@ export default function MyPage() {
                                                 ))}
                                             </div>
                                         </div>
-
-                                        {/* 아코디언 상세 영역 */}
-                                        {openOrderId === order.orderId && (
-                                            <div className="order-accordion">
-
-                                                {/* 상품 내역 */}
-                                                <h3>상품 내역</h3>
-                                                {(order.items || []).map((item: any, idx: any) => (
-                                                    <div key={`${item.orderItemId}-${idx}`} className="order-item">
-                                                        <div className="order-item-text">
-                                                            <p className="order-item-name">{item.productName}</p>
-                                                            <p className="order-item-detail">{item.price?.toLocaleString()}원 / {item.quantity}개</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-
-                                                {/* 주문 상세 정보 */}
-                                                <div className="order-info">
-                                                    <p>주문일자: {order.createdDate}</p>
-                                                    <p>주문번호: {order.orderCode}</p>
-                                                    <p>배송상태: {order.deliveryStatus}</p>
-
-                                                    {order.deliveries?.length > 0 && (() => {
-                                                        const d = order.deliveries[0]
-                                                        return (
-                                                            <>
-                                                                <p>운송장번호: {d.trackingNumber || '없음'}</p>
-                                                                <p>수령인: {d.recipientName || '정보 없음'}</p>
-                                                                <p>주소: {d.baseAddress || ''} {d.detailAddress || ''}</p>
-                                                                <p>우편번호: {d.zipcode || ''}</p>
-                                                            </>
-                                                        )
-                                                    })()}
-
-                                                    {order.deliveryStatus === '배송완료' && order.completedAt && (
-                                                        <p>배송완료일: {new Date(order.completedAt).toLocaleDateString('ko-KR')}</p>
-                                                    )}
-                                                </div>
-
-                                                {/* 버튼 영역 */}
-                                                <div className="order-actions" style={{ marginTop: 15 }}>
-                                                    {order.deliveryStatus === "배송준비중" && (
-                                                        <div
-                                                            className="btn-primary"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation()
-                                                                openReasonModal(
-                                                                    "주문 취소 사유",
-                                                                    (reason: any) => handleCancelOrder(order.orderId, reason)
-                                                                )
-                                                            }}
-                                                        >
-                                                            주문 취소
-                                                        </div>
-                                                    )}
-
-                                                    {order.deliveryStatus === "배송완료" &&
-                                                        isWithinSevenDays(order.completedAt) && (
-                                                            <>
-                                                                <div
-                                                                    className="btn-primary"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation()
-                                                                        openReasonModal("반품 사유", (reason: any) =>
-                                                                            handleReturnOrder(order.orderId, reason)
-                                                                        )
-                                                                    }}
-                                                                >
-                                                                    반품 신청
-                                                                </div>
-
-                                                                <div
-                                                                    className="btn-primary"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation()
-                                                                        openReasonModal("교환 사유", (reason: any) =>
-                                                                            handleExchangeOrder(order.orderId, reason)
-                                                                        )
-                                                                    }}
-                                                                >
-                                                                    교환 신청
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                </div>
-
-                                                <div className="order-actions" style={{ marginTop: 15 }}>
-                                                    <button
-                                                        className="link-btn delete"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            handleDeleteOrder(order.orderId)
-                                                        }}
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
-
-                                                {/* 아코디언 하단 금액 */}
-                                                <div className="order-footer">
-                                                    <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 ))
                             )}
