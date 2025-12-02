@@ -30,6 +30,7 @@ public class ApiSecurityConfig {
                                 //메인페이지,목록페이지,상세페이지 게스트용 허용
                                 .requestMatchers(HttpMethod.GET, "/api/v1/home/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/product/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/product/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/filter/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/category/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/theme/**").permitAll()

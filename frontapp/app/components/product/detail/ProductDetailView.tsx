@@ -299,10 +299,10 @@ export default function ProductDetailView() {
                 productId: product.id,
                 quantity: count,
             })
-
+            console.log(`orderId:${prepare.orderCode}`)
             await paymentWidget.requestPayment({
                 amount: total, // 🔥 총 금액 (수량 반영)
-                orderId: 'order_' + uuidv4(),
+                orderId: prepare.orderCode,
                 orderName: product.name, // 🔥 상품명
                 successUrl: `${window.location.origin}/pay/success`,
                 failUrl: `${window.location.origin}/pay/fail`,
@@ -335,12 +335,30 @@ export default function ProductDetailView() {
     // 바로구매하기버튼
     const openPaymentModal = async () => {
         try {
-            const result = await buyBtnMutation()
+            await buyBtnMutation()
             setIsModalOpen(true)
-        } catch (e) {
-            console.error(e)
-            alert('로그인이 필요한 서비스입니다.')
-            router.push('/auth/login')
+        } catch (e: any) {
+            console.error('💥 buyBtn error:', e)
+
+            console.log('status = ', e?.response?.status)
+            console.log('data   = ', e?.response?.data)
+            const error = e?.response?.data
+
+            //기본 배송지 없음
+            if (error?.code === 'NO_DEFAULT_ADDRESS') {
+                alert(error.message)
+                router.push('/mypage/address')
+                return
+            }
+
+            // 로그인 안 되어 있음
+            if (e?.response?.status === 401) {
+                alert('로그인이 필요한 서비스입니다.')
+                router.push('/auth/login')
+                return
+            }
+
+            alert(error?.message || '기본 배송지가 설정되어 있지 않습니다2.')
         }
     }
 

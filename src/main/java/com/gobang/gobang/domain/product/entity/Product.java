@@ -89,6 +89,10 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Boolean active = true;
 
+    // 누적 판매량
+    private Long salesCount;
+
+
 //    @CreationTimestamp
 //    @Column(name = "created_at", updatable = false)
 //    private LocalDateTime createdAt;
@@ -141,5 +145,19 @@ public class Product extends BaseEntity {
     public void removeAttr(ProductAttr attr) {
         attrs.remove(attr);
         attr.setProduct(null);
+    }
+
+    // 재고 감소
+    public void decreaseStock(Integer quantity) {
+        int restStock = this.stockQuantity - quantity;
+        if (restStock < 0) {
+            throw new IllegalStateException("재고 부족: 남은 재고=" + stockQuantity + ", 요청 수량=" + quantity);
+        }
+        this.stockQuantity = restStock;
+    }
+
+    // 판매량 증가
+    public void increaseSalesCount(long quantity) {
+        this.salesCount = (this.salesCount == null ? 0 : this.salesCount) + quantity;
     }
 }
