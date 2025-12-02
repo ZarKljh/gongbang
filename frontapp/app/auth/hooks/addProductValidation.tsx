@@ -95,10 +95,11 @@ export function addProductValidation() {
         }
 
         /** ----------------------- status ----------------------- */
+        /*
         if (name === 'status') {
-            if (!['DRAFT', 'ACTIVE'].includes(value)) error = '상품 상태는 DRAFT 또는 ACTIVE 중에서 선택해주세요.'
+            if (!['DRAFT', 'PUBLISHED', 'UNPUBLISHED'].includes(value)) error = '상품 상태는 임시저장 또는 판매중 중에서 선택해주세요.'
         }
-
+        */
         /** ----------------------- productMainImageUrl ----------------------- */
         if (name === 'productMainImageUrl') {
             if (!value) error = '대표 이미지는 필수입니다.'

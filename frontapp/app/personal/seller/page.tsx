@@ -258,7 +258,9 @@ export default function MyPage() {
                 active: String(p.active),
                 status: p.status,
                 categoryId: p.categoryId,
+                categoryName: p.categoryName,
                 subcategoryId: p.subcategoryId,
+                subcategoryName: p.subcategoryName,
                 summary: p.summary,
                 description: p.description,
                 seoTitle: p.seoTitle,
@@ -743,11 +745,12 @@ export default function MyPage() {
 
                     // ⭐ 기존 이미지 이름 유지
                     productMainImageName: productImages.PRODUCT_MAIN?.name || tempData.productMainImageName || '',
-
+                    /*
                     productGalleryImageNames: [
                         ...(tempData.productGalleryImageNames || []),
                         ...productImages.PRODUCT.map((f) => f.name),
                     ],
+                    */
                 }
 
                 const form = new FormData()
@@ -781,14 +784,14 @@ export default function MyPage() {
                     PRODUCT: [],
                 })
 
-                setTempData({})
+                //setTempData({})
 
                 // ⭐ 수정 모드 종료
                 setEditMode((prev) => ({ ...prev, productModify: false }))
-                setSelectedProductId(null)
+                //setSelectedProductId(null)
 
                 // ⭐ Product List로 돌아가기
-                onTabClick?.('productList')
+                //onTabClick?.('productList')
 
                 // ⭐ 목록 다시 불러오기
                 fetchStudioProducts(studio.studioId, 0)
@@ -828,7 +831,7 @@ export default function MyPage() {
             setEditMode((prev) => ({ ...prev, productModify: false }))
             //setTempData({})
             //setProductImages({ PRODUCT_MAIN: null, PRODUCT: [] })
-            setSelectedProductId(null)
+            //setSelectedProductId(null)
         }
     }
 

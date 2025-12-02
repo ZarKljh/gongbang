@@ -397,6 +397,10 @@ public class StudioService {
                 .toList();
     }
 
+    public Category getCategory(Long categoryId){
+        return categoryRepository.findById(categoryId).get();
+    }
+
     public Product productAdd(ProductAddRequest request, Studio studio) {
         Subcategory subcategory = subCategoryRepository.findById(request.getSubcategoryId()).get();
 
@@ -424,5 +428,24 @@ public class StudioService {
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
 
         return product;
+    }
+
+    public Product modifyProduct(ProductModifyRequest request, Product product) {
+
+        Subcategory subcategory = subCategoryRepository.findById(request.getSubcategoryId()).get();
+
+        product.setCategoryId(request.getCategoryId());
+        product.setSubcategory(subcategory);
+        product.setName(request.getName());
+        product.setSubtitle(request.getSubtitle());
+        product.setBasePrice(request.getBasePrice());
+        product.setStockQuantity(request.getStockQuantity());
+        product.setBackorderable(request.getBackorderable());
+        product.setStatus(ProductStatus.valueOf(request.getStatus()));
+        product.setActive(request.getActive());
+
+        Product modifiedProduct = productRepository.save(product);
+
+        return modifiedProduct;
     }
 }

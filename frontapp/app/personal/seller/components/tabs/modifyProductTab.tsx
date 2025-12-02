@@ -189,7 +189,10 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
                             <strong>Slug:</strong> {tempData.slug}
                         </p>
                         <p>
-                            <strong>카테고리:</strong> {tempData.categoryId}
+                            <strong>카테고리:</strong> {tempData.categoryName}
+                        </p>
+                        <p>
+                            <strong>서브카테고리:</strong> {tempData.subcategoryName}
                         </p>
                         <p>
                             <strong>가격:</strong> {tempData.basePrice} 원
@@ -359,7 +362,8 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
                         >
                             <option value="">선택해주세요</option>
                             <option value="DRAFT">임시저장</option>
-                            <option value="ACTIVE">판매중</option>
+                            <option value="PUBLISHED">판매중</option>
+                            <option value="UNPUBLISHED">중단중</option>
                         </select>
                     </div>
                     <ErrorMessage message={errors.status} />

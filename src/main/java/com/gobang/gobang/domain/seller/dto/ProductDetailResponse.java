@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.seller.dto;
 
 import com.gobang.gobang.domain.image.entity.Image;
+import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
 import lombok.*;
 
@@ -14,6 +15,8 @@ public class ProductDetailResponse {
     private String name;
     private Long categoryId;
     private Long subcategoryId;
+    private String categoryName;
+    private String subcategoryName;
     private String summary;
     private String description;
     private String slug;
@@ -28,11 +31,13 @@ public class ProductDetailResponse {
     private Image productMainImage;
 
 
-    public ProductDetailResponse(Product p, Image image) {
+    public ProductDetailResponse(Product p, Image image, Category category) {
         this.id = p.getId();
         this.name = p.getName();
         this.categoryId = p.getCategoryId();
         this.subcategoryId = p.getSubcategory() != null ? p.getSubcategory().getId() : null;
+        this.categoryName = category.getName();
+        this.subcategoryName = p.getSubcategory().getName();
         this.basePrice = p.getBasePrice();
         this.stockQuantity = p.getStockQuantity();
         this.active = p.getActive();

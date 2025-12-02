@@ -9,7 +9,9 @@ import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.service.ProfileImageService;
 import com.gobang.gobang.domain.product.dto.ProductDto;
+import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.product.entity.Subcategory;
 import com.gobang.gobang.domain.seller.dto.*;
 import com.gobang.gobang.domain.seller.service.StudioService;
 import com.gobang.gobang.global.RsData.RsData;
@@ -306,9 +308,37 @@ public class StudioController {
         System.out.println("상품이미지조회 시작");
         Image image = studioService.getProductMainImage(productId);
 
+        Category category = studioService.getCategory(product.getCategoryId());
+        Subcategory subcategory = product.getSubcategory();
         System.out.println("상품데이터 front 전달");
-        return RsData.of("200", "상품1건을 조회하였습니다.",new ProductDetailResponse(product, image));
+        return RsData.of("200", "상품1건을 조회하였습니다.",new ProductDetailResponse(product, image, category));
     }
 
+    @PatchMapping("/product/{id}")
+    public RsData<ProductDetailResponse> modifyProduct(
+            @PathVariable("id") Long productId,
+            @RequestPart("request") ProductModifyRequest request,
+            @RequestPart(value = "productMainImage", required = false) MultipartFile productMainImage
+            ){
+        System.out.println("상품 수정 요청 시작");
+
+        Studio studio = studioService.getStudioById(request.getStudioId());
+        Product product = studioService.getDetailProduct(productId);
+
+        if(studio == null){
+            throw new IllegalArgumentException("해당 공방의 정보를 찾을 수 없습니다.");
+        } else if (product == null ){
+            throw new IllegalArgumentException("해당 상품을 찾을 수 없습니다");
+        }
+
+        Product modifiedProduct = studioService.modifyProduct(request, product);
+        if(productMainImage != null && !productMainImage.isEmpty()){
+            profileImageService.replaceProductImage(request.getProductId(), productMainImage, Image.RefType.PRODUCT);
+        }
+        Category category = studioService.getCategory(modifiedProduct.getCategoryId());
+        Image image = studioService.getProductMainImage(productId);
+
+        return RsData.of("200", "상품 정보가 성공적으로 수정되었습니다.", new ProductDetailResponse(modifiedProduct, image, category));
+    }
 
 }
