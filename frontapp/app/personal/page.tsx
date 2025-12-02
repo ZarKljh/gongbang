@@ -2305,7 +2305,9 @@ export default function MyPage() {
                                                             <div className="studio-image-placeholder">🏪</div>
                                                         )}
                                                         <div className='studio-txt-box'>
-                                                            <h3>{follow.studioName}</h3>
+                                                            <Link href={`/seller/studio/${follow.studioId}`}>
+                                                                <h4 className='shortcut-btn'>{follow.studioName}</h4>
+                                                            </Link>
                                                             <p>{follow.studioDescription}</p>
                                                         </div>
                                                     </div>

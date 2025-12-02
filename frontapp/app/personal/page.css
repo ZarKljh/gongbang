@@ -1132,7 +1132,7 @@ body {
 }
 
 .follow-card p {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     margin: 0;
 }
@@ -1152,6 +1152,9 @@ body {
 
 .studio-txt-box {
     max-width: 70%;
+    margin: 0;
+    padding: 0;
+    gap: 0;
 }
 
 .studio-txt-box p:last-child { /*2줄 이상 ... 말줄임표 표시*/
@@ -1162,6 +1165,7 @@ body {
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
+    color: #555;
 }
 
 /* 서브탭 콘텐츠 */
