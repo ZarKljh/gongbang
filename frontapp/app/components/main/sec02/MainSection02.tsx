@@ -52,7 +52,7 @@ export default function MainSection02() {
     const products = data ?? []
 
     if (products.length === 0) {
-        return <p>아직 최근 3일간 좋아요 많은 상품이 없어요.</p>
+        return <p className={styles.rsBox}>아직 최근 3일간 좋아요 많은 상품이 없어요.</p>
     }
 
     return (

@@ -23,21 +23,29 @@ public class ApiSecurityConfig {
                 .securityMatcher("/api/**")
                 .authorizeRequests(
                         authorizeRequests -> authorizeRequests
+                                // 🔹 관리자/api/home
                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/*").permitAll()
-                                .requestMatchers(HttpMethod.PATCH, "/api/**").permitAll()
+
+                                //메인페이지,목록페이지,상세페이지 게스트용 허용
+                                .requestMatchers(HttpMethod.GET, "/api/v1/home/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/product/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/product/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/filter/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/category/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/theme/**").permitAll()
+
+                                // 🔥 주문 관련은 반드시 로그인 필요
+                                .requestMatchers(HttpMethod.POST, "/api/v1/orders/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").authenticated()
+
+                                // 🔓 인증/회원/스튜디오 등 공개 API들
                                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/*/members/login").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/*/members/logout").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/studio/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/studio/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/*/members/login").permitAll() // 로그인은 누구나 가능, post 요청만 허용
-                                .requestMatchers(HttpMethod.GET, "/api/*/members/logout").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/v1/mypage/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/v1/mypage/**").permitAll()
-                                .requestMatchers(HttpMethod.PATCH, "/api/v1/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/reviews/**").authenticated()
 

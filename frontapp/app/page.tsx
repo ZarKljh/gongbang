@@ -32,7 +32,7 @@ export default function Main() {
     const fetchAll = async (): Promise<void> => {
         try {
             // 1 카테고리 목록 먼저 요청
-            const res = await api.get('/category')
+            const res = await api.get('category')
 
             // ✅ 구조 분해 (axios는 자동으로 JSON 파싱)
             const categoryList: Category[] = res.data.data.categoryList
@@ -41,7 +41,7 @@ export default function Main() {
 
             // 2 카테고리 ID별로 서브카테고리 병렬 요청
             const subPromises = categoryList.map(async (cat) => {
-                const res = await api.get(`/category/${cat.id}/sub`)
+                const res = await api.get(`category/${cat.id}/sub`)
 
                 return [cat.id, res.data.data.subCategoryList] as const
             })

@@ -3,14 +3,15 @@
 import { useSearchParams } from 'next/navigation'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import api from '@/app/utils/api'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import styles from '@/app/components/product/detail/styles/Detail.module.css'
 import Link from 'next/link'
 import { queryClient } from '@/app/utils/ReactQueryProviders'
-//토스페이먼츠
-import { loadPaymentWidget, ANONYMOUS } from '@tosspayments/payment-widget-sdk'
-import { useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+// 토스페이먼츠
+import { loadPaymentWidget /*, ANONYMOUS*/ } from '@tosspayments/payment-widget-sdk'
 import { v4 as uuidv4 } from 'uuid'
+import { useBuyBtn, usePrepareOrder } from '@/app/utils/api/order'
 
 type ProductDetail = {
     id: number
@@ -91,13 +92,18 @@ type CommonResponse<T> = {
 export default function ProductDetailView() {
     const searchParams = useSearchParams()
     const productId = searchParams.get('productId') // string | null
+    const router = useRouter()
 
-    //위젯
+    // 토스 위젯 관련 상태
+    const [paymentWidget, setPaymentWidget] = useState<any | null>(null)
     const [widgetLoaded, setWidgetLoaded] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
     const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
     const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
 
     const [count, setCount] = useState(1)
+
     const { data, isLoading, isError, error } = useQuery<ProductDetailApiResponse>({
         queryKey: ['productDetail', productId],
         queryFn: async () => {
@@ -105,21 +111,19 @@ export default function ProductDetailView() {
                 throw new Error('productId가 없습니다.')
             }
 
-            const res = await api.get(`/product/${productId}/detail`)
+            const res = await api.get(`product/${productId}/detail`)
             console.log('🔁 fetch product detail:', res.data.data)
             return res.data.data as ProductDetailApiResponse
         },
         enabled: !!productId,
         retry: 1,
-
-        // 🔥 렌더(마운트)·포커스 때마다 항상 새로 가져오도록
-        staleTime: 0, // 항상 금방 stale 취급
-        refetchOnMount: 'always', // 컴포넌트 마운트될 때마다 refetch
-        refetchOnWindowFocus: 'always', // 창 포커스 돌아올 때마다 refetch
-        refetchOnReconnect: 'always', // 네트워크 재연결 시도 때 refetch
+        staleTime: 0,
+        refetchOnMount: 'always',
+        refetchOnWindowFocus: 'always',
+        refetchOnReconnect: 'always',
     })
 
-    // 🟡 2) data에서 바로 값 꺼내쓰기
+    // 🟡 2) data에서 값 꺼내쓰기
     const product = data?.productDetailList
     const detailImage = data?.detailImage
     const sellerinfo = data?.studioDetail
@@ -136,7 +140,7 @@ export default function ProductDetailView() {
         : 'http://localhost:8090/uploads/products/no-image-soft.png'
 
     const gbImageUrl = gbLogo
-        ? `http://localhost:8090${gbLogo.imageUrl}`
+        ? `http://localhost:8090/images/${gbLogo.imageUrl}`
         : 'http://localhost:8090/uploads/products/no-image-soft.png'
 
     const unitPrice = useMemo(() => product?.basePrice ?? 0, [product])
@@ -214,7 +218,6 @@ export default function ProductDetailView() {
             }
         },
     })
-
     // 🟡 4) 좋아요(WishList) 토글 뮤테이션 (캐시 직접 수정)
     const likeMutation = useMutation({
         mutationFn: (prodId: number) =>
@@ -254,6 +257,71 @@ export default function ProductDetailView() {
         },
     })
 
+    // ✅ 토스 위젯 초기화 / 렌더 함수
+    const main = async () => {
+        try {
+            console.log('🧩 main 실행, 현재 paymentWidget:', paymentWidget)
+
+            let widget = paymentWidget
+
+            // 1) 위젯 인스턴스가 없으면 처음 한 번만 생성
+            if (!widget) {
+                widget = await loadPaymentWidget(clientKey, customerKey)
+                setPaymentWidget(widget)
+            }
+
+            // 2) 모달이 열릴 때마다 DOM에 다시 붙이기
+            widget.renderPaymentMethods('#payment-method', { value: total })
+            widget.renderAgreement('#agreement')
+
+            setWidgetLoaded(true)
+        } catch (e) {
+            console.error('토스 위젯 초기화 중 오류:', e)
+            setWidgetLoaded(false)
+        }
+    }
+
+    // React Query mutation 훅
+    const { mutateAsync: prepareOrderMutation } = usePrepareOrder()
+    // React Query mutation 훅
+    const { mutateAsync: buyBtnMutation } = useBuyBtn()
+
+    const handleRequestPayment = async () => {
+        console.log('🧾 결제 버튼 클릭, paymentWidget:', paymentWidget)
+        if (!paymentWidget || !product) {
+            console.warn('❗ paymentWidget 또는 product 정보가 없습니다.')
+            return
+        }
+
+        try {
+            // 1️⃣ 먼저 서버에 임시 주문 생성 요청
+            const prepare = await prepareOrderMutation({
+                productId: product.id,
+                quantity: count,
+            })
+            console.log(`orderId:${prepare.orderCode}`)
+            await paymentWidget.requestPayment({
+                amount: total, // 🔥 총 금액 (수량 반영)
+                orderId: prepare.orderCode,
+                orderName: product.name, // 🔥 상품명
+                successUrl: `${window.location.origin}/pay/success`,
+                failUrl: `${window.location.origin}/pay/fail`,
+            })
+        } catch (e) {
+            console.error('결제 요청 중 오류:', e)
+        }
+    }
+
+    // 🔥 모달이 열렸을 때 main() 실행 (⚠️ 훅이니까 if/return 위에 둔 것!)
+    useEffect(() => {
+        console.log('🎯 isModalOpen / total 변경:', isModalOpen, total)
+        if (!isModalOpen) return
+        main()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isModalOpen, total])
+
+    // ────────────────── 여기까지가 "모든 훅 구역" ──────────────────
+
     if (isLoading) return <p>로딩 중...</p>
 
     if (isError) {
@@ -264,27 +332,34 @@ export default function ProductDetailView() {
     const inc = () => setCount((v) => v + 1)
     const dec = () => setCount((v) => (v > 1 ? v - 1 : 1))
 
-    const main = async () => {
-        // 1) PaymentWidget 불러오기
-        const paymentWidget = await loadPaymentWidget(clientKey, customerKey)
+    // 바로구매하기버튼
+    const openPaymentModal = async () => {
+        try {
+            await buyBtnMutation()
+            setIsModalOpen(true)
+        } catch (e: any) {
+            console.error('💥 buyBtn error:', e)
 
-        // 2) 금액 설정 (지금은 예시로 15000원)
-        paymentWidget.renderPaymentMethods('#payment-method', {
-            value: 15000,
-        })
+            console.log('status = ', e?.response?.status)
+            console.log('data   = ', e?.response?.data)
+            const error = e?.response?.data
 
-        // 3) 약관 UI 렌더링
-        paymentWidget.renderAgreement('#agreement')
+            //기본 배송지 없음
+            if (error?.code === 'NO_DEFAULT_ADDRESS') {
+                alert(error.message)
+                router.push('/mypage/address')
+                return
+            }
 
-        setWidgetLoaded(true)
+            // 로그인 안 되어 있음
+            if (e?.response?.status === 401) {
+                alert('로그인이 필요한 서비스입니다.')
+                router.push('/auth/login')
+                return
+            }
 
-        // 4) 결제요청
-        await paymentWidget.requestPayment({
-            orderId: 'order_' + uuidv4(),
-            orderName: '공예담 무드등',
-            successUrl: `${window.location.origin}/pay/success`,
-            failUrl: `${window.location.origin}/pay/fail`,
-        })
+            alert(error?.message || '기본 배송지가 설정되어 있지 않습니다2.')
+        }
     }
 
     return (
@@ -345,7 +420,7 @@ export default function ProductDetailView() {
                                                 followMutation.mutate(sellerinfo.studioId)
                                             }}
                                         >
-                                            {isFollowed ? '팔로잉' : '+ 팔로우'}
+                                            {isFollowed ? '언팔로우' : '+ 팔로우'}
                                         </button>
                                         <Link href={`/seller/studio/${sellerinfo.studioId}`} className={styles.btnHome}>
                                             작가홈
@@ -362,38 +437,78 @@ export default function ProductDetailView() {
                     )}
 
                     <div className={styles.buttonRow}>
-                        <button className={styles.btnBuy} onClick={main}>
+                        <button className={styles.btnBuy} onClick={openPaymentModal}>
                             바로구매하기
                         </button>
-                        {/* 결제 UI가 들어갈 영역 */}
-                        {widgetLoaded && (
+
+                        {/* 결제 모달 */}
+                        {isModalOpen && (
                             <div className={styles.modalOverlay}>
-                                <div className={styles.modal}>
+                                <div className={styles.modalContainer}>
+                                    {/* 헤더 */}
                                     <div className={styles.modalHeader}>
                                         <h2 className={styles.modalTitle}>결제하기</h2>
                                         <button
                                             type="button"
-                                            onClick={() => setWidgetLoaded(false)}
+                                            onClick={() => {
+                                                setIsModalOpen(false)
+                                                setWidgetLoaded(false)
+                                            }}
                                             className={styles.modalCloseBtn}
                                         >
                                             ✕
                                         </button>
                                     </div>
 
-                                    {/* 결제 UI가 들어갈 영역 */}
-                                    <div className={styles.paymentBody}>
-                                        <div id="payment-method" className={styles.paymentMethods} />
-                                        <div id="agreement" className={styles.paymentAgreement} />
+                                    {/* ✅ 한 섹션 카드 안에 상품요약 + 결제위젯 같이 */}
+                                    <div className={styles.modalSection}>
+                                        {/* 상품 정보 요약 */}
+                                        <div className={styles.modalProductSummary}>
+                                            <div className={styles.summaryThumb}>
+                                                <img src={pdImageUrl} alt={product?.name} />
+                                            </div>
+
+                                            <div className={styles.summaryText}>
+                                                <div className={styles.summaryTitle}>{product?.name}</div>
+                                                <div className={styles.summaryDesc}>
+                                                    {product?.description ?? '상품 설명이 없습니다.'}
+                                                </div>
+
+                                                <div className={styles.summaryRow}>
+                                                    <span className={styles.summaryLabel}>수량</span>
+                                                    <span className={styles.summaryValue}>{count}개</span>
+                                                </div>
+
+                                                <div className={styles.summaryRow}>
+                                                    <span className={styles.summaryLabel}>총 결제 금액</span>
+                                                    <span className={styles.summaryTotal}>
+                                                        {total.toLocaleString()}원
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 섹션 안 구분선 */}
+                                        <div className={styles.sectionDivider} />
+
+                                        {/* 토스 결제 위젯 영역 */}
+                                        <div className={styles.paymentBox}>
+                                            <div id="payment-method" className={styles.paymentMethods} />
+                                            <div id="agreement" className={styles.paymentAgreement} />
+                                        </div>
                                     </div>
 
-                                    <button
-                                        type="button"
-                                        // onClick={handleRequestPayment}
-                                        className={styles.paymentSubmitBtn}
-                                        disabled={!widgetLoaded}
-                                    >
-                                        결제하기
-                                    </button>
+                                    {/* 하단 결제 버튼 + 상태 텍스트(오른쪽 정렬 강조) */}
+                                    <div className={styles.modalFooter}>
+                                        <button
+                                            type="button"
+                                            onClick={handleRequestPayment}
+                                            className={styles.paymentSubmitBtn}
+                                            disabled={!widgetLoaded}
+                                        >
+                                            {widgetLoaded ? '결제하기' : '결제 준비중…'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -410,18 +525,17 @@ export default function ProductDetailView() {
                                     cartMutation.mutate([product.id, count])
                                 }}
                             >
-                                {'장바구니'}
+                                장바구니
                             </button>
                             <button
                                 className={styles.btnFav}
                                 onClick={(e) => {
                                     e.preventDefault()
                                     if (!product?.id) return
-
                                     likeMutation.mutate(product.id)
                                 }}
                             >
-                                {liked ? '❤️' : '🤍'}
+                                {liked ? '❤️' : '🤍'} ({likeCount})
                             </button>
                         </div>
                     </div>

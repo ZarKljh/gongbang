@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/home/v1")
+@RequestMapping("/api/v1/home")
 public class HomeController {
     private final HomeService homeService;
 

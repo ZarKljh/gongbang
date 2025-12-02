@@ -25,6 +25,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     @Query("SELECT o FROM Orders o LEFT JOIN FETCH o.deliveries d LEFT JOIN FETCH d.address WHERE o.orderId = :orderId")
     Optional<Orders> findByIdWithDeliveries(@Param("orderId") Long orderId);
 
+    //hj - 주문코드 조회하기
+    Optional<Orders> findByOrderCode(String orderCode);
     @Query("""
         SELECT o
         FROM Orders o
