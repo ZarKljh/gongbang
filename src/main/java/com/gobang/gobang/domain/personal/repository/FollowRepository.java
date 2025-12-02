@@ -6,9 +6,9 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.personal.entity.Follow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +18,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     // 사용자별 팔로우 목록 조회
     List<Follow> findBySiteUser(SiteUser siteUser);
 
-    // 특정 셀러의 팔로워 목록 조회
-    List<Follow> findByStudio(Studio studio);
+    void deleteBySiteUserIdAndStudioStudioId(Long siteUserId, Long studioId);
 
     // 사용자가 특정 셀러를 팔로우하는지 확인
     Optional<Follow> findBySiteUserAndStudio(SiteUser siteUser, Studio studio);
@@ -32,4 +31,16 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 팔로우 여부 확인
     boolean existsBySiteUser_AndStudio(SiteUser siteUser, Studio studio);
+
+    @Query("""
+        SELECT f.studio.id
+        FROM Follow f
+        WHERE f.createdAt >= :from
+        GROUP BY f.studio.id
+        ORDER BY COUNT(f.id) DESC
+        """)
+    List<Long> findTopStudiosByRecentFollows(LocalDateTime from);
+
+    // 특정 공방의 팔로워 수
+    int countByStudioStudioId(Long studioId);
 }

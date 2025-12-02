@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -100,4 +101,43 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 
+
+    @Query(value = """
+            SELECT
+                p.id AS product_id,
+                p.name AS product_name,
+                i.image_url AS thumbnail_url,
+                p.base_price AS base_price,
+                COUNT(w.wishlist_id) AS recent_likes
+            FROM product p
+            LEFT JOIN wish_list w
+                ON w.product_id = p.id
+               AND w.created_at >= :from
+               AND w.created_at < :to
+            LEFT JOIN image i
+                ON i.ref_id = p.id
+               AND i.ref_type = 'PRODUCT'
+            GROUP BY p.id, p.name, i.image_url
+            HAVING COUNT(w.wishlist_id) >= :minLikes
+            ORDER BY recent_likes DESC, p.id DESC
+            LIMIT :size
+            """, nativeQuery = true)
+    List<HotProductProjection> findHotProductsByLikes(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            @Param("minLikes") int minLikes,
+            @Param("size") int size
+    );
+
+
+    public interface HotProductProjection {
+
+        Long getProductId();
+        Long getBasePrice();
+        String getProductName();
+        String getThumbnailUrl();
+        Long getRecentLikes();
+    }
+
+    List<Product> findTop3ByStudioIdOrderByCreatedDateDesc(Long studioId);
 }

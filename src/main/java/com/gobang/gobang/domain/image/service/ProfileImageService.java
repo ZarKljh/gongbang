@@ -6,6 +6,8 @@ import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,7 @@ public class ProfileImageService {
     private final SiteUserRepository siteUserRepository;
     private final StudioRepository  studioRepository;
     private final ImageRepository imageRepository;
+    private final ProductRepository productRepository;
 
     @Value("${custom.genFileDirPath}")
     private String uploadPath;
@@ -255,5 +258,56 @@ public class ProfileImageService {
         }
         // 새 갤러리 이미지를 기존 upload 메서드로 업로드
         return uploadStudioGalleryImages(studioId, newFiles);
+    }
+
+    public RsData<Void> uploadProductImage(Long productId, MultipartFile file, Image.RefType refType, int sortOrder) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 상품이 없습니다."));
+
+        if(file == null || file.isEmpty()) {
+            return RsData.of("F-1", "이미지가 없습니다.");
+        }
+
+        try {
+
+            //동일한 이름의 이미지 파일이 있으면 이름을 바꿔서 저장하기
+            // 🔥 1️⃣ 원본 파일명
+            String originalName = StringUtils.cleanPath(file.getOriginalFilename());
+
+            // 🔥 2️⃣ DB에 동일 파일명이 존재하는지 확인
+            //Optional<Image> oi = imageRepository.findByRefTypeAndRefId(refType, studioId);
+            Path targetPath = Paths.get(uploadPath, originalName);
+
+            // 🔥 3️⃣ 파일명 충돌 처리
+            String finalFileName = originalName;
+            /*
+            if (oi.isPresent()) {
+                // 같은 이름이 있으면 새 이름을 강제로 생성하여 MultipartFile 복제
+                finalFileName = System.currentTimeMillis() + "_" + originalName;
+            }
+            */
+            if (Files.exists(targetPath)) {
+                finalFileName = System.currentTimeMillis() + "_" + originalName;
+            }
+            // 🔥 4️⃣ saveFile() 호출 (파일명은 MultipartFile.getOriginalFilename() 사용됨)
+            String savedFileName = saveFile(file, finalFileName);
+
+            Image image = Image.builder()
+                    .refType(refType)
+                    .refId(productId)
+                    .imageFileName(savedFileName)
+                    .imageUrl(savedFileName)
+                    .sortOrder(sortOrder)
+                    .build();
+
+            imageRepository.save(image);
+            return RsData.of("S-1", "프로필 업로드 성공");
+
+
+        } catch (Exception e) {
+            return RsData.of("F-2", "상품이미지 업로드 실패: " + e.getMessage());
+        }
+
     }
 }

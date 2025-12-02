@@ -16,10 +16,13 @@
 
 .heroBanner img {
     width: 100%;
-    height: 100%;
+    height: clamp(220px, 40vw, 420px); /* 최소 220, 화면 비율, 최대 420 */
     object-fit: cover;
     display: block;
+    border-radius: 16px;
     object-position: bottom;
+    width: 100%;
+    overflow: hidden;
 }
 .mainPage {
     max-width: 1280px;
@@ -191,80 +194,84 @@
     color: #745f45;
 }
 
-/* 상품 섹션 */
-.recommendWrap {
-    max-width: 1280px;
-    margin: 60px auto;
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 60px;
-}
-
-.sectionBox {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.sectionTitle {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 0;
-    color: #6b5642;
-}
-
-.productGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    list-style: none;
-    padding: 0;
-}
-
-/* 🧁 상품 아이템 전체 */
-.productItem {
-    display: flex;
-    flex-direction: column;
-}
-
-/* 🖼️ 상품 이미지(또는 박스) */
-.productCard {
-    width: 100%;
-    height: 180px;
-    background: #f7f7f7;
-    border-radius: 12px;
-    border: 1px solid #e5e5e5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 8px; /* 🔥 이미지와 텍스트 간격 */
-    font-size: 16px;
-    color: #555;
-}
-
-.productInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 0px; /* 🔥 완전 최소 간격 */
-}
-
-.productTitle {
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 1.2; /* 🔥 줄간 여백 줄이기 */
-    margin: 4 0px; /* 🔥 기본 margin 제거 */
-    color: #8a7661;
-}
-
-.productPrice {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 4 0px; /* 🔥 기본 margin 제거 */
-    line-height: 1.2; /* 시각적으로 안정감 */
-    color: #8a7661;
-}
-
 body {
     /* background-color: #f7f3eb; */
+}
+
+@media (max-width: 768px) {
+    .slider {
+        justify-content: flex-start;
+        padding: 0.5rem 0;
+    }
+
+    .categoryList {
+        justify-content: flex-start;
+        gap: 1rem;
+        overflow-x: auto; /* 가로 스크롤 */
+        padding-bottom: 6px;
+    }
+
+    .categoryItem {
+        flex: 0 0 auto; /* 줄바꿈 말고 옆으로 나열 */
+    }
+
+    .categoryBtn {
+        width: 72px;
+        height: 72px;
+    }
+
+    .categoryLabel {
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .sliderPrev,
+    .sliderNext {
+        font-size: 1.2rem;
+        padding: 0 4px;
+    }
+}
+@media (max-width: 480px) {
+    .slider {
+        gap: 0.5rem;
+        padding: 0.3rem 0;
+    }
+
+    .categoryList {
+        gap: 0.75rem;
+        padding-bottom: 4px;
+        overflow-x: auto;
+    }
+
+    .categoryItem {
+        flex: 0 0 auto;
+    }
+
+    /* 🔥 카테고리 원본보다 더 작게 */
+    .categoryBtn {
+        width: 60px;
+        height: 60px;
+    }
+
+    /* 🔥 텍스트도 더 작게 */
+    .categoryLabel {
+        font-size: 11px;
+        margin-top: 3px;
+    }
+
+    /* 🔥 화살표 버튼 더 축소 */
+    .sliderPrev,
+    .sliderNext {
+        font-size: 1rem;
+        padding: 0 2px;
+    }
+
+    /* 여백도 조금 더 밀착 */
+    .mainPage {
+        padding: 0 12px;
+    }
+
+    .pageContainer {
+        padding: 10px 12px;
+    }
 }

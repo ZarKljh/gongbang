@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.review.repository;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
+import com.gobang.gobang.domain.review.dto.response.ReviewPopularProductResponse;
 import com.gobang.gobang.domain.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
 
     Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
+
     Page<Review> findByIsActiveTrue(Pageable pageable);
 
     // 물품 상세페이지 만들어지면 사용(v평균)
@@ -36,30 +38,48 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // 별점 분포 그래프
     @Query("""
-    SELECT r.rating, COUNT(r)
-    FROM Review r
-    WHERE r.productId = :productId AND r.isActive = true
-    GROUP BY r.rating
-""")
+                SELECT r.rating, COUNT(r)
+                FROM Review r
+                WHERE r.productId = :productId AND r.isActive = true
+                GROUP BY r.rating
+            """)
     List<Object[]> countRatingGroup(@Param("productId") Long productId);
-
 
 
     //목록 평균별점용 - hyo
     @Query("""
-        SELECT new com.gobang.gobang.domain.product.dto.ReviewRatingDto(
-            r.productId,
-            AVG(r.rating),
-            COUNT(r)
-        )
-        FROM Review r
-        WHERE r.productId IN :ids
-        GROUP BY r.productId
-    """)
+                SELECT new com.gobang.gobang.domain.product.dto.ReviewRatingDto(
+                    r.productId,
+                    AVG(r.rating),
+                    COUNT(r)
+                )
+                FROM Review r
+                WHERE r.productId IN :ids
+                GROUP BY r.productId
+            """)
     List<ReviewRatingDto> findRatingStatsByProductIds(@Param("ids") List<Long> ids);
 
     List<Review> findByProductId(Long productId);
 
     // 상품, 내용 검색용
     Page<Review> findByProductIdAndContentContainingIgnoreCase(Long productId, String keyword, Pageable pageable);
+
+    // 리뷰 100개 이상 상품 추출용
+    @Query("""
+SELECT new com.gobang.gobang.domain.review.dto.response.ReviewPopularProductResponse(
+    r.productId,
+    p.name,
+    p.basePrice,
+    ROUND(AVG(r.rating), 1),
+    COUNT(r.reviewId),
+    ''
+)
+FROM Review r
+JOIN Product p ON p.id = r.productId
+WHERE p.active = true
+GROUP BY r.productId, p.name, p.basePrice
+HAVING COUNT(r.reviewId) >= 100
+ORDER BY AVG(r.rating) DESC, COUNT(r.reviewId) DESC
+""")
+    List<ReviewPopularProductResponse> findPopularReviewProducts();
 }

@@ -14,7 +14,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 class GobangApplicationTests {
@@ -45,8 +49,8 @@ class GobangApplicationTests {
             throw new RuntimeException("리뷰 생성에 필요한 유저가 40명 이상 존재해야 합니다.");
         }
 
-        // 40명만 사용
-        users = users.subList(0, 40);
+        // 최대150명 사용
+        users = users.subList(0, 150);
 
         System.out.println("✔ 유저 " + users.size() + "명 로드 완료");
 
@@ -70,13 +74,29 @@ class GobangApplicationTests {
         int userIndex = 0;
 
         // ------------------------------
-        // 3) productId = 1~20, 리뷰 40개씩 생성 (총 800개)
+        // 3) 20개 중 랜덤 10개만 많은 리뷰를 생성하도록 처리
+        // ------------------------------
+        List<Long> pick = new ArrayList<>();
+        for (long i = 1; i <= 20; i++) pick.add(i);
+        Collections.shuffle(pick);
+        Set<Long> highReviewProducts = pick.stream().limit(10).collect(Collectors.toSet());
+
+        System.out.println("▶ 리뷰 많이 생성되는 상품 ID: " + highReviewProducts);
+
+        // ------------------------------
+        // 4) productId = 1~20 리뷰 생성
+        //    (변경: 일부는 랜덤 100~150개)
         // ------------------------------
         for (long productId = 1; productId <= 20; productId++) {
 
-            System.out.println(" productId=" + productId + " 리뷰 생성 시작");
+            // 100~150 랜덤 or 기본 40
+            int reviewCount = highReviewProducts.contains(productId)
+                    ? (100 + (int)(Math.random() * 51))  // 100~150
+                    : 40;
 
-            for (int i = 1; i <= 40; i++) {
+            System.out.println(" productId=" + productId + " 리뷰 생성 시작 (" + reviewCount + "개)");
+
+            for (int i = 1; i <= reviewCount; i++) {
 
                 SiteUser writer = users.get(userIndex % users.size());
                 userIndex++;
@@ -85,7 +105,15 @@ class GobangApplicationTests {
                         ? longText
                         : "이 상품 정말 만족합니다! 테스트 리뷰 " + i;
 
-                int rating = (int)(Math.random() * 5) + 1;
+                // 평균 4.3 ~ 4.5
+                double r = Math.random();
+                int rating;
+
+                if (r < 0.05) rating = 1;
+                else if (r < 0.10) rating = 2;
+                else if (r < 0.20) rating = 3;
+                else if (r < 0.55) rating = 4;
+                else rating = 5;
                 int viewCount = (int)(Math.random() * 20);
                 int likeCount = (int)(Math.random() * 10);
 
@@ -128,7 +156,6 @@ class GobangApplicationTests {
                 }
             }
 
-            System.out.println("✔ productId " + productId + " 리뷰 40개 생성 완료");
         }
 
         System.out.println("🎉 리뷰 + 이미지 생성 완료!");

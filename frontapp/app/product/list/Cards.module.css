@@ -281,7 +281,7 @@
 /* 칩 선택 상태 */
 .chip.active,
 .prChip.active {
-    background: #7a5a46;
+    background: #b17457;
     color: #fff;
     border-color: #7a5a46;
     transform: scale(0.98);
@@ -318,7 +318,7 @@
 
 /* 체크된 상태 */
 .checkbox:checked {
-    background: #7a5a46; /* 포인트 색 */
+    background: #b17457; /* 포인트 색 */
     border-color: #7a5a46;
 }
 

@@ -10,7 +10,7 @@ export type AdminMe = {
     role?: string
 }
 
-const baseURL = process.env.NEXT_PUBLIC_ADMIN_API ?? 'http://localhost:8090'
+const baseURL = process.env.NEXT_PUBLIC_ADMIN_API ?? 'http://localhost:8090/api/v1'
 
 export const api = axios.create({
     baseURL: 'http://localhost:8090/api/v1',
