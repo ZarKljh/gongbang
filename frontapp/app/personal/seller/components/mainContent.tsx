@@ -76,7 +76,7 @@ export default function MainContent(props: MainContentProps) {
                                                 alt="공방로고사진"
                                             />
                                         ) : (
-                                            <div className="no-image">No Logo</div>
+                                            <div className="no-image">default gray gradient circle</div>
                                         )}
                                     </div>
                                 </td>

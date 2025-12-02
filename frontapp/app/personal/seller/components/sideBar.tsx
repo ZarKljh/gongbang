@@ -19,7 +19,7 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                     <ul>
                         <li>
                             <button
-                                className={`nav-btn ${activeTab === 'studio' ? 'active' : ''}`}
+                                className={activeTab === 'studio' ? 'active' : ''}
                                 onClick={() => onTabClick('studio')}
                             >
                                 공방정보
@@ -27,7 +27,7 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                         <li>
                             <button
-                                className={`nav-btn ${activeTab === 'productList' ? 'active' : ''}`}
+                                className={activeTab === 'productList' ? 'active' : ''}
                                 onClick={() => onTabClick('productList')}
                             >
                                 상품현황
@@ -36,7 +36,8 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                     </ul>
                 </div>
             </nav>
-
+            {/* Personal 페이지 이동 링크 */}
+            <div style={{ marginTop: '24px' }}></div>
             <Link href="/personal" className="link-btn">
                 마이페이지로 이동
             </Link>
