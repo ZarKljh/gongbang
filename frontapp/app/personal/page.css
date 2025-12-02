@@ -1125,7 +1125,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #e5e7eb;
     padding: 20px;
     margin-bottom: 12px;
     border-radius: 8px;
@@ -1133,9 +1132,36 @@ body {
 }
 
 .follow-card p {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
     margin: 0;
+}
+
+.studio-info {
+    display: flex;
+    gap: 10px;
+}
+
+.studio-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.studio-txt-box {
+    max-width: 70%;
+}
+
+.studio-txt-box p:last-child { /*2줄 이상 ... 말줄임표 표시*/
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
 }
 
 /* 서브탭 콘텐츠 */
@@ -1497,6 +1523,7 @@ body {
     border-radius: 8px;
     transition: all 0.2s;
     text-align: center;
+    text-wrap: nowrap;
 }
 
 /* .btn-primary.delete {
@@ -1537,6 +1564,7 @@ button.link-btn:disabled:hover {
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
+    text-wrap: nowrap;
 }
 
 /* .link-btn.delete {

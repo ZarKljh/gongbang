@@ -2304,7 +2304,10 @@ export default function MyPage() {
                                                         ) : (
                                                             <div className="studio-image-placeholder">🏪</div>
                                                         )}
-                                                        <p>{follow.studioName}</p>
+                                                        <div className='studio-txt-box'>
+                                                            <h3>{follow.studioName}</h3>
+                                                            <p>{follow.studioDescription}</p>
+                                                        </div>
                                                     </div>
                                                     <div className='link-btn delete' onClick={() => handleUnfollow(follow.studioId)}>
                                                         언팔로우
