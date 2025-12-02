@@ -1665,10 +1665,10 @@ export default function MyPage() {
                                         return (
                                             <div key={order.orderId} className="order-card">
 
-                                                {/* --- 주문 요약 (아코디언 열기) --- */}
+                                                {/* --- 주문 요약 --- */}
                                                 <div
                                                     className="order-header"
-                                                    onClick={() => toggleManageOrder(order.orderId)}
+                                                    onClick={() => router.push(`/personal/${order.orderId}`)}
                                                 >
                                                     <div className='order-title'>
                                                         <p>주문번호: {order.orderCode}</p>
@@ -1677,50 +1677,6 @@ export default function MyPage() {
                                                     </div>
                                                     <span className={`badge ${status}`}>{status}</span>
                                                 </div>
-
-                                                {/* --- 아코디언 상세 영역 --- */}
-                                                {openedOrderId === order.orderId && (
-                                                    <div className="order-accordion">
-
-                                                        <h3>상품 내역</h3>
-                                                        {items.map((item) => (
-                                                            <div key={item.orderItemId} className="order-item">
-                                                                <div className="order-item-text">
-                                                                    <p className="order-item-name">{item.productName}</p>
-                                                                    <p className="order-item-detail">
-                                                                        {item.price?.toLocaleString()}원 / {item.quantity}개
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-
-                                                        {/* 주문 상세 정보 */}
-                                                        <div className="order-info">
-                                                            <p>주문일자: {order.createdDate}</p>
-                                                            <p>주문번호: {order.orderCode}</p>
-                                                            <p>상태: {status}</p>
-                                                            <p>사유: {order.reason}</p>
-                                                        </div>
-
-                                                        {/* 삭제 버튼만 표시 */}
-                                                        <div className="order-actions">
-                                                            <button
-                                                                className="link-btn delete"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation()
-                                                                    handleDeleteOrder(order.orderId)
-                                                                }}
-                                                            >
-                                                                삭제
-                                                            </button>
-                                                        </div>
-
-                                                        <div className="order-footer">
-                                                            <p>총 결제금액: {order.totalPrice?.toLocaleString()}원</p>
-                                                        </div>
-
-                                                    </div>
-                                                )}
                                             </div>
                                         )
                                     })
