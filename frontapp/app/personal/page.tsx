@@ -1476,7 +1476,7 @@ export default function MyPage() {
                                     className={`nav-btn ${activeTab === 'like' ? 'active' : ''}`}
                                     onClick={() => handleTabClick('like')}
                                 >
-                                    나의 좋아요
+                                    위시리스트
                                 </button>
                             </li>
                         </ul>
@@ -2073,11 +2073,11 @@ export default function MyPage() {
                         </div>
                     )}
 
-                    {/* 나의 좋아요 */}
+                    {/* 위시리스트 */}
                     {activeTab === 'like' && (
                         <div className="tab-content">
                             <div className="section-header">
-                                <h2>나의 좋아요</h2>
+                                <h2>위시리스트</h2>
                             </div>
 
                             <div className="tab-nav">
