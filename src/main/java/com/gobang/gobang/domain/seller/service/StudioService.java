@@ -37,6 +37,7 @@ public class StudioService {
     private final ImageRepository imageRepository;
     private final CategoryRepository categoryRepository;
     private final SubCategoryRepository subCategoryRepository;
+    private final ProductOfStudioRepository productOfStudioRepository;
 
     public Page<ProductDto> getProductListByStudioId(Long studioId, Pageable pageable) {
         Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);
@@ -238,6 +239,15 @@ public class StudioService {
         return imageRepository.findALLByRefIdAndRefType(studioId, Image.RefType.STUDIO);
     }
 
+    public Image getProductMainImage(Long productId) {
+        Optional<Image> osli = imageRepository.findByRefIdAndRefType(productId, Image.RefType.PRODUCT);
+        if (osli.isPresent()) {
+            return osli.get();
+        } else {
+            return null;
+        }
+    }
+
     public Studio modifyStudio(StudioAddRequest studioAddRequest, Studio studio, SiteUser seller) {
 
         studio.setCategoryId(Long.parseLong(studioAddRequest.getCategoryId()));
@@ -407,6 +417,12 @@ public class StudioService {
                 .build();
 
         Product product = productRepository.save(newProduct);
+        return product;
+    }
+    public Product getDetailProduct(Long productId){
+        Product product  = productOfStudioRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+
         return product;
     }
 }

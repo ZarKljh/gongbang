@@ -259,12 +259,19 @@ export default function MyPage() {
                 status: p.status,
                 categoryId: p.categoryId,
                 subcategoryId: p.subcategoryId,
+                summary: p.summary,
+                description: p.description,
+                seoTitle: p.seoTitle,
+                seoDescription: p.seoDescription,
 
                 // 기존 이미지 URL
-                productMainImageUrl: p.mainImageUrl,
-                productGalleryImageUrls: p.galleryImages.map((g: any) => g.imageUrl),
-                productGalleryImageNames: p.galleryImages.map((g: any) => g.imageFileName),
+                productMainImageName: p.productMainImage?.imageFileName || '',
+                productMainImageUrl: p.productMainImage?.imageFileName || null,
+                //productGalleryImageUrls: p.galleryImages.map((g: any) => g.imageUrl),
+                //productGalleryImageNames: p.galleryImages.map((g: any) => g.imageFileName),
             })
+            console.log('prductDetail : ', p)
+            console.log('tempData: ', tempData)
 
             setProductImages({
                 PRODUCT_MAIN: null,
@@ -486,7 +493,7 @@ export default function MyPage() {
             setTempData({})
         }
         if (section === 'productModify') {
-            setEditMode((prev) => ({ ...prev, productModify: true }))
+            //setEditMode((prev) => ({ ...prev, productModify: true }))
             fetchProductDetail(selectedProductId!)
             fetchGlobalCategories()
             setActiveTab('productModify')
@@ -556,11 +563,11 @@ export default function MyPage() {
                     })
                 }
                 /*
-                else {
-                    // 🔥 중요: key 자체가 없으면 서버에서 null 발생 → replace 함수가 정상 작동 안 함
-                    form.append('studioGalleryImages', new Blob([], { type: 'application/octet-stream' }))
-                }
-                */
+                    else {
+                        // 🔥 중요: key 자체가 없으면 서버에서 null 발생 → replace 함수가 정상 작동 안 함
+                        form.append('studioGalleryImages', new Blob([], { type: 'application/octet-stream' }))
+                    }
+                    */
                 const response = await axios.patch(`${API_BASE_URL}/studio/${studio.studioId}`, form, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
@@ -819,8 +826,9 @@ export default function MyPage() {
         }
         if (section === 'productModify') {
             setEditMode((prev) => ({ ...prev, productModify: false }))
-            setTempData({})
-            setProductImages({ PRODUCT_MAIN: null, PRODUCT: [] })
+            //setTempData({})
+            //setProductImages({ PRODUCT_MAIN: null, PRODUCT: [] })
+            setSelectedProductId(null)
         }
     }
 
@@ -834,11 +842,11 @@ export default function MyPage() {
     }
 
     /*
-        const onTempChange = (field: string, value: string) => {
-            if (field === 'passwordInput') setPasswordInput(value)
-            else setTempData((prev: any) => ({ ...prev, [field]: value }))
-        }
-        */
+            const onTempChange = (field: string, value: string) => {
+                if (field === 'passwordInput') setPasswordInput(value)
+                else setTempData((prev: any) => ({ ...prev, [field]: value }))
+            }
+            */
 
     // ======= UI 이벤트 =======
     const handleTabClick = (tab: string) => setActiveTab(tab)
@@ -914,6 +922,7 @@ export default function MyPage() {
                 onProductImageChange={handleProductImageChange}
                 selectedProductId={selectedProductId}
                 setSelectedProductId={setSelectedProductId}
+                fetchProductDetail={fetchProductDetail}
             />
         </div>
     )

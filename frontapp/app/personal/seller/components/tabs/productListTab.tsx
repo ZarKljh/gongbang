@@ -27,6 +27,7 @@ export default function ProductListTab(props: MainContentProps) {
         subcategoryOptions,
         onTabClick,
         onEdit,
+        setSelectedProductId,
     } = props
 
     console.log('📦 현재 productList:', props.productList)
@@ -122,7 +123,7 @@ export default function ProductListTab(props: MainContentProps) {
     const moveToEditPage = (id: number) => {
         if (!isAuthenticated) return requireAuth()
         onTabClick('productModify')
-        onEdit('productModify', id)
+        //onEdit('productModify', id)
     }
 
     // ======================= 페이지 이동 =======================
@@ -415,10 +416,11 @@ export default function ProductListTab(props: MainContentProps) {
                                 <td>
                                     <button
                                         onClick={() => {
-                                            onTempChange?.('productId', item.product.id)
+                                            //onTempChange?.('productId', item.product.id)
                                             setSelectedProductId(item.product.id)
                                             onTabClick?.('productModify')
-                                            onEdit?.('productModify')
+                                            //onEdit?.('productModify')
+                                            //moveToEditPage()
                                         }}
                                     >
                                         수정

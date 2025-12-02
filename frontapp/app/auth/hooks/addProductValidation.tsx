@@ -40,6 +40,7 @@ export function addProductValidation() {
      -------------------------------- */
     const validateSingleField = (name: keyof ProductForm, value: any, form: ProductForm): string => {
         let error = ''
+        const str = String(value ?? '').trim()
 
         /** ----------------------- name ----------------------- */
         if (name === 'name') {
@@ -60,7 +61,7 @@ export function addProductValidation() {
 
         /** ----------------------- categoryId ----------------------- */
         if (name === 'categoryId') {
-            if (!value.trim()) error = '카테고리를 선택해주세요.'
+            if (!str.trim()) error = '카테고리를 선택해주세요.'
         }
 
         /** ----------------------- subtitle ----------------------- */
@@ -70,15 +71,15 @@ export function addProductValidation() {
 
         /** ----------------------- basePrice ----------------------- */
         if (name === 'basePrice') {
-            if (!value.trim()) error = '가격을 입력해주세요.'
+            if (!str.trim()) error = '가격을 입력해주세요.'
             else if (!/^[0-9]+$/.test(value)) error = '가격은 숫자만 입력 가능합니다.'
-            else if (value.startsWith('0') && value !== '0') error = '앞자리 0은 자동 제거해주세요.'
+            else if (str.startsWith('0') && value !== '0') error = '앞자리 0은 자동 제거해주세요.'
             else if (Number(value) <= 0) error = '가격은 0보다 커야 합니다.'
         }
 
         /** ----------------------- stockQuantity ----------------------- */
         if (name === 'stockQuantity') {
-            if (!value.trim()) error = '재고 수량을 입력해주세요.'
+            if (!str.trim()) error = '재고 수량을 입력해주세요.'
             else if (!/^[0-9]+$/.test(value)) error = '재고는 숫자만 입력 가능합니다.'
             else if (Number(value) < 0) error = '재고는 0 이상이어야 합니다.'
         }

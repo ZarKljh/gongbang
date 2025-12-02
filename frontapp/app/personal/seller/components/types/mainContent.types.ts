@@ -91,4 +91,5 @@ export interface MainContentProps {
 
     selectedProductId?: number | null
     setSelectedProductId?: (id: number | null) => void
+    fetchProductDetail?: (productId: number) => Promise<void>
 }

@@ -158,7 +158,7 @@ public class StudioController {
         StudioResponse studioResponse = new StudioResponse(siteUser, studio);
         return  RsData.of("200", studio.getStudioName()+"의 공방정보가 수정되었습니다", studioResponse);
     }
-
+    /*신규공방등록*/
     @PostMapping("/add")
     public RsData<Map<String, Object>> studioAdd(
             @RequestPart("request") @Valid StudioAddRequest studioAddRequest,
@@ -262,9 +262,9 @@ public class StudioController {
                 result
         );
     }
-
+    /* 신규상품등록 */
     @PostMapping("/product/add")
-    public RsData<ProductAddResponse> addProduct(
+    public RsData<ProductAddlResponse> addProduct(
             @RequestPart("request") ProductAddRequest request,
             @RequestPart(value = "productMainImage", required = false) MultipartFile productMainImage,
             @RequestPart(value = "productGalleryImages", required = false) List<MultipartFile> galleryImages
@@ -292,8 +292,22 @@ public class StudioController {
                     0
             );
         }
-        return RsData.of("200","신규상품이 등록되었습니다", new ProductAddResponse(newProduct));
+        return RsData.of("200","신규상품이 등록되었습니다", new ProductAddlResponse(newProduct));
 
+    }
+
+    /* 상품id 상품1건 조회*/
+    @GetMapping("/product/{id}")
+    public RsData<ProductDetailResponse> getProductDetail(
+            @PathVariable("id") Long productId
+    ) {
+        System.out.println("상품단건조회 시작");
+        Product product = studioService.getDetailProduct(productId);
+        System.out.println("상품이미지조회 시작");
+        Image image = studioService.getProductMainImage(productId);
+
+        System.out.println("상품데이터 front 전달");
+        return RsData.of("200", "상품1건을 조회하였습니다.",new ProductDetailResponse(product, image));
     }
 
 
