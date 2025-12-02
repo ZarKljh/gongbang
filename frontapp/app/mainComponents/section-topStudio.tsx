@@ -52,9 +52,11 @@ export default function TopStudios() {
 
             <div className='sliderWrapper'>
                 {/* 왼쪽 버튼 */}
-                <button className="slideBtn prev" onClick={() => moveSlide(-1)}>
-                    &lt;
-                </button>
+                {topStudio.length > 0 && (
+                    <button className="slideBtn prev" onClick={() => moveSlide(-1)}>
+                        &lt;
+                    </button>
+                )}
 
                 <div
                     className='topStudioList'
@@ -109,9 +111,11 @@ export default function TopStudios() {
                 </div>
 
                 {/* 오른쪽 버튼 */}
-                <button className="slideBtn next" onClick={() => moveSlide(1)}>
-                    &gt;
-                </button>
+                {topStudio.length > 0 && (
+                    <button className="slideBtn next" onClick={() => moveSlide(1)}>
+                        &gt;
+                    </button>
+                )}
             </div>
         </div>
     )

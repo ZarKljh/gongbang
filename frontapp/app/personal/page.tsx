@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
@@ -44,6 +45,7 @@ interface CartItem {
 
 export default function MyPage() {
     const searchParams = useSearchParams()
+    const router = useRouter()
 
     // =============== State 관리 ===============
     // 사용자 정보
@@ -1591,7 +1593,7 @@ export default function MyPage() {
                             </div>
 
                             {infiniteOrders.length === 0 ? (
-                                <p>주문 내역이 없습니다.</p>
+                                <p className='empty-state'>주문 내역이 없습니다.</p>
                             ) : (
                                 infiniteOrders.map((order) => (
                                     <div
@@ -1725,7 +1727,7 @@ export default function MyPage() {
                                 ))
                             )}
                             {infiniteOrdersLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
+                            {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                         </div>
                     )}
 
@@ -1751,7 +1753,7 @@ export default function MyPage() {
 
                             <div className="orders-list">
                                 {filteredOrders.length === 0 ? (
-                                    <p>해당 주문 내역이 없습니다.</p>
+                                    <p className='empty-state'>해당 주문 내역이 없습니다.</p>
                                 ) : (
                                     filteredOrders.map((order) => {
                                         const items = order.orderItems || []
@@ -1977,7 +1979,7 @@ export default function MyPage() {
                                 </>
                             )}
                             {infiniteCartLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteCartHasMore && infiniteCart.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
+                            {!infiniteCartHasMore && infiniteCart.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                         </div>
                     )}
 
@@ -2248,7 +2250,11 @@ export default function MyPage() {
                                     ) : (
                                         <div className="wishlist-grid">
                                             {infiniteWishList.map((item) => (
-                                                <div key={item.wishlistId} className="wishlist-item">
+                                                <div
+                                                    key={item.wishlistId}
+                                                    className="wishlist-item"
+                                                    onClick={() => router.push(`/product/list/detail?productId=${item.productId}`)}
+                                                >
                                                     <div className="wishlist-image">
                                                         {item.imageUrl ? (
                                                             <img 
@@ -2276,7 +2282,7 @@ export default function MyPage() {
                                         </div>
                                     )}
                                     {infiniteWishLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
+                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                                 </div>
                             )}
 
@@ -2453,9 +2459,7 @@ export default function MyPage() {
                                 o.deliveryStatus === selectedStatus &&
                                 (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
                             ).length === 0 ? (
-                                <div className="modal-empty">
-                                    <p>주문 내역이 없습니다.</p>
-                                </div>
+                                <p className='empty-state'>주문 내역이 없습니다.</p>
                             ) : (
                                 <div className="modal-orders-list">
                                     {orders

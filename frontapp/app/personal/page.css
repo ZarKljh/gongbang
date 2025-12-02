@@ -166,11 +166,11 @@ body {
     border-right: none;
 }
 
-.stats-table td:first-child {
+/* .stats-table td:first-child {
     display: flex;
     justify-content: center;
     align-items: center;
-}
+} */
 
 .stats-table td {
     padding: 16px;
@@ -523,12 +523,13 @@ body {
 /* 위시리스트 그리드 */
 .wishlist-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
 }
 
 .wishlist-item {
     transition: transform 0.2s;
+    cursor: pointer;
 }
 
 .wishlist-item:hover {
@@ -538,13 +539,13 @@ body {
 .wishlist-image {
     aspect-ratio: 1;
     background: #f3f4f6;
-    border-radius: 8px;
+    border-radius: 8px 8px 0 0;
 }
 
 .wishlist-info {
     padding: 16px;
     background: #fff;
-    border-radius: 8px;
+    border-radius: 0 0 8px 8px;
 }
 
 .wishlist-info p {
@@ -887,7 +888,7 @@ body {
     align-items: center;
     padding: 20px 24px;
     background: white;
-    border: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
     border-radius: 12px 12px 0 0;
     margin-bottom: 0;
 }
@@ -939,7 +940,6 @@ body {
 /* 장바구니 목록 */
 .cart-list {
     background: white;
-    border: 1px solid #e5e7eb;
     border-top: none;
 }
 
@@ -1048,7 +1048,7 @@ body {
 .cart-footer {
     padding: 32px 24px;
     background: #fafafa;
-    border: 1px solid #e5e7eb;
+    /* border: 1px solid #e5e7eb; */
     border-top: 2px solid #E9DCC4;
     border-radius: 0 0 12px 12px;
     display: flex;
