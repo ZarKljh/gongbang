@@ -27,18 +27,10 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                         <li>
                             <button
-                                className={`nav-btn ${activeTab === 'studioDesc' ? 'active' : ''}`}
-                                onClick={() => onTabClick('studioDesc')}
+                                className={`nav-btn ${activeTab === 'productList' ? 'active' : ''}`}
+                                onClick={() => onTabClick('productList')}
                             >
-                                공방 상세설명
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                className={`nav-btn ${activeTab === 'studioAdd' ? 'active' : ''}`}
-                                onClick={() => onTabClick('studioAdd')}
-                            >
-                                신규 공방등록
+                                상품현황
                             </button>
                         </li>
                     </ul>
@@ -56,6 +48,14 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
 <div className="nav-section">
                     <h2>나의 쇼핑정보</h2>
                     <ul>
+                        <li>
+                            <button
+                                className={`nav-btn ${activeTab === 'studioDesc' ? 'active' : ''}`}
+                                onClick={() => onTabClick('studioDesc')}
+                            >
+                                공방 상세설명
+                            </button>
+                        </li>
                         <li>
                             <button
                                 className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`}
@@ -134,4 +134,13 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                     </ul>
                 </div>
+
+                <li>
+                            <button
+                                className={`nav-btn ${activeTab === 'studioAdd' ? 'active' : ''}`}
+                                onClick={() => onTabClick('studioAdd')}
+                            >
+                                신규 공방등록
+                            </button>
+                        </li>
 */
