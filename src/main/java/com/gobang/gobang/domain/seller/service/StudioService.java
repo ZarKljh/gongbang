@@ -37,6 +37,7 @@ public class StudioService {
     private final ImageRepository imageRepository;
     private final CategoryRepository categoryRepository;
     private final SubCategoryRepository subCategoryRepository;
+    private final ProductOfStudioRepository productOfStudioRepository;
 
     public Page<ProductDto> getProductListByStudioId(Long studioId, Pageable pageable) {
         Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);
@@ -238,6 +239,15 @@ public class StudioService {
         return imageRepository.findALLByRefIdAndRefType(studioId, Image.RefType.STUDIO);
     }
 
+    public Image getProductMainImage(Long productId) {
+        Optional<Image> osli = imageRepository.findByRefIdAndRefType(productId, Image.RefType.PRODUCT);
+        if (osli.isPresent()) {
+            return osli.get();
+        } else {
+            return null;
+        }
+    }
+
     public Studio modifyStudio(StudioAddRequest studioAddRequest, Studio studio, SiteUser seller) {
 
         studio.setCategoryId(Long.parseLong(studioAddRequest.getCategoryId()));
@@ -387,6 +397,10 @@ public class StudioService {
                 .toList();
     }
 
+    public Category getCategory(Long categoryId){
+        return categoryRepository.findById(categoryId).get();
+    }
+
     public Product productAdd(ProductAddRequest request, Studio studio) {
         Subcategory subcategory = subCategoryRepository.findById(request.getSubcategoryId()).get();
 
@@ -408,5 +422,30 @@ public class StudioService {
 
         Product product = productRepository.save(newProduct);
         return product;
+    }
+    public Product getDetailProduct(Long productId){
+        Product product  = productOfStudioRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+
+        return product;
+    }
+
+    public Product modifyProduct(ProductModifyRequest request, Product product) {
+
+        Subcategory subcategory = subCategoryRepository.findById(request.getSubcategoryId()).get();
+
+        product.setCategoryId(request.getCategoryId());
+        product.setSubcategory(subcategory);
+        product.setName(request.getName());
+        product.setSubtitle(request.getSubtitle());
+        product.setBasePrice(request.getBasePrice());
+        product.setStockQuantity(request.getStockQuantity());
+        product.setBackorderable(request.getBackorderable());
+        product.setStatus(ProductStatus.valueOf(request.getStatus()));
+        product.setActive(request.getActive());
+
+        Product modifiedProduct = productRepository.save(product);
+
+        return modifiedProduct;
     }
 }
