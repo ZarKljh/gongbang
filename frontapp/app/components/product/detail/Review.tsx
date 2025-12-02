@@ -555,7 +555,7 @@ export default function Review() {
                     <div className="review-banner">
                         {/* <h2>생생한 리뷰를 기다리고 있어요!</h2> */}
                         {/* <p>사진과 함께 리뷰를 남겨주시면 다른 분들께 큰 도움이 됩니다</p> */}
-                        <img src='/images/리뷰_배너.png' alt="배너 이미지" />
+                        <img className="review-banner-img" src='/images/리뷰_배너2.png' alt="배너 이미지" />
                     </div>
 
                     {/* 제목 + 버튼 */}
