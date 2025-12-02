@@ -26,9 +26,9 @@ type Shop = {
     studioOfficeTell?: string
     studioAddDetail?: string
     studioAddMain?: string
-    studioMainImageUrl?: string
-    studioLogoImageUrl?: string
-    studioGalleryImageUrls?: string[]
+    studioMainImageUrl?: string // <- 파일명 (백엔드에서 fileName만 내려줌)
+    studioLogoImageUrl?: string // <- 파일명
+    studioGalleryImageUrls?: string[] // <- 파일명 배열
 }
 
 const statusKoreanLabel = (status: SellerStatus) => {
@@ -44,11 +44,18 @@ const statusKoreanLabel = (status: SellerStatus) => {
     }
 }
 
+const IMAGE_HOST = process.env.NEXT_PUBLIC_API_ORIGIN?.replace(/\/$/, '') ?? 'http://localhost:8090'
+
+// 파일명 -> 실제 접근 가능한 이미지 URL로 변환
+const resolveImageUrl = (fileName?: string) => {
+    if (!fileName) return undefined
+    return `${IMAGE_HOST}/api/v1/images/studio/${encodeURIComponent(fileName)}`
+}
+
 export default function AdminBusinessDetailPage() {
     const params = useParams()
     const router = useRouter()
     const id = Number(params?.id)
-    const IMAGE_BASE = '/images/'
 
     const [shop, setShop] = useState<Shop | null>(null)
     const [loading, setLoading] = useState(true)
@@ -143,10 +150,8 @@ export default function AdminBusinessDetailPage() {
 
     const createdLabel = shop.createdAt ? new Date(shop.createdAt).toLocaleString() : '-'
 
-    const hasAnyImage =
-        !!shop.studioMainImageUrl ||
-        !!shop.studioLogoImageUrl ||
-        (shop.studioGalleryImageUrls && shop.studioGalleryImageUrls.length > 0)
+    const mainImageSrc = resolveImageUrl(shop.studioMainImageUrl)
+    const logoImageSrc = resolveImageUrl(shop.studioLogoImageUrl)
 
     return (
         <div className={styles.page}>
@@ -196,9 +201,9 @@ export default function AdminBusinessDetailPage() {
                             </div>
 
                             <div className={detailStyles.mainImageWrapper}>
-                                {shop.studioMainImageUrl ? (
+                                {mainImageSrc ? (
                                     <img
-                                        src={shop.studioMainImageUrl ? IMAGE_BASE + shop.studioMainImageUrl : undefined}
+                                        src={mainImageSrc}
                                         alt={`${shop.studioName} 대표 이미지`}
                                         className={detailStyles.mainImage}
                                     />
@@ -206,10 +211,10 @@ export default function AdminBusinessDetailPage() {
                                     <div className={detailStyles.mainImagePlaceholder}>대표 이미지가 없습니다.</div>
                                 )}
 
-                                {shop.studioLogoImageUrl && (
+                                {logoImageSrc && (
                                     <div className={detailStyles.logoChip}>
                                         <img
-                                            src={shop.studioLogoImageUrl}
+                                            src={logoImageSrc}
                                             alt={`${shop.studioName} 로고`}
                                             className={detailStyles.logoImage}
                                         />
@@ -230,20 +235,24 @@ export default function AdminBusinessDetailPage() {
 
                                 {shop.studioGalleryImageUrls && shop.studioGalleryImageUrls.length > 0 ? (
                                     <div className={detailStyles.galleryGrid}>
-                                        {shop.studioGalleryImageUrls.map((url, idx) => (
-                                            <button
-                                                type="button"
-                                                key={url + idx}
-                                                className={detailStyles.galleryItem}
-                                                onClick={() => window.open(url, '_blank')}
-                                            >
-                                                <img
-                                                    src={url}
-                                                    alt={`스튜디오 내부 사진 ${idx + 1}`}
-                                                    className={detailStyles.galleryImage}
-                                                />
-                                            </button>
-                                        ))}
+                                        {shop.studioGalleryImageUrls.map((fileName, idx) => {
+                                            const imgSrc = resolveImageUrl(fileName)
+                                            if (!imgSrc) return null
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={fileName + idx}
+                                                    className={detailStyles.galleryItem}
+                                                    onClick={() => window.open(imgSrc, '_blank')}
+                                                >
+                                                    <img
+                                                        src={imgSrc}
+                                                        alt={`스튜디오 내부 사진 ${idx + 1}`}
+                                                        className={detailStyles.galleryImage}
+                                                    />
+                                                </button>
+                                            )
+                                        })}
                                     </div>
                                 ) : (
                                     <div className={detailStyles.galleryEmpty}>등록된 내부 사진이 없습니다.</div>
@@ -279,17 +288,11 @@ export default function AdminBusinessDetailPage() {
                             </div>
 
                             <DetailRow label="사업자번호">{shop.studioBusinessNumber || '-'}</DetailRow>
-
                             <DetailRow label="대표 연락처(휴대폰)">{shop.studioMobile || '-'}</DetailRow>
-
                             <DetailRow label="대표 연락처(유선)">{shop.studioOfficeTell || '-'}</DetailRow>
-
                             <DetailRow label="FAX">{shop.studioFax || '-'}</DetailRow>
-
                             <DetailRow label="우편번호">{shop.studioAddPostNumber || '-'}</DetailRow>
-
                             <DetailRow label="주소(기본)">{shop.studioAddMain || '-'}</DetailRow>
-
                             <DetailRow label="주소(상세)">{shop.studioAddDetail || '-'}</DetailRow>
                         </div>
                     </div>

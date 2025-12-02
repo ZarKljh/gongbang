@@ -59,15 +59,24 @@ body {
     gap: 10px;
 }
 .navItem {
+    display: flex;
     text-decoration: none;
     color: #e2e8f0;
     padding: 8px 12px;
     border-radius: 6px;
     transition: background 0.2s;
+    align-items: center;
+    gap: 8px;
 }
+
 .navItem:hover {
     background: #334155;
     color: #fff;
+}
+
+.navIcon {
+    width: 20px;
+    height: 20px;
 }
 
 /* === 메인 === */

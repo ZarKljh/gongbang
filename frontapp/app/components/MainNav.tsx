@@ -36,6 +36,10 @@ export default function MainNav() {
     const [categories, setCategories] = useState<Category[]>([])
     const [subCategoriesByCat, setSubCategoriesByCat] = useState<Record<number, SubCategory[]>>({})
 
+    // ✅ 이 페이지에서 카테고리 영역 숨길지 여부
+    // 현재 URL: /product/list?categoryId=3&subId=7  -> pathname은 '/product/list'
+    const hideCategorySection = pathname === '/product/list'
+
     // ================== 로그인 상태 확인 ==================
     const checkLogin = async () => {
         try {
@@ -68,12 +72,10 @@ export default function MainNav() {
     // ================== 카테고리 / 세부 카테고리 로드 ==================
     const fetchCategoriesAndSubs = async () => {
         try {
-            // 1) 상위 카테고리 목록
             const res = await api.get('/category')
             const categoryList: Category[] = res.data.data.categoryList
             setCategories(categoryList)
 
-            // 2) 각 카테고리별 서브카테고리 병렬 요청
             const subPromises = categoryList.map(async (cat) => {
                 const res = await api.get(`/category/${cat.id}/sub`)
                 const subs: SubCategory[] = res.data.data.subCategoryList
@@ -82,7 +84,6 @@ export default function MainNav() {
 
             const results = await Promise.all(subPromises)
 
-            // 3) categoryId → subCategory[] 맵 구조로 변환
             const subMap: Record<number, SubCategory[]> = {}
             results.forEach(([catId, subs]) => {
                 subMap[catId] = subs
@@ -125,16 +126,12 @@ export default function MainNav() {
 
                     <div>
                         <AdminNavButton />
-                        {/* 로그인한 경우에만 마이페이지 */}
                         {isLoggedIn && (
-                            <>
-                                <Link href="/personal" className={styles.navButton}>
-                                    마이페이지
-                                </Link>
-                            </>
+                            <Link href="/personal" className={styles.navButton}>
+                                마이페이지
+                            </Link>
                         )}
 
-                        {/* 로그인 안 한 경우에만 로그인 / 회원가입 */}
                         {!isLoggedIn && !loading && (
                             <>
                                 <Link href="/auth/login" className={styles.navButton}>
@@ -146,14 +143,12 @@ export default function MainNav() {
                             </>
                         )}
 
-                        {/* 로그인한 경우 로그아웃 */}
                         {isLoggedIn && (
                             <button type="button" className={styles.navButton} onClick={handleLogout}>
                                 로그아웃
                             </button>
                         )}
 
-                        {/* 고객센터는 항상 노출 */}
                         <Link href="/support" className={styles.navButton}>
                             고객센터
                         </Link>
@@ -162,39 +157,41 @@ export default function MainNav() {
             </section>
 
             {/* ================== 카테고리 / 세부 카테고리 영역 ================== */}
-            <section>
-                <div className={styles.categoryContainer}>
-                    <div className={styles.categoryBackContainer}>
-                        <div className={styles.categorySubContainer}>
-                            {categories.map((cat) => (
-                                <ul className={styles.categoryList2} key={cat.id}>
-                                    <li>
-                                        <strong className={styles.categoryTitle}>{cat.name}</strong>
-                                        <ul className={styles.subcategoryList}>
-                                            {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
-                                                <li key={sub.id} className={styles.subCatTitle}>
-                                                    <Link
-                                                        href={{
-                                                            pathname: '/product/list',
-                                                            query: {
-                                                                categoryId: String(cat.id),
-                                                                subId: String(sub.id),
-                                                            },
-                                                        }}
-                                                        prefetch={false}
-                                                    >
-                                                        {sub.name}
-                                                    </Link>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </li>
-                                </ul>
-                            ))}
+            {!hideCategorySection && (
+                <section>
+                    <div className={styles.categoryContainer}>
+                        <div className={styles.categoryBackContainer}>
+                            <div className={styles.categorySubContainer}>
+                                {categories.map((cat) => (
+                                    <ul className={styles.categoryList2} key={cat.id}>
+                                        <li>
+                                            <strong className={styles.categoryTitle}>{cat.name}</strong>
+                                            <ul className={styles.subcategoryList}>
+                                                {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
+                                                    <li key={sub.id} className={styles.subCatTitle}>
+                                                        <Link
+                                                            href={{
+                                                                pathname: '/product/list',
+                                                                query: {
+                                                                    categoryId: String(cat.id),
+                                                                    subId: String(sub.id),
+                                                                },
+                                                            }}
+                                                            prefetch={false}
+                                                        >
+                                                            {sub.name}
+                                                        </Link>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
         </nav>
     )
 }

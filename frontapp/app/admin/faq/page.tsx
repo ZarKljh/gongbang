@@ -512,7 +512,7 @@ function CategoryEditor({
     }
 
     return (
-        <div className={styles.formGrid}>
+        <div className={styles.categoryPlusForm}>
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>이름</label>
                 <input
@@ -531,30 +531,12 @@ function CategoryEditor({
                     placeholder="예: payment"
                 />
             </div>
-            <div className={styles.formRow}>
-                <div className={styles.formField}>
-                    <label className={styles.fieldLabel}>정렬</label>
-                    <input
-                        type="number"
-                        className={styles.inputNumberSmall}
-                        value={form.orderNo as number}
-                        onChange={(e) => setForm({ ...form, orderNo: Number(e.target.value) || 0 })}
-                    />
-                </div>
-                <label className={styles.checkboxLabel}>
-                    <input
-                        type="checkbox"
-                        checked={!!form.active}
-                        onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                    />
-                    활성화
-                </label>
-            </div>
+
             <div className={styles.modalFooter}>
-                <button className={styles.buttonSecondary} onClick={onClose}>
+                <button className={styles.buttonSecondarySmall} onClick={onClose}>
                     취소
                 </button>
-                <button className={styles.buttonPrimary} onClick={save}>
+                <button className={styles.buttonSecondarySmall} onClick={save}>
                     저장
                 </button>
             </div>
@@ -600,7 +582,7 @@ function FaqEditor({
     }
 
     return (
-        <div className={styles.formGrid}>
+        <div className={styles.faqPlusForm}>
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>카테고리</label>
                 <select
@@ -627,36 +609,18 @@ function FaqEditor({
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>답변</label>
                 <textarea
-                    className={styles.textarea}
+                    className={styles.inputText}
                     value={form.answer}
                     onChange={(e) => setForm({ ...form, answer: e.target.value })}
                     placeholder="답변을 입력하세요"
                 />
             </div>
-            <div className={styles.formRow}>
-                <div className={styles.formField}>
-                    <label className={styles.fieldLabel}>정렬</label>
-                    <input
-                        type="number"
-                        className={styles.inputNumberSmall}
-                        value={form.orderNo as number}
-                        onChange={(e) => setForm({ ...form, orderNo: Number(e.target.value) || 0 })}
-                    />
-                </div>
-                <label className={styles.checkboxLabel}>
-                    <input
-                        type="checkbox"
-                        checked={!!form.published}
-                        onChange={(e) => setForm({ ...form, published: e.target.checked })}
-                    />
-                    공개
-                </label>
-            </div>
+
             <div className={styles.modalFooter}>
-                <button className={styles.buttonSecondary} onClick={onClose}>
+                <button className={styles.buttonSecondarySmall} onClick={onClose}>
                     취소
                 </button>
-                <button className={styles.buttonPrimary} onClick={save}>
+                <button className={styles.buttonSecondarySmall} onClick={save}>
                     저장
                 </button>
             </div>

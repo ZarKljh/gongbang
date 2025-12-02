@@ -4,7 +4,10 @@ import com.gobang.gobang.domain.admin.dto.AdminRecentShopDto;
 import com.gobang.gobang.domain.admin.dto.AdminShopDetailDto;
 import com.gobang.gobang.domain.admin.dto.AdminShopListDto;
 import com.gobang.gobang.domain.admin.repository.request.AdminShopStatusUpdateRequest;
+import com.gobang.gobang.domain.auth.entity.RoleType;
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,14 +36,17 @@ public class AdminShopController {
     private final StudioRepository studioRepository;
     private final CategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
+    private final SiteUserRepository siteUserRepository;
 
 
     public AdminShopController(StudioRepository studioRepository,
                                CategoryRepository categoryRepository,
-                               ImageRepository imageRepository) {
+                               ImageRepository imageRepository,
+                               SiteUserRepository siteUserRepository) {
         this.studioRepository = studioRepository;
         this.categoryRepository = categoryRepository;
         this.imageRepository = imageRepository;
+        this.siteUserRepository = siteUserRepository;
     }
 
     @GetMapping("/recent")
@@ -129,17 +136,44 @@ public class AdminShopController {
     }
 
 
-    // 상태 변경 (PENDING -> APPROVED/REJECTED 등)
+    // 상태 변경
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody AdminShopStatusUpdateRequest req) {
-        Studio s = studioRepository.findById(id)
+    @Transactional
+    public ResponseEntity<?> updateStatus(@PathVariable Long id,
+                                          @RequestBody AdminShopStatusUpdateRequest req) {
+
+        Studio studio = studioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Studio not found: " + id));
-        s.setStatus(StudioStatus.valueOf(req.status().toUpperCase()));
-        // s.setAdminMemo(req.adminMemo()); // 엔티티에 있으면 사용
-        studioRepository.save(s);
-        return ResponseEntity.ok(Map.of("ok", true, "id", s.getStudioId(), "status", s.getStatus().name()));
+
+        StudioStatus newStatus = StudioStatus.valueOf(req.status().toUpperCase());
+        StudioStatus oldStatus = studio.getStatus();
+
+        // 1) 스튜디오 상태 변경
+        studio.setStatus(newStatus);
+        studioRepository.save(studio);
+
+        // 2) PENDING → APPROVED 가 되는 순간에만 USER → SELLER 승급
+        if (oldStatus != StudioStatus.APPROVED && newStatus == StudioStatus.APPROVED) {
+            SiteUser owner = studio.getSiteUser();
+            if (owner != null) {
+                // 이미 SELLER거나 ADMIN이면 굳이 손대지 않기
+                if (owner.getRole() != RoleType.SELLER && owner.getRole() != RoleType.ADMIN) {
+                    owner.setRole(RoleType.SELLER);
+                    siteUserRepository.save(owner);
+                }
+            }
+        }
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "ok", true,
+                        "id", studio.getStudioId(),
+                        "status", studio.getStatus().name()
+                )
+        );
     }
+
 
 
 }
