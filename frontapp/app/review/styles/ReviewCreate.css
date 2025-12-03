@@ -5,6 +5,7 @@
     flex-direction: column;
     align-items: center;
         margin-top: 60px;
+        padding: 20px;
 }
 
 
@@ -81,6 +82,7 @@
     cursor: pointer;
     font-weight: bold;
     margin-top: 20px;
+    transition: all 0.3s ease;
 }
 
 .review-create-submit-btn:hover {
@@ -119,7 +121,7 @@
 
 .review-image-list {
     display: flex;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     gap: 10px;
     margin-bottom: 20px;
 }

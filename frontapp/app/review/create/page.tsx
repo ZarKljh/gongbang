@@ -101,6 +101,15 @@ export default function ReviewCreate() {
             return
         }
 
+        // name, size 기준 이미지 중복체크
+          const duplicates = files.filter(file =>
+        imageFiles.some(f => f.name === file.name && f.size === file.size)
+    )
+        if (duplicates.length > 0) {
+            alert('이미 선택된 이미지가 포함되어 있습니다.')
+            e.target.value = ''
+            return // 중복 있으면 함수 종료! 추가 절대 안 됨
+        }
         const previews = []
         for (const file of files) {
             const base64 = await toBase64(file)
@@ -113,6 +122,9 @@ export default function ReviewCreate() {
         }))
 
         setImageFiles((prev) => [...prev, ...files])
+
+        // 같은 파일 다시 선택 가능 but 추가는 x (input 초기화)
+        e.target.value = ''
     }
 
     // 이미지 삭제 시 파일목록도 삭제
@@ -189,60 +201,59 @@ export default function ReviewCreate() {
                             <Droppable droppableId="images" direction="horizontal">
                                 {(provided) => (
                                     <>
-                                    <div
-                                        ref={provided.innerRef}
-                                        {...provided.droppableProps}
-                                        className="review-image-list"
-                                    >
-                                        {review.imageUrls.map((url, index) => (
-                                            <Draggable key={url} draggableId={url} index={index}>
-                                                {(prov, snapshot) => (
-                                                    <div
-                                                        ref={prov.innerRef}
-                                                        {...prov.draggableProps}
-                                                        {...prov.dragHandleProps}
-                                                        className={`review-image-card ${
-                                                            snapshot.isDragging ? 'dragging' : ''
-                                                        }`}
-                                                        style={prov.draggableProps.style}
-                                                    >
-                                                        <img
-                                                            src={url}
-                                                            alt={`리뷰 이미지 ${index + 1}`}
-                                                            className="review-image"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveImage(index)}
-                                                            className="review-image-remove-btn"
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.droppableProps}
+                                            className="review-image-list"
+                                        >
+                                            {review.imageUrls.map((url, index) => (
+                                                <Draggable key={url} draggableId={url} index={index}>
+                                                    {(prov, snapshot) => (
+                                                        <div
+                                                            ref={prov.innerRef}
+                                                            {...prov.draggableProps}
+                                                            {...prov.dragHandleProps}
+                                                            className={`review-image-card ${
+                                                                snapshot.isDragging ? 'dragging' : ''
+                                                            }`}
+                                                            style={prov.draggableProps.style}
                                                         >
-                                                            <FaTimes size={10} />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
+                                                            <img
+                                                                src={url}
+                                                                alt={`리뷰 이미지 ${index + 1}`}
+                                                                className="review-image"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveImage(index)}
+                                                                className="review-image-remove-btn"
+                                                            >
+                                                                <FaTimes size={10} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                            {provided.placeholder}
 
-                                        {/* 추가 버튼 */}
-                                        {review.imageUrls.length < 5 && (
-                                            <label htmlFor="fileUpload" className="review-image-add-btn">
-                                                <FaPlus />
-                                                <input
-                                                    id="fileUpload"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    multiple
-                                                    style={{ display: 'none' }}
-                                                    onChange={handleFileChange}
-                                                />
-                                            </label>
-                                        )}
-                                       
-                                    </div>
-                                    <p className="review-image-guide">이미지를 등록해주세요.( 최대 5장 )</p>
+                                            {/* 추가 버튼 */}
+                                            {review.imageUrls.length < 5 && (
+                                                <label htmlFor="fileUpload" className="review-image-add-btn">
+                                                    <FaPlus />
+                                                    <input
+                                                        id="fileUpload"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        style={{ display: 'none' }}
+                                                        onChange={handleFileChange}
+                                                    />
+                                                </label>
+                                            )}
+                                        </div>
+                                        <p className="review-image-guide">이미지를 등록해주세요.( 최대 5장 )</p>
                                     </>
-                                )} 
+                                )}
                             </Droppable>
                         </DragDropContext>
                     </div>
