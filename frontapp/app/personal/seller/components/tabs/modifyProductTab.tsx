@@ -179,36 +179,52 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
             </div>
 
             {/* ==================== 상품 상세 보기 ==================== */}
-            {!editMode.productModify &&
-                (tempData?.productId ? (
-                    <div className="product-view">
-                        <p>
-                            <strong>상품명:</strong> {tempData.name}
-                        </p>
-                        <p>
-                            <strong>Slug:</strong> {tempData.slug}
-                        </p>
-                        <p>
-                            <strong>카테고리:</strong> {tempData.categoryName}
-                        </p>
-                        <p>
-                            <strong>서브카테고리:</strong> {tempData.subcategoryName}
-                        </p>
-                        <p>
-                            <strong>가격:</strong> {tempData.basePrice} 원
-                        </p>
-                        <p>
-                            <strong>재고:</strong> {tempData.stockQuantity}
-                        </p>
-
-                        {previewMainImage && (
-                            <img src={previewMainImage} style={{ width: 180, marginTop: 10, borderRadius: 8 }} />
-                        )}
+            {!editMode.productModify && tempData?.productId && (
+                <div className="product-view">
+                    <div className="form-group">
+                        <label>상품명</label>
+                        <p>{tempData.name}</p>
                     </div>
-                ) : (
-                    <div>상품 정보를 불러오는 중...</div>
-                ))}
 
+                    <div className="form-group">
+                        <label>Slug</label>
+                        <p>{tempData.slug}</p>
+                    </div>
+
+                    <div className="form-group">
+                        <label>카테고리</label>
+                        <p>{tempData.categoryName}</p>
+                    </div>
+
+                    <div className="form-group">
+                        <label>서브카테고리</label>
+                        <p>{tempData.subcategoryName || '선택 없음'}</p>
+                    </div>
+
+                    <div className="form-group">
+                        <label>가격</label>
+                        <p>{tempData.basePrice} 원</p>
+                    </div>
+
+                    <div className="form-group">
+                        <label>재고</label>
+                        <p>{tempData.stockQuantity}</p>
+                    </div>
+
+                    {/* 대표 이미지 — studioTab의 이미지 영역 스타일과 동일하게 적용 */}
+                    <div className="form-group">
+                        <label>대표 이미지</label>
+                        <div className="image-field">
+                            <div className="image-preview-wide">
+                                {previewMainImage && <img src={previewMainImage} alt="대표 이미지" />}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 데이터가 아직 없을 때 */}
+            {!editMode.productModify && !tempData?.productId && <div>상품 정보를 불러오는 중...</div>}
             {/* ===================================================
                   🔥 수정 모드 ON → 입력폼 표시
             =================================================== */}
@@ -298,28 +314,50 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
                         />
                     </div>
                     <ErrorMessage message={errors.stockQuantity} />
-
-                    {/* 대표 이미지 */}
+                    {/* 새로운 메인이미지 등록폼 start */}
                     <div className="form-group">
                         <label className="form-label required">대표 이미지</label>
 
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => onProductImageChange?.('PRODUCT_MAIN', e.target.files?.[0] ?? null)}
-                        />
+                        {/* 오른쪽 전체 영역 */}
+                        <div className="image-field">
+                            {/* 파일명 + 버튼 */}
+                            <div className="image-file-row">
+                                <div className="file-name-box">
+                                    {productImages?.PRODUCT_MAIN
+                                        ? productImages.PRODUCT_MAIN.name
+                                        : tempData.productMainImageName || ''}
+                                </div>
 
-                        {previewMainImage && (
-                            <img
-                                src={previewMainImage}
-                                style={{
-                                    width: 180,
-                                    marginTop: 10,
-                                    borderRadius: 8,
-                                }}
-                            />
-                        )}
+                                {editMode.productModify && (
+                                    <button
+                                        className="upload-btn"
+                                        type="button"
+                                        onClick={() => document.getElementById('productMainImageInput')?.click()}
+                                    >
+                                        파일선택
+                                    </button>
+                                )}
+
+                                <input
+                                    id="productMainImageInput"
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        if (e.target.files?.[0]) {
+                                            onProductImageChange?.('PRODUCT_MAIN', e.target.files[0])
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            {/* 미리보기 박스 */}
+                            <div className="image-preview-wide">
+                                {previewMainImage && <img src={previewMainImage} alt="대표 이미지" />}
+                            </div>
+                        </div>
                     </div>
+                    {/* 새로운 메인이미지 등록폼 end */}
                     <ErrorMessage message={errors.productMainImageUrl} />
 
                     {/* backorderable */}
