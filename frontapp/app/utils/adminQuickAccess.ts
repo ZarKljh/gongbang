@@ -7,9 +7,9 @@ export type PendingCounts = {
 }
 
 export async function fetchPendingCounts(): Promise<PendingCounts> {
-    const [reportRes, inquiryRes] = await Promise.all([
+    const [shopRes, reportRes, inquiryRes] = await Promise.all([
+        api.get('/admin/shops/count', { params: { status: 'PENDING' } }),
         api.get('/admin/reports/count/pending'),
-
         api.get('/admin/inquiries/count'),
     ])
 
@@ -22,8 +22,8 @@ export async function fetchPendingCounts(): Promise<PendingCounts> {
     }
 
     return {
+        shop: extractCount(shopRes),
         report: extractCount(reportRes),
         inquiry: extractCount(inquiryRes),
-        shop: 0,
     }
 }
