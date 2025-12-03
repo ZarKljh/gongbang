@@ -1,9 +1,9 @@
 package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
 import com.gobang.gobang.domain.personal.entity.Orders;
-import com.gobang.gobang.domain.personal.repository.OrderItemRepository;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
 public class OrdersService {
 
     private final OrdersRepository ordersRepository;
-    private final OrderItemRepository orderItemRepository;
+    private final ImageRepository imageRepository;
 
     // 사용자별 주문 목록 조회
     public List<OrdersResponse> getOrdersByUserId(SiteUser siteUser) {
         List<Orders> orders = ordersRepository.findBySiteUserWithDelivery(siteUser);
-        List<Orders> distinctOrders = new ArrayList<>(new LinkedHashSet<>(orders)); //중복제거
+        List<Orders> distinctOrders = new ArrayList<>(new LinkedHashSet<>(orders));
 
         return distinctOrders.stream()
-                .map(OrdersResponse::from)
+                .map(order -> OrdersResponse.from(order, imageRepository))
                 .collect(Collectors.toList());
     }
 
@@ -37,7 +37,7 @@ public class OrdersService {
         Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        return OrdersResponse.from(order);
+        return OrdersResponse.from(order, imageRepository);
     }
 
     // 주문 삭제
@@ -50,12 +50,11 @@ public class OrdersService {
     }
 
     // 주문 취소
-    @Transactional(readOnly = false)
+    @Transactional
     public OrdersResponse cancelOrder(Long orderId, String reason) {
         Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        // 배송 상태 확인
         order.getDeliveries().stream()
                 .findFirst()
                 .ifPresent(delivery -> {
@@ -69,11 +68,11 @@ public class OrdersService {
         order.setReason(reason);
         ordersRepository.save(order);
 
-        return OrdersResponse.from(order);
+        return OrdersResponse.from(order, imageRepository);
     }
 
     // 반품 신청
-    @Transactional(readOnly = false)
+    @Transactional
     public OrdersResponse returnOrder(Long orderId, String reason) {
         Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
@@ -91,11 +90,11 @@ public class OrdersService {
         order.setReason(reason);
         ordersRepository.save(order);
 
-        return OrdersResponse.from(order);
+        return OrdersResponse.from(order, imageRepository);
     }
 
     // 교환 신청
-    @Transactional(readOnly = false)
+    @Transactional
     public OrdersResponse exchangeOrder(Long orderId, String reason) {
         Orders order = ordersRepository.findByIdWithDeliveries(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
@@ -113,15 +112,14 @@ public class OrdersService {
         order.setReason(reason);
         ordersRepository.save(order);
 
-        return OrdersResponse.from(order);
+        return OrdersResponse.from(order, imageRepository);
     }
 
     public List<OrdersResponse> getInfiniteOrders(SiteUser user, Long lastOrderId, int size) {
         List<Orders> orders = ordersRepository.findInfiniteOrders(user.getId(), lastOrderId, size);
 
         return orders.stream()
-                .map(OrdersResponse::from)
+                .map(order -> OrdersResponse.from(order, imageRepository))
                 .toList();
     }
-
 }

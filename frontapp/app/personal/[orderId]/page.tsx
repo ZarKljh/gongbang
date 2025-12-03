@@ -149,7 +149,7 @@ export default function OrderDetailPage() {
                 <div className="order-items-list">
                     {order.items?.map((item: any) => (
                         <div key={item.orderItemId} className="order-detail-item">
-                            <img src={item.imageUrl || '/default-product.png'} alt="" />
+                            <img src={`http://localhost:8090${item.imageUrl}`} alt={item.productName} />
                             <div>
                                 <Link href={`http://localhost:3000/product/list/detail?productId=${item.productId}`} className="my-review-product-name">
                                     <p className="item-name">{item.productName}</p>

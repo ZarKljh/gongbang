@@ -31,21 +31,21 @@ public class OrdersResponse {
     private List<OrderItemResponse> items;
     private List<DeliveryResponse> deliveries;
 
-    public static OrdersResponse from(Orders orders) {
-        final ImageRepository imageRepository = null;
+    public static OrdersResponse from(Orders orders, ImageRepository imageRepository) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         String createdDateStr = orders.getCreatedDate() != null
                 ? orders.getCreatedDate().format(formatter)
                 : LocalDateTime.now().format(formatter);
 
-        List<OrderItemResponse> items = orders.getOrderItems() != null
-                ? orders.getOrderItems().stream().map(item -> OrderItemResponse.from(item, imageRepository)).toList()
-                : Collections.emptyList();
-
         List<DeliveryResponse> deliveries = orders.getDeliveries() != null
                 ? orders.getDeliveries().stream().map(DeliveryResponse::from).toList()
                 : Collections.emptyList();
+
+        List<OrderItemResponse> items = orders.getOrderItems()
+                .stream()
+                .map(item -> OrderItemResponse.from(item, imageRepository))
+                .toList();
 
         // OrdersResponse.from
         String deliveryStatus = orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()

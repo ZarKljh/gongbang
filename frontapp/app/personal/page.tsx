@@ -1499,7 +1499,7 @@ export default function MyPage() {
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
                                                     <img
                                                         key={idx}
-                                                        src={item.imageUrl || '/default-product.png'}
+                                                        src={`http://localhost:8090${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 ))}

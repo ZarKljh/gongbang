@@ -103,6 +103,7 @@ body {
     margin-bottom: 24px;
     font-size: 14px;
     gap: 10px;
+    border-radius: 8px;
 }
 
 .auth-banner-input {
