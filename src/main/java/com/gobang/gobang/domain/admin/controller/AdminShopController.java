@@ -192,7 +192,7 @@ public class AdminShopController {
     @GetMapping("/count")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> countByStatus(
-            @RequestParam String status // 예: PENDING, APPROVED, REJECTED
+            @RequestParam String status
     ) {
         StudioStatus st = StudioStatus.valueOf(status.toUpperCase());
         long cnt = studioRepository.countByStatus(st);

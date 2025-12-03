@@ -211,7 +211,7 @@
 }
 
 /* 모달 내부 버튼 */
-.btn {
+.buttonSecondarySmall {
     background: #2563eb;
     color: #fff;
     padding: 7px 12px;
@@ -222,7 +222,7 @@
     margin-right: 12px;
 }
 
-.btn:hover {
+.buttonSecondarySmall:hover {
     background: #1d4ed8;
     box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
 }
