@@ -157,27 +157,22 @@ export default function ProductListTab(props: MainContentProps) {
             {/* =====================================================
                 🔍 검색 박스
             ===================================================== */}
-            {/* =====================================================
-    🔍          새로운 필터 카드(5번 레이아웃 스타일)
-            ===================================================== */}
-            <div className="product-filter-card">
-                <h3 className="filter-title">상품 검색</h3>
+            <div className="search-box">
+                <h3>상품 검색</h3>
 
-                {/* 🔎 검색창 */}
-                <div className="filter-row horizontal">
+                {/* 검색어 입력 */}
+                <div className="filter-row">
                     <input
                         type="text"
                         value={productFilters.keyword}
                         onChange={(e) => setProductFilters((prev) => ({ ...prev, keyword: e.target.value }))}
                         placeholder="상품명을 입력해주세요"
                     />
-                    <button className="btn-primary" onClick={handleSearch}>
-                        검색
-                    </button>
+                    <button onClick={handleSearch}>검색</button>
                 </div>
 
-                {/* 🔽 카테고리 */}
-                <div className="filter-inline">
+                {/* 카테고리 선택 */}
+                <div className="filter-row">
                     <select
                         value={productFilters.category}
                         onChange={(e) => setProductFilters((prev) => ({ ...prev, category: e.target.value }))}
@@ -186,7 +181,10 @@ export default function ProductListTab(props: MainContentProps) {
 
                         {categoryOptions.map((cat) => (
                             <optgroup key={cat.id} label={cat.name}>
+                                {/* 카테고리 자체 선택 */}
                                 <option value={`CAT:${cat.id}`}>{cat.name}</option>
+
+                                {/* 서브카테고리 나열 */}
                                 {cat.subcategories.map((sub) => (
                                     <option key={sub.id} value={`SUB:${sub.id}`}>
                                         └ {sub.name}
@@ -195,31 +193,89 @@ export default function ProductListTab(props: MainContentProps) {
                             </optgroup>
                         ))}
                     </select>
+                </div>
 
-                    {/* 가격 범위 */}
-                    <div className="price-range-inline">
+                {/* 가격 범위 */}
+                <div className="price-range-box">
+                    <h4>가격 범위</h4>
+
+                    <div className="price-inputs">
+                        <div>
+                            <label>최저가</label>
+                            <input
+                                type="number"
+                                value={productFilters.priceMin}
+                                min={0}
+                                max={productFilters.priceMax}
+                                onChange={(e) => {
+                                    const v = Number(e.target.value)
+                                    if (v <= productFilters.priceMax) {
+                                        setProductFilters((prev) => ({ ...prev, priceMin: v }))
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        <div>
+                            <label>최대가</label>
+                            <input
+                                type="number"
+                                value={productFilters.priceMax}
+                                min={productFilters.priceMin}
+                                max={1000000}
+                                onChange={(e) => {
+                                    const v = Number(e.target.value)
+                                    if (v >= productFilters.priceMin) {
+                                        setProductFilters((prev) => ({ ...prev, priceMax: v }))
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="price-slider">
+                        <div
+                            className="slider-track"
+                            style={{
+                                left: `${(productFilters.priceMin / 100000) * 100}%`,
+                                right: `${100 - (productFilters.priceMax / 100000) * 100}%`,
+                            }}
+                        ></div>
                         <input
-                            type="number"
+                            type="range"
+                            className="min"
+                            min="0"
+                            max="100000"
                             value={productFilters.priceMin}
-                            onChange={(e) =>
-                                setProductFilters((prev) => ({ ...prev, priceMin: Number(e.target.value) }))
-                            }
-                            placeholder="최저가"
+                            onChange={(e) => {
+                                const v = Number(e.target.value)
+                                if (v <= productFilters.priceMax) {
+                                    setProductFilters((prev) => ({ ...prev, priceMin: v }))
+                                }
+                            }}
                         />
-                        <span className="tilde">~</span>
                         <input
-                            type="number"
+                            type="range"
+                            className="max"
+                            min="0"
+                            max="100000"
                             value={productFilters.priceMax}
-                            onChange={(e) =>
-                                setProductFilters((prev) => ({ ...prev, priceMax: Number(e.target.value) }))
-                            }
-                            placeholder="최대가"
+                            onChange={(e) => {
+                                const v = Number(e.target.value)
+                                if (v >= productFilters.priceMin) {
+                                    setProductFilters((prev) => ({ ...prev, priceMax: v }))
+                                }
+                            }}
                         />
+                    </div>
+
+                    <div className="price-display">
+                        {minPrice.toLocaleString()}원 ~ {maxPrice.toLocaleString()}원
                     </div>
                 </div>
 
-                {/* 체크 옵션 */}
-                <div className="filter-checkbox-row">
+                {/* 기타 필터 */}
+                <div className="filter-row">
                     <label>
                         <input
                             type="checkbox"
@@ -228,6 +284,7 @@ export default function ProductListTab(props: MainContentProps) {
                         />{' '}
                         재고있음
                     </label>
+
                     <label>
                         <input
                             type="checkbox"
@@ -236,6 +293,9 @@ export default function ProductListTab(props: MainContentProps) {
                         />{' '}
                         재고없음
                     </label>
+                </div>
+
+                <div className="filter-row">
                     <label>
                         <input
                             type="checkbox"
@@ -244,6 +304,7 @@ export default function ProductListTab(props: MainContentProps) {
                         />{' '}
                         판매중
                     </label>
+
                     <label>
                         <input
                             type="checkbox"
@@ -252,6 +313,9 @@ export default function ProductListTab(props: MainContentProps) {
                         />{' '}
                         판매중지
                     </label>
+                </div>
+
+                <div className="filter-row">
                     <label>
                         <input
                             type="checkbox"
@@ -260,6 +324,7 @@ export default function ProductListTab(props: MainContentProps) {
                         />{' '}
                         SALE
                     </label>
+
                     <label>
                         <input
                             type="checkbox"
@@ -268,6 +333,7 @@ export default function ProductListTab(props: MainContentProps) {
                         />{' '}
                         준비중
                     </label>
+
                     <label>
                         <input
                             type="checkbox"
@@ -283,12 +349,8 @@ export default function ProductListTab(props: MainContentProps) {
                 버튼 그룹
             ===================================================== */}
             <div className="table-actions">
-                <button className="btn-secondary" onClick={handleDeleteSelected}>
-                    선택 삭제
-                </button>
-                <button className="btn-primary" onClick={moveToAddPage}>
-                    신규 상품 등록
-                </button>
+                <button onClick={handleDeleteSelected}>선택 삭제</button>
+                <button onClick={moveToAddPage}>신규 상품 등록</button>
                 <select
                     value={productPageSize}
                     onChange={(e) => {
@@ -419,7 +481,5 @@ export default function ProductListTab(props: MainContentProps) {
                         서브카테고리
                     </label>
                 </div>
-
-                
 
 */
