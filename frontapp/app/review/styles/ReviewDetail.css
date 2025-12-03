@@ -1,23 +1,25 @@
-.review-detail-container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 40px 20px;
+.review-detail-wrapper {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 60px;
+    padding: 20px;
 }
 
-.review-detail-left {
+.review-detail-container {
     width: 100%;
+    max-width: 1280px;
+    margin: 0;
 }
 
 /* 뒤로가기 버튼 */
 .review-back-btn {
-    display: inline-block;
-    /* background-color: #ddd; */
+    top: 20px;
+    left: 20px;
     color: #333;
     text-decoration: none;
-    border-radius: 8px;
-    padding: 20px 0;
-    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.3s ease;
 }
 
 /* 제목 */
@@ -27,15 +29,22 @@
 }
 
 /* 작성자 정보 */
+
+.review-header {
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: center;
+     gap: 10px;
+}
+
 .review-user-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     border: 1px solid #ddd;
     overflow: hidden;
-    /* background-color: #ddd;  */
-    /* 기본 회색 배경 (이미지 없을 때) */
     flex-shrink: 0;
+
 }
 
 .review-user-avatar img {
@@ -43,9 +52,14 @@
     height: 100%;
     object-fit: cover;
 }
+.review-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4;
+}
 
 .review-author-box {
-    font-size: 15px;
+    font-size: 16px;
     color: #777;
     margin-bottom: 15px;
     border-bottom: 1px solid #bbb;
@@ -53,6 +67,7 @@
 }
 .review-author-name {
     color: #333;
+    font-weight: 500;
 }
 
 /* 이미지 리스트 */
@@ -63,9 +78,10 @@
     margin-bottom: 25px;
 }
 .review-image-item {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
+    position: relative;
+    width: 220px;
+    height: 220px;
+    /* object-fit: cover; */
     border-radius: 8px;
     border: 1px solid #ccc;
     cursor: pointer;
@@ -104,7 +120,7 @@
     gap: 12px;
 }
 .review-modify-btn {
-   background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: white;
     border: none;
     border-radius: 8px;
@@ -171,6 +187,9 @@
     height: 32px;
     cursor: pointer;
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 다음/이전 버튼 */
@@ -187,10 +206,55 @@
     height: 40px;
     cursor: pointer;
     font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .review-modal-prev {
     left: -50px;
 }
 .review-modal-next {
     right: -50px;
+}
+
+/* ===================== 반응형 ===================== */
+
+/* ---- 태블릿 (max-width: 1024px) ---- */
+@media (max-width: 1024px) {
+    .review-detail-container {
+        padding: 0 15px 60px;
+    }
+
+    .review-image-item {
+        width: 180px;
+        height: 180px;
+        transition: all 0.3s ease;
+    }
+}
+
+/* ---- 모바일 (max-width: 600px) ---- */
+@media (max-width: 600px) {
+    .review-detail-container {
+        padding: 0 10px 50px;
+    }
+
+    .review-detail-title {
+        font-size: 20px;
+    }
+
+    .review-image-item {
+        width: 130px;
+        height: 130px;
+        transition: all 0.3s ease;
+    }
+
+    .review-content-box-D {
+        width: 100%;
+        height: 160px;
+    }
+
+    .review-image-item {
+        width: 90px;
+        height: 90px;
+    }
 }

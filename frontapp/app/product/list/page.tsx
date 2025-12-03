@@ -25,7 +25,7 @@ type Product = {
     stockQuantity: number
     seoTitle: string
     images?: ProductImageDto[]
-    avgRating?: string
+    avgRating?: number
     ratingCount?: string
 
     likeCount: number
@@ -511,7 +511,7 @@ export default function Product() {
 
                                             <footer className={styles.cardActions}>
                                                 <span>
-                                                    ⭐{p.avgRating}.0({p.ratingCount})
+                                                    ⭐{Math.round((p.avgRating ?? 0) * 10) / 10} ({p.ratingCount ?? 0})
                                                 </span>
                                                 <button
                                                     type="button"

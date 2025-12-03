@@ -5,6 +5,7 @@
 body {
     margin: 0;
     background-color: #faf7f0;
+    /* overflow: hidden; */
 }
 
 .Fsection {
@@ -201,7 +202,7 @@ body {
         flex-direction: column;
         gap: 8px;
         background-color: #faf7f0;
-        position: fixed;
+        position: absolute;
         top: 0;
         right: -60%;
         width: 40%;
@@ -209,7 +210,6 @@ body {
         padding: 32px 12px;
         box-sizing: border-box;
         z-index: 2000;
-
         transition: right 0.3s ease-in-out;
         font-size: 16px;
     }

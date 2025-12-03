@@ -29,12 +29,12 @@ export default function TopStudios() {
 
     const fetchTopStudios = async () => {
         try {
-            const res = await api.get('http://localhost:8090/api/home/v1/top-studios')
+            const res = await api.get('http://localhost:8090/api/v1/home/top-studios')
             if (res.data?.data) {
                 setTopStudio(res.data.data)
             }
         } catch (err) {
-            console.error("Top Studio load error:", err)
+            console.error('Top Studio load error:', err)
         }
     }
 
@@ -47,10 +47,10 @@ export default function TopStudios() {
     }
 
     return (
-        <div className='topStudioSection'>
-            <h2 className='sectionTitle'>오늘의 공방</h2>
+        <div className="topStudioSection">
+            <h2 className="sectionTitle">오늘의 공방</h2>
 
-            <div className='sliderWrapper'>
+            <div className="sliderWrapper">
                 {/* 왼쪽 버튼 */}
                 {topStudio.length > 0 && (
                     <button className="slideBtn prev" onClick={() => moveSlide(-1)}>
@@ -58,50 +58,44 @@ export default function TopStudios() {
                     </button>
                 )}
 
-                <div
-                    className='topStudioList'
-                    style={{ transform: `translateX(-${slideIndex * 100}%)` }}
-                >
+                <div className="topStudioList" style={{ transform: `translateX(-${slideIndex * 100}%)` }}>
                     {topStudio.length === 0 ? (
                         <p>오늘의 공방이 없습니다.</p>
                     ) : (
                         topStudio.map((studio) => (
-                            <div key={studio.studioId} className='topStudioCard'>
-                                <div className='topStudioBox'>
+                            <div key={studio.studioId} className="topStudioCard">
+                                <div className="topStudioBox">
                                     <img
-                                        src={studio.mainImageUrl ?? "/default-studio.jpg"}
+                                        src={studio.mainImageUrl ?? '/default-studio.jpg'}
                                         alt={studio.studioName}
-                                        className='topStudioMainImg'
+                                        className="topStudioMainImg"
                                     />
-                                    <div className='topStudioTxtBox'>
-                                        <Link
-                                            className='topStudioName'
-                                            href={`/studio/${studio.studioId}`}
-                                        >
+                                    <div className="topStudioTxtBox">
+                                        <Link className="topStudioName" href={`/studio/${studio.studioId}`}>
                                             {studio.studioName}
                                         </Link>
-                                        <p className='topStudioFollowers'>
+                                        <p className="topStudioFollowers">
                                             팔로워 {studio.followerCount?.toLocaleString() || 0}명
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className='topStudioProductWrap'>
+                                <div className="topStudioProductWrap">
                                     {studio.recentProducts.map((p) => (
-                                        <div key={p.productId} className='topProductCardSmall'>
+                                        <div key={p.productId} className="topProductCardSmall">
                                             <img
-                                                src={p.imageUrl ?? "/default-product.png"}
+                                                src={p.imageUrl ?? '/default-product.png'}
                                                 alt={p.productName}
-                                                className='topProductImgSmall'
+                                                className="topProductImgSmall"
                                             />
                                             <Link
-                                                className='topProductNameSmall'
+                                                className="topProductNameSmall"
                                                 href={`/product/list/detail?productId=${p.productId}`}
                                             >
                                                 {p.productName}
                                             </Link>
-                                            <p className='topProductsummary'>{p.summary}</p>
-                                            <p className='topProductsummary'>{p.price}</p>
+                                            <p className="topProductsummary">{p.summary}</p>
+                                            <p className="topProductsummary">{p.price}</p>
                                         </div>
                                     ))}
                                 </div>

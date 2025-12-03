@@ -17,6 +17,8 @@ public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Lo
     List<PaymentMethod> findBySiteUserAndIsDeletedFalse(SiteUser siteUser);
 
     @Modifying
-    @Query("UPDATE PaymentMethod pm SET pm.defaultPayment = false WHERE pm.siteUser = :siteUser AND pm.isDeleted = false")
+    @Query("UPDATE PaymentMethod p SET p.defaultPayment = false WHERE p.siteUser = :siteUser AND p.defaultPayment = true")
     void unsetDefaultBySiteUser(@Param("siteUser") SiteUser siteUser);
+
+    boolean existsBySiteUserAndDefaultPayment(SiteUser siteUser, boolean defaultPayment);
 }

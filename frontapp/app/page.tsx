@@ -32,7 +32,7 @@ export default function Main() {
     const fetchAll = async (): Promise<void> => {
         try {
             // 1 카테고리 목록 먼저 요청
-            const res = await api.get('/category')
+            const res = await api.get('category')
 
             // ✅ 구조 분해 (axios는 자동으로 JSON 파싱)
             const categoryList: Category[] = res.data.data.categoryList
@@ -41,7 +41,7 @@ export default function Main() {
 
             // 2 카테고리 ID별로 서브카테고리 병렬 요청
             const subPromises = categoryList.map(async (cat) => {
-                const res = await api.get(`/category/${cat.id}/sub`)
+                const res = await api.get(`category/${cat.id}/sub`)
 
                 return [cat.id, res.data.data.subCategoryList] as const
             })
@@ -87,9 +87,7 @@ export default function Main() {
                 </div>
             </div>
             {/* 카테고리 */}
-            <main className={styles.mainPage}>
-                <p className={styles.pageTitle}></p>
-
+            <div className={styles.mainPage}>
                 <nav aria-label="카테고리 슬라이더">
                     <div className={styles.slider} role="region" aria-roledescription="carousel">
                         <button type="button" className={styles.sliderPrev} aria-label="이전 카테고리">
@@ -126,52 +124,7 @@ export default function Main() {
                         </button>
                     </div>
                 </nav>
-
-                <header className={styles.categoryHeader}>
-                    <div className={styles.headerLeft}>
-                        <h2 className={styles.headerTitle}>세부 카테고리</h2>
-                    </div>
-
-                    {/* <nav className={styles.headerNav} aria-label="상단 메뉴">
-                    <ul className={styles.navList}>
-                        <li className={styles.navItem}>
-                            <a href="#">이벤트</a>
-                        </li>
-                        <li className={styles.navItem}>
-                            <a href="#">셀러소개</a>
-                        </li>
-                        <li className={styles.navItem}>
-                            <a href="#">문의사항</a>
-                        </li>
-                    </ul>
-                </nav> */}
-                </header>
-
-                <div className={styles.categoryContainer}>
-                    {categories.map((cat) => (
-                        <ul className={styles.categoryList2} key={cat.id}>
-                            <li>
-                                <strong className={styles.categoryTitle}>{cat.name}</strong>
-                                <ul className={styles.subcategoryList}>
-                                    {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
-                                        <li key={sub.id} className={styles.subCatTitle}>
-                                            <Link
-                                                href={{
-                                                    pathname: '/product/list',
-                                                    query: { categoryId: String(cat.id), subId: String(sub.id) },
-                                                }}
-                                                prefetch={false}
-                                            >
-                                                {sub.name}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </li>
-                        </ul>
-                    ))}
-                </div>
-            </main>
+            </div>
             {/* 섹션 */}
             <section className={styles.recommendWrap}>
                 {/* 섹션2번 컴포넌트로 묶음*/}
