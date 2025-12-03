@@ -25,6 +25,7 @@
     overflow: hidden;
 }
 .mainPage {
+    width: 100%;
     max-width: 1280px;
     margin: 0 auto;
 }
@@ -42,7 +43,15 @@
     width: 100%;
     align-items: center;
     justify-content: center;
+
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 🔥 핵심 */
+    gap: 12px; /* 버튼 사이 적당한 간격 */
+
     /* background-color: #f9f9f9; */
+    /* margin: 0 auto;
+    max-width: 1280px; */
 }
 
 .sliderPrev,
