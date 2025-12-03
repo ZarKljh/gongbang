@@ -310,4 +310,62 @@ public class ProfileImageService {
         }
 
     }
+
+    public RsData<Void> replaceProductImage(Long productId, MultipartFile productMainImage, Image.RefType refType) {
+        Optional<Image> existingImage = imageRepository.findByRefTypeAndRefId(refType, productId);
+        if (existingImage.isPresent()) {
+            Image old = existingImage.get();
+
+            // 파일 삭제 (있을 경우)
+            Path oldPath = Paths.get(uploadPath, old.getImageFileName());
+            try {
+                Files.deleteIfExists(oldPath);
+            } catch (Exception e) {
+                System.out.println("⚠ 기존 파일 삭제 실패: " + e.getMessage());
+            }
+
+            // DB 삭제
+            imageRepository.delete(old);
+        }
+        try {
+
+            //동일한 이름의 이미지 파일이 있으면 이름을 바꿔서 저장하기
+            // 🔥 1️⃣ 원본 파일명
+            String originalName = StringUtils.cleanPath(productMainImage.getOriginalFilename());
+
+            // 🔥 2️⃣ DB에 동일 파일명이 존재하는지 확인
+            //Optional<Image> oi = imageRepository.findByRefTypeAndRefId(refType, studioId);
+            Path targetPath = Paths.get(uploadPath, originalName);
+
+            // 🔥 3️⃣ 파일명 충돌 처리
+            String finalFileName = originalName;
+            /*
+            if (oi.isPresent()) {
+                // 같은 이름이 있으면 새 이름을 강제로 생성하여 MultipartFile 복제
+                finalFileName = System.currentTimeMillis() + "_" + originalName;
+            }
+            */
+            if (Files.exists(targetPath)) {
+                finalFileName = System.currentTimeMillis() + "_" + originalName;
+            }
+            // 🔥 4️⃣ saveFile() 호출 (파일명은 MultipartFile.getOriginalFilename() 사용됨)
+            String savedFileName = saveFile(productMainImage, finalFileName);
+
+            Image image = Image.builder()
+                    .refType(refType)
+                    .refId(productId)
+                    .imageFileName(savedFileName)
+                    .imageUrl(savedFileName) // 로컬 경로 또는 URL 형태로 저장
+                    .sortOrder(0)
+                    .build();
+
+            imageRepository.save(image);
+
+            return RsData.of("S-1", "프로필 업로드 성공");
+
+        } catch (Exception e) {
+            return RsData.of("F-2", "프로필 업로드 실패: " + e.getMessage());
+        }
+
+    }
 }

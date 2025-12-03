@@ -6,16 +6,25 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ProductAddResponse {
+public class ProductAddlResponse {
     private Long id;
     private String name;
     private Long categoryId;
     private Long subcategoryId;
+    private String summary;
+    private String description;
+    private String slug;
+    private String subtitle;
     private Integer basePrice;
     private Integer stockQuantity;
     private Boolean active;
+    private String status;
+    private Boolean backorderable;
+    private String seoTitle;
+    private String seoDescription;
 
-    public ProductAddResponse(Product p) {
+
+    public ProductAddlResponse(Product p) {
         this.id = p.getId();
         this.name = p.getName();
         this.categoryId = p.getCategoryId();
@@ -23,5 +32,13 @@ public class ProductAddResponse {
         this.basePrice = p.getBasePrice();
         this.stockQuantity = p.getStockQuantity();
         this.active = p.getActive();
+        this.summary = p.getSummary();
+        this.description = p.getDescription();
+        this.slug = p.getSlug();
+        this.subtitle = p.getSubtitle();
+        this.backorderable = p.getBackorderable();
+        this.seoTitle = p.getSeoTitle();
+        this.seoDescription = p.getSeoDescription();
+        this.status = p.getStatus().name();
     }
 }

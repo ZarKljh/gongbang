@@ -20,13 +20,14 @@ public class FollowResponse {
     private String studioName;
     private LocalDateTime createdAt;
     private String studioImageUrl;
+    private String studioDescription;
 
     public static FollowResponse from(Follow follow, ImageRepository imageRepository) {
         String imageUrl = imageRepository
-                .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.STUDIO_MAIN, follow.getStudio().getStudioId())
+                .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.STUDIO_LOGO, follow.getStudio().getStudioId())
                 .stream()
                 .findFirst()
-                .map(img -> "/api/v1/image/studio/" + img.getImageFileName())
+                .map(img -> "/images/" + img.getImageFileName())
                 .orElse(null);
 
         return FollowResponse.builder()
@@ -36,6 +37,7 @@ public class FollowResponse {
                 .studioName(follow.getStudio().getStudioName())
                 .createdAt(follow.getCreatedAt())
                 .studioImageUrl(imageUrl)
+                .studioDescription(follow.getStudio().getStudioDescription())
                 .build();
     }
 }

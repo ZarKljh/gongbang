@@ -58,4 +58,15 @@ public class CartController {
         long count = cartService.getCartCount(siteUser);
         return RsData.of("200", "장바구니 개수 조회 성공", count);
     }
+
+    @GetMapping("/cart/infinite")
+    public RsData<List<CartResponse>> getInfiniteCart(
+            @RequestParam(required = false) Long lastCartId,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        List<CartResponse> carts = cartService.getInfiniteCart(user.getId(), lastCartId, size);
+        return RsData.of("200", "장바구니 무한스크롤 조회 성공", carts);
+    }
+
 }

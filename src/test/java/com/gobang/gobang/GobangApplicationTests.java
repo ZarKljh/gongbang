@@ -111,8 +111,8 @@ class GobangApplicationTests {
 
                 if (r < 0.05) rating = 1;
                 else if (r < 0.10) rating = 2;
-                else if (r < 0.20) rating = 3;
-                else if (r < 0.55) rating = 4;
+                else if (r < 0.15) rating = 3;
+                else if (r < 0.45) rating = 4;
                 else rating = 5;
                 int viewCount = (int)(Math.random() * 20);
                 int likeCount = (int)(Math.random() * 10);

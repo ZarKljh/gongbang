@@ -23,7 +23,7 @@ public class ProfileImageController {
         SiteUser user = siteUserService.getCurrentUser();
         RsData<Void> result = profileImageService.uploadProfileImage(user.getId(), file);
         if (result.isSuccess()) {
-            return RsData.of("S-1", "프로필 업로드 성공");
+            return RsData.of("200", "프로필 업로드 성공");
         }
         return result;
     }
@@ -40,7 +40,7 @@ public class ProfileImageController {
         SiteUser user = siteUserService.getCurrentUser();
         RsData<Void> result = profileImageService.updateProfileImage(user.getId(), file);
         if (result.isSuccess()) {
-            return RsData.of("S-2", "프로필 수정 성공");
+            return RsData.of("200", "프로필 수정 성공");
         }
         return result;
     }
@@ -51,7 +51,7 @@ public class ProfileImageController {
         SiteUser user = siteUserService.getCurrentUser();
         RsData<Void> result = profileImageService.deleteProfileImage(user.getId());
         if (result.isSuccess()) {
-            return RsData.of("S-3", "프로필 삭제 성공");
+            return RsData.of("200", "프로필 삭제 성공");
         }
         return result;
     }

@@ -76,6 +76,8 @@ export default function MyPage() {
         PRODUCT: [] as File[],
     })
 
+    const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
+
     // ======= 초기 로딩 =======
     useEffect(() => {
         const init = async () => {
@@ -234,6 +236,51 @@ export default function MyPage() {
             setGlobalSubcategoryOptions(subcategories)
         } catch (error) {
             console.error('전역 카테고리 조회 실패', error)
+        }
+    }
+
+    const fetchProductDetail = async (productId: number) => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/studio/product/${productId}`, {
+                withCredentials: true,
+            })
+
+            const p = res.data.data
+
+            setTempData({
+                productId: p.id,
+                name: p.name,
+                slug: p.slug,
+                subtitle: p.subtitle,
+                basePrice: p.basePrice,
+                stockQuantity: p.stockQuantity,
+                backorderable: String(p.backorderable),
+                active: String(p.active),
+                status: p.status,
+                categoryId: p.categoryId,
+                categoryName: p.categoryName,
+                subcategoryId: p.subcategoryId,
+                subcategoryName: p.subcategoryName,
+                summary: p.summary,
+                description: p.description,
+                seoTitle: p.seoTitle,
+                seoDescription: p.seoDescription,
+
+                // 기존 이미지 URL
+                productMainImageName: p.productMainImage?.imageFileName || '',
+                productMainImageUrl: p.productMainImage?.imageFileName || null,
+                //productGalleryImageUrls: p.galleryImages.map((g: any) => g.imageUrl),
+                //productGalleryImageNames: p.galleryImages.map((g: any) => g.imageFileName),
+            })
+            console.log('prductDetail : ', p)
+            console.log('tempData: ', tempData)
+
+            setProductImages({
+                PRODUCT_MAIN: null,
+                PRODUCT: [],
+            })
+        } catch (err) {
+            console.error('상품 상세 조회 실패:', err)
         }
     }
 
@@ -447,6 +494,13 @@ export default function MyPage() {
         if (section === 'productAdd') {
             setTempData({})
         }
+        if (section === 'productModify') {
+            //setEditMode((prev) => ({ ...prev, productModify: true }))
+            fetchProductDetail(selectedProductId!)
+            fetchGlobalCategories()
+            setActiveTab('productModify')
+            return
+        }
     }
 
     const handleSave = async (section: string) => {
@@ -511,11 +565,11 @@ export default function MyPage() {
                     })
                 }
                 /*
-                else {
-                    // 🔥 중요: key 자체가 없으면 서버에서 null 발생 → replace 함수가 정상 작동 안 함
-                    form.append('studioGalleryImages', new Blob([], { type: 'application/octet-stream' }))
-                }
-                */
+                    else {
+                        // 🔥 중요: key 자체가 없으면 서버에서 null 발생 → replace 함수가 정상 작동 안 함
+                        form.append('studioGalleryImages', new Blob([], { type: 'application/octet-stream' }))
+                    }
+                    */
                 const response = await axios.patch(`${API_BASE_URL}/studio/${studio.studioId}`, form, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
@@ -664,6 +718,83 @@ export default function MyPage() {
 
                 // 상품 목록 갱신
                 fetchStudioProducts(studio.studioId, 0)
+            } else if (section === 'productModify') {
+                if (!studio?.studioId) {
+                    alert('공방 정보가 없습니다.')
+                    return
+                }
+
+                if (!tempData.productId) {
+                    alert('상품 ID가 없습니다.')
+                    return
+                }
+
+                const requestJson = {
+                    productId: tempData.productId, // ⭐ Modify 필수
+                    studioId: studio.studioId,
+                    name: tempData.name,
+                    slug: tempData.slug,
+                    categoryId: tempData.categoryId,
+                    subcategoryId: tempData.subcategoryId || null,
+                    subtitle: tempData.subtitle || '',
+                    basePrice: Number(tempData.basePrice || 0),
+                    stockQuantity: Number(tempData.stockQuantity || 0),
+                    backorderable: tempData.backorderable === 'true',
+                    active: tempData.active === 'true',
+                    status: tempData.status,
+
+                    // ⭐ 기존 이미지 이름 유지
+                    productMainImageName: productImages.PRODUCT_MAIN?.name || tempData.productMainImageName || '',
+                    /*
+                    productGalleryImageNames: [
+                        ...(tempData.productGalleryImageNames || []),
+                        ...productImages.PRODUCT.map((f) => f.name),
+                    ],
+                    */
+                }
+
+                const form = new FormData()
+                form.append('request', new Blob([JSON.stringify(requestJson)], { type: 'application/json' }))
+
+                // 새 대표 이미지만 업로드
+                if (productImages.PRODUCT_MAIN) {
+                    form.append('productMainImage', productImages.PRODUCT_MAIN)
+                }
+
+                // 새 갤러리 이미지 업로드
+                if (productImages.PRODUCT.length > 0) {
+                    productImages.PRODUCT.forEach((f) => form.append('productGalleryImages', f))
+                }
+
+                const res = await axios.patch(`${API_BASE_URL}/studio/product/${tempData.productId}`, form, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true,
+                })
+
+                if (res.data.resultCode !== '200') {
+                    alert('상품 수정 실패')
+                    return
+                }
+
+                alert('상품이 성공적으로 수정되었습니다.')
+
+                // 초기화
+                setProductImages({
+                    PRODUCT_MAIN: null,
+                    PRODUCT: [],
+                })
+
+                //setTempData({})
+
+                // ⭐ 수정 모드 종료
+                setEditMode((prev) => ({ ...prev, productModify: false }))
+                //setSelectedProductId(null)
+
+                // ⭐ Product List로 돌아가기
+                //onTabClick?.('productList')
+
+                // ⭐ 목록 다시 불러오기
+                fetchStudioProducts(studio.studioId, 0)
             }
         } catch (err) {
             console.error('저장 실패:', err)
@@ -696,6 +827,12 @@ export default function MyPage() {
                 PRODUCT: [],
             })
         }
+        if (section === 'productModify') {
+            setEditMode((prev) => ({ ...prev, productModify: false }))
+            //setTempData({})
+            //setProductImages({ PRODUCT_MAIN: null, PRODUCT: [] })
+            //setSelectedProductId(null)
+        }
     }
 
     const handleTempChange = (field: string, value: string) => {
@@ -708,11 +845,11 @@ export default function MyPage() {
     }
 
     /*
-        const onTempChange = (field: string, value: string) => {
-            if (field === 'passwordInput') setPasswordInput(value)
-            else setTempData((prev: any) => ({ ...prev, [field]: value }))
-        }
-        */
+            const onTempChange = (field: string, value: string) => {
+                if (field === 'passwordInput') setPasswordInput(value)
+                else setTempData((prev: any) => ({ ...prev, [field]: value }))
+            }
+            */
 
     // ======= UI 이벤트 =======
     const handleTabClick = (tab: string) => setActiveTab(tab)
@@ -786,6 +923,9 @@ export default function MyPage() {
                 globalSubcategoryOptions={globalSubcategoryOptions}
                 productImages={productImages}
                 onProductImageChange={handleProductImageChange}
+                selectedProductId={selectedProductId}
+                setSelectedProductId={setSelectedProductId}
+                fetchProductDetail={fetchProductDetail}
             />
         </div>
     )

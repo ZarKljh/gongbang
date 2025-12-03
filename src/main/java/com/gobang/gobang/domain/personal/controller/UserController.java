@@ -67,10 +67,4 @@ public class UserController {
             return RsData.of("500", "서버 오류 발생", false);
         }
     }
-
-//    @GetMapping("/stats")
-//    public RsData<Map<String, Long>> getUserStats() {
-//        Map<String, Long> stats = statsService.getUserStats();
-//        return RsData.of("200", "마이페이지 통계 조회 성공", stats);
-//    }
 }

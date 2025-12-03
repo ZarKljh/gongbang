@@ -404,6 +404,50 @@ export default function StudioTab(props: StudioTabProps) {
                     )}
                 </div>
                 {editMode.studio && <ErrorMessage message={errors.studioAddDetail} />}
+
+                {/* 새로운 이미지 등록폼 start */}
+                <div className="form-group">
+                    <label>메인사진</label>
+
+                    <div className="image-field">
+                        {/* 파일명 + 파일선택 버튼 */}
+                        <div className="image-file-row">
+                            <div className="file-name-box">
+                                {studioImages?.STUDIO_MAIN
+                                    ? studioImages.STUDIO_MAIN.name
+                                    : studio?.studioMainImage?.imageFileName || ''}
+                            </div>
+
+                            {editMode.studio && (
+                                <button
+                                    className="upload-btn"
+                                    onClick={() => document.getElementById('mainImageInput')?.click()}
+                                >
+                                    파일선택
+                                </button>
+                            )}
+
+                            <input
+                                id="mainImageInput"
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => {
+                                    if (e.target.files?.[0]) {
+                                        onStudioImageChange?.('STUDIO_MAIN', e.target.files[0])
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        {/* 미리보기 박스 — form-group 안쪽에 넣어야 layout이 깨지지 않음 */}
+                        <div className="image-preview-wide">
+                            {previewMainImage && <img src={previewMainImage} alt="메인 이미지" />}
+                        </div>
+                    </div>
+                </div>
+                {/* 새로운 이미지 등록폼 end */}
+
                 <div className="form-group">
                     <label>메인화면</label>
                     {editMode.studio && (
@@ -417,19 +461,20 @@ export default function StudioTab(props: StudioTabProps) {
                             }}
                         />
                     )}
-                    {previewMainImage && (
-                        <img
-                            src={
-                                studioImages?.STUDIO_MAIN
-                                    ? URL.createObjectURL(studioImages.STUDIO_MAIN)
-                                    : studio?.studioMainImage?.imageFileName
-                                    ? `http://localhost:8090/images/${studio.studioMainImage.imageUrl}`
-                                    : '/default-main.png'
-                            }
-                            alt="대표 이미지"
-                            style={{ maxWidth: '250px', marginTop: '10px' }}
-                        />
-                    )}
+                    <div className="image-preview-wrapper">
+                        {previewMainImage && (
+                            <img
+                                src={
+                                    studioImages?.STUDIO_MAIN
+                                        ? URL.createObjectURL(studioImages.STUDIO_MAIN)
+                                        : studio?.studioMainImage?.imageFileName
+                                        ? `http://localhost:8090/images/${studio.studioMainImage.imageUrl}`
+                                        : '/default-main.png'
+                                }
+                                alt="대표 이미지"
+                            />
+                        )}
+                    </div>
                 </div>
                 <div className="form-group">
                     <label>로고이미지</label>
@@ -444,18 +489,20 @@ export default function StudioTab(props: StudioTabProps) {
                             }}
                         />
                     )}
-                    {previewLogoImage && (
-                        <img
-                            src={
-                                studioImages?.STUDIO_LOGO
-                                    ? URL.createObjectURL(studioImages.STUDIO_LOGO)
-                                    : studio?.studioLogoImage?.imageFileName
-                                    ? `http://localhost:8090/images/${studio.studioLogoImage.imageUrl}`
-                                    : '/default-logo.png'
-                            }
-                            alt="공방 로고 이미지"
-                        />
-                    )}
+                    <div className="image-preview-wrapper">
+                        {previewLogoImage && (
+                            <img
+                                src={
+                                    studioImages?.STUDIO_LOGO
+                                        ? URL.createObjectURL(studioImages.STUDIO_LOGO)
+                                        : studio?.studioLogoImage?.imageFileName
+                                        ? `http://localhost:8090/images/${studio.studioLogoImage.imageUrl}`
+                                        : '/default-logo.png'
+                                }
+                                alt="공방 로고 이미지"
+                            />
+                        )}
+                    </div>
                 </div>
                 <div className="form-group">
                     <label>공방이미지</label>
@@ -477,7 +524,7 @@ export default function StudioTab(props: StudioTabProps) {
                     <div className="gallery-wrapper">
                         {previewGalleryImages.map((item, idx) => (
                             <div key={idx} className="gallery-item">
-                                <img src={item.src} className="gallery-image" />
+                                <img src={item.src} />
 
                                 {/* ❌ 삭제 버튼 (편집 모드일 때만 표시) */}
                                 {editMode.studio && (

@@ -4,6 +4,7 @@ package com.gobang.gobang.domain.personal.repository;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.personal.entity.Follow;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -43,4 +44,18 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 특정 공방의 팔로워 수
     int countByStudioStudioId(Long studioId);
+
+    @Query("""
+    SELECT f
+    FROM Follow f
+    WHERE f.siteUser.id = :userId
+      AND (:lastFollowId IS NULL OR f.id < :lastFollowId)
+    ORDER BY f.id DESC
+    """)
+    List<Follow> findInfiniteFollowList(
+            Long userId,
+            Long lastFollowId,
+            Pageable pageable
+    );
+
 }
