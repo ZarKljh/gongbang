@@ -2,16 +2,22 @@ package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.personal.dto.CartOrderItemDto;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
 import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
+import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
+import com.gobang.gobang.domain.product.entity.Product;
+import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +27,7 @@ public class OrdersService {
 
     private final OrdersRepository ordersRepository;
     private final ImageRepository imageRepository;
+    private final ProductRepository productRepository;
 
     // 사용자별 주문 목록 조회
     public List<OrdersResponse> getOrdersByUserId(SiteUser siteUser) {
@@ -121,5 +128,32 @@ public class OrdersService {
         return orders.stream()
                 .map(order -> OrdersResponse.from(order, imageRepository))
                 .toList();
+    }
+
+    @Transactional
+    public PrepareOrderResponse prepareCartOrder(SiteUser user, List<CartOrderItemDto> items) {
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        Orders order = Orders.createTempOrder(user);
+
+        for (CartOrderItemDto item : items) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+
+            BigDecimal price = BigDecimal.valueOf(product.getBasePrice());
+            BigDecimal itemTotal = price.multiply(BigDecimal.valueOf(item.getQuantity()));
+
+            total = total.add(itemTotal);
+
+            order.addOrderItem(product, item.getQuantity(), price);
+        }
+
+        order.setTotalPrice(total);
+        order.setOrderCode("ORD_" + UUID.randomUUID());
+
+        ordersRepository.save(order);
+
+        return new PrepareOrderResponse(order.getOrderCode(), total.longValueExact());
     }
 }

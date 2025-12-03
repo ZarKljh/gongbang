@@ -503,6 +503,10 @@ body {
     margin-bottom: 4px;
 }
 
+.wishlist-info:hover p:first-child {
+    text-decoration: underline;
+}
+
 .wishlist-info .price {
     font-weight: 600;
     margin-bottom: 8px;
@@ -971,10 +975,6 @@ body {
     line-height: 1.5;
 }
 
-.product-name:hover {
-    color: #B17457;
-}
-
 .product-price {
     font-size: 18px;
     font-weight: 700;
@@ -1100,14 +1100,17 @@ body {
     border-radius: 8px;
 }
 
-.studio-txt-box {
-    max-width: 70%;
-    margin: 0;
-    padding: 0;
-    gap: 0;
+.studio-image-placeholder {
+    line-height: 65px;
 }
 
-.studio-txt-box p:last-child { /*2줄 이상 ... 말줄임표 표시*/
+.studio-txt-box {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0;
+}
+
+.studio-txt-box p { /*2줄 이상 ... 말줄임표 표시*/
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -1537,13 +1540,195 @@ button.link-btn:disabled:hover {
 
 .shortcut-btn {
     cursor: pointer;
+    transition: color 0.15s;
 }
 
 .shortcut-btn:hover {
-    text-decoration: underline;
+    color: #b17457;
 }
 
-/* 반응형 */
+/* === 결제 모달 오버레이 ===-------------------------------------------------------------------------------- */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+}
+
+.modalContainer {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px 20px 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+    box-sizing: border-box;
+}
+
+/* 헤더 – 제목 왼쪽, 닫기 버튼 오른쪽 */
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.modalTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modalCloseBtn {
+    border: none;
+    background: none;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* 한 섹션 카드 */
+.modalSection {
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: #faf6f1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 상품 요약 레이아웃 */
+.modalProductSummary {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.summaryThumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #eee;
+    flex-shrink: 0;
+}
+
+.summaryThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.summaryText {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summaryTitle {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.summaryDesc {
+    font-size: 13px;
+    color: #777;
+    max-height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 수량/금액 줄 */
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+    font-size: 13px;
+}
+
+.summaryLabel {
+    color: #666;
+}
+
+.summaryValue {
+    font-weight: 500;
+}
+
+.summaryTotal {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* 상품 요약과 위젯 사이 구분선 */
+.sectionDivider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* 토스 위젯 박스 */
+.paymentBox {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.paymentMethods {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.paymentAgreement {
+    margin-top: 4px;
+}
+
+/* 푸터 */
+.modalFooter {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.paymentSubmitBtn {
+    width: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 11px 0;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #282633;
+    color: #fff;
+}
+
+.paymentSubmitBtn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* 결제 상태 텍스트 – 오른쪽 정렬 + 강조 */
+.paymentStatus {
+    font-size: 13px;
+    text-align: right; /* 👉 오른쪽 정렬 */
+    margin: 0;
+}
+
+.paymentStatusSuccess {
+    color: #1a7f37; /* 초록 */
+    font-weight: 600;
+}
+
+.paymentStatusFail {
+    color: #d93025; /* 빨강 */
+    font-weight: 600;
+}
+
+/* 반응형
 @media (max-width: 968px) {
     .cart-product {
         grid-template-columns: 40px 100px 1fr;
@@ -1615,4 +1800,4 @@ button.link-btn:disabled:hover {
     .input-group .btn {
         width: 100%;
     }
-}
+} */

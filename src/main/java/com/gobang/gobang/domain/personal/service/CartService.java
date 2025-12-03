@@ -105,4 +105,12 @@ public class CartService {
         return carts.stream().map(cart -> CartResponse.from(cart, imageRepository)).toList();
     }
 
+    @Transactional
+    public void deletePurchasedItems(SiteUser user, List<Long> cartIds) {
+        if (cartIds == null || cartIds.isEmpty()) return;
+
+        List<Cart> carts = cartRepository.findByCartIdInAndSiteUser(cartIds, user);
+
+        cartRepository.deleteAll(carts);
+    }
 }

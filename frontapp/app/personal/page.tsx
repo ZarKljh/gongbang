@@ -6,6 +6,7 @@ import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
+import { loadPaymentWidget } from "@tosspayments/payment-widget-sdk"
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
@@ -150,6 +151,15 @@ export default function MyPage() {
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
     const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(stats.profileImageUrl)
     const [profileFile, setProfileFile] = useState<File | null>(null)
+
+    //결제
+    const [orderCode, setOrderCode] = useState<string | null>(null)
+    const [total, setTotal] = useState<number>(0)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [paymentWidget, setPaymentWidget] = useState<any>(null)
+    const [widgetLoaded, setWidgetLoaded] = useState(false)
+    const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
+    const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
     
     // =============== Effects ===============
     useEffect(() => {
@@ -1058,13 +1068,6 @@ export default function MyPage() {
         // 전체 구매 프로세스 진행
     }
 
-    // 선택 상품 구매
-    const handlePurchaseSelected = () => {
-        const itemsToPurchase = cart.filter(item => selectedItems.includes(item.cartId))
-        console.log('구매할 상품:', itemsToPurchase)
-        // 여기서 실제 결제 로직/페이지 이동 처리
-    }
-
     // 전체 선택
     const handleToggleSelectAll = () => {
         if (selectedItems.length === cart.length) {
@@ -1269,6 +1272,140 @@ export default function MyPage() {
             fetchInfiniteCart(null)
         }
     }, [activeTab, activeSubTab])
+
+    // =============== 결제 ===============
+    //선택 상품 구매하기
+    const handlePurchaseSelected = async () => {
+        if (selectedItems.length === 0) {
+            alert("선택된 상품이 없습니다.")
+            return
+        }
+
+        // 선택된 cartId → productId + quantity 로 변환
+        const selected = infiniteCart
+            .filter(item => selectedItems.includes(item.cartId))
+            .map(item => ({
+                productId: item.productId,
+                quantity: item.quantity,
+            }))
+
+        try {
+            const res = await axios.post(
+                "http://localhost:8090/api/v1/mypage/cart/prepare",
+                { items: selected },
+                { withCredentials: true }
+            )
+
+            const { orderCode, totalPrice } = res.data.data
+
+            localStorage.setItem("ORDER_CART_IDS", JSON.stringify(selectedItems))
+
+            // 모달을 띄우기 전에 결제 정보 저장
+            setOrderCode(orderCode)
+            setTotal(totalPrice)
+            setTimeout(() => setIsModalOpen(true), 0)  // 토스 결제 위젯 모달 열기
+
+        } catch (e: any) {
+            console.error("장바구니 결제 준비 실패:", e)
+
+            const err = e?.response?.data
+
+            if (e?.response?.status === 401) {
+                alert("로그인이 필요합니다.")
+                router.push("/auth/login")
+                return
+            }
+
+            alert(err?.message || "장바구니 주문 준비 중 오류가 발생했습니다.")
+        }
+    }
+
+    useEffect(() => {
+        if (!isModalOpen) return
+        handleInitPaymentWidget(total) // 토스 위젯 초기화
+    }, [isModalOpen, total])
+
+    //장바구니 상품 결제
+    const handleRequestPayment = async () => {
+        if (!paymentWidget) {
+            console.warn("paymentWidget 없음")
+            return
+        }
+
+        try {
+            await paymentWidget.requestPayment({
+                amount: total,
+                orderId: orderCode,
+                orderName: "장바구니 상품 결제",  // 여러 상품일 때 이름 고정
+                successUrl: `${window.location.origin}/pay/success`,
+                failUrl: `${window.location.origin}/pay/fail`,
+            })
+
+        } catch (e) {
+            console.error("결제 요청 실패", e)
+        }
+    }
+
+    //장바구니 위젯 초기화
+    const handleInitPaymentWidget = async (amount: number) => {
+        try {
+            let widget = paymentWidget
+
+            if (!widget) {
+                widget = await loadPaymentWidget(clientKey, customerKey)
+                setPaymentWidget(widget)
+            }
+
+            await widget.renderPaymentMethods("#payment-method", {
+                value: amount,
+            })
+
+            await widget.renderAgreement("#agreement")
+
+            setWidgetLoaded(true)
+        } catch (e) {
+            console.error("장바구니 위젯 초기화 실패", e)
+            setWidgetLoaded(false)
+        }
+    }
+
+    //취소 시 초기화
+    const handleClosePaymentModal = () => {
+        setIsModalOpen(false)
+        setWidgetLoaded(false)
+        setPaymentWidget(null)
+        setOrderCode(null)
+        setTotal(0)
+        setSelectedItems([])  // 선택된 상품 초기화 (선택 구매한 경우)
+    }
+
+    //결제완료 시 장바구니 상품 삭제
+    useEffect(() => {
+        const deletePurchased = async () => {
+            const stored = localStorage.getItem("ORDER_CART_IDS")
+            if (!stored) return
+
+            const cartIds = JSON.parse(stored)
+
+            try {
+                await axios.delete(
+                    "http://localhost:8090/api/v1/mypage/cart/after-order",
+                    {
+                        data: { cartIds },
+                        withCredentials: true
+                    }
+                )
+
+                // 사용 후 삭제
+                localStorage.removeItem("ORDER_CART_IDS")
+
+            } catch (e) {
+                console.error("장바구니 항목 삭제 실패:", e)
+            }
+        }
+
+        deletePurchased()
+    }, [])
 
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
@@ -1632,7 +1769,7 @@ export default function MyPage() {
                                                 </div>
 
                                                 <div className='cart-info'>
-                                                    <Link href={`/product/list/detail?productId=${item.productId}`} className="product-name">
+                                                    <Link href={`/product/list/detail?productId=${item.productId}`} className="product-name shortcut-btn">
                                                         {item.productName}
                                                     </Link>
                                                     <div className="product-unit-price">
@@ -2523,7 +2660,7 @@ export default function MyPage() {
                                 className="btn-primary"
                                 onClick={() => {
                                     if (validatePayment()) {
-                                        handleSavePayment();
+                                        handleSavePayment()
                                     }
                                 }}
                             >
@@ -2715,6 +2852,91 @@ export default function MyPage() {
                     </div>
                 </div>
             )}
+
+            {/* 결제 모달 */}
+            {isModalOpen && (
+                <div className="modalOverlay">
+                    <div className="modalContainer">
+                        
+                        {/* 헤더 */}
+                        <div className="modalHeader">
+                            <h2 className="modalTitle">결제하기</h2>
+
+                            <button
+                                type="button"
+                                onClick={handleClosePaymentModal}
+                                className="modalCloseBtn"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* === 한 섹션 카드 === */}
+                        <div className="modalSection">
+
+                            {/* 상품 요약 */}
+                            <div className="modalProductSummary">
+
+                                {/* 대표 이미지 */}
+                                <div className="summaryThumb">
+                                    <img
+                                        src={
+                                            infiniteCart.find(item => selectedItems.includes(item.cartId))?.imageUrl
+                                                ? `http://localhost:8090${infiniteCart.find(item => selectedItems.includes(item.cartId))?.imageUrl}`
+                                                : "/default-product.png"
+                                        }
+                                        alt="장바구니 대표 이미지"
+                                    />
+                                </div>
+
+                                {/* 텍스트 */}
+                                <div className="summaryText">
+                                    <div className="summaryTitle">
+                                        장바구니 상품 {selectedItems.length}개
+                                    </div>
+
+                                    <div className="summaryDesc">
+                                        여러 상품을 함께 결제합니다.
+                                    </div>
+
+                                    <div className="summaryRow">
+                                        <span className="summaryLabel">총 상품 수</span>
+                                        <span className="summaryValue">{selectedItems.length}개</span>
+                                    </div>
+
+                                    <div className="summaryRow">
+                                        <span className="summaryLabel">총 결제 금액</span>
+                                        <span className="summaryTotal">
+                                            {total.toLocaleString()}원
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 구분선 */}
+                            <div className="sectionDivider" />
+
+                            {/* 결제 위젯 */}
+                            <div className="paymentBox">
+                                <div id="payment-method" className="paymentMethods" />
+                                <div id="agreement" className="paymentAgreement" />
+                            </div>
+                        </div>
+
+                        {/* 하단 결제 버튼 */}
+                        <div className="modalFooter">
+                            <button
+                                type="button"
+                                onClick={handleRequestPayment}
+                                className="paymentSubmitBtn"
+                                disabled={!widgetLoaded}
+                            >
+                                {widgetLoaded ? "결제하기" : "결제 준비중…"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}  
         </div>
     )
 }
