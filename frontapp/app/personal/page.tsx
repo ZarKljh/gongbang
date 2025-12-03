@@ -551,16 +551,6 @@ export default function MyPage() {
         return diffDays <= 7
     }
 
-    const toggleOrder = (id: any) => {
-        setOpenOrderId((prev) => (prev === id ? null : id))
-    }
-
-    const openReasonModal = (title: any, onSubmit: any) => {
-        setReasonModalTitle(title)
-        setReasonModalOnSubmit(() => onSubmit)
-        setIsReasonModal(true)
-    }
-
     // ================= 주문 취소 / 반품 / 교환 =================
     const filteredOrders = orders.filter((order) => {
         if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
@@ -569,110 +559,6 @@ export default function MyPage() {
         if (activeFilter === "교환") return order.deliveryStatus === "교환"
         return true
     })
-    
-    const handleCancelOrder = async (orderId: number, reason: string) => {
-        const order = orders.find((o) => o.orderId === orderId)
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.")
-        if (order.deliveryStatus !== "배송준비중") {
-            return alert("배송 준비중 상태일 때만 주문 취소가 가능합니다.")
-        }
-
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/orders/${orderId}/cancel`,
-                { reason },
-                { 
-                    withCredentials: true,
-                    headers: { "Content-Type": "application/json" }
-                }
-            )
-
-            if (data.resultCode === "200") {
-                alert("주문이 취소되었습니다.")
-                await fetchOrders(userData.id)
-            } else {
-                alert(`취소 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error("주문 취소 실패:", error)
-            alert("주문 취소 중 오류가 발생했습니다.")
-        }
-    }
-
-    const handleReturnOrder = async (orderId: number, reason: string) => {
-        const order = orders.find((o) => o.orderId === orderId)
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.")
-        if (order.deliveryStatus !== "배송완료") {
-            return alert("배송 완료된 주문만 반품 신청이 가능합니다.")
-        }
-
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/orders/${orderId}/return`,
-                { reason },
-                { withCredentials: true }
-            )
-
-            if (data.resultCode === "200") {
-                alert("반품 신청이 완료되었습니다.")
-                await fetchOrders(userData.id)
-            } else {
-                alert(`반품 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error("반품 신청 실패:", error)
-            alert("반품 신청 중 오류가 발생했습니다.")
-        }
-    }
-
-    const handleExchangeOrder = async (orderId: number, reason: string) => {
-        const order = orders.find((o) => o.orderId === orderId)
-        if (!order) return alert("주문 정보를 찾을 수 없습니다.")
-        if (order.deliveryStatus !== "배송완료") {
-            return alert("배송 완료된 주문만 교환 신청이 가능합니다.")
-        }
-
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/orders/${orderId}/exchange`,
-                { reason },
-                { withCredentials: true }
-            )
-
-            if (data.resultCode === "200") {
-                alert("교환 신청이 완료되었습니다.")
-                await fetchOrders(userData.id)
-            } else {
-                alert(`교환 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error("교환 신청 실패:", error)
-            alert("교환 신청 중 오류가 발생했습니다.")
-        }
-    }
-
-    const toggleManageOrder = (orderId: number) => {
-        setOpenedOrderId((prev) => (prev === orderId ? null : orderId))
-    }
-
-    const handleDeleteOrder = async (orderId: number) => {
-        if (!confirm("정말 삭제하시겠습니까?")) return
-
-        try {
-            const { data } = await axios.delete(`${API_BASE_URL}/orders/${orderId}`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                alert('주문이 삭제되었습니다.')
-                setOrders(prev => prev.filter(o => o.orderId !== orderId))
-            } else {
-                alert(`삭제 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('주문 삭제 실패:', error)
-        }
-    }
 
     // =============== 회원정보 ===============
     const handleVerifyPassword = async () => {
@@ -1739,14 +1625,10 @@ export default function MyPage() {
                                                 </div>
 
                                                 <div className="cart-image">
-                                                    {item.imageUrl ? (
-                                                        <img 
-                                                            src={`http://localhost:8090${item.imageUrl}`}
-                                                            alt={item.productName}
-                                                        />
-                                                    ) : (
-                                                        <div className="no-image">이미지 없음</div>
-                                                    )}
+                                                    <img 
+                                                        src={`http://localhost:8090${item.imageUrl}`}
+                                                        alt={item.productName}
+                                                    />
                                                 </div>
 
                                                 <div className='cart-info'>
@@ -2108,14 +1990,10 @@ export default function MyPage() {
                                                     onClick={() => router.push(`/product/list/detail?productId=${item.productId}`)}
                                                 >
                                                     <div className="wishlist-image">
-                                                        {item.imageUrl ? (
-                                                            <img 
-                                                                src={`http://localhost:8090${item.imageUrl}`}
-                                                                alt={item.productName}
-                                                            />
-                                                        ) : (
-                                                            <div className="no-image">이미지 없음</div>
-                                                        )}
+                                                        <img 
+                                                            src={`http://localhost:8090${item.imageUrl}`}
+                                                            alt={item.productName}
+                                                        />
                                                     </div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>

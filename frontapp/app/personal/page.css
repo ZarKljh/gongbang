@@ -483,6 +483,12 @@ body {
     aspect-ratio: 1;
     background: #f3f4f6;
     border-radius: 8px 8px 0 0;
+    overflow: hidden;
+}
+
+.wishlist-image img {
+    object-fit: cover;
+    width: 100%;
 }
 
 .wishlist-info {
