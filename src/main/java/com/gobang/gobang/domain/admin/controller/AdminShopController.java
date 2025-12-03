@@ -15,6 +15,7 @@ import com.gobang.gobang.domain.inquiry.service.InquiryService;
 import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
 import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.seller.model.StudioStatus;
+import com.gobang.gobang.global.mail.ShopMailService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -37,16 +38,18 @@ public class AdminShopController {
     private final CategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
     private final SiteUserRepository siteUserRepository;
-
+    private final ShopMailService shopMailService;
 
     public AdminShopController(StudioRepository studioRepository,
                                CategoryRepository categoryRepository,
                                ImageRepository imageRepository,
-                               SiteUserRepository siteUserRepository) {
+                               SiteUserRepository siteUserRepository,
+                               ShopMailService shopMailService) {
         this.studioRepository = studioRepository;
         this.categoryRepository = categoryRepository;
         this.imageRepository = imageRepository;
         this.siteUserRepository = siteUserRepository;
+        this.shopMailService = shopMailService;
     }
 
     @GetMapping("/recent")
@@ -157,11 +160,23 @@ public class AdminShopController {
         if (oldStatus != StudioStatus.APPROVED && newStatus == StudioStatus.APPROVED) {
             SiteUser owner = studio.getSiteUser();
             if (owner != null) {
-                // 이미 SELLER거나 ADMIN이면 굳이 손대지 않기
                 if (owner.getRole() != RoleType.SELLER && owner.getRole() != RoleType.ADMIN) {
                     owner.setRole(RoleType.SELLER);
                     siteUserRepository.save(owner);
                 }
+            }
+        }
+
+        // 3) REJECTED 로 바뀌는 경우, 반려 안내 메일 발송
+        if (newStatus == StudioStatus.REJECTED) {
+            SiteUser owner = studio.getSiteUser();
+            String reasonText = req.rejectReason(); // 프론트에서 보낸 반려 사유
+            if (owner != null && reasonText != null && !reasonText.isBlank()) {
+                shopMailService.sendShopRejectedMail(
+                        owner.getEmail(),
+                        studio.getStudioName(),
+                        reasonText
+                );
             }
         }
 
@@ -174,6 +189,14 @@ public class AdminShopController {
         );
     }
 
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> countByStatus(
+            @RequestParam String status // 예: PENDING, APPROVED, REJECTED
+    ) {
+        StudioStatus st = StudioStatus.valueOf(status.toUpperCase());
+        long cnt = studioRepository.countByStatus(st);
 
-
+        return ResponseEntity.ok(Map.of("count", cnt));
+    }
 }

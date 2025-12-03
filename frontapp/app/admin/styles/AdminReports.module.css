@@ -692,3 +692,42 @@
     border: 1px solid #d1d5db;
     background-color: #ffffff;
 }
+
+/* 반려 사유 모달 */
+.rejectModalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.rejectGuide {
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.rejectGuide strong {
+    color: #b91c1c;
+}
+
+.rejectTextarea {
+    min-height: 120px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.rejectTextarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 1px #6366f120;
+}
+
+.rejectActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}

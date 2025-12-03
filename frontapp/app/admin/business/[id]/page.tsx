@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
+import Modal from '@/app/admin/components/Modal'
 import styles from '@/app/admin/styles/AdminReports.module.css'
 import detailStyles from '@/app/admin/styles/AdminBusinessDetail.module.css'
 
@@ -26,9 +27,9 @@ type Shop = {
     studioOfficeTell?: string
     studioAddDetail?: string
     studioAddMain?: string
-    studioMainImageUrl?: string // <- 파일명 (백엔드에서 fileName만 내려줌)
-    studioLogoImageUrl?: string // <- 파일명
-    studioGalleryImageUrls?: string[] // <- 파일명 배열
+    studioMainImageUrl?: string
+    studioLogoImageUrl?: string
+    studioGalleryImageUrls?: string[]
 }
 
 const statusKoreanLabel = (status: SellerStatus) => {
@@ -64,6 +65,10 @@ export default function AdminBusinessDetailPage() {
     const [saving, setSaving] = useState(false)
     const [statusDraft, setStatusDraft] = useState<SellerStatus>('PENDING')
 
+    // ✅ 반려 모달 상태
+    const [rejectOpen, setRejectOpen] = useState(false)
+    const [rejectReason, setRejectReason] = useState('')
+
     const loadDetail = async () => {
         if (!id || Number.isNaN(id)) {
             setError('잘못된 접근입니다.')
@@ -92,9 +97,14 @@ export default function AdminBusinessDetailPage() {
         loadDetail()
     }, [id])
 
-    const updateStatus = async (nextStatus: SellerStatus) => {
+    // ✅ 상태 변경 (승인 / 반려 공통)
+    const updateStatus = async (nextStatus: SellerStatus, rejectMsg?: string) => {
         if (!shop) return
-        if (!confirm(`이 신청을 "${statusKoreanLabel(nextStatus)}" 처리할까요?`)) return
+
+        // 승인 쪽은 기존 confirm 유지
+        if (nextStatus === 'APPROVED') {
+            if (!confirm(`이 신청을 "${statusKoreanLabel(nextStatus)}" 처리할까요?`)) return
+        }
 
         try {
             setSaving(true)
@@ -102,9 +112,15 @@ export default function AdminBusinessDetailPage() {
 
             await api.patch(`/admin/shops/${shop.id}/status`, {
                 status: nextStatus,
+                rejectReason: rejectMsg ?? null, // ✅ 백엔드 DTO와 이름 맞추기
             })
 
-            alert(`"${statusKoreanLabel(nextStatus)}" 처리되었습니다.`)
+            if (nextStatus === 'APPROVED') {
+                alert(`"${statusKoreanLabel(nextStatus)}" 처리되었습니다.`)
+            } else if (nextStatus === 'REJECTED') {
+                alert('반려 처리 및 안내 메일 발송이 완료되었습니다.')
+            }
+
             setStatusDraft(nextStatus)
             setShop((prev) => (prev ? { ...prev, status: nextStatus } : prev))
             router.push('/admin/business')
@@ -114,6 +130,26 @@ export default function AdminBusinessDetailPage() {
         } finally {
             setSaving(false)
         }
+    }
+
+    // ✅ 반려 버튼 눌렀을 때: 모달만 열기
+    const openRejectModal = () => {
+        setRejectReason('')
+        setRejectOpen(true)
+    }
+
+    // ✅ 모달에서 최종 반려 확정
+    const handleConfirmReject = async () => {
+        if (!rejectReason.trim()) {
+            alert('반려 사유를 입력해 주세요.')
+            return
+        }
+        if (!confirm('해당 신청을 반려 처리하고 입력하신 내용으로 메일을 발송할까요?')) {
+            return
+        }
+
+        await updateStatus('REJECTED', rejectReason.trim())
+        setRejectOpen(false)
     }
 
     if (loading) {
@@ -267,7 +303,6 @@ export default function AdminBusinessDetailPage() {
                             </div>
 
                             <DetailRow label="스튜디오명">{shop.studioName}</DetailRow>
-
                             <DetailRow label="스튜디오 이메일">{shop.studioEmail ?? '-'}</DetailRow>
 
                             <DetailRow label="카테고리">
@@ -312,7 +347,7 @@ export default function AdminBusinessDetailPage() {
                                 type="button"
                                 className={`${styles.btn} ${styles.btnDanger}`}
                                 disabled={saving || shop.status === 'REJECTED'}
-                                onClick={() => updateStatus('REJECTED')}
+                                onClick={openRejectModal} // ✅ 모달 열기
                             >
                                 {saving && statusDraft === 'REJECTED' ? '처리 중...' : '반려'}
                             </button>
@@ -329,6 +364,50 @@ export default function AdminBusinessDetailPage() {
                     </div>
                 </section>
             </main>
+
+            {/* ✅ 반려 사유 입력 모달 */}
+            <Modal open={rejectOpen} onClose={() => setRejectOpen(false)} title="입점 신청 반려 사유 입력" size="md">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.5 }}>
+                        신청자에게 발송될 반려 안내 메시지를 입력해 주세요.
+                        <br />
+                        (이 내용은 이메일 본문에 그대로 포함됩니다.)
+                    </p>
+
+                    <textarea
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="예) 제출해주신 사업자등록증 상 상호명과 공방명 정보가 일치하지 않아 반려되었습니다.&#10;필요 서류를 수정하여 다시 신청해 주세요."
+                        style={{
+                            minHeight: 140,
+                            resize: 'vertical',
+                            borderRadius: 8,
+                            border: '1px solid #e5e7eb',
+                            padding: 10,
+                            fontSize: 13,
+                            lineHeight: 1.5,
+                        }}
+                    />
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+                        <button
+                            type="button"
+                            onClick={() => setRejectOpen(false)}
+                            className={`${styles.buttonSecondarySmall} ${styles.btnGhost}`}
+                        >
+                            취소
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleConfirmReject}
+                            className={`${styles.buttonSecondarySmall} ${styles.btnDanger}`}
+                            disabled={saving}
+                        >
+                            {saving ? '처리 중...' : '반려 처리 및 메일 발송'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     )
 }

@@ -11,11 +11,11 @@ type ReportStatus = 'PENDING' | 'RESOLVED' | 'REJECTED' | string
 type Report = {
     id: number
     targetType: string
-    targetId: number
+    targetId: number | string
     reason: string
     description: string
-    reporterEmail: string
-    reporterUserName?: string // 🔹 로그인 아이디(영문 아이디)
+    reporterUserName: string | null
+    reporterEmail: string | null
     status: ReportStatus
     createdAt: string
 }
@@ -25,17 +25,15 @@ type Report = {
  */
 function resolveTargetUrl(r: Report): string | null {
     switch (r.targetType) {
-        case 'REVIEW':
-            // 예: 리뷰 상세 페이지
-            return `/review/${r.targetId}`
-
         case 'PRODUCT':
-            // 예: 상품 상세 페이지 (프로젝트 규칙에 맞게 수정)
-            return `/product/${r.targetId}`
+            return `/product/list/detail?productId=${r.targetId}`
 
-        case 'INQUIRY':
-            // 예: QnA 상세 (있다면)
-            return `/mypage?tab=qna&id=${r.targetId}`
+        // 필요하면 나중에 리뷰, 문의 등도 추가
+        // case 'REVIEW':
+        //     return `/review/${r.targetId}`
+
+        // case 'INQUIRY':
+        //     return `/mypage?tab=qna&id=${r.targetId}`
 
         default:
             return null
@@ -130,15 +128,15 @@ export default function AdminReportsPage() {
         if (!q) return reports
 
         return reports.filter((r) => {
-            const email = r.reporterEmail?.toLowerCase() ?? ''
             const userName = r.reporterUserName?.toLowerCase() ?? ''
+            const email = r.reporterEmail?.toLowerCase() ?? ''
             const targetType = r.targetType?.toLowerCase() ?? ''
             const reason = r.reason?.toLowerCase() ?? ''
             const desc = r.description?.toLowerCase() ?? ''
 
             return (
-                email.includes(q) ||
                 userName.includes(q) ||
+                email.includes(q) ||
                 targetType.includes(q) ||
                 reason.includes(q) ||
                 desc.includes(q)
@@ -218,7 +216,7 @@ export default function AdminReportsPage() {
                         <div className={styles.searchBox}>
                             <input
                                 className={styles.searchInput}
-                                placeholder="신고자 아이디 / 이메일 / 대상 / 사유 / 내용 검색"
+                                placeholder="신고자 / 대상 / 사유 / 내용 검색"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -282,13 +280,10 @@ export default function AdminReportsPage() {
                                             </td>
                                             <td>
                                                 <div className={styles.meta}>
-                                                    {r.reporterUserName || '(탈퇴 또는 알 수 없음)'}
+                                                    {r.reporterUserName ?? '(알 수 없음)'}
                                                 </div>
-                                                <div
-                                                    className={styles.meta}
-                                                    style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}
-                                                >
-                                                    {r.reporterEmail}
+                                                <div className={styles.metaSmall}>
+                                                    {r.reporterEmail ?? '(이메일 없음)'}
                                                 </div>
                                             </td>
                                             <td>
@@ -298,7 +293,6 @@ export default function AdminReportsPage() {
                                             </td>
                                             <td>
                                                 <div className={styles.actions}>
-                                                    {/* ✅ 상세 모달 열기 */}
                                                     <button
                                                         className={`${styles.btn} ${styles.btnGhost}`}
                                                         onClick={() => openDetail(r.id)}
@@ -353,9 +347,9 @@ export default function AdminReportsPage() {
 
                         <Row label="신고자">
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span>{selectedReport.reporterUserName || '(탈퇴 또는 알 수 없음)'}</span>
-                                <span style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
-                                    {selectedReport.reporterEmail}
+                                <span>{selectedReport.reporterUserName ?? '(알 수 없음)'}</span>
+                                <span style={{ fontSize: 11, color: '#6b7280' }}>
+                                    {selectedReport.reporterEmail ?? '(이메일 없음)'}
                                 </span>
                             </div>
                         </Row>

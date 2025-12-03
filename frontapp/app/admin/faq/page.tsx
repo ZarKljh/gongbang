@@ -240,19 +240,6 @@ export default function AdminFaqPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <select
-                            className={styles.select}
-                            value={selectedCatId}
-                            onChange={(e) => setSelectedCatId(e.target.value as any)}
-                        >
-                            <option value="all">전체</option>
-                            {categories.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.active ? '' : '[비활성] '}
-                                    {c.name}
-                                </option>
-                            ))}
-                        </select>
                         <div className={styles.searchBox}>
                             <input
                                 className={styles.searchInput}
@@ -273,6 +260,20 @@ export default function AdminFaqPage() {
                         >
                             FAQ 추가
                         </button>
+
+                        <select
+                            className={styles.select}
+                            value={selectedCatId}
+                            onChange={(e) => setSelectedCatId(e.target.value as any)}
+                        >
+                            <option value="all">전체</option>
+                            {categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.active ? '' : '[비활성] '}
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </header>
 

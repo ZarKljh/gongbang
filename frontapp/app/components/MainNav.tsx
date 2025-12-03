@@ -35,9 +35,9 @@ export default function MainNav() {
 
     const [categories, setCategories] = useState<Category[]>([])
     const [subCategoriesByCat, setSubCategoriesByCat] = useState<Record<number, SubCategory[]>>({})
+    const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
+    const [openMobileCategoryId, setOpenMobileCategoryId] = useState<number | null>(null)
 
-    // ✅ 이 페이지에서 카테고리 영역 숨길지 여부
-    // 현재 URL: /product/list?categoryId=3&subId=7  -> pathname은 '/product/list'
     const hideCategorySection = pathname === '/product/list'
 
     // ================== 로그인 상태 확인 ==================
@@ -65,6 +65,7 @@ export default function MainNav() {
 
     useEffect(() => {
         checkLogin()
+        setIsHamburgerOpen(false)
     }, [pathname])
 
     const isLoggedIn = !!user
@@ -124,7 +125,7 @@ export default function MainNav() {
                         </Link>
                     </div>
 
-                    <div>
+                    <div className={`${styles.buttonGroup} ${isHamburgerOpen ? styles.buttonGroupOpen : ''}`}>
                         <AdminNavButton />
                         {isLoggedIn && (
                             <Link href="/personal" className={styles.navButton}>
@@ -152,13 +153,85 @@ export default function MainNav() {
                         <Link href="/support" className={styles.navButton}>
                             고객센터
                         </Link>
+
+                        {!hideCategorySection && (
+                            <div className={styles.mobileCategoryWrapper}>
+                                {categories.map((cat) => {
+                                    const isOpen = openMobileCategoryId === cat.id
+
+                                    const handleCategoryClick = () => {
+                                        setOpenMobileCategoryId((prev) => (prev === cat.id ? null : cat.id))
+                                    }
+
+                                    return (
+                                        <div key={cat.id} className={styles.mobileCategoryBlock}>
+                                            <div
+                                                className={`${styles.mobileCategoryTitle} ${
+                                                    isOpen ? styles.mobileCategoryTitleOpen : ''
+                                                }`}
+                                                onClick={handleCategoryClick}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                        e.preventDefault()
+                                                        handleCategoryClick()
+                                                    }
+                                                }}
+                                            >
+                                                {cat.name}
+                                                <span className={styles.mobileCategoryArrow}>⌵</span>
+                                            </div>
+
+                                            <ul
+                                                className={`${styles.mobileSubcategoryList} ${
+                                                    isOpen ? styles.mobileSubcategoryListOpen : ''
+                                                }`}
+                                            >
+                                                {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
+                                                    <li key={sub.id}>
+                                                        <Link
+                                                            href={{
+                                                                pathname: '/product/list',
+                                                                query: {
+                                                                    categoryId: String(cat.id),
+                                                                    subId: String(sub.id),
+                                                                },
+                                                            }}
+                                                            prefetch={false}
+                                                            onClick={() => {
+                                                                setIsHamburgerOpen(false)
+                                                                setOpenMobileCategoryId(null)
+                                                            }}
+                                                        >
+                                                            {sub.name}
+                                                        </Link>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
                     </div>
+                    <button
+                        className={`${styles.hamburger} ${isHamburgerOpen ? styles.hamburgerOpen : ''}`}
+                        type="button"
+                        onClick={() => setIsHamburgerOpen((prev) => !prev)}
+                        aria-label="모바일 메뉴 버튼"
+                        aria-expanded={isHamburgerOpen}
+                    >
+                        <span className={styles.hamburgerLine} />
+                        <span className={styles.hamburgerLine} />
+                        <span className={styles.hamburgerLine} />
+                    </button>
                 </div>
             </section>
 
             {/* ================== 카테고리 / 세부 카테고리 영역 ================== */}
             {!hideCategorySection && (
-                <section>
+                <section className={styles.desktopCategorySection}>
                     <div className={styles.categoryContainer}>
                         <div className={styles.categoryBackContainer}>
                             <div className={styles.categorySubContainer}>

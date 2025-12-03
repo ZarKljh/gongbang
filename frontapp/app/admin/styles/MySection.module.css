@@ -180,7 +180,7 @@ body {
     width: 200px;
     border-radius: 50%;
     font-weight: 600;
-    color: white;
+    color: #334155;
     border: none;
     cursor: pointer;
     transition: transform 0.2s, opacity 0.2s;
@@ -188,8 +188,8 @@ body {
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    background-color: black;
     text-decoration: none;
+    border: 5px solid #fcf6ea;
 }
 
 .circleCard span {

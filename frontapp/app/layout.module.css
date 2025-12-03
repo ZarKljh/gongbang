@@ -20,7 +20,7 @@ body {
     padding-top: 12px;
 }
 
-.FirstC div {
+.FirstC > div {
     display: flex;
     align-items: center;
 }
@@ -143,4 +143,181 @@ body {
 
 .subcategoryList a:hover {
     color: #745f45;
+}
+
+/* 햄버거 버튼 */
+.hamburger {
+    all: unset;
+    display: none;
+    cursor: pointer;
+    width: 32px;
+    height: 24px;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+}
+
+.hamburgerLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-radius: 999px;
+    background-color: white;
+    transition: transform 0.2s ease, opacity 0.2s ease, top 0.2s ease, bottom 0.2s ease;
+}
+
+.hamburgerLine:nth-child(1) {
+    top: 2px;
+}
+
+.hamburgerLine:nth-child(2) {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.hamburgerLine:nth-child(3) {
+    bottom: 2px;
+}
+
+.mobileCategoryWrapper {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .Logo {
+        width: 80px;
+        height: 40px;
+    }
+
+    .FirstC {
+        width: 446px;
+        padding-top: 0px;
+        position: relative;
+        color: #6b5642;
+    }
+
+    .buttonGroup {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background-color: #faf7f0;
+        position: absolute;
+        top: 0;
+        right: -60%;
+        width: 30%;
+        height: 100vh;
+        padding: 32px 12px;
+        box-sizing: border-box;
+        z-index: 2000;
+        transition: right 0.3s ease-in-out;
+        font-size: 16px;
+    }
+
+    .buttonGroupOpen {
+        right: 0;
+    }
+
+    .hamburger {
+        display: flex;
+        width: 32px;
+        height: 24px;
+        flex-direction: column;
+        gap: 2px;
+        z-index: 2100;
+    }
+
+    .hamburgerLine {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 999px;
+        background-color: black;
+        transition: transform 0.2s ease, opacity 0.2s ease, top 0.2s ease, bottom 0.2s ease;
+    }
+
+    .hamburgerOpen .hamburgerLine:nth-child(1) {
+        top: 50%;
+        transform: translateY(-50%) rotate(45deg);
+    }
+
+    .hamburgerOpen .hamburgerLine:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburgerOpen .hamburgerLine:nth-child(3) {
+        bottom: 50%;
+        transform: translateY(50%) rotate(-45deg);
+    }
+
+    /* 모바일용 카테고리 디자인 */
+    .desktopCategorySection {
+        display: none;
+    }
+
+    .mobileCategoryWrapper {
+        display: flex;
+        flex-direction: column;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid #e9dfd0;
+    }
+
+    .mobileCategoryBlock {
+        display: flex;
+        flex-direction: column;
+        padding: 8px 0;
+        width: 100%;
+    }
+
+    .mobileCategoryTitle {
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b5642;
+        margin-bottom: 6px;
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .mobileCategoryTitleOpen {
+        color: #4c3926;
+    }
+
+    .mobileSubcategoryList {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        gap: 6px 10px;
+        max-height: 0px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    .mobileSubcategoryListOpen {
+        max-height: 400px;
+    }
+
+    .mobileSubcategoryList a {
+        text-decoration: none;
+        color: #8a7661;
+        font-size: 13px;
+    }
+
+    .mobileSubcategoryList a:hover {
+        color: #745f45;
+    }
+
+    /* 화살표 */
+    .mobileCategoryArrow {
+        font-size: 12px;
+        transform: rotate(0deg);
+        transition: transform 0.3s ease;
+    }
+
+    .mobileCategoryTitleOpen .mobileCategoryArrow {
+        transform: rotate(180deg);
+    }
 }
