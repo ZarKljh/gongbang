@@ -11,13 +11,12 @@
 
 /* 뒤로가기 버튼 */
 .review-back-btn {
-    display: inline-block;
-    /* background-color: #ddd; */
+    top: 20px;
+    left: 20px;
     color: #333;
     text-decoration: none;
-    border-radius: 8px;
-    padding: 20px 0;
-    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.3s ease;
 }
 
 /* 제목 */
@@ -104,7 +103,7 @@
     gap: 12px;
 }
 .review-modify-btn {
-   background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: white;
     border: none;
     border-radius: 8px;
@@ -171,6 +170,9 @@
     height: 32px;
     cursor: pointer;
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 다음/이전 버튼 */
@@ -187,6 +189,9 @@
     height: 40px;
     cursor: pointer;
     font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .review-modal-prev {
     left: -50px;

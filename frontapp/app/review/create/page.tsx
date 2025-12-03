@@ -102,9 +102,7 @@ export default function ReviewCreate() {
         }
 
         // name, size 기준 이미지 중복체크
-          const duplicates = files.filter(file =>
-        imageFiles.some(f => f.name === file.name && f.size === file.size)
-    )
+        const duplicates = files.filter((file) => imageFiles.some((f) => f.name === file.name && f.size === file.size))
         if (duplicates.length > 0) {
             alert('이미 선택된 이미지가 포함되어 있습니다.')
             e.target.value = ''

@@ -11,6 +11,7 @@ import 'swiper/css/navigation'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
 
+
 export default function Review() {
     // ================= 리뷰 =================
     const [reviews, setReviews] = useState([])
@@ -801,17 +802,17 @@ export default function Review() {
                                                     )}
                                                     도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
-                                                <ReportButton targetType="POST" targetId={review.review_id} />
 
                                                 {(Number(currentUserId) === Number(review.userId) ||
                                                     roleType === 'ADMIN') && (
-                                                    <button
+                                                        <button
                                                         className="review-delete-btn"
                                                         onClick={() => handleDeleteClick(review.reviewId)}
-                                                    >
+                                                        >
                                                         삭제
                                                     </button>
                                                 )}
+                                                <ReportButton targetType="POST" targetId={review.review_id} />
                                             </div>
                                         </div>
                                         {/* 리뷰 내용 */}
