@@ -33,6 +33,14 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                                 상품현황
                             </button>
                         </li>
+                        <li>
+                            <button
+                                className={`nav-btn ${activeTab === 'orderList' ? 'active' : ''}`}
+                                onClick={() => onTabClick('orderList')}
+                            >
+                                받은 주문
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </nav>
