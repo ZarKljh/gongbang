@@ -107,7 +107,6 @@ export default function Main() {
                                         }}
                                         prefetch={false}
                                     >
-                                        {/*이미지 파일명을 c01, c02, c03 규칙으로 해뒀음  */}
                                         <img
                                             src={`http://localhost:8090/uploads/c${String(index + 1).padStart(
                                                 2,

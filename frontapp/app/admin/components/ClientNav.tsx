@@ -42,33 +42,33 @@ export default function ClientNav() {
 
     const disabled = submitting || !me?.email || !form.title.trim() || !form.content.trim()
 
-    // 모달 열릴 때 me 없으면 한번만 로드
-    useEffect(() => {
-        if (!open || me) return
-        ;(async () => {
-            try {
-                setMeError(null)
+    // ✅ 1:1 문의하기 버튼 클릭 시 로그인 체크
+    const handleOpenClick = async () => {
+        try {
+            setMeError(null)
 
-                const r = await api.get('/auth/me', {
-                    headers: { 'Cache-Control': 'no-store' },
-                })
+            const r = await api.get('/auth/me', {
+                headers: { 'Cache-Control': 'no-store' },
+            })
 
-                const raw = r.data
-                const user: Me = raw?.data?.siteUser ?? raw?.data?.siteUserDto ?? raw?.data ?? raw
+            const raw = r.data
+            const user: Me = raw?.data?.siteUser ?? raw?.data?.siteUserDto ?? raw?.data ?? raw
 
-                if (!user) {
-                    setMeError('사용자 정보를 불러올 수 없습니다.')
-                    return
-                }
-
-                setMe(user)
-            } catch (e: any) {
-                let msg = '사용자 정보를 불러오지 못했습니다.'
-                if (typeof e?.message === 'string') msg = e.message
-                setMeError(msg)
+            if (!user || !user.email) {
+                alert('로그인 후 이용해주세요.')
+                // 로그인 페이지로 이동 (경로는 프로젝트에 맞게 조정)
+                window.location.href = '/auth/login/user'
+                return
             }
-        })()
-    }, [open, me])
+
+            setMe(user)
+            setOpen(true)
+        } catch (e) {
+            // 토큰 없음 / 401 등
+            alert('로그인 후 이용해주세요.')
+            window.location.href = '/auth/login/user'
+        }
+    }
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target
@@ -80,7 +80,6 @@ export default function ClientNav() {
         if (disabled || !me?.email) return
 
         setSubmitting(true)
-        // 모달 안 메시지는 안 쓰니까 여기선 굳이 초기화 안 해도 됨
 
         try {
             const payload = {
@@ -99,33 +98,21 @@ export default function ClientNav() {
             setOpen(false)
             setDoneMsg('문의가 접수되었습니다. 빠르게 답변드릴게요!')
         } catch (err: any) {
-            // ✅ 항상 문자열로 msg 만들기 (객체가 children으로 들어가지 않게)
-            const raw = err?.response?.data
             let msg: string | null = null
+            const raw = err?.response?.data
 
             if (raw) {
-                if (typeof raw === 'string') {
-                    msg = raw
-                } else if (typeof raw.message === 'string') {
-                    msg = raw.message
-                } else if (raw.error) {
-                    if (typeof raw.error === 'string') {
-                        msg = raw.error
-                    } else if (typeof raw.error?.message === 'string') {
-                        msg = raw.error.message
-                    }
+                if (typeof raw === 'string') msg = raw
+                else if (typeof raw.message === 'string') msg = raw.message
+                else if (raw.error) {
+                    if (typeof raw.error === 'string') msg = raw.error
+                    else if (typeof raw.error?.message === 'string') msg = raw.error.message
                 }
             }
 
-            if (!msg && typeof err?.message === 'string') {
-                msg = err.message
-            }
+            if (!msg && typeof err?.message === 'string') msg = err.message
+            if (!msg) msg = '문의 접수 중 오류가 발생했습니다.'
 
-            if (!msg) {
-                msg = '문의 접수 중 오류가 발생했습니다.'
-            }
-
-            // 모달은 그대로 두고, 화면 아래에 에러 메시지 표시
             setDoneMsg(msg)
         } finally {
             setSubmitting(false)
@@ -136,9 +123,8 @@ export default function ClientNav() {
 
     return (
         <>
-            {/* 상단 네비게이션에 들어가는 버튼 */}
             <div className={styles.inquiryNavWrapper}>
-                <button type="button" onClick={() => setOpen(true)} className={styles.inquiryButton}>
+                <button type="button" onClick={handleOpenClick} className={styles.inquiryButton}>
                     1:1 문의하기
                 </button>
             </div>

@@ -6,28 +6,51 @@ import api from '@/app/utils/api'
 import Modal from '@/app/admin/components/Modal'
 import Image from 'next/image'
 
+// 🔹 백엔드 enum 과 1:1로 맞추기
+type ReportTargetType = 'USER' | 'POST' | 'COMMENT' | 'PRODUCT' | 'ORDER' | 'OTHER'
+type ReportReason = 'SPAM' | 'ABUSE' | 'FRAUD' | 'COPYRIGHT' | 'PRIVACY' | 'OTHER'
+
 type Props = {
-    targetType: 'REVIEW' | 'COMMENT'
-    targetId: number
+    targetType: ReportTargetType
+    targetId: number | string
+}
+
+// 로그인 유저 정보 타입 (백엔드 /auth/me 응답 구조에 맞게)
+type Me = {
+    id: number
+    userName: string // ← 로그인 ID (영어 아이디)
+    email: string
+    nickName?: string
+    fullName?: string
+    role?: string
 }
 
 export default function ReportButton({ targetType, targetId }: Props) {
     const [open, setOpen] = useState(false)
-    const [reason, setReason] = useState('SPAM')
+    const [reason, setReason] = useState<ReportReason>('SPAM')
     const [detail, setDetail] = useState('')
     const [submitting, setSubmitting] = useState(false)
 
+    const [me, setMe] = useState<Me | null>(null)
+
+    // 🔹 신고 버튼 클릭 시
     const handleClick = async () => {
-        // 🔹 신고 버튼은 항상 보이게 하고,
-        //    눌렀을 때 로그인 안 되어 있으면 그때 로그인 유도
         try {
+            // 로그인 여부 확인 + 유저 정보 가져오기
             const res = await api.get('/auth/me', { withCredentials: true })
-            if (res.status !== 200) {
+
+            // 응답 형태가 프로젝트마다 조금씩 다를 수 있으니 안전하게 파싱
+            const raw = res.data
+            const user: Me = raw?.data?.siteUser ?? raw?.data?.siteUserDto ?? raw?.data ?? raw
+
+            if (!user || !user.id) {
                 if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
                     window.location.href = '/auth/login'
                 }
                 return
             }
+
+            setMe(user)
             setOpen(true)
         } catch {
             if (confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) {
@@ -38,6 +61,12 @@ export default function ReportButton({ targetType, targetId }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (!me) {
+            alert('로그인 정보가 없습니다. 다시 시도해주세요.')
+            return
+        }
+
         if (!detail.trim()) {
             alert('신고 사유를 구체적으로 입력해주세요.')
             return
@@ -48,8 +77,12 @@ export default function ReportButton({ targetType, targetId }: Props) {
             await api.post(
                 '/reports',
                 {
-                    targetType,
-                    targetId: String(targetId),
+                    // 🔥 여기서 신고자 정보도 같이 보냄
+                    reporterEmail: me.email,
+                    reporterUserName: me.userName,
+
+                    targetType, // enum 그대로
+                    targetId: String(targetId), // 백엔드가 String 받으니까 문자열로
                     reason,
                     description: detail,
                 },
@@ -75,17 +108,17 @@ export default function ReportButton({ targetType, targetId }: Props) {
     return (
         <>
             <button type="button" className={styles.reportButton} onClick={handleClick}>
-                <Image src="/images/siren.png" alt="신고 이미지" width={33} height={33}></Image>
+                <Image src="/images/siren.png" alt="신고 이미지" width={33} height={33} />
             </button>
 
-            <Modal open={open} onClose={() => setOpen(false)} title="리뷰 신고" size="sm">
+            <Modal open={open} onClose={() => setOpen(false)} title="신고하기" size="sm">
                 <form onSubmit={handleSubmit} className={styles.reportForm} noValidate>
                     <div className={styles.formRow}>
                         <label className={styles.label}>신고 유형</label>
                         <select
                             className={styles.select}
                             value={reason}
-                            onChange={(e) => setReason(e.target.value as any)}
+                            onChange={(e) => setReason(e.target.value as ReportReason)}
                         >
                             <option value="SPAM">스팸/광고</option>
                             <option value="ABUSE">욕설/비하</option>

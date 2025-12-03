@@ -23,7 +23,6 @@ type CountResponse = {
 
 type StatusFilter = 'ALL' | 'UNANSWERED' | 'ANSWERED'
 
-/** ✅ 문의 전용 상태 타입 (boolean → 여기에 매핑해서 사용) */
 type InquiryStatus = 'PENDING' | 'RESOLVED'
 
 const inquiryStatusFromAnswered = (answered: boolean): InquiryStatus => (answered ? 'RESOLVED' : 'PENDING')
@@ -62,17 +61,17 @@ export default function AdminInquiriesPage() {
     // ✅ 상태 필터 (전체 / 미처리 / 처리 완료)
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('UNANSWERED')
 
+    // ✅ 검색어
+    const [searchText, setSearchText] = useState('')
+
     // ✅ 모달 내 답변 폼 상태
     const [replyText, setReplyText] = useState('')
     const [replySubmitting, setReplySubmitting] = useState(false)
 
-    // ✅ 목록 + 미처리 카운트 불러오기 (공용 함수)
     const fetchData = useCallback(async (opts?: { silent?: boolean }) => {
         const silent = opts?.silent ?? false
         try {
-            if (!silent) {
-                setLoading(true)
-            }
+            if (!silent) setLoading(true)
             setError(null)
 
             const [listRes, countRes] = await Promise.all([
@@ -83,7 +82,6 @@ export default function AdminInquiriesPage() {
             const rawList = listRes.data as any
             const inquiries: Inquiry[] = rawList?.data ?? rawList ?? []
 
-            // ✅ 새 문의가 최상단에 오도록 createdAt 기준 내림차순 정렬
             const sorted = [...inquiries].sort(
                 (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
             )
@@ -92,7 +90,7 @@ export default function AdminInquiriesPage() {
             setTotalUnread(countRes.data?.count ?? 0)
             setLastUpdated(new Date())
 
-            // ✅ 선택된 문의가 있다면 최신 데이터로만 동기화 (무한루프 방지)
+            // ✅ 선택된 문의가 있으면 최신 데이터로 동기화
             setSelected((prev) => {
                 if (!prev) return prev
                 const latest = sorted.find((i) => i.id === prev.id)
@@ -114,14 +112,16 @@ export default function AdminInquiriesPage() {
         fetchData()
     }, [fetchData])
 
-    // ✅ 3초 폴링
+    // ✅ 3초 폴링 (⚠ 모달 열려 있을 때는 폴링 중단)
     useEffect(() => {
+        if (selected) return
+
         const id = setInterval(() => {
             fetchData({ silent: true })
         }, 3000)
 
         return () => clearInterval(id)
-    }, [fetchData])
+    }, [fetchData, selected])
 
     // ✅ 선택된 문의가 바뀔 때 답변 폼 초기화
     useEffect(() => {
@@ -132,18 +132,32 @@ export default function AdminInquiriesPage() {
         }
     }, [selected])
 
-    // ✅ 상태 필터 반영
+    // ✅ 상태 + 검색어 필터
     const filteredList = useMemo(() => {
+        let base = list
+
+        // 1) 상태 필터
         switch (statusFilter) {
             case 'UNANSWERED':
-                return list.filter((item) => !item.answered)
+                base = base.filter((item) => !item.answered)
+                break
             case 'ANSWERED':
-                return list.filter((item) => item.answered)
+                base = base.filter((item) => item.answered)
+                break
             case 'ALL':
             default:
-                return list
+                break
         }
-    }, [list, statusFilter])
+
+        // 2) 검색어 필터
+        const q = searchText.trim().toLowerCase()
+        if (!q) return base
+
+        return base.filter((item) => {
+            const target = `${item.title} ${item.content} ${item.email} ${item.type}`.toLowerCase()
+            return target.includes(q)
+        })
+    }, [list, statusFilter, searchText])
 
     const handleSubmitReply = async () => {
         if (!selected) return
@@ -159,9 +173,8 @@ export default function AdminInquiriesPage() {
                 answer: replyText,
             })
 
-            // ✅ 최신 데이터 다시 불러오고
             await fetchData()
-            // ✅ 모달 닫기
+
             setSelected(null)
             setReplyText('')
         } catch (e: any) {
@@ -205,8 +218,18 @@ export default function AdminInquiriesPage() {
                             <span className={styles.counterValue}>{totalUnread}건</span>
                         </div>
 
+                        {/* 🔍 검색 박스 */}
                         <div>
-                            <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>상태 필터</div>
+                            <input
+                                type="text"
+                                className={styles.searchInput}
+                                placeholder="제목 / 내용 / 이메일 검색"
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
                             <select
                                 className={styles.select}
                                 value={statusFilter}
@@ -297,7 +320,7 @@ export default function AdminInquiriesPage() {
                 >
                     {selected && (
                         <div className={styles.detailBody}>
-                            <div className={styles.detailRow}>
+                            <div className={styles.detailinquiries}>
                                 <span className={styles.detailLabel}>상태</span>
                                 <span>
                                     {(() => {
@@ -327,13 +350,11 @@ export default function AdminInquiriesPage() {
                                 <span>{new Date(selected.createdAt).toLocaleString()}</span>
                             </div>
 
-                            {/* 문의 본문 */}
                             <div className={styles.detailContentWrap}>
                                 <div className={styles.detailContentLabel}>문의 내용</div>
                                 <div className={styles.detailContentBox}>{selected.content}</div>
                             </div>
 
-                            {/* 관리자 답변 입력 */}
                             <div className={styles.replySection}>
                                 <div className={styles.replyLabelRow}>
                                     <span className={styles.replyLabel}>관리자 답변</span>
@@ -352,9 +373,9 @@ export default function AdminInquiriesPage() {
                                     <button
                                         type="button"
                                         onClick={handleSubmitReply}
-                                        disabled={replySubmitting || !replyText.trim()}
+                                        disabled={replySubmitting}
                                         className={`${styles.replySubmitButton} ${
-                                            replySubmitting || !replyText.trim() ? styles.replySubmitButtonDisabled : ''
+                                            replySubmitting ? styles.replySubmitButtonDisabled : ''
                                         }`}
                                     >
                                         {replySubmitting

@@ -1,0 +1,348 @@
+.page {
+    min-height: 100vh;
+    background-color: #faf7f0;
+
+    padding: 40px 0;
+}
+
+.inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: minmax(0, 2.3fr) minmax(280px, 1fr);
+    gap: 24px;
+}
+
+/* -------- 기본 헤더 -------- */
+
+.header {
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* -------- 좌측 레이아웃 -------- */
+
+.left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* -------- 툴바 (카테고리 + 검색) -------- */
+
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.categoryChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    border-radius: 9999px;
+    border: 1px solid #e5e7eb;
+    padding: 5px 12px;
+    font-size: 12px;
+    background: #ffffff;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.chip:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+}
+
+.chipActive {
+    background: #111827;
+    color: #f9fafb;
+    border-color: #111827;
+}
+
+.searchBox {
+    display: flex;
+    align-items: center;
+}
+
+.searchInput {
+    width: 100%;
+    border-radius: 9999px;
+    border: 1px solid #e5e7eb;
+    padding: 8px 14px;
+    font-size: 13px;
+    outline: none;
+    background: #ffffff;
+}
+
+.searchInput:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 1px rgba(17, 24, 39, 0.08);
+}
+
+/* -------- FAQ 카드 -------- */
+
+.faqCard {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    padding: 14px 16px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.faqHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.faqHeaderLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.faqHeaderSub {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.faqEmpty {
+    padding: 24px;
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.faqList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.faqItem + .faqItem {
+    border-top: 1px solid #e5e7eb;
+}
+
+/* 질문 행 */
+
+.faqQuestionRow {
+    width: 100%;
+    padding: 10px 2px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.faqQuestionRow:hover {
+    background: #f9fafb;
+}
+
+.faqQuestionOpen {
+    background: #f3f4f6;
+}
+
+.faqCategoryBadge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    background: #eef2ff;
+    color: #4f46e5;
+    white-space: nowrap;
+}
+
+.faqQuestionText {
+    font-size: 13px;
+    color: #111827;
+    text-align: left;
+}
+
+.faqToggleIcon {
+    font-size: 16px;
+    color: #9ca3af;
+}
+
+/* 답변 영역 */
+
+.faqAnswer {
+    padding: 0 2px 10px 2px;
+    margin-top: -2px;
+}
+
+.faqAnswerLine {
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* 에러 박스 */
+
+.errorBox {
+    margin-top: 8px;
+    margin-bottom: 4px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 12px;
+}
+
+/* -------- 오른쪽 1:1 문의 박스 -------- */
+
+.right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.helpCard {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    padding: 18px 16px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.helpTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+.helpDesc {
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 12px;
+}
+
+.helpList {
+    margin: 0 0 12px 0;
+    padding-left: 18px;
+    font-size: 12px;
+    color: #4b5563;
+}
+
+.helpList li + li {
+    margin-top: 4px;
+}
+
+.helpInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 12px;
+}
+
+.helpInfoLabel {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.helpInfoValue {
+    font-size: 12px;
+    color: #111827;
+}
+
+.helpButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 4px;
+    padding: 9px 12px;
+    border-radius: 9999px;
+    border: none;
+    background: #111827;
+    color: #f9fafb;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.05s ease;
+}
+
+.helpButton:hover {
+    background: #030712;
+}
+
+.helpButton:active {
+    transform: translateY(1px);
+}
+
+.helpNotice {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.helpInlineLink {
+    color: #111827;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* 팁 카드 */
+
+.tipCard {
+    background: #f9fafb;
+    border-radius: 14px;
+    border: 1px dashed #e5e7eb;
+    padding: 12px 14px;
+}
+
+.tipTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.tipList {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 11.5px;
+    color: #4b5563;
+}
+
+.tipList li + li {
+    margin-top: 2px;
+}
+
+/* -------- 반응형 -------- */
+
+@media (max-width: 900px) {
+    .inner {
+        grid-template-columns: 1fr;
+    }
+
+    .right {
+        order: -1;
+    }
+
+    .page {
+        padding-top: 24px;
+    }
+}

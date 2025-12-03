@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 public record ReportResponse(
         Long id,
+        String reporterUserName,
         String reporterEmail,
         ReportTargetType targetType,
         String targetId,
@@ -22,6 +23,7 @@ public record ReportResponse(
     public static ReportResponse from(Report r) {
         return new ReportResponse(
                 r.getId(),
+                r.getReporterUserName(),
                 r.getReporterEmail(),
                 r.getTargetType(),
                 r.getTargetId(),

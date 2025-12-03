@@ -1,3 +1,7 @@
+:global(main) {
+    margin: 0;
+}
+
 .pageContainer {
     /* max-width: 1280px; */
     margin: 0 auto;
