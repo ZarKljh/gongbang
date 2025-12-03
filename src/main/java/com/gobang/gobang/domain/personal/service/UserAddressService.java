@@ -40,12 +40,18 @@ public class UserAddressService {
     public UserAddressResponse createAddress(UserAddressRequest request) {
         SiteUser siteUser = request.getSiteUser();
 
+        boolean hasDefault = userAddressRepository.existsBySiteUserAndIsDefault(siteUser, true);
+
+        boolean isDefault = request.getIsDefault() != null && request.getIsDefault();
+
+        // 기본 배송지가 없는 경우 → 자동으로 기본 배송지 설정
+        if (!hasDefault) {
+            isDefault = true;
+        }
+
         // 기본 배송지로 설정하는 경우, 기존 기본 배송지 해제
-        if (Boolean.TRUE.equals(request.getIsDefault())) {
-            List<UserAddress> existing = userAddressRepository.findBySiteUser(siteUser);
-            existing.stream()
-                    .filter(UserAddress::getIsDefault)
-                    .forEach(addr -> addr.setIsDefault(false)); // 변경 감지로 업데이트 가능
+        if (isDefault) {
+            userAddressRepository.clearDefaultAddress(siteUser.getId());
         }
 
         UserAddress address = UserAddress.builder()
@@ -54,11 +60,11 @@ public class UserAddressService {
                 .baseAddress(request.getBaseAddress())
                 .detailAddress(request.getDetailAddress())
                 .zipcode(request.getZipcode())
-                .isDefault(Boolean.TRUE.equals(request.getIsDefault()))
+                .isDefault(isDefault)
                 .build();
 
-        UserAddress savedAddress = userAddressRepository.save(address);
-        return UserAddressResponse.from(savedAddress);
+        UserAddress saved = userAddressRepository.save(address);
+        return UserAddressResponse.from(saved);
     }
 
     // 배송지 수정
@@ -67,14 +73,18 @@ public class UserAddressService {
         UserAddress address = userAddressRepository.findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
 
+        boolean isDefaultRequest = Boolean.TRUE.equals(request.getIsDefault());
+        boolean isCurrentlyDefault = Boolean.TRUE.equals(address.getIsDefault());
+
         // 기본 배송지로 변경하는 경우
-        if (Boolean.TRUE.equals(request.getIsDefault()) && !Boolean.TRUE.equals(address.getIsDefault())) {
-            List<UserAddress> existing = userAddressRepository.findBySiteUser(address.getSiteUser());
-            existing.forEach(addr -> {
-                if (Boolean.TRUE.equals(addr.getIsDefault())) {
-                    addr.setIsDefault(false);
-                }
-            });
+        if (isDefaultRequest && !isCurrentlyDefault) {
+            userAddressRepository.clearDefaultAddress(address.getSiteUser().getId());
+            address.setIsDefault(true);
+        }
+
+        // 기본 배송지가 아닌 상태로 변경하는 경우 → 그냥 false 로 변경(자동 기본 지정은 안함)
+        if (!isDefaultRequest && isCurrentlyDefault) {
+            address.setIsDefault(false);
         }
 
         address.setRecipientName(request.getRecipientName());
@@ -102,7 +112,7 @@ public class UserAddressService {
                 .orElseThrow(() -> new IllegalArgumentException("배송지를 찾을 수 없습니다."));
 
         // 기존 기본 배송지 해제
-        userAddressRepository.unsetDefaultBySiteUser(siteUser);
+        userAddressRepository.clearDefaultAddress(siteUser.getId());
 
         // 새로운 기본 배송지 설정
         address.setIsDefault(true);
