@@ -76,7 +76,7 @@ export default function MainContent(props: MainContentProps) {
                                                 alt="공방로고사진"
                                             />
                                         ) : (
-                                            <div className="no-image">No Logo</div>
+                                            <div className="no-image">default gray gradient circle</div>
                                         )}
                                     </div>
                                 </td>
@@ -86,12 +86,14 @@ export default function MainContent(props: MainContentProps) {
                         </tbody>
                     </table>
                 </div>
-                {activeTab === 'studio' && <StudioTab {...props} />}
-                {activeTab === 'profile' && <ProfileTab {...props} />}
-                {activeTab === 'studioAdd' && <StudioAddTab {...props} />}
-                {activeTab === 'productList' && <ProductListTab {...props} />}
-                {activeTab === 'productAdd' && <AddProductTab {...props} />}
-                {activeTab === 'productModify' && <ModifyProductTab {...props} />}
+                <div className="scroll-area">
+                    {activeTab === 'studio' && <StudioTab {...props} />}
+                    {activeTab === 'profile' && <ProfileTab {...props} />}
+                    {activeTab === 'studioAdd' && <StudioAddTab {...props} />}
+                    {activeTab === 'productList' && <ProductListTab {...props} />}
+                    {activeTab === 'productAdd' && <AddProductTab {...props} />}
+                    {activeTab === 'productModify' && <ModifyProductTab {...props} />}
+                </div>
             </div>
         </div>
     )

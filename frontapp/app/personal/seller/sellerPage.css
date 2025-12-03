@@ -5,8 +5,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: white;
+    background: #faf7f0;
 }
 
 .mypage-container {
@@ -15,6 +14,9 @@ body {
     max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
+    /*
+    padding-top: 32px;
+    */
 }
 
 .need-login {
@@ -34,17 +36,21 @@ body {
 
 /* 사이드바 */
 .mypage-sidebar {
-    width: 256px;
+    width: 265px;
     border-right: 1px solid #e5e7eb;
     padding: 32px;
+    background: transparent;
 }
 
+/* 사용자이름*/
 .mypage-sidebar h1 {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 32px;
+    margin-top: 16px;
 }
 
+/*세션*/
 .nav-section {
     margin-bottom: 24px;
 }
@@ -53,6 +59,7 @@ body {
     font-size: 12px;
     font-weight: 600;
     color: #6b7280;
+    margin-top: 10px;
     margin-bottom: 12px;
     text-transform: uppercase;
 }
@@ -72,6 +79,8 @@ body {
     font-size: 14px;
     cursor: pointer;
     padding: 4px 0;
+    text-align: left;
+    width: 100%;
 }
 
 .nav-section button:hover {
@@ -89,9 +98,17 @@ body {
     padding: 32px;
 }
 
+/* ⭐ 스크롤되는 영역 */
+.scroll-area {
+}
+
+.tab-content {
+    margin-top: 24px;
+}
+
 .content-wrapper {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 auto 40px auto;
 }
 
 /* 로딩/에러 */
@@ -116,8 +133,10 @@ body {
 /* 인증 배너 */
 .auth-banner {
     padding: 16px;
-    background: #f9fafb;
+    background: #dac0a340;
+    /*
     border: 1px solid #e5e7eb;
+    */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -130,11 +149,20 @@ body {
 .auth-banner-input {
     display: flex;
     justify-content: space-between;
+    max-width: 400px;
+    width: 100%;
 }
 
 .auth-banner.success {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
+    background: #ffe7eb;
+    border-radius: 8px;
+}
+
+.auth-banner-input input {
+    flex: 1;
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    min-width: 0;
 }
 
 .auth-banner button {
@@ -147,14 +175,15 @@ body {
 }
 
 .auth-banner button:hover {
-    background: #1f2937;
+    background: #c99f8a;
 }
 
 /* 통계 테이블 */
 .stats-table {
-    background: #111827;
+    background: #dac0a3;
     color: white;
     margin-bottom: 32px;
+    border-radius: 8px;
 }
 
 .stats-table table {
@@ -165,10 +194,16 @@ body {
 .stats-table th {
     padding: 12px 16px;
     text-align: left;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: normal;
-    color: #9ca3af;
-    border-bottom: 1px solid #374151;
+    color: #000;
+    border-bottom: 1px solid #e9dcc4;
+}
+
+.stats-table td:first-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .stats-table td {
@@ -197,7 +232,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding-bottom: 16px;
-    border-bottom: 2px solid #111827;
+    border-bottom: 2px solid #000;
     margin-bottom: 24px;
 }
 
@@ -219,10 +254,12 @@ body {
     padding: 8px 16px;
     background: #000;
     color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    /*
     border: none;
     font-size: 14px;
-    cursor: pointer;
-    border-radius: 8px;
+    */
 }
 
 .btn-primary:hover {
@@ -231,10 +268,13 @@ body {
 
 .btn-secondary {
     padding: 8px 16px;
-    border: 1px solid #d1d5db;
     background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    /*
     font-size: 14px;
     cursor: pointer;
+    */
 }
 
 .btn-secondary:hover {
@@ -295,15 +335,19 @@ body {
 /* 폼 필드 */
 .form-group {
     display: flex;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     max-width: 800px;
+    align-items: flex-start;
+    gap: 20px;
 }
 
 .form-group label {
-    width: 128px;
+    width: 100px;
     font-size: 14px;
     font-weight: 500;
-    padding-top: 8px;
+    padding-top: 10px;
+    margin: 16px 0;
+    border-right: 1px solid #dac0a3;
 }
 
 .form-group input,
@@ -312,6 +356,7 @@ body {
     padding: 8px 12px;
     border: 1px solid #d1d5db;
     font-size: 14px;
+    margin: 16px 0;
 }
 
 .form-group input:focus,
@@ -323,11 +368,16 @@ body {
 .form-group p {
     flex: 1;
     padding-top: 8px;
+    margin: 16px 0;
 }
 
 .form-group input.editable {
     border-color: #000;
     background: white;
+}
+
+.form-group textarea {
+    padding: 16px 16px;
 }
 
 /* 배송지/결제수단 카드 */
@@ -364,11 +414,21 @@ body {
 }
 
 .link-btn {
+    padding: 6px 10px;
     font-size: 12px;
-    background: none;
+    background: #dac0a3;
+    color: white;
+    border-radius: 8px;
     border: none;
-    text-decoration: underline;
     cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    text-wrap: nowrap;
+}
+
+.link-btn:hover {
+    background: #c99f8a;
+    text-decoration: underline;
 }
 
 .link-btn.delete {
@@ -541,33 +601,125 @@ body {
 /*공방설명 studioDesc 텝*/
 
 .markdown-editor {
-    width: 100%;
+    flex: 1;
     min-height: 400px;
     padding: 16px;
     font-size: 1rem;
-    line-height: 1.6;
     border: 1px solid #ccc;
     border-radius: 8px;
     resize: vertical;
+    /*
+    width: 100%;
+    line-height: 1.6;
+    resize: vertical;
     box-sizing: border-box;
+    */
 }
 
 .markdown-view {
-    width: 100%;
-    padding: 20px;
-    background: #fafafa;
+    flex: 1;
+    padding: 0 12px;
+    background: #f9fafb;
     border-radius: 8px;
-    border: 1px solid #eee;
-    box-sizing: border-box;
+    border: 1px solid #e5e7eb;
     line-height: 1.8;
+    /*
+    width: 100%;
+    box-sizing: border-box;
+    */
 }
+
+.image-preview-wrapper {
+    margin-top: 10px;
+}
+
+.image-preview-wrapper img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+/********************새로운 이미지 영역 start**********************/
+/* 오른쪽 전체 영역 (파일명 + 버튼 + 미리보기) */
+.image-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+/* 파일명 + 버튼 */
+.image-file-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 파일명 박스 (personal 스타일) */
+.file-name-box {
+    flex: 1;
+    border: 1px solid #d1d5db; /* personal의 입력박스와 동일한 색상 */
+    background: #fff;
+    padding: 8px 12px;
+    height: 40px;
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    border-radius: 6px; /* personal 스타일 */
+}
+
+/* 파일선택 버튼 (personal의 .btn-primary 스타일 그대로 적용) */
+.upload-btn {
+    padding: 8px 16px;
+    background: #000;
+    color: white;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.upload-btn:hover {
+    background: #1f2937;
+}
+
+/* 미리보기 박스 */
+.image-preview-wide {
+    width: 100%;
+    min-height: 180px;
+    border: 1px solid #e5e7eb; /* personal 페이지 카드 border */
+    background: white;
+    border-radius: 8px; /* personal 페이지 카드 radius */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* 미리보기 이미지 (gallery 크기 동일) */
+.image-preview-wide img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover; /* personal gallery와 동일한 방식 */
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+/***************새로운 이미지 영역 end******************/
 
 /* 갤러리 영역 전체 */
 .gallery-wrapper {
+    flex: 1;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+
+    /*
     margin-top: 10px;
+    */
 }
 
 /* 갤러리 아이템(이미지 + X 버튼 컨테이너) */
@@ -577,32 +729,44 @@ body {
     height: 150px;
 }
 
+.gallery-item img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
 /* 갤러리 이미지 스타일 */
 .gallery-image {
     width: 150px;
     height: 150px;
-    object-fit: cover;
     border-radius: 6px;
     border: 1px solid #ddd;
+    /*
+    object-fit: cover;
+    */
 }
 
 /* 갤러리 삭제 버튼(X) */
 .gallery-delete-btn {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 24px;
-    height: 24px;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.65);
     color: #fff;
     border: none;
     cursor: pointer;
+    /*
     font-size: 16px;
     line-height: 22px;
     text-align: center;
     padding: 0;
     transition: background 0.2s ease-in-out;
+    */
 }
 
 .gallery-delete-btn:hover {
@@ -662,4 +826,52 @@ body {
     content: ' *';
     color: #dc2626; /* red-600 */
     font-weight: 700;
+}
+
+/* 갤러리 전체 흰색 박스 */
+.gallery-container {
+    width: 100%;
+    background: #ffffff; /* 🔥 흰색 배경 */
+    border: 1px solid #e5e7eb; /* 동일 스타일 border */
+    border-radius: 8px; /* 동일 radius */
+    padding: 20px; /* 내부 여백 */
+    margin-top: 10px;
+}
+
+/* 갤러리 래퍼 */
+.gallery-wrapper {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 가로 4개 */
+    gap: 12px;
+}
+
+.gallery-item {
+    position: relative;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+/* 삭제 버튼 */
+.gallery-delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.gallery-delete-btn:hover {
+    background: rgba(255, 0, 0, 0.85);
 }

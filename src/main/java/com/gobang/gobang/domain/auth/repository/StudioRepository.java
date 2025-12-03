@@ -20,4 +20,7 @@ public interface StudioRepository extends JpaRepository<Studio, Long> {
 
     // 상태별 최근 리스트 추가 - 상진
     Page<Studio> findByStatusOrderByCreatedDateDesc(StudioStatus status, Pageable pageable);
+
+    // 미처리 건 수 메소드 추가 - 상진
+    long countByStatus(StudioStatus st);
 }

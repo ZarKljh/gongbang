@@ -14,8 +14,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ReportRequest {
 
+
     @Email
     private String reporterEmail;
+
+    private String reporterUserName;
 
     @NotNull
     private ReportTargetType targetType;

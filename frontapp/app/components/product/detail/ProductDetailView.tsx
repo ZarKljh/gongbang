@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 // 토스페이먼츠
 import { loadPaymentWidget /*, ANONYMOUS*/ } from '@tosspayments/payment-widget-sdk'
 import { v4 as uuidv4 } from 'uuid'
+import ReportButton from '@/app/admin/components/ReportButton'
 import { useBuyBtn, usePrepareOrder } from '@/app/utils/api/order'
 
 type ProductDetail = {
@@ -218,6 +219,7 @@ export default function ProductDetailView() {
             }
         },
     })
+
     // 🟡 4) 좋아요(WishList) 토글 뮤테이션 (캐시 직접 수정)
     const likeMutation = useMutation({
         mutationFn: (prodId: number) =>
@@ -376,7 +378,10 @@ export default function ProductDetailView() {
 
                 {/* 우: 구매 패널 */}
                 <section className={styles.purchaseSection}>
-                    <h3 className={styles.productTitle}>{product?.name}</h3>
+                    <div className={styles.purchaseHeadSection}>
+                        <h3 className={styles.productTitle}>{product?.name}</h3>
+                        {product?.id && <ReportButton targetType="PRODUCT" targetId={product.id} />}
+                    </div>
 
                     <div className={styles.productDesc}>
                         <p>{product?.description ?? '상품 설명이 없습니다.'}</p>
@@ -532,6 +537,7 @@ export default function ProductDetailView() {
                                 onClick={(e) => {
                                     e.preventDefault()
                                     if (!product?.id) return
+
                                     likeMutation.mutate(product.id)
                                 }}
                             >

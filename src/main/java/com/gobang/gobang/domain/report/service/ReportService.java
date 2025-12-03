@@ -24,6 +24,7 @@ public class ReportService {
     public Report create(ReportRequest req) {
         Report r = Report.builder()
                 .reporterEmail(req.getReporterEmail())
+                .reporterUserName(req.getReporterUserName())
                 .targetType(req.getTargetType())
                 .targetId(req.getTargetId())
                 .reason(req.getReason())

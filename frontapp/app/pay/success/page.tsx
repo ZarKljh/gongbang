@@ -111,7 +111,7 @@ export default function PaymentSuccessPage() {
                 </p>
             </div>
 
-            <button type="button" className={styles.homeBtn} onClick={() => router.push('/mypage/orders')}>
+            <button type="button" className={styles.homeBtn} onClick={() => router.push('/personal?tab=orders')}>
                 주문 내역 보러가기
             </button>
         </div>

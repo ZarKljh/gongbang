@@ -58,6 +58,14 @@ export default function ReviewModify() {
             return
         }
 
+        // name, size 기준 이미지 중복체크
+        const duplicates = files.filter((file) => imageFiles.some((f) => f.name === file.name && f.size === file.size))
+        if (duplicates.length > 0) {
+            alert('이미 선택된 이미지가 포함되어 있습니다.')
+            e.target.value = ''
+            return // 중복 있으면 함수 종료! 추가 절대 안 됨
+        }
+
         // base64 미리보기만
         const previews = []
         for (const file of files) {
@@ -71,6 +79,9 @@ export default function ReviewModify() {
 
         // 나중에 서버 업로드용 파일만 따로 저장
         setImageFiles((prev) => [...prev, ...files])
+
+        // 같은 파일 다시 선택 가능 but 추가는 x (input 초기화)
+        e.target.value = ''
     }
 
     // base64 변환 유틸
@@ -135,10 +146,7 @@ export default function ReviewModify() {
     return (
         <div className="review-modify-wrapper">
             <div className="review-modify-container">
-                    <Link
-                    href={`/review/${review?.reviewId}`}
-                    className="review-back-btn"
-                >
+                <Link href={`/review/${review?.reviewId}`} className="review-back-btn">
                     ← 뒤로가기
                 </Link>
                 <h2 className="review-modify-title">리뷰 수정</h2>
@@ -184,74 +192,77 @@ export default function ReviewModify() {
 
                     {/* 이미지 */}
                     <h3 className="review-modify-subtitle">이미지 수정</h3>
-
-                    <DragDropContext onDragEnd={handleDragEnd}>
-                        <Droppable droppableId="images" direction="horizontal">
-                            {(provided) => (
-                                <div
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                    className="review-modify-image-list"
-                                >
-                                    {review.imageUrls.map((url, index) => (
-                                        <Draggable key={url} draggableId={url} index={index}>
-                                            {(prov, snapshot) => (
-                                                <div
-                                                    ref={prov.innerRef}
-                                                    {...prov.draggableProps}
-                                                    {...prov.dragHandleProps}
-                                                    className={`review-modify-image-card ${
-                                                        snapshot.isDragging ? 'dragging' : ''
-                                                    }`}
-                                                    style={prov.draggableProps.style}
-                                                >
-                                                    <img
-                                                        src={
-                                                            url.startsWith('data:')
-                                                                ? url
-                                                                : `http://localhost:8090${url}`
-                                                        }
-                                                        alt={`리뷰 이미지 ${index + 1}`}
-                                                        className="review-modify-image"
+                    <div className="review-modify-image-upload-wrapper">
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="images" direction="horizontal">
+                                {(provided) => (
+                                    <>
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.droppableProps}
+                                            className="review-modify-image-list"
+                                        >
+                                            {review.imageUrls.map((url, index) => (
+                                                <Draggable key={url} draggableId={url} index={index}>
+                                                    {(prov, snapshot) => (
+                                                        <div
+                                                            ref={prov.innerRef}
+                                                            {...prov.draggableProps}
+                                                            {...prov.dragHandleProps}
+                                                            className={`review-modify-image-card ${
+                                                                snapshot.isDragging ? 'dragging' : ''
+                                                            }`}
+                                                            style={prov.draggableProps.style}
+                                                        >
+                                                            <img
+                                                                src={
+                                                                    url.startsWith('data:')
+                                                                        ? url
+                                                                        : `http://localhost:8090${url}`
+                                                                }
+                                                                alt={`리뷰 이미지 ${index + 1}`}
+                                                                className="review-modify-image"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveImage(index)}
+                                                                className="review-modify-image-remove-btn"
+                                                            >
+                                                                <FaTimes size={10} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                            {provided.placeholder}
+                                            {review.imageUrls.length < 5 && (
+                                                <label htmlFor="fileUpload" className="review-modify-image-add-btn">
+                                                    <FaPlus />
+                                                    <input
+                                                        id="fileUpload"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        style={{ display: 'none' }}
+                                                        onChange={handleFileChange}
                                                     />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveImage(index)}
-                                                        className="review-modify-image-remove-btn"
-                                                    >
-                                                        <FaTimes size={10} />
-                                                    </button>
-                                                </div>
+                                                </label>
                                             )}
-                                        </Draggable>
-                                    ))}
-
-                                    {review.imageUrls.length < 5 && (
-                                        <label htmlFor="fileUpload" className="review-modify-image-add-btn">
-                                            <FaPlus />
-                                            <input
-                                                id="fileUpload"
-                                                type="file"
-                                                accept="image/*"
-                                                multiple
-                                                style={{ display: 'none' }}
-                                                onChange={handleFileChange}
-                                            />
-                                        </label>
-                                    )}
-                                    {provided.placeholder}
-                                </div>
-                            )}
-                        </Droppable>
-                    </DragDropContext>
-                <input type="submit" value="리뷰 수정하기" className="review-modify-submit-btn" />
-                {/* 안내 박스 (👇 ReviewCreate처럼 하단으로 이동 */}
-                <div className="review-modify-guide-box">
-                    <p className="review-modify-guide-text">
-                        <b>* 이런 후기는 삭제될 수 있어요.</b> <br />
-                        비속어, 타인 비방, 도배성 문구가 포함된 후기는 노출이 제한될 수 있습니다.
-                    </p>
-                </div>
+                                        </div>
+                                        <p className="review-image-guide">이미지를 등록해주세요.( 최대 5장 )</p>
+                                    </>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                    </div>
+                    <input type="submit" value="리뷰 수정하기" className="review-modify-submit-btn" />
+                    {/* 안내 박스 (👇 ReviewCreate처럼 하단으로 이동 */}
+                    <div className="review-modify-guide-box">
+                        <p className="review-modify-guide-text">
+                            <b>* 이런 후기는 삭제될 수 있어요.</b> <br />
+                            비속어, 타인 비방, 도배성 문구가 포함된 후기는 노출이 제한될 수 있습니다.
+                        </p>
+                    </div>
                 </form>
             </div>
         </div>

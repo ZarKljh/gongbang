@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import Link from 'next/link'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
-import styles from '@/app/admin/styles/AdminReports.module.css' // 신고랑 동일 스타일 재사용
+import styles from '@/app/admin/styles/AdminReports.module.css'
 
 type SellerStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | string
 
@@ -16,7 +17,7 @@ type Shop = {
     ownerUserName?: string
     ownerEmail?: string
     status: SellerStatus
-    createdAt?: string
+    createdDate?: string
 }
 
 // 🔹 enum → 한글 라벨 매핑
@@ -39,6 +40,9 @@ export default function AdminBusinessPage() {
     const [error, setError] = useState<string | null>(null)
     const [statusFilter, setStatusFilter] = useState<'ALL' | SellerStatus>('PENDING')
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+
+    // 🔎 검색어
+    const [search, setSearch] = useState('')
 
     const loadShops = async () => {
         try {
@@ -78,14 +82,19 @@ export default function AdminBusinessPage() {
         }
     }
 
-    const changeStatus = async (id: number, status: SellerStatus) => {
-        try {
-            await api.patch(`/admin/shops/${id}/status`, { status })
-            await loadShops()
-        } catch (e: any) {
-            alert(e?.response?.data?.message ?? '상태 변경에 실패했습니다.')
-        }
-    }
+    // 🔍 검색 + 상태 필터가 적용된 리스트
+    const filteredShops = useMemo(() => {
+        const q = search.trim().toLowerCase()
+        if (!q) return shops
+
+        return shops.filter((s) => {
+            const studio = s.studioName?.toLowerCase() ?? ''
+            const ownerName = s.ownerUserName?.toLowerCase() ?? ''
+            const ownerEmail = s.ownerEmail?.toLowerCase() ?? ''
+
+            return studio.includes(q) || ownerName.includes(q) || ownerEmail.includes(q)
+        })
+    }, [shops, search])
 
     return (
         <div className={styles.page}>
@@ -99,17 +108,29 @@ export default function AdminBusinessPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <span style={{ fontSize: 12, color: '#6b7280' }}>상태 필터</span>
-                        <select
-                            className={styles.select}
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as any)}
-                        >
-                            <option value="ALL">전체</option>
-                            <option value="PENDING">대기</option>
-                            <option value="APPROVED">승인</option>
-                            <option value="REJECTED">반려</option>
-                        </select>
+                        {/* 🔎 검색 */}
+                        <div className={styles.searchBox}>
+                            <input
+                                className={styles.searchInput}
+                                placeholder="스튜디오 / 신청자 / 이메일 검색"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+
+                        {/* 상태 필터 */}
+                        <div>
+                            <select
+                                className={styles.select}
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                            >
+                                <option value="ALL">전체</option>
+                                <option value="PENDING">대기</option>
+                                <option value="APPROVED">승인</option>
+                                <option value="REJECTED">반려</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -118,7 +139,7 @@ export default function AdminBusinessPage() {
 
                     {loading ? (
                         <div className={styles.empty}>불러오는 중...</div>
-                    ) : shops.length === 0 ? (
+                    ) : filteredShops.length === 0 ? (
                         <div className={styles.empty}>현재 조건에 맞는 입점 신청이 없습니다.</div>
                     ) : (
                         <div className={styles.tableWrapper}>
@@ -134,7 +155,7 @@ export default function AdminBusinessPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {shops.map((s) => (
+                                    {filteredShops.map((s) => (
                                         <tr key={s.id}>
                                             <td className={styles.firstT}>
                                                 <span className={statusBadgeClass(s.status)}>
@@ -146,7 +167,6 @@ export default function AdminBusinessPage() {
                                                     <div>
                                                         <strong>{s.studioName}</strong>
                                                     </div>
-                                                    <div className={styles.meta}>{s.studioEmail ?? '-'}</div>
                                                 </div>
                                             </td>
                                             <td>
@@ -163,46 +183,16 @@ export default function AdminBusinessPage() {
                                             </td>
                                             <td>
                                                 <div className={styles.meta}>
-                                                    {s.createdAt ? new Date(s.createdAt).toLocaleString() : '-'}
+                                                    {s.createdDate ? new Date(s.createdDate).toLocaleString() : '-'}
                                                 </div>
                                             </td>
                                             <td>
-                                                <div className={styles.actions}>
-                                                    {s.status === 'PENDING' && (
-                                                        <>
-                                                            <button
-                                                                className={`${styles.btn} ${styles.btnPrimary}`}
-                                                                onClick={() => changeStatus(s.id, 'APPROVED')}
-                                                            >
-                                                                승인
-                                                            </button>
-                                                            <button
-                                                                className={`${styles.btn} ${styles.btnDanger}`}
-                                                                onClick={() => changeStatus(s.id, 'REJECTED')}
-                                                            >
-                                                                반려
-                                                            </button>
-                                                        </>
-                                                    )}
-
-                                                    {s.status === 'APPROVED' && (
-                                                        <button
-                                                            className={`${styles.btn} ${styles.btnGhost}`}
-                                                            onClick={() => changeStatus(s.id, 'PENDING')}
-                                                        >
-                                                            대기로 변경
-                                                        </button>
-                                                    )}
-
-                                                    {s.status === 'REJECTED' && (
-                                                        <button
-                                                            className={`${styles.btn} ${styles.btnGhost}`}
-                                                            onClick={() => changeStatus(s.id, 'PENDING')}
-                                                        >
-                                                            대기로 변경
-                                                        </button>
-                                                    )}
-                                                </div>
+                                                <Link
+                                                    className={`${styles.btn} ${styles.btnGhost}`}
+                                                    href={`/admin/business/${s.id}`}
+                                                >
+                                                    상세
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}
