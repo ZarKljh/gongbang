@@ -229,7 +229,7 @@ export default function AddProductTab(props: AddProductTabProps) {
 
                     {/* 서브카테고리 */}
                     <div className="form-group">
-                        <label>서브카테고리 (선택)</label>
+                        <label>서브카테고리</label>
                         <select
                             className="editable"
                             value={tempData.subcategoryId || ''}
@@ -329,7 +329,117 @@ export default function AddProductTab(props: AddProductTabProps) {
                     {/* ===================================================
                         대표 이미지 (필수)
                     =================================================== */}
+
                     <div className="form-group">
+                        <label className="form-label required">대표 이미지</label>
+
+                        <div className="image-field">
+                            {/* 파일명 + 버튼 */}
+                            <div className="image-file-row">
+                                <div className="file-name-box">
+                                    {productImages.PRODUCT_MAIN ? productImages.PRODUCT_MAIN.name : ''}
+                                </div>
+
+                                <button
+                                    className="upload-btn"
+                                    type="button"
+                                    onClick={() => document.getElementById('productMainImageInput')?.click()}
+                                >
+                                    파일선택
+                                </button>
+
+                                <input
+                                    id="productMainImageInput"
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={(e) =>
+                                        onProductImageChange?.('PRODUCT_MAIN', e.target.files?.[0] ?? null)
+                                    }
+                                />
+                            </div>
+
+                            {/* 미리보기 박스 */}
+                            <div className="image-preview-wide">
+                                {productImages.PRODUCT_MAIN && (
+                                    <img src={URL.createObjectURL(productImages.PRODUCT_MAIN)} alt="대표 이미지" />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <ErrorMessage message={errors.productMainImageUrl} />
+
+                    {/* ===================================================
+                        추가 이미지 여러 장
+                    =================================================== */}
+                    <div className="form-group">
+                        <label className="form-label">추가 이미지</label>
+
+                        <div className="image-field">
+                            {/* 파일명 + 선택 버튼 */}
+                            <div className="image-file-row">
+                                <div className="file-name-box">
+                                    {productImages.PRODUCT && productImages.PRODUCT.length > 0
+                                        ? `${productImages.PRODUCT.length}개의 파일`
+                                        : ''}
+                                </div>
+
+                                <button
+                                    className="upload-btn"
+                                    type="button"
+                                    onClick={() => document.getElementById('productGalleryImageInput')?.click()}
+                                >
+                                    파일선택
+                                </button>
+
+                                <input
+                                    id="productGalleryInput"
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        if (e.target.files) {
+                                            onProductImageChange?.('PRODUCT', Array.from(e.target.files))
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            {/* ==========================
+                                갤러리 이미지 프리뷰 (5열 그리드 + 삭제 버튼)
+                            =========================== */}
+
+                            <div className="gallery-container">
+                                <div className="gallery-wrapper">
+                                    {(productImages?.PRODUCT ?? []).map((file, idx) => (
+                                        <div key={idx} className="gallery-item">
+                                            <img src={URL.createObjectURL(file)} alt="" />
+                                            <button
+                                                className="gallery-delete-btn"
+                                                onClick={() => {
+                                                    const newList = productImages.PRODUCT.filter((_, i) => i !== idx)
+                                                    onProductImageChange?.('PRODUCT', newList)
+                                                }}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+/*
+
+<div className="form-group">
                         <label className="form-label required">대표 이미지</label>
                         <input
                             type="file"
@@ -347,34 +457,5 @@ export default function AddProductTab(props: AddProductTabProps) {
                         <ErrorMessage message={errors.productMainImageUrl} />
                     </div>
 
-                    {/* ===================================================
-                        추가 이미지 여러 장
-                    =================================================== */}
-                    <div className="form-group">
-                        <label>추가 이미지</label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={(e) =>
-                                onProductImageChange?.('PRODUCT', e.target.files ? Array.from(e.target.files) : [])
-                            }
-                        />
 
-                        {productImages.PRODUCT?.length > 0 && (
-                            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                                {productImages.PRODUCT.map((file, idx) => (
-                                    <img
-                                        key={idx}
-                                        src={URL.createObjectURL(file)}
-                                        style={{ width: 120, borderRadius: 8 }}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    )
-}
+*/

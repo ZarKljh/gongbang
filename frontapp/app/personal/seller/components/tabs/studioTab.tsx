@@ -240,7 +240,7 @@ export default function StudioTab(props: StudioTabProps) {
                     </div>
                 </div>
             ) : (
-                <div className="auth-banner success">인증 완료</div>
+                <div className="auth-banner success">비밀번호 인증 완료</div>
             )}
 
             <div className="section-header">
