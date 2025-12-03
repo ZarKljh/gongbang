@@ -796,3 +796,34 @@ body {
     color: #dc2626; /* red-600 */
     font-weight: 700;
 }
+
+/* 상품 주문 현황 리스트 디자인 */
+.order-list {
+    padding: 24px;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.order-list h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 20px;
+}
+
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.order-table th,
+.order-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.order-table th {
+    background-color: #faf7f0;
+    font-weight: 600;
+}

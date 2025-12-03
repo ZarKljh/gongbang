@@ -1,6 +1,4 @@
-import '../style/OrderList.modules.css'
-
-type OrderStatus = 'PENDING' | 'PAID' | 'SHIPPED' | 'CANCELLED'
+type OrderStatus = 'PENDING' | 'PAID' | 'SHIPPED' | 'CANCELLED' | string
 
 interface OrderItem {
     id: number
@@ -12,24 +10,23 @@ interface OrderItem {
     totalPrice: number
 }
 
-interface ReceivedOrderListProps {
+interface OrderListProps {
     orders: OrderItem[]
 }
 
-export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
+export default function OrderList({ orders }: OrderListProps) {
     if (!orders || orders.length === 0) {
         return <p>받은 주문이 아직 없습니다.</p>
     }
 
-    const formatDate = (dateStr: string) => {
-        return new Date(dateStr).toLocaleString('ko-KR', {
+    const formatDate = (dateStr: string) =>
+        new Date(dateStr).toLocaleString('ko-KR', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
         })
-    }
 
     const getStatusLabel = (status: OrderStatus) => {
         switch (status) {
@@ -55,7 +52,7 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
                         <th>주문번호</th>
                         <th>주문일시</th>
                         <th>상품명</th>
-                        <th>주문자</th>
+                        <th>구매자</th>
                         <th>상태</th>
                         <th>결제금액</th>
                     </tr>
