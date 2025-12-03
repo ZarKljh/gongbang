@@ -1,5 +1,13 @@
 import styles from '@/app/admin/styles/MySection.module.css'
 import Link from 'next/link'
+import Image from 'next/image'
+import 홈 from '@/public/images/house.png'
+import 로고 from '@/public/images/Logo.png'
+import 입점 from '@/public/images/market.png'
+import 유저 from '@/public/images/management.png'
+import 신고 from '@/public/images/report.png'
+import 문의 from '@/public/images/interview.png'
+import FAQ from '@/public/images/faq.png'
 
 export default function Sidebar() {
     return (
@@ -14,22 +22,31 @@ export default function Sidebar() {
 
             <nav className={styles.navMenu}>
                 <Link className={styles.navItem} href="/admin/admin_account">
-                    🏠 Home
+                    <Image src={홈} alt="홈" className={styles.navIcon} />
+                    Home
+                </Link>
+                <Link className={styles.navItem} href="/">
+                    <Image src={로고} alt="홈" className={styles.navIcon} />
+                    Main
                 </Link>
                 <Link className={styles.navItem} href="/admin/business">
-                    🏪 입점 신청
+                    <Image src={입점} alt="홈" className={styles.navIcon} />
+                    입점 신청
                 </Link>
                 <Link className={styles.navItem} href="/admin/users">
-                    📁 유저 관리
+                    <Image src={유저} alt="홈" className={styles.navIcon} />
+                    유저 관리
                 </Link>
                 <Link className={styles.navItem} href="/admin/admin_reports">
-                    ⚠️ 신고 관리
+                    <Image src={신고} alt="홈" className={styles.navIcon} />
+                    신고 관리
                 </Link>
                 <Link className={styles.navItem} href="/admin/inquiries">
-                    💬 문의 관리
+                    <Image src={문의} alt="홈" className={styles.navIcon} />
+                    문의 관리
                 </Link>
                 <Link className={styles.navItem} href="/admin/faq">
-                    F & Q 관리
+                    <Image src={FAQ} alt="홈" className={styles.navIcon} />F & Q 관리
                 </Link>
             </nav>
         </aside>

@@ -8,6 +8,10 @@
     margin-bottom: 40px;
 }
 
+.rsBox {
+    max-width: 1280px;
+    margin: 0 auto;
+}
 /* 헤더: 타이틀 + 버튼 */
 .header {
     display: flex;

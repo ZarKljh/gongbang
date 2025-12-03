@@ -20,7 +20,12 @@ public enum ErrorCode {
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "M001", "Email is Duplication"),
     LOGIN_INPUT_INVALID(HttpStatus.BAD_REQUEST, "M002", "Login input is invalid"),
 
-    ;
+
+
+
+    //배송지오류
+    NO_DEFAULT_ADDRESS(HttpStatus.BAD_REQUEST, "NO_DEFAULT_ADDRESS", "기본 배송지가 설정되어 있지 않습니다.");
+
 
     private final HttpStatus status;
     private final String code;

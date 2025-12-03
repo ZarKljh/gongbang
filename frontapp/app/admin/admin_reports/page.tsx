@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Sidebar from '@/app/admin/components/Sidebar'
 import { api } from '@/app/utils/api'
 import Modal from '@/app/admin/components/Modal'
@@ -11,12 +11,33 @@ type ReportStatus = 'PENDING' | 'RESOLVED' | 'REJECTED' | string
 type Report = {
     id: number
     targetType: string
-    targetId: number
+    targetId: number | string
     reason: string
     description: string
-    reporterEmail: string
+    reporterUserName: string | null
+    reporterEmail: string | null
     status: ReportStatus
     createdAt: string
+}
+
+/** 🔹 신고 대상에 따라 실제 프론트 URL을 만들어주는 함수
+ *  프로젝트 라우팅 규칙에 맞게 아래만 수정하면 됨
+ */
+function resolveTargetUrl(r: Report): string | null {
+    switch (r.targetType) {
+        case 'PRODUCT':
+            return `/product/list/detail?productId=${r.targetId}`
+
+        // 필요하면 나중에 리뷰, 문의 등도 추가
+        // case 'REVIEW':
+        //     return `/review/${r.targetId}`
+
+        // case 'INQUIRY':
+        //     return `/mypage?tab=qna&id=${r.targetId}`
+
+        default:
+            return null
+    }
 }
 
 export default function AdminReportsPage() {
@@ -28,6 +49,9 @@ export default function AdminReportsPage() {
 
     // ✅ 미처리(PENDING) 건 수
     const [totalPending, setTotalPending] = useState<number>(0)
+
+    // ✅ 검색어 상태
+    const [search, setSearch] = useState('')
 
     // ✅ 모달 상태
     const [detailOpen, setDetailOpen] = useState(false)
@@ -44,7 +68,6 @@ export default function AdminReportsPage() {
             const params: any = {}
             if (statusFilter !== 'ALL') params.status = statusFilter
 
-            // 🔹 현재 필터에 맞는 리스트 + 전체 PENDING 리스트를 같이 가져와서 카운트
             const [listRes, pendingRes] = await Promise.all([
                 api.get('/admin/reports', { params }),
                 api.get('/admin/reports', { params: { status: 'PENDING' } }),
@@ -100,6 +123,27 @@ export default function AdminReportsPage() {
         }
     }
 
+    const filteredReports = useMemo(() => {
+        const q = search.trim().toLowerCase()
+        if (!q) return reports
+
+        return reports.filter((r) => {
+            const userName = r.reporterUserName?.toLowerCase() ?? ''
+            const email = r.reporterEmail?.toLowerCase() ?? ''
+            const targetType = r.targetType?.toLowerCase() ?? ''
+            const reason = r.reason?.toLowerCase() ?? ''
+            const desc = r.description?.toLowerCase() ?? ''
+
+            return (
+                userName.includes(q) ||
+                email.includes(q) ||
+                targetType.includes(q) ||
+                reason.includes(q) ||
+                desc.includes(q)
+            )
+        })
+    }, [reports, search])
+
     // 상태 변경(목록에서 바로)
     const changeStatus = async (id: number, status: ReportStatus) => {
         try {
@@ -108,6 +152,16 @@ export default function AdminReportsPage() {
         } catch (e: any) {
             alert(e?.response?.data?.message ?? '상태 변경에 실패했습니다.')
         }
+    }
+
+    // ✅ 대상 페이지로 이동
+    const goToTargetPage = (report: Report) => {
+        const url = resolveTargetUrl(report)
+        if (!url) {
+            alert('이 신고 유형에 대한 대상 페이지 이동 경로가 설정되어 있지 않습니다.')
+            return
+        }
+        window.open(url, '_blank') // 새 탭으로 열기
     }
 
     // ✅ 모달 열기 (상세 조회)
@@ -158,9 +212,18 @@ export default function AdminReportsPage() {
                             <span className={styles.counterValue}>{totalPending}건</span>
                         </div>
 
+                        {/* ✅ 검색 박스 */}
+                        <div className={styles.searchBox}>
+                            <input
+                                className={styles.searchInput}
+                                placeholder="신고자 / 대상 / 사유 / 내용 검색"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+
                         {/* ✅ 상태 필터 셀렉트 */}
                         <div>
-                            <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>상태 필터</div>
                             <select
                                 className={styles.select}
                                 value={statusFilter}
@@ -180,7 +243,7 @@ export default function AdminReportsPage() {
 
                     {loading ? (
                         <div className={styles.empty}>불러오는 중...</div>
-                    ) : reports.length === 0 ? (
+                    ) : filteredReports.length === 0 ? (
                         <div className={styles.empty}>현재 조건에 맞는 신고가 없습니다.</div>
                     ) : (
                         <div className={styles.tableWrapper}>
@@ -196,7 +259,7 @@ export default function AdminReportsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {reports.map((r) => (
+                                    {filteredReports.map((r) => (
                                         <tr key={r.id}>
                                             <td className={styles.firstT}>
                                                 <span className={statusBadgeClass(r.status)}>
@@ -216,7 +279,12 @@ export default function AdminReportsPage() {
                                                 <div className={styles.desc}>{r.description}</div>
                                             </td>
                                             <td>
-                                                <div className={styles.meta}>{r.reporterEmail}</div>
+                                                <div className={styles.meta}>
+                                                    {r.reporterUserName ?? '(알 수 없음)'}
+                                                </div>
+                                                <div className={styles.metaSmall}>
+                                                    {r.reporterEmail ?? '(이메일 없음)'}
+                                                </div>
                                             </td>
                                             <td>
                                                 <div className={styles.meta}>
@@ -225,22 +293,20 @@ export default function AdminReportsPage() {
                                             </td>
                                             <td>
                                                 <div className={styles.actions}>
-                                                    {/* ✅ 모달 열기 버튼 */}
                                                     <button
                                                         className={`${styles.btn} ${styles.btnGhost}`}
                                                         onClick={() => openDetail(r.id)}
                                                     >
                                                         검토하기
                                                     </button>
+
                                                     {r.status === 'PENDING' && (
-                                                        <>
-                                                            <button
-                                                                className={`${styles.btn} ${styles.btnDanger}`}
-                                                                onClick={() => changeStatus(r.id, 'REJECTED')}
-                                                            >
-                                                                기각
-                                                            </button>
-                                                        </>
+                                                        <button
+                                                            className={`${styles.btn} ${styles.btnDanger}`}
+                                                            onClick={() => changeStatus(r.id, 'REJECTED')}
+                                                        >
+                                                            기각
+                                                        </button>
                                                     )}
                                                 </div>
                                             </td>
@@ -279,7 +345,15 @@ export default function AdminReportsPage() {
                             </select>
                         </Row>
 
-                        <Row label="신고자">{selectedReport.reporterEmail}</Row>
+                        <Row label="신고자">
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span>{selectedReport.reporterUserName ?? '(알 수 없음)'}</span>
+                                <span style={{ fontSize: 11, color: '#6b7280' }}>
+                                    {selectedReport.reporterEmail ?? '(이메일 없음)'}
+                                </span>
+                            </div>
+                        </Row>
+
                         <Row label="대상">
                             {selectedReport.targetType} / {selectedReport.targetId}
                         </Row>
@@ -305,17 +379,39 @@ export default function AdminReportsPage() {
                             {selectedReport.createdAt ? new Date(selectedReport.createdAt).toLocaleString() : '-'}
                         </Row>
 
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
-                            <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setDetailOpen(false)}>
-                                닫기
-                            </button>
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                gap: 8,
+                                marginTop: 12,
+                                alignItems: 'center',
+                            }}
+                        >
+                            {/* 🔹 모달 안에서도 대상 페이지 바로 열기 */}
                             <button
-                                className={`${styles.btn} ${styles.btnPrimary}`}
-                                onClick={saveDetailStatus}
-                                disabled={saving}
+                                type="button"
+                                className={`${styles.btn} ${styles.btnGhost}`}
+                                onClick={() => goToTargetPage(selectedReport)}
                             >
-                                {saving ? '저장 중...' : '상태 저장'}
+                                대상 페이지 열기
                             </button>
+
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button
+                                    className={`${styles.btn} ${styles.btnGhost}`}
+                                    onClick={() => setDetailOpen(false)}
+                                >
+                                    닫기
+                                </button>
+                                <button
+                                    className={`${styles.btn} ${styles.btnPrimary}`}
+                                    onClick={saveDetailStatus}
+                                    disabled={saving}
+                                >
+                                    {saving ? '저장 중...' : '상태 저장'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </Modal>

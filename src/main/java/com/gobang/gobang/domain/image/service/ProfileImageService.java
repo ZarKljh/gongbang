@@ -11,6 +11,7 @@ import com.gobang.gobang.domain.product.productList.repository.ProductRepository
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,7 +116,12 @@ public class ProfileImageService {
     // ---------------- 조회 ----------------
     public ResponseEntity<byte[]> getProfileImage(Long userId) {
         Image image = imageRepository.findByRefTypeAndRefId(Image.RefType.USER_PROFILE, userId).orElse(null);
-        if (image == null) return ResponseEntity.notFound().build();
+
+        if (image == null) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(null);
+        }
 
         try {
             Path path = Paths.get(uploadPath, image.getImageFileName());

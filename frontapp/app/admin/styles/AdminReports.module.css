@@ -34,6 +34,13 @@
     font-size: 12px;
     color: #6b7280;
 }
+
+.counterLabel {
+    font-size: 12px;
+    color: #6b7280;
+    margin-right: 6px;
+}
+
 .filterGroup {
     display: flex;
     gap: 8px;
@@ -41,8 +48,8 @@
 }
 
 .select {
-    height: 32px;
-    border-radius: 999px;
+    height: 36px;
+    border-radius: 8px;
     padding: 0 12px;
     font-size: 13px;
     border: 1px solid #d1d5db;
@@ -388,63 +395,339 @@
 }
 
 /* FAQ 슬라이드 카드 전체 */
-.formGrid {
+/* 내부 카드 박스 */
+.slidePanelInner {
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     background: #f9fafb;
     padding: 14px 16px;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+/* ====== 인라인 에디터 폼 레이아웃 ====== */
+
+/* 인라인 에디터 전체 그리드 */
+.slidePanelInner .formGrid {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-/* 상단 헤더 */
-.formField {
+/* 공통 필드 */
+.slidePanelInner .formField {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 라벨 */
+.slidePanelInner .fieldLabel {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    text-align: left;
+}
+
+.slidePanelInner .inputText,
+.slidePanelInner .select,
+.slidePanelInner .textarea {
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    padding: 7px 10px;
+    background: #ffffff;
+}
+
+/* 답변 필드는 전체 가로 사용 */
+.slidePanelInner .formField:nth-of-type(3) {
+    grid-column: 1 / -1;
+}
+
+/* 답변 박스 높이 */
+.slidePanelInner .textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+/* 하단 버튼 라인 */
+.slidePanelInner .modalFooter {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
     gap: 8px;
 }
 
-.inlineEditorTitle {
+/* 하단 버튼 디자인 */
+.slidePanelInner .buttonSecondary,
+.slidePanelInner .buttonPrimary {
+    min-width: 80px;
+    height: 32px;
+    border-radius: 999px;
+    font-size: 12px;
+    padding: 0 14px;
+    background: #2563eb;
+    color: #fff;
+    cursor: pointer;
+    border: none;
+}
+
+.slidePanelInner .buttonSecondary:hover,
+.slidePanelInner .buttonPrimary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+/* 반응형: 좁은 화면에서는 한 줄로 */
+@media (max-width: 768px) {
+    .slidePanelInner .formGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .slidePanelInner .formField:nth-of-type(3) {
+        grid-column: auto;
+    }
+}
+
+/* 문의 리스트 답변 모달 디자인 */
+
+/* 모달 전체 */
+.detailBody {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 4px 0;
+    font-size: 14px;
+    color: #111827;
+}
+
+/* 라벨 + 값 한 줄 */
+.detailinquiries {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.detailBody .detailRow {
+    display: flex;
+}
+
+.detailinquiries:last-of-type {
+    border-bottom: none;
+}
+
+.detailLabel {
+    width: 80px;
+    font-weight: 600;
     font-size: 13px;
+    color: #6b7280;
+    flex-shrink: 0;
+    display: block;
+}
+
+.detailContentWrap {
+    margin-top: 4px;
+}
+
+.detailContentLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 4px;
+}
+
+.detailContentBox {
+    background-color: #f9fafb;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    max-height: 180px;
+    overflow-y: auto;
+    line-height: 1.6;
+    white-space: pre-line;
+    font-size: 14px;
+}
+
+/* 답변 영역 전체 */
+.replySection {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.replyLabelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.replyLabel {
+    font-size: 14px;
     font-weight: 600;
     color: #111827;
 }
 
-.inlineEditorHint {
-    font-size: 11px;
+.replyHint {
+    font-size: 12px;
     color: #9ca3af;
 }
 
-/* 본문 그리드 */
-.inlineEditorBody {
+/* 답변 입력 textarea */
+.replyTextarea {
+    min-height: 120px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.replyTextarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+}
+
+/* 버튼 영역 */
+.replyActions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+/* 답변 보내기 버튼 */
+.replySubmitButton {
+    min-width: 140px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.18);
+    transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.15s ease, filter 0.15s ease;
+}
+
+.replySubmitButton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+    filter: brightness(1.03);
+}
+
+.replySubmitButton:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.2);
+}
+
+.replySubmitButtonDisabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    filter: grayscale(0.2);
+}
+
+/* faq 추가 모달 디자인 */
+.faqPlusForm {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-.inlineEditorGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px 14px;
-}
-
-.formFieldFull {
-    grid-column: 1 / -1;
-}
-
-/* 정렬/공개 한 줄 */
-.inlineEditorMetaRow {
+.faqPlusForm .formField {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 }
 
-/* 하단 버튼 */
-.inlineEditorFooter {
-    margin-top: 6px;
+.faqPlusForm .fieldLabel {
+    width: 56px;
+}
+
+.faqPlusForm .inputText {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    width: 80%;
+}
+
+/* 카테고리 추가 모달 디자인 */
+
+.categoryPlusForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.categoryPlusForm .formField {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.categoryPlusForm .fieldLabel {
+    width: 42px;
+}
+
+.categoryPlusForm .inputText {
+    padding: 5px 6px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+}
+
+/* 반려 사유 모달 */
+.rejectModalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.rejectGuide {
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.rejectGuide strong {
+    color: #b91c1c;
+}
+
+.rejectTextarea {
+    min-height: 120px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.rejectTextarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 1px #6366f120;
+}
+
+.rejectActions {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+    margin-top: 4px;
 }

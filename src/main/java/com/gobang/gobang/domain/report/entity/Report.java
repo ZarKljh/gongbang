@@ -21,6 +21,10 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    @Column(nullable = true, length = 120)
+    private String reporterUserName;
+
     @Column(nullable = true, length = 120)
     private String reporterEmail;
 

@@ -1,0 +1,262 @@
+.detailCard {
+    padding: 24px 24px 20px;
+}
+
+.detailLayout {
+    display: flex;
+    gap: 100px;
+    align-items: flex-start;
+}
+
+.imageColumn {
+    flex: 0 0 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.infoColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.metaRow {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.metaItem {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+.sectionHeader,
+.imageSectionHeader {
+    margin-bottom: 8px;
+}
+
+.sectionTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.sectionSubtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.sectionDivider {
+    margin: 16px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.statusLabel {
+    font-size: 12px;
+    color: #6b7280;
+    margin-right: 4px;
+}
+
+.mainImageWrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mainImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mainImagePlaceholder {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* 로고 뱃지 */
+
+.logoChip {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background-color: rgba(17, 24, 39, 0.75);
+    backdrop-filter: blur(6px);
+}
+
+.logoImage {
+    width: 50px;
+    height: 50px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background-color: #111827;
+}
+
+.logoLabel {
+    font-size: 11px;
+    color: #f9fafb;
+}
+
+.galleryWrapper {
+    margin-top: 12px;
+}
+
+.galleryHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.galleryTitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.galleryCount {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.galleryGrid {
+    display: flex;
+    gap: 24px;
+}
+
+.galleryItem {
+    border: none;
+    padding: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: #f3f4f6;
+    border: 1px solid transparent;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.galleryItem:hover {
+    border-color: #6366f1;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.16);
+}
+
+.galleryImage {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+}
+
+.galleryEmpty {
+    font-size: 12px;
+    color: #9ca3af;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background-color: #f9fafb;
+    border: 1px dashed #e5e7eb;
+}
+
+.detailRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.detailLabel {
+    width: 120px;
+    font-size: 13px;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.detailValue {
+    font-size: 14px;
+    color: #111827;
+    word-break: break-word;
+}
+
+.footerRow {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.footerActions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 모달 내부 버튼 */
+.buttonSecondarySmall {
+    background: #2563eb;
+    color: #fff;
+    padding: 7px 12px;
+    font-size: 12px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    margin-right: 12px;
+}
+
+.buttonSecondarySmall:hover {
+    background: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+@media (max-width: 1024px) {
+    .detailLayout {
+        flex-direction: column;
+    }
+
+    .imageColumn {
+        flex: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .detailCard {
+        padding: 16px 12px 16px;
+    }
+
+    .detailRow {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detailLabel {
+        width: auto;
+    }
+
+    .footerRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .footerActions {
+        justify-content: flex-end;
+    }
+}

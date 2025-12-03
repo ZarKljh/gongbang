@@ -19,15 +19,12 @@ public class VisitorLog {
     @Column(name = "visited_at", nullable = false)
     private OffsetDateTime visitedAt;
 
-    /** 선택: 페이지 경로 */
     @Column(name = "path")
     private String path;
 
-    /** 선택: 사용자 식별 (로그인 사용 시) */
     @Column(name = "user_id")
     private UUID userId;
 
-    /** 선택: referrer, UA 등 추후 확장 */
     @Column(name = "referrer")
     private String referrer;
 }

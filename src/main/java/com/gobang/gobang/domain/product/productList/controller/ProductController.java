@@ -1,7 +1,10 @@
 package com.gobang.gobang.domain.product.productList.controller;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
+import com.gobang.gobang.domain.personal.repository.UserAddressRepository;
 import com.gobang.gobang.domain.product.dto.HotProductDto;
 import com.gobang.gobang.domain.product.dto.ProductDto;
 import com.gobang.gobang.domain.product.dto.request.ProductCartRequest;
@@ -11,10 +14,17 @@ import com.gobang.gobang.domain.product.productList.service.ProductService;
 import com.gobang.gobang.domain.product.productList.service.ProductWishListService;
 import com.gobang.gobang.domain.seller.service.SellerFollowService;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.config.SecurityUser;
+import com.gobang.gobang.global.exception.CustomException;
+import com.gobang.gobang.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,6 +37,8 @@ public class ProductController {
     private final SiteUserService siteUserService;
     private final SellerFollowService sellerFollowService;
     private final ProductCartService productCartService;
+    private final SiteUserRepository siteUserRepository;
+    private final UserAddressRepository userAddressRepository;
 
     @GetMapping("/{subCategoryId}")
     @Operation(summary = "상품 다건 조회")
@@ -165,5 +177,32 @@ public class ProductController {
         return RsData.of("200", "최근 " + days + "일간 인기 상품 조회 성공", result);
     }
 
+    //로그인 확인용으로만 일단 구현함
+    @PostMapping("/buyBtn")
+    public ResponseEntity<PrepareOrderResponse> BuyBtn(
+            @AuthenticationPrincipal SecurityUser user //  프로젝트에 맞게 타입 수정
+    ) {
+        if (user == null) {
+            // 방법 1: 예외 던지기
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        // 2) SecurityUser → SiteUser 조회
+        SiteUser siteUser = siteUserRepository.findById(user.getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.ENTITY_NOT_FOUND));
+        // 🔹 getId 대신 getUserId() 쓴다면 프로젝트에 맞게 수정
+
+        // 3) 기본 배송지 존재 여부 확인
+        boolean hasDefaultAddress =
+                userAddressRepository.existsBySiteUserAndIsDefaultTrue(siteUser);
+
+        if (!hasDefaultAddress) {
+            throw new CustomException(ErrorCode.NO_DEFAULT_ADDRESS);
+        }
+
+        // 4) 여기까지 왔으면: 로그인 O + 기본 배송지 O
+        //    일단 "OK"만 알려주면 되니까 바디 없이 200으로 응답
+        return ResponseEntity.ok().build();
+    }
 
 }
