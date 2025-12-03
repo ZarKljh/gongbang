@@ -4,6 +4,7 @@ package com.gobang.gobang.domain.personal.repository;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.entity.WishList;
 import com.gobang.gobang.domain.product.entity.Product;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,7 +31,18 @@ public interface WishListRepository extends JpaRepository<WishList, Long> {
     // 찜 여부 확인
     boolean existsBySiteUserAndProduct(SiteUser siteUser, Product product);
 
-    long countBySiteUser_Id(Long userId);
+    @Query("""
+    SELECT w
+    FROM WishList w
+    WHERE w.siteUser.id = :userId
+      AND (:lastWishId IS NULL OR w.wishlistId < :lastWishId)
+    ORDER BY w.wishlistId DESC
+    """)
+    List<WishList> findInfiniteWishList(
+            Long userId,
+            Long lastWishId,
+            Pageable pageable
+    );
 
 
     //좋아요 토글 - HYO

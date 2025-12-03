@@ -1,12 +1,13 @@
 package com.gobang.gobang.domain.seller.repository;
 
-import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.product.entity.Product;
-import com.gobang.gobang.domain.seller.model.StudioStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+
 //커스텀 리포지터리
 public interface ProductOfStudioRepository extends JpaRepository<Product, Long> {
     @Query(
@@ -15,7 +16,8 @@ public interface ProductOfStudioRepository extends JpaRepository<Product, Long> 
         nativeQuery = true
     )
     Page<Product> findByStudioId(Long studioId, Pageable pageable);
+    List<Product> findByStudioId(Long studioId);
 
-
+    Page<Product> findByStudioIdAndNameContaining(Long studioId, String keyword, Pageable pageable);
 
 }

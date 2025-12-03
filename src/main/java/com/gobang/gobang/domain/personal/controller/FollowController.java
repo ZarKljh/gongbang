@@ -60,4 +60,15 @@ public class FollowController {
         long count = followService.getFollowingCount(siteUser);
         return RsData.of("200", "팔로잉 수 조회 성공", count);
     }
+
+    @GetMapping("/follow/infinite")
+    public RsData<List<FollowResponse>> getInfiniteFollowList(
+            @RequestParam(required = false) Long lastFollowId,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        List<FollowResponse> list = followService.getInfiniteFollowList(user, lastFollowId, size);
+        return RsData.of("200", "팔로우 무한스크롤 조회 성공", list);
+    }
+
 }

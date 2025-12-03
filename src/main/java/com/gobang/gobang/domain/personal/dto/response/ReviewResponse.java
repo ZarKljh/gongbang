@@ -34,7 +34,7 @@ public class ReviewResponse {
         List<String> imageUrls = imageRepository
                 .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.REVIEW, review.getReviewId())
                 .stream()
-                .map(img -> "/api/v1/image/review/" + img.getImageFileName())
+                .map(img -> "/images/" + img.getImageFileName())
                 .collect(Collectors.toList());
 
         return ReviewResponse.builder()

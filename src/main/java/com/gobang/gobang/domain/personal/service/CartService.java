@@ -10,6 +10,8 @@ import com.gobang.gobang.domain.personal.repository.CartRepository;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,4 +98,11 @@ public class CartService {
     public long getCartCount(SiteUser siteUser) {
         return cartRepository.sumQuantityBySiteUser(siteUser);
     }
+
+    public List<CartResponse> getInfiniteCart(Long userId, Long lastCartId, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+        List<Cart> carts = cartRepository.findInfiniteCart(userId, lastCartId, pageable);
+        return carts.stream().map(cart -> CartResponse.from(cart, imageRepository)).toList();
+    }
+
 }

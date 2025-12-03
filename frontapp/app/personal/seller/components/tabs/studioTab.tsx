@@ -1,4 +1,10 @@
+import { useEffect } from 'react'
 import type { MainContentProps } from '../types/mainContent.types'
+import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
+import ErrorMessage from '@/app/auth/common/errorMessage'
+import { useStudioTabValidation } from '@/app/auth/hooks/updateStudioValidation'
+import ReactMarkdown from 'react-markdown'
+
 /*
 interface StudioTabProps {
     userData: any
@@ -79,9 +85,101 @@ export default function StudioTab(props: StudioTabProps) {
         deletedGalleryImageIds,
         setDeletedGalleryImageIds,
     } = props
+
     console.log('📌 StudioTab props:', props)
 
+    const studioTabFields: (keyof StudioInfo)[] = [
+        'studioName',
+        'studioMobile',
+        'studioOfficeTell',
+        'studioFax',
+        'studioEmail',
+        'studioAddPostNumber',
+        'studioAddMain',
+        'studioAddDetail',
+    ]
+
+    const { errors, validateField, validateAll } = useStudioTabValidation()
+    const imageValid =
+        (studioImages.STUDIO_MAIN || studio?.studioMainImage) &&
+        (studioImages.STUDIO_LOGO || studio?.studioLogoImage) &&
+        (studioImages.STUDIO?.length ?? 0) + (studio.studioImages?.length ?? 0) - deletedGalleryImageIds.length > 0
+
+    const textValid = studioTabFields.every((f) => !!tempData[f])
+
+    const noErrors = Object.values(errors).every((e) => !e)
+
+    const isFormValid = editMode.studio && textValid && imageValid && noErrors
     const serverImageUrl = (fileName: string) => `http://localhost:8090/images/${fileName}`
+
+    /** 🔥 부모 onTempChange + validation 함께 실행하는 wrapper */
+    const handleValidatedChange = (field: keyof StudioInfo, value: any) => {
+        onTempChange(field, value)
+        validateField(field, value, {
+            ...tempData,
+            [field]: value,
+        })
+    }
+
+    /** 🔥 editMode가 true가 될 때 전체 re-validate */
+    useEffect(() => {
+        if (!editMode.studio) return
+
+        // 텍스트 필드 전체 검증
+        Object.keys(tempData).forEach((key) => {
+            validateField(key as keyof StudioInfo, tempData[key], tempData)
+        })
+
+        // 이미지 검증 추가
+        validateField(
+            'studioMainImageUrl',
+            studioImages.STUDIO_MAIN ? 'uploaded' : studio?.studioMainImage ? 'server' : null,
+            tempData,
+        )
+
+        validateField(
+            'studioLogoImageUrl',
+            studioImages.STUDIO_LOGO ? 'uploaded' : studio?.studioLogoImage ? 'server' : null,
+            tempData,
+        )
+
+        validateField(
+            'studioGalleryImageUrls',
+            [
+                ...(studioImages.STUDIO ?? []),
+                ...(studio.studioImages ?? []).filter((img) => !deletedGalleryImageIds.includes(img.id)),
+            ],
+            tempData,
+        )
+    }, [tempData, studioImages, deletedGalleryImageIds, editMode.studio])
+
+    /** 🔥 저장 클릭 시 전체 확인 */
+    const handleSave = () => {
+        const hasMain = !!studioImages.STUDIO_MAIN
+        const hasLogo = !!studioImages.STUDIO_LOGO
+        const hasGallery = studioImages.STUDIO.length > 0
+
+        const fullStudioInfo = {
+            ...tempData,
+            studioMainImageUrl: studioImages.STUDIO_MAIN ? 'uploaded' : studio?.studioMainImage ? 'server' : null,
+
+            studioLogoImageUrl: studioImages.STUDIO_LOGO ? 'uploaded' : studio?.studioLogoImage ? 'server' : null,
+
+            studioGalleryImageUrls: [
+                ...(studioImages.STUDIO ?? []),
+                ...(studio?.studioImages ?? []).filter((img) => !deletedGalleryImageIds.includes(img.id)),
+            ],
+        }
+
+        const ok = validateAll(fullStudioInfo as any)
+
+        if (!ok) {
+            alert('입력값을 확인해주세요.')
+            return
+        }
+
+        onSave('studio')
+    }
 
     // 새 업로드 이미지 preview 생성
     const createPreview = (file: File | null) => (file ? URL.createObjectURL(file) : null)
@@ -153,10 +251,15 @@ export default function StudioTab(props: StudioTabProps) {
                     </button>
                 ) : (
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-primary" onClick={() => onSave('studio')}>
+                        <button className="btn-primary" onClick={handleSave} disabled={!isFormValid}>
                             저장
                         </button>
-                        <button className="btn-secondary" onClick={() => onCancel('studio')}>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => {
+                                onCancel('studio')
+                            }}
+                        >
                             취소
                         </button>
                     </div>
@@ -173,65 +276,70 @@ export default function StudioTab(props: StudioTabProps) {
                         <input
                             type="text"
                             value={tempData.studioName || ''}
-                            onChange={(e) => onTempChange('studioName', e.target.value)}
+                            onChange={(e) => handleValidatedChange('studioName', e.target.value)}
                             className="editable"
                         />
                     ) : (
                         <p>{studio.studioName}</p>
                     )}
                 </div>
+                {editMode.studio && <ErrorMessage message={errors.studioName} />}
                 <div className="form-group">
                     <label>공방대표번호</label>
                     {editMode.studio ? (
                         <input
                             type="text"
                             value={tempData.studioMobile || ''}
-                            onChange={(e) => onTempChange('studioMobile', e.target.value)}
+                            onChange={(e) => handleValidatedChange('studioMobile', e.target.value)}
                             className="editable"
                         />
                     ) : (
                         <p>{studio.studioMobile}</p>
                     )}
                 </div>
+                {editMode.studio && <ErrorMessage message={errors.studioMobile} />}
                 <div className="form-group">
                     <label>사무실전화번호</label>
                     {editMode.studio ? (
                         <input
                             type="text"
                             value={tempData.studioOfficeTell || ''}
-                            onChange={(e) => onTempChange('studioOfficeTell', e.target.value)}
+                            onChange={(e) => handleValidatedChange('studioOfficeTell', e.target.value)}
                             className="editable"
                         />
                     ) : (
                         <p>{studio.studioOfficeTell}</p>
                     )}
                 </div>
+                {editMode.studio && <ErrorMessage message={errors.studioOfficeTell} />}
                 <div className="form-group">
                     <label>팩스</label>
                     {editMode.studio ? (
                         <input
                             type="text"
                             value={tempData.studioFax || ''}
-                            onChange={(e) => onTempChange('studioFax', e.target.value)}
+                            onChange={(e) => handleValidatedChange('studioFax', e.target.value)}
                             className="editable"
                         />
                     ) : (
                         <p>{studio.studioFax}</p>
                     )}
                 </div>
+                {editMode.studio && <ErrorMessage message={errors.studioFax} />}
                 <div className="form-group">
                     <label>이메일</label>
                     {editMode.studio ? (
                         <input
                             type="text"
                             value={tempData.studioEmail || ''}
-                            onChange={(e) => onTempChange('studioEmail', e.target.value)}
+                            onChange={(e) => handleValidatedChange('studioEmail', e.target.value)}
                             className="editable"
                         />
                     ) : (
                         <p>{studio.studioEmail}</p>
                     )}
                 </div>
+                {editMode.studio && <ErrorMessage message={errors.studioEmail} />}
                 <div className="form-group">
                     <label>우편번호</label>
                     {editMode.studio ? (
@@ -239,7 +347,7 @@ export default function StudioTab(props: StudioTabProps) {
                             <input
                                 type="text"
                                 value={tempData.studioAddPostNumber || ''}
-                                onChange={(e) => onTempChange('studioAddPostNumber', e.target.value)}
+                                onChange={(e) => handleValidatedChange('studioAddPostNumber', e.target.value)}
                                 className="editable"
                             />
                             <button className="btn btn-primary address-btn" type="button" onClick={onAddressSearch}>
@@ -250,32 +358,96 @@ export default function StudioTab(props: StudioTabProps) {
                         <p>{studio.studioAddPostNumber}</p>
                     )}
                 </div>
+                {editMode.studio && <ErrorMessage message={errors.studioAddPostNumber} />}
                 <div className="form-group">
                     <label>기본주소</label>
                     {editMode.studio ? (
                         <input
                             type="text"
                             value={tempData.studioAddMain || ''}
-                            onChange={(e) => onTempChange('studioAddMain', e.target.value)}
+                            onChange={(e) => handleValidatedChange('studioAddMain', e.target.value)}
                             className="editable"
                         />
                     ) : (
                         <p>{studio.studioAddMain}</p>
                     )}
                 </div>
+                {editMode.studio && <ErrorMessage message={errors.studioAddMain} />}
                 <div className="form-group">
                     <label>상세주소</label>
                     {editMode.studio ? (
                         <input
                             type="text"
                             value={tempData.studioAddDetail || ''}
-                            onChange={(e) => onTempChange('studioAddDetail', e.target.value)}
+                            onChange={(e) => handleValidatedChange('studioAddDetail', e.target.value)}
                             className="editable"
                         />
                     ) : (
                         <p>{studio.studioAddDetail}</p>
                     )}
                 </div>
+                {/* 상세설명 출력 or 편집 */}
+                <div className="form-group">
+                    <label>공방 상세설명</label>
+                    {!editMode.studio ? (
+                        <div className="markdown-view">
+                            <ReactMarkdown>{studio.studioDescription || '등록된 상세설명이 없습니다.'}</ReactMarkdown>
+                        </div>
+                    ) : (
+                        <textarea
+                            className="markdown-editor editable"
+                            value={tempData.studioDescription || ''}
+                            onChange={(e) => handleValidatedChange('studioDescription', e.target.value)}
+                            placeholder="Markdown 문법으로 공방 상세설명을 작성하세요."
+                            rows={1}
+                        />
+                    )}
+                </div>
+                {editMode.studio && <ErrorMessage message={errors.studioAddDetail} />}
+
+                {/* 새로운 이미지 등록폼 start */}
+                <div className="form-group">
+                    <label>메인사진</label>
+
+                    <div className="image-field">
+                        {/* 파일명 + 파일선택 버튼 */}
+                        <div className="image-file-row">
+                            <div className="file-name-box">
+                                {studioImages?.STUDIO_MAIN
+                                    ? studioImages.STUDIO_MAIN.name
+                                    : studio?.studioMainImage?.imageFileName || ''}
+                            </div>
+
+                            {editMode.studio && (
+                                <button
+                                    className="upload-btn"
+                                    onClick={() => document.getElementById('mainImageInput')?.click()}
+                                >
+                                    파일선택
+                                </button>
+                            )}
+
+                            <input
+                                id="mainImageInput"
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => {
+                                    if (e.target.files?.[0]) {
+                                        onStudioImageChange?.('STUDIO_MAIN', e.target.files[0])
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        {/* 미리보기 박스 — form-group 안쪽에 넣어야 layout이 깨지지 않음 */}
+                        <div className="image-preview-wide">
+                            {previewMainImage && <img src={previewMainImage} alt="메인 이미지" />}
+                        </div>
+                    </div>
+                </div>
+                {/* 새로운 이미지 등록폼 end */}
+
                 <div className="form-group">
                     <label>메인화면</label>
                     {editMode.studio && (
@@ -289,19 +461,20 @@ export default function StudioTab(props: StudioTabProps) {
                             }}
                         />
                     )}
-                    {previewMainImage && (
-                        <img
-                            src={
-                                studioImages?.STUDIO_MAIN
-                                    ? URL.createObjectURL(studioImages.STUDIO_MAIN)
-                                    : studio?.studioMainImage?.imageFileName
-                                    ? `http://localhost:8090/images/${studio.studioMainImage.imageUrl}`
-                                    : '/default-main.png'
-                            }
-                            alt="대표 이미지"
-                            style={{ maxWidth: '250px', marginTop: '10px' }}
-                        />
-                    )}
+                    <div className="image-preview-wrapper">
+                        {previewMainImage && (
+                            <img
+                                src={
+                                    studioImages?.STUDIO_MAIN
+                                        ? URL.createObjectURL(studioImages.STUDIO_MAIN)
+                                        : studio?.studioMainImage?.imageFileName
+                                        ? `http://localhost:8090/images/${studio.studioMainImage.imageUrl}`
+                                        : '/default-main.png'
+                                }
+                                alt="대표 이미지"
+                            />
+                        )}
+                    </div>
                 </div>
                 <div className="form-group">
                     <label>로고이미지</label>
@@ -316,18 +489,20 @@ export default function StudioTab(props: StudioTabProps) {
                             }}
                         />
                     )}
-                    {previewLogoImage && (
-                        <img
-                            src={
-                                studioImages?.STUDIO_LOGO
-                                    ? URL.createObjectURL(studioImages.STUDIO_LOGO)
-                                    : studio?.studioLogoImage?.imageFileName
-                                    ? `http://localhost:8090/images/${studio.studioLogoImage.imageUrl}`
-                                    : '/default-logo.png'
-                            }
-                            alt="공방 로고 이미지"
-                        />
-                    )}
+                    <div className="image-preview-wrapper">
+                        {previewLogoImage && (
+                            <img
+                                src={
+                                    studioImages?.STUDIO_LOGO
+                                        ? URL.createObjectURL(studioImages.STUDIO_LOGO)
+                                        : studio?.studioLogoImage?.imageFileName
+                                        ? `http://localhost:8090/images/${studio.studioLogoImage.imageUrl}`
+                                        : '/default-logo.png'
+                                }
+                                alt="공방 로고 이미지"
+                            />
+                        )}
+                    </div>
                 </div>
                 <div className="form-group">
                     <label>공방이미지</label>
@@ -349,7 +524,7 @@ export default function StudioTab(props: StudioTabProps) {
                     <div className="gallery-wrapper">
                         {previewGalleryImages.map((item, idx) => (
                             <div key={idx} className="gallery-item">
-                                <img src={item.src} className="gallery-image" />
+                                <img src={item.src} />
 
                                 {/* ❌ 삭제 버튼 (편집 모드일 때만 표시) */}
                                 {editMode.studio && (

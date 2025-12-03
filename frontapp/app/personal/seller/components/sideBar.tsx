@@ -19,7 +19,7 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                     <ul>
                         <li>
                             <button
-                                className={`nav-btn ${activeTab === 'studio' ? 'active' : ''}`}
+                                className={activeTab === 'studio' ? 'active' : ''}
                                 onClick={() => onTabClick('studio')}
                             >
                                 공방정보
@@ -27,24 +27,17 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                         <li>
                             <button
-                                className={`nav-btn ${activeTab === 'studioDesc' ? 'active' : ''}`}
-                                onClick={() => onTabClick('studioDesc')}
+                                className={activeTab === 'productList' ? 'active' : ''}
+                                onClick={() => onTabClick('productList')}
                             >
-                                공방 상세설명
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                className={`nav-btn ${activeTab === 'studioAdd' ? 'active' : ''}`}
-                                onClick={() => onTabClick('studioAdd')}
-                            >
-                                신규 공방등록
+                                상품현황
                             </button>
                         </li>
                     </ul>
                 </div>
             </nav>
-
+            {/* Personal 페이지 이동 링크 */}
+            <div style={{ marginTop: '24px' }}></div>
             <Link href="/personal" className="link-btn">
                 마이페이지로 이동
             </Link>
@@ -56,6 +49,14 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
 <div className="nav-section">
                     <h2>나의 쇼핑정보</h2>
                     <ul>
+                        <li>
+                            <button
+                                className={`nav-btn ${activeTab === 'studioDesc' ? 'active' : ''}`}
+                                onClick={() => onTabClick('studioDesc')}
+                            >
+                                공방 상세설명
+                            </button>
+                        </li>
                         <li>
                             <button
                                 className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`}
@@ -134,4 +135,13 @@ export default function Sidebar({ userData, activeTab, onTabClick, studioList, s
                         </li>
                     </ul>
                 </div>
+
+                <li>
+                            <button
+                                className={`nav-btn ${activeTab === 'studioAdd' ? 'active' : ''}`}
+                                onClick={() => onTabClick('studioAdd')}
+                            >
+                                신규 공방등록
+                            </button>
+                        </li>
 */

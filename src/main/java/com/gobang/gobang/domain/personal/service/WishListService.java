@@ -9,6 +9,8 @@ import com.gobang.gobang.domain.personal.repository.WishListRepository;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,4 +95,19 @@ public class WishListService {
     public long getUserWishCount(SiteUser siteUser) {
         return wishListRepository.countBySiteUser(siteUser);
     }
+
+    public List<WishListResponse> getInfiniteWishlist(SiteUser user, Long lastWishId, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        List<WishList> wishList = wishListRepository.findInfiniteWishList(
+                user.getId(),
+                lastWishId,
+                pageable
+        );
+
+        return wishList.stream()
+                .map(wishlist -> WishListResponse.from(wishlist, imageRepository))
+                .toList();
+    }
+
 }

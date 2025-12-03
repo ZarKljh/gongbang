@@ -28,71 +28,59 @@ export function signupSellerValidation() {
         if (name === 'categoryId') {
             if (!value) error = '공방 카테고리를 선택해주세요.'
         } else if (name === 'studioBusinessNumber') {
-
-        /** ---------------- studioBusinessNumber ---------------- */
+            /** ---------------- studioBusinessNumber ---------------- */
             if (!value.trim()) error = '사업자 번호를 입력해주세요.'
             else {
                 const n = value.replace(/[^0-9]/g, '')
                 if (n.length !== 10) error = '사업자번호는 숫자 10자리여야 합니다.'
             }
         } else if (name === 'studioName') {
-
-        /** ---------------- studioName ---------------- */
+            /** ---------------- studioName ---------------- */
             if (!value.trim()) error = '공방 이름을 입력해주세요.'
             else if (value.length < 2) error = '공방 이름은 2자 이상이어야 합니다.'
         } else if (name === 'studioDescription') {
-
-        /** ---------------- studioDescription ---------------- */
+            /** ---------------- studioDescription ---------------- */
             if (!value.trim()) error = '공방 설명을 입력해주세요.'
             else if (value.length < 5) error = '설명은 최소 5자 이상이어야 합니다.'
         } else if (name === 'studioMobile') {
-
-        /** ---------------- studioMobile ---------------- */
+            /** ---------------- studioMobile ---------------- */
             if (value.trim()) {
                 const n = value.replace(/[^0-9]/g, '')
                 if (n.length < 10 || n.length > 11) error = '전화번호는 10~11자리 숫자만 입력 가능합니다.'
             }
         } else if (name === 'studioOfficeTell') {
-
-        /** ---------------- studioOfficeTell ---------------- */
+            /** ---------------- studioOfficeTell ---------------- */
             if (value.trim()) {
                 const n = value.replace(/[^0-9]/g, '')
                 if (n.length < 9 || n.length > 11) error = '사무실 전화번호는 9~11자리 숫자만 입력 가능합니다.'
             }
         } else if (name === 'studioFax') {
-
-        /** ---------------- studioFax ---------------- */
+            /** ---------------- studioFax ---------------- */
             if (value.trim()) {
                 const n = value.replace(/[^0-9]/g, '')
                 if (n.length < 9 || n.length > 11) error = 'FAX 번호는 9~11자리 숫자만 입력 가능합니다.'
             }
         } else if (name === 'studioEmail') {
-
-        /** ---------------- studioEmail ---------------- */
+            /** ---------------- studioEmail ---------------- */
             if (!value.trim()) error = '이메일을 입력해주세요.'
             else {
                 const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
                 if (!emailRegex.test(value)) error = '올바른 이메일 형식이 아닙니다.'
             }
         } else if (name === 'studioAddPostNumber') {
-
-        /** ---------------- studioAddPostNumber ---------------- */
+            /** ---------------- studioAddPostNumber ---------------- */
             if (!value.trim()) error = '우편번호를 입력해주세요.'
         } else if (name === 'studioAddMain') {
-
-        /** ---------------- studioAddMain ---------------- */
+            /** ---------------- studioAddMain ---------------- */
             if (!value.trim()) error = '기본 주소를 입력해주세요.'
         } else if (name === 'studioMainImageUrl') {
-
-        /** ---------------- studioMainImageUrl ---------------- */
+            /** ---------------- studioMainImageUrl ---------------- */
             if (!value) error = '대표 이미지를 업로드해주세요.'
         } else if (name === 'studioLogoImageUrl') {
-
-        /** ---------------- studioLogoImageUrl ---------------- */
+            /** ---------------- studioLogoImageUrl ---------------- */
             if (!value) error = '로고 이미지를 업로드해주세요.'
         } else if (name === 'studioGalleryImageUrls') {
-
-        /** ---------------- studioGalleryImageUrls ---------------- */
+            /** ---------------- studioGalleryImageUrls ---------------- */
             const count = studio?.studioGalleryImageUrls.length || 0
 
             if (count > 5) error = '매장 사진은 최대 5장까지 업로드할 수 있습니다.'

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
@@ -44,6 +45,7 @@ interface CartItem {
 
 export default function MyPage() {
     const searchParams = useSearchParams()
+    const router = useRouter()
 
     // =============== State 관리 ===============
     // 사용자 정보
@@ -205,7 +207,6 @@ export default function MyPage() {
     const fetchUser = async () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
-            console.log("USER DATA:", data.data)
             if (data.code === '401') {
                 window.location.href = '/auth/login'
                 return null
@@ -223,6 +224,7 @@ export default function MyPage() {
 
         try {
             const { data } = await axios.get(`${API_BASE_URL}/orders`, {
+                params: { lastOrderId: infiniteOrdersLastId, size: SIZE },
                 withCredentials: true,
             })
             
@@ -1221,7 +1223,14 @@ export default function MyPage() {
                 setInfiniteOrdersHasMore(false)
             }
 
-            setInfiniteOrders(prev => [...prev, ...newOrders])
+            setInfiniteOrders(prev => {
+                const merged = [...prev, ...newOrders]
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(t => t.orderId === item.orderId)
+                )
+                return unique
+            })
 
             if (newOrders.length > 0) {
                 setInfiniteOrdersLastId(newOrders[newOrders.length - 1].orderId)
@@ -1256,7 +1265,14 @@ export default function MyPage() {
                 setInfiniteWishHasMore(false)
             }
 
-            setInfiniteWishList(prev => [...prev, ...newWishList])
+            setInfiniteWishList(prev => {
+                const merged = [...prev, ...newWishList]
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(t => t.wishlistId === item.wishlistId)
+                )
+                return unique
+            })
 
             if (newWishList.length > 0) {
                 setInfiniteWishLastId(newWishList[newWishList.length - 1].wishlistId)
@@ -1291,7 +1307,14 @@ export default function MyPage() {
                 setInfiniteCartHasMore(false)
             }
 
-            setInfiniteCart(prev => [...prev, ...newCart])
+            setInfiniteCart(prev => {
+                const merged = [...prev, ...newCart]
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(t => t.cartId === item.cartId)
+                )
+                return unique
+            })
 
             if (newCart.length > 0) {
                 setInfiniteCartLastId(newCart[newCart.length - 1].cartId)
@@ -1495,21 +1518,20 @@ export default function MyPage() {
                                 <tr>
                                     <td>
                                         <div className="profile-image" onClick={handleProfileClick}>
-                                            {stats.profileImageUrl ? (
                                                 <img
                                                     src={
                                                         previewProfileImage ||
-                                                        (stats.profileImageUrl ? `http://localhost:8090${stats.profileImageUrl}` : 'null') // 서버 이미지
+                                                        stats.profileImageUrl || `http://localhost:8090${stats.profileImageUrl}` // 서버 이미지
                                                     }
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = "/images/default_profile.jpg"
+                                                    }}
                                                     alt="프로필 이미지"
                                                 />
-                                            ) : (
-                                                <div className="placeholder"></div>
-                                            )}
                                         </div>
                                     </td>
-                                    <td>{stats.totalQna}</td>
-                                    <td>{stats.totalReviews}</td>
+                                    <td className='shortcut-btn' onClick={() => handleTabClick('qna')}>{stats.totalQna}</td>
+                                    <td className='shortcut-btn' onClick={() => handleTabClick('reviews')}>{stats.totalReviews}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1571,7 +1593,7 @@ export default function MyPage() {
                             </div>
 
                             {infiniteOrders.length === 0 ? (
-                                <p>주문 내역이 없습니다.</p>
+                                <p className='empty-state'>주문 내역이 없습니다.</p>
                             ) : (
                                 infiniteOrders.map((order) => (
                                     <div
@@ -1705,7 +1727,7 @@ export default function MyPage() {
                                 ))
                             )}
                             {infiniteOrdersLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
+                            {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                         </div>
                     )}
 
@@ -1731,7 +1753,7 @@ export default function MyPage() {
 
                             <div className="orders-list">
                                 {filteredOrders.length === 0 ? (
-                                    <p>해당 주문 내역이 없습니다.</p>
+                                    <p className='empty-state'>해당 주문 내역이 없습니다.</p>
                                 ) : (
                                     filteredOrders.map((order) => {
                                         const items = order.orderItems || []
@@ -1957,7 +1979,7 @@ export default function MyPage() {
                                 </>
                             )}
                             {infiniteCartLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteCartHasMore && infiniteCart.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
+                            {!infiniteCartHasMore && infiniteCart.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                         </div>
                     )}
 
@@ -2228,7 +2250,11 @@ export default function MyPage() {
                                     ) : (
                                         <div className="wishlist-grid">
                                             {infiniteWishList.map((item) => (
-                                                <div key={item.wishlistId} className="wishlist-item">
+                                                <div
+                                                    key={item.wishlistId}
+                                                    className="wishlist-item"
+                                                    onClick={() => router.push(`/product/list/detail?productId=${item.productId}`)}
+                                                >
                                                     <div className="wishlist-image">
                                                         {item.imageUrl ? (
                                                             <img 
@@ -2256,7 +2282,7 @@ export default function MyPage() {
                                         </div>
                                     )}
                                     {infiniteWishLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>더 이상 데이터 없음</p>}
+                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                                 </div>
                             )}
 
@@ -2278,7 +2304,10 @@ export default function MyPage() {
                                                         ) : (
                                                             <div className="studio-image-placeholder">🏪</div>
                                                         )}
-                                                        <p>{follow.studioName}</p>
+                                                        <div className='studio-txt-box'>
+                                                            <h3>{follow.studioName}</h3>
+                                                            <p>{follow.studioDescription}</p>
+                                                        </div>
                                                     </div>
                                                     <div className='link-btn delete' onClick={() => handleUnfollow(follow.studioId)}>
                                                         언팔로우
@@ -2313,15 +2342,13 @@ export default function MyPage() {
                                             </div>
 
                                             {review.images && review.images.length > 0 && (
-                                                <div className="my-review-images">
-                                                    {review.images.map((imgUrl, idx) => (
-                                                        <img 
-                                                            key={idx} 
-                                                            src={`http://localhost:8090${imgUrl}`}
-                                                            alt={`리뷰 이미지 ${idx + 1}`}
-                                                            // onError={(e) => {
-                                                            //     e.currentTarget.src = '/default-image.png'
-                                                            // }}
+                                                <div key={review.reviewId} className="my-review-images">
+                                                    {review.images.map((url, i) => (
+                                                        <img
+                                                            key={i}
+                                                            src={`http://localhost:8090${url}`}
+                                                            alt={`리뷰 이미지 ${i + 1}`}
+                                                            className="review-image-item"
                                                         />
                                                     ))}
                                                 </div>
@@ -2435,9 +2462,7 @@ export default function MyPage() {
                                 o.deliveryStatus === selectedStatus &&
                                 (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
                             ).length === 0 ? (
-                                <div className="modal-empty">
-                                    <p>주문 내역이 없습니다.</p>
-                                </div>
+                                <p className='empty-state'>주문 내역이 없습니다.</p>
                             ) : (
                                 <div className="modal-orders-list">
                                     {orders

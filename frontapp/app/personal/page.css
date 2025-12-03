@@ -13,25 +13,25 @@ body {
 /* 사이드바 */
 .mypage-sidebar {
     width: 200px;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid #e9dcc4;
     padding: 32px;
 }
 
 .mypage-sidebar h1 {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 32px;
+    margin-bottom: 36px;
 }
 
 .nav-section {
-    margin-bottom: 24px;
+    margin-bottom: 30px;
 }
 
 .nav-section h2 {
-    font-size: 12px;
+    font-size: 18px;
     font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 12px;
+    color: #333;
+    /* margin-bottom: 30px; */
     text-transform: uppercase;
 }
 
@@ -40,13 +40,13 @@ body {
 }
 
 .nav-section li {
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .nav-section button {
     background: none;
     border: none;
-    color: #6b7280;
+    color: #80736b;
     font-size: 14px;
     cursor: pointer;
     padding: 4px 0;
@@ -54,6 +54,7 @@ body {
 
 .nav-section button:hover {
     color: #000;
+    text-decoration: underline;
 }
 
 .nav-section button.active {
@@ -84,7 +85,7 @@ body {
 .error button {
     margin-top: 20px;
     padding: 10px 20px;
-    background: #000;
+    background: #dac0a3;
     color: white;
     border: none;
     cursor: pointer;
@@ -135,6 +136,7 @@ body {
 
 .auth-banner-btn:hover {
     background: #C99F8A;
+    text-decoration: underline;
 }
 
 /* 통계 테이블 */
@@ -157,18 +159,28 @@ body {
     font-weight: bold;
     color: #000;
     border-bottom: 1px solid #E9DCC4;
+    border-right: 1px solid #E9DCC4;
 }
 
-.stats-table td:first-child {
+.stats-table th:last-child {
+    border-right: none;
+}
+
+/* .stats-table td:first-child {
     display: flex;
     justify-content: center;
     align-items: center;
-}
+} */
 
 .stats-table td {
     padding: 16px;
     font-size: 24px;
     font-weight: bold;
+    border-right: 1px solid #E9DCC4;
+}
+
+.stats-table td:last-child {
+    border-right: none;
 }
 
 .profile-image {
@@ -215,7 +227,8 @@ body {
     display: flex;
     padding: 0;
     margin-bottom: 24px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e9dcc4;
+    border-radius: 8px;
 }
 
 .status-card {
@@ -223,9 +236,13 @@ body {
     text-align: center;
     padding: 16px;
     margin: 10px 0;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid #e9dcc4;
     cursor: pointer;
     transition: background 0.2s;
+}
+
+.status-card:last-child {
+    border-right: none;
 }
 
 .status-card:hover {
@@ -257,7 +274,6 @@ body {
 
 /* 주문 카드 */
 .order-card {
-    border: 1px solid #e5e7eb;
     padding: 24px;
     margin-bottom: 16px;
     border-radius: 8px;
@@ -424,9 +440,10 @@ body {
 /* 배송지/결제수단 카드 */
 .address-card,
 .payment-card {
-    border: 1px solid #e5e7eb;
     padding: 24px;
     margin-bottom: 16px;
+    background-color: #fff;
+    border-radius: 8px;
 }
 
 .payment-card .card-header {
@@ -475,14 +492,14 @@ body {
     display: flex;
     gap: 32px;
     margin-bottom: 24px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e9dcc4;
 }
 
 .tab-nav button {
     background: none;
     border: none;
     font-size: 14px;
-    color: #6b7280;
+    color: #806e6b;
     padding: 8px 0;
     cursor: pointer;
     position: relative;
@@ -506,13 +523,13 @@ body {
 /* 위시리스트 그리드 */
 .wishlist-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
 }
 
 .wishlist-item {
-    border: 1px solid #e5e7eb;
     transition: transform 0.2s;
+    cursor: pointer;
 }
 
 .wishlist-item:hover {
@@ -522,10 +539,13 @@ body {
 .wishlist-image {
     aspect-ratio: 1;
     background: #f3f4f6;
+    border-radius: 8px 8px 0 0;
 }
 
 .wishlist-info {
     padding: 16px;
+    background: #fff;
+    border-radius: 0 0 8px 8px;
 }
 
 .wishlist-info p {
@@ -548,7 +568,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #e5e7eb;
     padding: 24px;
     margin-bottom: 16px;
 }
@@ -590,85 +609,126 @@ body {
 .qna-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .qna-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  background-color: #fff;
-  transition: all 0.2s;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.qna-card:hover {
+  transform: translateY(-3px);
 }
 
 .qna-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .qna-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
+  color: #111827;
 }
 
 .qna-type {
   font-size: 12px;
-  color: #666;
-  background-color: #f3f3f3;
-  border-radius: 4px;
-  padding: 2px 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #374151;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+
+.qna-status {
+  margin-bottom: 10px;
+}
+
+.qna-status span {
+  font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.qna-status .answered {
+  background: #10b98120;
+  color: #059669;
+  border: 1px solid #10b98150;
+}
+
+.qna-status .waiting {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
 }
 
 .qna-content {
   font-size: 14px;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.qna-status {
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.qna-status .answered {
-  color: green;
-  font-weight: 500;
-}
-
-.qna-status .waiting {
-  color: #999;
+  color: #4b5563;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
 .qna-footer {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #666;
+  color: #6b7280;
+  margin-top: 8px;
 }
 
-/* QNA 답변 영역 스타일 */
-.qna-answer {
-    margin-top: 16px;
+.qna-accordion {
+  margin-top: 18px;
+  padding: 16px 18px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  animation: fadeIn 0.25s ease;
+}
+
+.qna-accordion h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.qna-accordion p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===========================
+   Mobile
+=========================== */
+@media (max-width: 480px) {
+  .qna-card {
     padding: 16px;
-    background: #f9fafb;
-    border-top: 1px solid #e5e7eb;
+  }
+
+  .qna-title {
+    font-size: 15px;
+  }
+
+  .qna-content {
+    font-size: 13px;
+  }
 }
 
-.qna-answer h4 {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #111827;
-}
-
-.qna-answer p {
-    font-size: 14px;
-    color: #6b7280;
-    line-height: 1.6;
-    margin: 0;
-}
 
 /* 리뷰 */
 .my-review-list {
@@ -678,7 +738,6 @@ body {
 }
 
 .my-review-card {
-  border: 1px solid #ddd;
   border-radius: 10px;
   padding: 16px;
   background-color: #fff;
@@ -778,6 +837,7 @@ body {
 .need-login button:hover {
     background: #1f2937;
     transform: translateY(-2px);
+    text-decoration: underline;
 }
 
 .need-login button:active {
@@ -790,7 +850,6 @@ body {
     text-align: center;
     padding: 80px 20px;
     background: white;
-    border: 1px solid #e5e7eb;
     border-radius: 12px;
 }
 
@@ -829,7 +888,7 @@ body {
     align-items: center;
     padding: 20px 24px;
     background: white;
-    border: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
     border-radius: 12px 12px 0 0;
     margin-bottom: 0;
 }
@@ -881,7 +940,6 @@ body {
 /* 장바구니 목록 */
 .cart-list {
     background: white;
-    border: 1px solid #e5e7eb;
     border-top: none;
 }
 
@@ -990,7 +1048,7 @@ body {
 .cart-footer {
     padding: 32px 24px;
     background: #fafafa;
-    border: 1px solid #e5e7eb;
+    /* border: 1px solid #e5e7eb; */
     border-top: 2px solid #E9DCC4;
     border-radius: 0 0 12px 12px;
     display: flex;
@@ -1067,7 +1125,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #e5e7eb;
     padding: 20px;
     margin-bottom: 12px;
     border-radius: 8px;
@@ -1075,23 +1132,36 @@ body {
 }
 
 .follow-card p {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
     margin: 0;
 }
 
-.follow-card button {
-    padding: 8px 16px;
-    background: white;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
+.studio-info {
+    display: flex;
+    gap: 10px;
 }
 
-.follow-card button:hover {
-    background: #f9fafb;
-    border-color: #000;
+.studio-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.studio-txt-box {
+    max-width: 70%;
+}
+
+.studio-txt-box p:last-child { /*2줄 이상 ... 말줄임표 표시*/
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
 }
 
 /* 서브탭 콘텐츠 */
@@ -1453,14 +1523,16 @@ body {
     border-radius: 8px;
     transition: all 0.2s;
     text-align: center;
+    text-wrap: nowrap;
 }
 
-.btn-primary.delete {
+/* .btn-primary.delete {
     background: #dc2626;
-}
+} */
 
 .btn-primary:hover {
     background: #C99F8A;
+    text-decoration: underline;
 }
 
 .btn-primary.delete:hover {
@@ -1492,18 +1564,28 @@ button.link-btn:disabled:hover {
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
+    text-wrap: nowrap;
 }
 
-.link-btn.delete {
+/* .link-btn.delete {
     background: #dc2626;
-}
+} */
 
 .link-btn:hover {
     background: #C99F8A;
+    text-decoration: underline;
 }
 
 .link-btn.delete:hover {
     background: #dc2626;
+    text-decoration: underline;
+}
+
+.shortcut-btn {
+    cursor: pointer;
+}
+
+.shortcut-btn:hover {
     text-decoration: underline;
 }
 

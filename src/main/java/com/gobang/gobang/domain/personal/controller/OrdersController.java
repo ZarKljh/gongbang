@@ -71,4 +71,15 @@ public class OrdersController {
         DeliveryResponse delivery = deliveryService.getDeliveryByOrderId(orderId);
         return RsData.of("200", "배송 상세 조회 성공", delivery);
     }
+
+    @GetMapping("/infinite")
+    public RsData<List<OrdersResponse>> getInfiniteOrders(
+            @RequestParam(required = false) Long lastOrderId,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        SiteUser siteUser = siteUserService.getCurrentUser();
+        List<OrdersResponse> orders = ordersService.getInfiniteOrders(siteUser, lastOrderId, size);
+        return RsData.of("200", "주문 무한스크롤 조회 성공", orders);
+    }
+
 }
