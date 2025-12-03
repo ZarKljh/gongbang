@@ -66,7 +66,7 @@ public class WishListController {
         return RsData.of("200", "사용자의 위시 개수 조회 성공", count);
     }
 
-    @GetMapping("/wishlist/infinite")
+    @GetMapping("/infinite")
     public RsData<List<WishListResponse>> getInfiniteWishlist(
             @RequestParam(required = false) Long lastWishId,
             @RequestParam(defaultValue = "10") int size

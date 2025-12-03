@@ -107,6 +107,14 @@ export default function AdminUsersPage() {
 
                     {/* 필터 그룹 */}
                     <div className={styles.filterGroup}>
+                        <div className={styles.searchBox}>
+                            <input
+                                value={q}
+                                onChange={(e) => setQ(e.target.value)}
+                                placeholder="아이디/이메일 검색"
+                                className={styles.searchInput}
+                            />
+                        </div>
                         <select
                             className={styles.select}
                             value={statusFilter}
@@ -126,15 +134,6 @@ export default function AdminUsersPage() {
                                 <option value="USER">USER</option>
                                 <option value="SELLER">SELLER</option>
                             </select>
-                        </div>
-
-                        <div className={styles.searchBox}>
-                            <input
-                                value={q}
-                                onChange={(e) => setQ(e.target.value)}
-                                placeholder="아이디/이메일 검색"
-                                className={styles.searchInput}
-                            />
                         </div>
                     </div>
                 </div>

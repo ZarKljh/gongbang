@@ -21,4 +21,8 @@ public interface UserAddressRepository extends JpaRepository<UserAddress, Long> 
     @Modifying
     @Query("UPDATE UserAddress ua SET ua.isDefault = false WHERE ua.siteUser = :siteUser")
     void unsetDefaultBySiteUser(@Param("siteUser") SiteUser siteUser);
+
+    //hj 기본배송지 조회 추가
+    Optional<UserAddress> findBySiteUserAndIsDefaultTrue(SiteUser user);
+    boolean existsBySiteUserAndIsDefaultTrue(SiteUser user); // ✅ 추가
 }

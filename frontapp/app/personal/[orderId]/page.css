@@ -1,0 +1,210 @@
+.order-detail-title {
+    margin: 40px auto;
+    text-align: center;
+}
+
+/* ===============================
+   주문 상세 페이지 컨테이너
+================================ */
+.order-detail-container {
+    max-width: 1280px;
+    margin: 40px auto;
+    padding: 40px;
+    color: #333;
+    background: #fff;
+    border-radius: 8px;
+}
+
+/* 제목 */
+.order-detail-container h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #000;
+}
+
+/* ===============================
+   주문 기본 정보 박스
+================================ */
+.order-detail-box { 
+    padding: 24px 30px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    border: 1px solid #E9DCC4;
+    background: #FAF7F0;
+}
+
+.order-detail-box p {
+    font-size: 15px;
+    margin: 12px 0;
+}
+
+.order-detail-box strong {
+    display: inline-block;
+    width: 110px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* 상태 배지 스타일 (MyPage 통일) */
+.badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-left: 6px;
+    font-weight: 600;
+    text-wrap: nowrap;
+}
+.badge.배송준비중 { background: #ffe9a7; color: #775a00; }
+.badge.배송중 { background: #bfe3ff; color: #004a80; }
+.badge.배송완료 { background: #d4f7dc; color: #1f5c2b; }
+
+/* ===============================
+   상품 목록
+================================ */
+.order-items-list {
+    border-top: 2px solid #E9DCC4;
+    padding-top: 20px;
+    margin-top: 10px;
+}
+
+.order-detail-item {
+    display: flex;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid #F3EEE6;
+}
+
+.order-detail-item img {
+    width: 90px;
+    height: 90px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #E9DCC4;
+    background: #FAF7F0;
+}
+
+.order-detail-item .item-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.order-detail-item .item-name:hover {
+    text-decoration: underline;
+}
+
+/* ===============================
+   총 금액 박스
+================================ */
+.order-total {
+    background: #FAF7F0;
+    border: 1px solid #E9DCC4;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 25px;
+    font-size: 16px;
+}
+
+/* ===============================
+   버튼 영역
+================================ */
+.order-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 12px;
+}
+
+/* 공통 버튼 */
+.btn-primary {
+    padding: 10px 18px;
+    background: #DAC0A3;
+    color: white;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: #C99F8A;
+    text-decoration: underline;
+}
+
+.btn-secondary {
+    padding: 10px 18px;
+    background: #d1d5db;
+    color: #333;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.btn-secondary:hover {
+    background: #bfc3c9;
+}
+
+/* 뒤로가기 버튼 */
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #80736b;
+    margin-top: 20px;
+    cursor: pointer;
+}
+.back-btn:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+/* ===============================
+   사유 입력 모달
+================================ */
+.reason-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: #fff;
+    width: 420px;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.modal-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.modal-content textarea {
+    width: calc(100% - 30px);
+    height: 120px;
+    padding: 12px;
+    border: 1px solid #E9DCC4;
+    border-radius: 8px;
+    resize: none;
+    font-size: 14px;
+    font-family: inherit;
+    background: #FAF7F0;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 15px;
+}

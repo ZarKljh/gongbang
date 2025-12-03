@@ -27,7 +27,7 @@ public class WishListResponse {
                 .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, wishList.getProduct().getId())
                 .stream()
                 .findFirst()
-                .map(img -> "/api/v1/image/product/" + img.getImageFileName())
+                .map(img -> "/images/" + img.getImageFileName())
                 .orElse(null);
 
         return WishListResponse.builder()

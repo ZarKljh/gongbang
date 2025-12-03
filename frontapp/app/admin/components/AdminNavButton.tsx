@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { api } from '@/app/utils/api'
+import styles from '@/app/admin/styles/MySection.module.css'
 
 export default function AdminNavButton() {
     const [isAdmin, setIsAdmin] = useState(false)
@@ -51,5 +52,9 @@ export default function AdminNavButton() {
     if (!checked) return null
     if (!isAdmin) return null
 
-    return <Link href="/admin/admin_account">관리자 페이지</Link>
+    return (
+        <Link href="/admin/admin_account" className={styles.AdminNavButton}>
+            관리자 페이지
+        </Link>
+    )
 }

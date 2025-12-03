@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.builder.ToStringExclude;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,14 +69,20 @@ public class Studio {
     @Column(length = 254)
     private String studioImg;
 
-
+    @CreationTimestamp
     private LocalDateTime createdDate;
-
+    @UpdateTimestamp
     private LocalDateTime updatedDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private StudioStatus status = StudioStatus.PENDING;
+
+    @PrePersist
+    void onCreate() {
+        this.createdDate = LocalDateTime.now();
+        this.updatedDate = LocalDateTime.now();
+    }
 
     @PreUpdate
     void onUpdate() { this.updatedDate = LocalDateTime.now(); }

@@ -292,6 +292,10 @@ body {
     gap: 10px;
 }
 
+.order-header:hover p {
+    text-decoration: underline;
+}
+
 .order-title {
     display: flex;
     justify-content: space-between;
@@ -320,73 +324,12 @@ body {
     border: 1px solid #e5e7eb;
 }
 
-.order-accordion {
-    padding-top: 16px;
-    border-top: 1px solid #f3f4f6;
-}
-
-.order-info p {
-    margin: 4px 0;
-    font-size: 13px;
-    color: #6b7280;
-    line-height: 1.8;
-}
-
-.order-item {
-    margin-bottom: 8px;
-}
-
-.order-item p {
-    margin: 2px 0;
-}
-
-.order-item-name {
-    font-weight: 500;
-}
-
-.order-item-detail {
-    font-size: 14px;
-    color: #6b7280;
-}
-
-.order-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
 .order-item-img {
     width: 50px;
     height: 50px;
     object-fit: cover;
     border-radius: 6px;
     border: 1px solid #e5e7eb;
-}
-
-.order-item-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.order-actions {
-    margin-top: 16px;
-    display: flex;
-    gap: 8px;
-    margin-top: 15px;
-}
-
-.order-actions + .order-actions {
-    margin-top: 8px;
-}
-
-.order-footer {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #f3f4f6;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .order-total {
@@ -540,6 +483,12 @@ body {
     aspect-ratio: 1;
     background: #f3f4f6;
     border-radius: 8px 8px 0 0;
+    overflow: hidden;
+}
+
+.wishlist-image img {
+    object-fit: cover;
+    width: 100%;
 }
 
 .wishlist-info {
@@ -1132,7 +1081,7 @@ body {
 }
 
 .follow-card p {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     margin: 0;
 }
@@ -1152,6 +1101,9 @@ body {
 
 .studio-txt-box {
     max-width: 70%;
+    margin: 0;
+    padding: 0;
+    gap: 0;
 }
 
 .studio-txt-box p:last-child { /*2줄 이상 ... 말줄임표 표시*/
@@ -1162,6 +1114,7 @@ body {
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
+    color: #555;
 }
 
 /* 서브탭 콘텐츠 */

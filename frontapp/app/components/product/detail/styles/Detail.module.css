@@ -62,6 +62,12 @@
     height: 93%;
 }
 
+.purchaseHeadSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 /* 버튼이 항상 아래에 위치하도록 */
 .buttonRow {
     display: flex;
@@ -265,7 +271,7 @@
     width: 100%;
     border: 0;
     border-radius: 10px;
-    background: linear-gradient(135deg, #cfa777, #b17457);
+    background: #dac0a3;
     font-weight: 700;
     font-size: 15px;
     color: #fff;
@@ -331,86 +337,202 @@
     color: #a2612a;
     font-weight: 600;
 }
-/* === 결제 모달 오버레이 === */
+
+/* === 결제 모달 오버레이 ===-------------------------------------------------------------------------------- */
 .modalOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
     z-index: 9999;
 }
 
-/* === 모달 박스 === */
-.modal {
+.modalContainer {
     width: 100%;
-    max-width: 480px;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 20px 20px 24px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-width: 520px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px 20px 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
     box-sizing: border-box;
 }
 
-/* === 헤더 영역 (타이틀 + 닫기버튼) === */
+/* 헤더 – 제목 왼쪽, 닫기 버튼 오른쪽 */
 .modalHeader {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 12px;
 }
 
 .modalTitle {
-    margin: 0;
     font-size: 18px;
     font-weight: 600;
+    margin: 0;
 }
 
-/* 닫기 버튼 */
 .modalCloseBtn {
     border: none;
     background: none;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     line-height: 1;
-    padding: 4px;
 }
 
-/* === 결제 위젯 영역 === */
-.paymentBody {
-    margin-top: 8px;
+/* 한 섹션 카드 */
+.modalSection {
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: #faf6f1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 상품 요약 레이아웃 */
+.modalProductSummary {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.summaryThumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #eee;
+    flex-shrink: 0;
+}
+
+.summaryThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.summaryText {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summaryTitle {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.summaryDesc {
+    font-size: 13px;
+    color: #777;
+    max-height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 수량/금액 줄 */
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+    font-size: 13px;
+}
+
+.summaryLabel {
+    color: #666;
+}
+
+.summaryValue {
+    font-weight: 500;
+}
+
+.summaryTotal {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* 상품 요약과 위젯 사이 구분선 */
+.sectionDivider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* 토스 위젯 박스 */
+.paymentBox {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .paymentMethods {
-    /* 필요하면 여기에 여백, 배경 등 추가 가능 */
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
 }
 
 .paymentAgreement {
-    margin-top: 16px;
+    margin-top: 4px;
 }
 
-/* === 결제 버튼 === */
+/* 푸터 */
+.modalFooter {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
 .paymentSubmitBtn {
-    margin-top: 20px;
     width: 100%;
-    padding: 12px 0;
-    border-radius: 999px;
     border: none;
-    background: #0064ff;
-    color: #ffffff;
+    border-radius: 999px;
+    padding: 11px 0;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.15s ease, transform 0.05s ease;
-}
-
-.paymentSubmitBtn:hover:not(:disabled) {
-    opacity: 0.95;
-    transform: translateY(-1px);
+    background: #282633;
+    color: #fff;
 }
 
 .paymentSubmitBtn:disabled {
+    opacity: 0.5;
     cursor: default;
-    opacity: 0.6;
 }
+
+/* 결제 상태 텍스트 – 오른쪽 정렬 + 강조 */
+.paymentStatus {
+    font-size: 13px;
+    text-align: right; /* 👉 오른쪽 정렬 */
+    margin: 0;
+}
+
+.paymentStatusSuccess {
+    color: #1a7f37; /* 초록 */
+    font-weight: 600;
+}
+
+.paymentStatusFail {
+    color: #d93025; /* 빨강 */
+    font-weight: 600;
+}
+
+/* 모바일 대응 */
+@media (max-width: 480px) {
+    .modalContainer {
+        max-width: calc(100% - 24px);
+        padding: 16px 14px 14px;
+    }
+
+    .modalSection {
+        padding: 12px 12px;
+    }
+
+    .summaryThumb {
+        width: 64px;
+        height: 64px;
+    }
+}
+/* --------------------------------------------------------- */
