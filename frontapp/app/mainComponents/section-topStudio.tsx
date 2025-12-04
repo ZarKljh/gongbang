@@ -66,7 +66,7 @@ export default function TopStudios() {
                             <div key={studio.studioId} className="topStudioCard">
                                 <div className="topStudioBox">
                                     <img
-                                        src={studio.mainImageUrl ?? '/default-studio.jpg'}
+                                        src={`http://localhost:8090${studio.mainImageUrl}`}
                                         alt={studio.studioName}
                                         className="topStudioMainImg"
                                     />
@@ -84,7 +84,7 @@ export default function TopStudios() {
                                     {studio.recentProducts.map((p) => (
                                         <div key={p.productId} className="topProductCardSmall">
                                             <img
-                                                src={p.imageUrl ?? '/default-product.png'}
+                                                src={`http://localhost:8090${p.imageUrl}`}
                                                 alt={p.productName}
                                                 className="topProductImgSmall"
                                             />
