@@ -28,7 +28,7 @@ public class CartResponse {
                 .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, cart.getProduct().getId())
                 .stream()
                 .findFirst()
-                .map(img -> "/images/products/" + img.getImageFileName())
+                .map(img -> "/images/" + img.getImageFileName())
                 .orElse(null);
 
         return CartResponse.builder()

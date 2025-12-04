@@ -26,7 +26,7 @@ public class OrderItemResponse {
                 .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, orderItem.getProduct().getId())
                 .stream()
                 .findFirst()
-                .map(img -> "/images/products/" + img.getImageFileName())
+                .map(img -> "/images/" + img.getImageFileName())
                 .orElse(null);
 
         return OrderItemResponse.builder()
