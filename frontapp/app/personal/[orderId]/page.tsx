@@ -116,15 +116,17 @@ export default function OrderDetailPage() {
 
     return (
         <>
-            <h2 className='order-detail-title'>주문 상세 보기</h2>
             {/* 뒤로가기 */}
-            <button
-                className="back-btn"
-                onClick={() => router.push('/personal?tab=orders')}
-            >
-                ← 주문 목록으로
-            </button>
+            
+            <h2 className='order-detail-title'>주문 상세 보기</h2>
+            
             <div className="order-detail-container">
+                <button
+                    className="back-btn"
+                    onClick={() => router.push('/personal?tab=orders')}
+                >
+                    ← 주문 목록으로
+                </button>
                 {/* 주문 기본 정보 */}
                 <div className="order-detail-box">
                     <p><strong>주문일자:</strong> {order.createdDate}</p>
