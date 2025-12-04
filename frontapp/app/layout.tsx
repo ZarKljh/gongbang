@@ -1,5 +1,6 @@
 // app/layout.tsx (또는 app/layout.jsx)
 
+import './globals.css'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import ReactQueryProviders from '@/app/utils/ReactQueryProviders'
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <html lang="ko">
+        <html lang="ko" >
             <head>
                 {/* Daum 주소 검색 API 스크립트 추가  -  이승운 */}
                 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
