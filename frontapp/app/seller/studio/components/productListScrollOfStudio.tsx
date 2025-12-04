@@ -82,7 +82,7 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
                         <li className="product-card" key={product.id}>
                             <img
                                 className="product-image"
-                                src={product.imageUrl || '/default-product.png'} // 기본 이미지 설정 가능
+                                src={product.imageUrl || 'http://localhost:8090/images/no-image-soft.png'} // 기본 이미지 설정 가능
                                 alt={product.name}
                             />
                             <div className="product-info">
