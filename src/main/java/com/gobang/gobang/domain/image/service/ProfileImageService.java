@@ -73,7 +73,7 @@ public class ProfileImageService {
 
             imageRepository.save(image);
 
-            // User 테이블에도 저장 (선택사항)
+            // User 테이블에도 저장
             user.setProfileImg(url);
             siteUserRepository.save(user);
 

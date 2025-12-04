@@ -496,10 +496,10 @@ export default function MyPage() {
     }
 
     const handleProfileUpload = async () => {
-        if (!profileFile) return alert('이미지를 선택해주세요.');
+        if (!profileFile) return alert('이미지를 선택해주세요.')
 
-        const formData = new FormData();
-        formData.append('file', profileFile);
+        const formData = new FormData()
+        formData.append('file', profileFile)
 
         try {
             const { data } = await axios.patch(
@@ -509,7 +509,7 @@ export default function MyPage() {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
                 }
-            );
+            )
 
             if (data.resultCode === '200') {
                 alert('프로필 이미지가 업데이트되었습니다.')
@@ -1903,7 +1903,7 @@ export default function MyPage() {
                                 )}
                             </div>
 
-                            <div>
+                            <div className='form-group-box'>
                                 <div className="form-group">
                                     <label>이름</label>
                                     <p>{userData.fullName}</p>
