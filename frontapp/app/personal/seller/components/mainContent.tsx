@@ -15,6 +15,8 @@ import StudioAddTab from './tabs/studioAddTab'
 import ProductListTab from './tabs/productListTab'
 import AddProductTab from './tabs/addProductTab'
 import ModifyProductTab from './tabs/modifyProductTab'
+import OrderList from '@/app/personal/seller/components/ReceivedOrderList'
+
 /*
 interface MainContentProps {
     activeTab: string
@@ -52,7 +54,7 @@ interface MainContentProps {
 
 export default function MainContent(props: MainContentProps) {
     //const { activeTab, userData, stats, studioList, studio } = props
-    const { activeTab, studio } = props
+    const { activeTab, studio, orders } = props
 
     return (
         <div className="main-content">
@@ -86,14 +88,13 @@ export default function MainContent(props: MainContentProps) {
                         </tbody>
                     </table>
                 </div>
-                <div className="scroll-area">
-                    {activeTab === 'studio' && <StudioTab {...props} />}
-                    {activeTab === 'profile' && <ProfileTab {...props} />}
-                    {activeTab === 'studioAdd' && <StudioAddTab {...props} />}
-                    {activeTab === 'productList' && <ProductListTab {...props} />}
-                    {activeTab === 'productAdd' && <AddProductTab {...props} />}
-                    {activeTab === 'productModify' && <ModifyProductTab {...props} />}
-                </div>
+                {activeTab === 'studio' && <StudioTab {...props} />}
+                {activeTab === 'profile' && <ProfileTab {...props} />}
+                {activeTab === 'studioAdd' && <StudioAddTab {...props} />}
+                {activeTab === 'productList' && <ProductListTab {...props} />}
+                {activeTab === 'productAdd' && <AddProductTab {...props} />}
+                {activeTab === 'productModify' && <ModifyProductTab {...props} />}
+                {activeTab === 'orderList' && <OrderList orders={orders} />}
             </div>
         </div>
     )

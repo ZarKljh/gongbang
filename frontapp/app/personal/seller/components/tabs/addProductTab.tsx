@@ -394,7 +394,7 @@ export default function AddProductTab(props: AddProductTabProps) {
                                 </button>
 
                                 <input
-                                    id="productGalleryInput"
+                                    id="productGalleryImageInput"
                                     type="file"
                                     accept="image/*"
                                     multiple
