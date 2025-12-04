@@ -963,7 +963,7 @@ body {
     min-width: 0;
 }
 
-.product-name {
+.cart-product-name {
     font-size: 16px;
     font-weight: 600;
     color: #111827;
@@ -971,7 +971,7 @@ body {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    overflow: hidden;
+    text-wrap: nowrap;
     line-height: 1.5;
 }
 
@@ -979,11 +979,13 @@ body {
     font-size: 18px;
     font-weight: 700;
     color: #111827;
+    text-wrap: nowrap;
 }
 
 .product-unit-price {
     font-size: 13px;
     color: #6b7280;
+    text-wrap: nowrap;
 }
 
 /* 수량 조절 */
@@ -998,7 +1000,6 @@ body {
 .cart-footer {
     padding: 32px 24px;
     background: #fafafa;
-    /* border: 1px solid #e5e7eb; */
     border-top: 2px solid #E9DCC4;
     border-radius: 0 0 12px 12px;
     display: flex;
@@ -1547,7 +1548,7 @@ button.link-btn:disabled:hover {
     color: #b17457;
 }
 
-/* === 결제 모달 오버레이 ===-------------------------------------------------------------------------------- */
+/* === 결제 모달 오버레이 === */
 .modalOverlay {
     position: fixed;
     inset: 0;
