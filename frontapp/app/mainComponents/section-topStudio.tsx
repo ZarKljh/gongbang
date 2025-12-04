@@ -95,7 +95,7 @@ export default function TopStudios() {
                                                 {p.productName}
                                             </Link>
                                             <p className="topProductsummary">{p.summary}</p>
-                                            <p className="topProductsummary">{p.price}</p>
+                                            {/* <p className="topProductsummary">{p.price}원</p> */}
                                         </div>
                                     ))}
                                 </div>
