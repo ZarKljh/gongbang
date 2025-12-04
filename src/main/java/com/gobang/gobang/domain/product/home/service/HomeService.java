@@ -59,7 +59,7 @@ public class HomeService {
                                 // 상품 대표 이미지 조회
                                 String thumbUrl = imageRepository
                                         .findTopByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, p.getId())
-                                        .map(img -> "/images/" + img.getImageFileName())
+                                        .map(img -> "/images/products/" + img.getImageFileName())
                                         .orElse(null);
 
                                 return TopStudioResponse.ProductDto.builder()
