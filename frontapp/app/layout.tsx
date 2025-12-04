@@ -23,11 +23,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <html lang="ko">
-            <head style={{ fontFamily: 'P-regular' }}>
+            <head>
                 {/* Daum 주소 검색 API 스크립트 추가  -  이승운 */}
                 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
             </head>
-            <body style={{ fontFamily: 'P-regular' }}>
+            <body>
                 {/* 1) Chatling 설정: embed.js보다 먼저 실행되어야 함 */}
                 <Script
                     id="chatling-config"
