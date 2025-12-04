@@ -496,29 +496,40 @@ export default function MyPage() {
     }
 
     const handleProfileUpload = async () => {
-        if (!profileFile) return alert('이미지를 선택해주세요.')
+        if (!profileFile) return alert('이미지를 선택해주세요.');
 
-        const formData = new FormData()
-        formData.append('file', profileFile)
+        const formData = new FormData();
+        formData.append('file', profileFile);
 
         try {
-            const { data } = await axios.patch( `http://localhost:8090/api/v1/image/profile`, formData,
+            const { data } = await axios.patch(
+                `http://localhost:8090/api/v1/image/profile`,
+                formData,
                 {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
                 }
-            )
+            );
 
             if (data.resultCode === '200') {
                 alert('프로필 이미지가 업데이트되었습니다.')
                 setIsProfileModalOpen(false)
                 setProfileFile(null)
-                const uploadedUrl = `http://localhost:8090${data.data?.profileImageUrl || ''}`
-                setPreviewProfileImage(uploadedUrl)
+
+                // 서버에서 받은 새 URL
+                let uploadedUrl = `http://localhost:8090${data.data}`
+                // 캐시 무효화
+                uploadedUrl = `${uploadedUrl}?t=${Date.now()}`
+
+                // preview 초기화
+                setPreviewProfileImage(null)
+
+                // stats 갱신 (즉시 렌더링 반영)
                 setStats(prev => ({
                     ...prev,
                     profileImageUrl: uploadedUrl,
                 }))
+
             } else {
                 alert('업로드 실패')
             }

@@ -39,10 +39,7 @@ public class ProfileImageService {
     private String uploadPath;
 
     // ---------------- 업로드 ----------------
-    public RsData<Void> uploadProfileImage(Long userId, MultipartFile file) {
-        System.out.println("userId = " + userId);
-        System.out.println("file isEmpty = " + file.isEmpty());
-        System.out.println("file original name = " + file.getOriginalFilename());
+    public RsData<String> uploadProfileImage(Long userId, MultipartFile file) {
 
         SiteUser user = siteUserRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
@@ -59,25 +56,29 @@ public class ProfileImageService {
                         imageRepository.delete(existing);
                     });
 
+            // 파일 저장
             String fileName = saveFile(file);
-            String fileUrl = "/images/" + fileName;
 
-            // Image 엔티티 저장
+            // 조회 URL
+            String url = "/api/v1/image/profile/" + userId;
+
+            // DB 저장
             Image image = Image.builder()
                     .refType(Image.RefType.USER_PROFILE)
                     .refId(userId)
                     .imageFileName(fileName)
-                    .imageUrl(fileUrl) // 로컬 경로 또는 URL 형태로 저장
+                    .imageUrl(url)
                     .sortOrder(0)
                     .build();
 
             imageRepository.save(image);
 
-            // SiteUser에 프로필 이미지 이름 기록
-            user.setProfileImg(fileUrl);
+            // User 테이블에도 저장 (선택사항)
+            user.setProfileImg(url);
             siteUserRepository.save(user);
 
-            return RsData.of("200", "프로필 업로드 성공");
+            return RsData.of("200", "프로필 업로드 성공", url);
+
         } catch (Exception e) {
             return RsData.of("400", "프로필 업로드 실패: " + e.getMessage());
         }
@@ -133,7 +134,7 @@ public class ProfileImageService {
     }
 
     // ---------------- 수정 ----------------
-    public RsData<Void> updateProfileImage(Long userId, MultipartFile file) {
+    public RsData<String> updateProfileImage(Long userId, MultipartFile file) {
         return uploadProfileImage(userId, file);
     }
 
