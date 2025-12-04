@@ -521,6 +521,48 @@ class GobangApplicationTests {
     }
 
 
+    // 1~180 상품 모두 랜덤 갯수의 리뷰 생성
+    @Test
+    public void generateRandomReviewSQL() {
+
+        String[] contents = {
+                "너무 좋아요!", "만족합니다.", "퀄리티 최고예요.", "선물용으로 샀어요.",
+                "배송 빨라요.", "귀여워요!", "강추합니다.", "실물이 더 예쁨",
+                "가격 대비 좋아요.", "재구매 의사 100%"
+        };
+
+        Random random = new Random();
+
+        System.out.println("------ SQL 생성 시작 ------");
+
+        for (int productId = 1; productId <= 180; productId++) {
+
+            int reviewCount = random.nextInt(100) + 1;  // 1 ~ 100개 랜덤
+
+            for (int idx = 1; idx <= reviewCount; idx++) {
+
+                int rating = (random.nextDouble() < 0.8) ? 5 : 4;  // 별점 높게
+                int userId = 101 + random.nextInt(100); // 101~200 랜덤 유저
+
+                String content = contents[random.nextInt(contents.length)];
+
+                long orderId = productId * 1000 + idx;
+                long orderItemId = productId * 2000 + idx;
+
+                String sql = String.format(
+                        "INSERT INTO tbl_review (order_id, order_item_id, product_id, user_id, rating, content, review_like, view_count, created_by, created_date, modified_date, is_active) " +
+                                "VALUES (%d, %d, %d, %d, %d, '%s', %d, %d, 'system', NOW(), NOW(), true);",
+                        orderId, orderItemId, productId, userId, rating, content,
+                        random.nextInt(20), random.nextInt(50)
+                );
+
+                System.out.println(sql);
+            }
+        }
+
+        System.out.println("------ SQL 생성 완료 ------");
+    }
+
     // 테스트 돌리면 로그인 상태.
     // 테스트 종류 후 로그아웃 처리
     @AfterEach
