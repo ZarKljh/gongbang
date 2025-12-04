@@ -137,7 +137,7 @@ export default function ProductDetailView() {
     const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
     const pdImageUrl = detailImage
-        ? `http://localhost:8090${detailImage.imageUrl}`
+        ? `http://localhost:8090/images/${detailImage.imageUrl}`
         : 'http://localhost:8090/uploads/products/no-image-soft.png'
 
     const gbImageUrl = gbLogo

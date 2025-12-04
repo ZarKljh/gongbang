@@ -225,9 +225,13 @@ export default function Product() {
                             imageMapList?.[p.id]?.map((img: any) => ({
                                 ...img,
                                 // ❗ 여기가 핵심: 절대경로 보정
-                                imageUrl: img.imageUrl.startsWith('http') ? img.imageUrl : `${BASE_URL}${img.imageUrl}`,
+                                imageUrl: img.imageUrl.startsWith('http')
+                                    ? img.imageUrl
+                                    : `${BASE_URL}/images/${img.imageUrl}`,
                             })) ?? []
+
                         const review = reviewMapList?.[p.id] ?? null
+
                         return {
                             ...p,
                             images,
