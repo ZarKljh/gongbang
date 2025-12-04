@@ -1051,7 +1051,9 @@ export default function MyPage() {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
 
-            setCart((prev) => prev.filter((item) => item.cartId !== cartId))
+            setInfiniteCart(prev => prev.filter(item => item.cartId !== cartId))
+
+            setSelectedItems(prev => prev.filter(id => id !== cartId))
         } catch (error) {
             console.error('장바구니 삭제 실패:', error)
             alert('삭제에 실패했습니다.')
@@ -2134,7 +2136,10 @@ export default function MyPage() {
                                                         <div className="wishlist-btn-box">
                                                             <button
                                                                 className="link-btn delete"
-                                                                onClick={() => handleRemoveWish(item.wishlistId)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    handleRemoveWish(item.wishlistId)
+                                                                }}
                                                             >
                                                                 삭제
                                                             </button>
