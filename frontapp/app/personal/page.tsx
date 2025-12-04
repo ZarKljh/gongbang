@@ -1314,6 +1314,7 @@ export default function MyPage() {
             const { orderCode, totalPrice } = res.data.data
 
             localStorage.setItem("ORDER_CART_IDS", JSON.stringify(selectedItems))
+            localStorage.setItem("PAY_PENDING", "1")
 
             // 모달을 띄우기 전에 결제 정보 저장
             setOrderCode(orderCode)
@@ -1351,29 +1352,53 @@ export default function MyPage() {
             await paymentWidget.requestPayment({
                 amount: total,
                 orderId: orderCode,
-                orderName: "장바구니 상품 결제",  // 여러 상품일 때 이름 고정
-                successUrl: `${window.location.origin}/pay/success`,
+                orderName: "장바구니 상품 결제",
+                successUrl: `${window.location.origin}/pay/success?orderCode=${orderCode}`,
                 failUrl: `${window.location.origin}/pay/fail`,
             })
+            // 여기서 장바구니 삭제 절대 금지!!
+        } catch (e) {
+            console.error("결제 요청 실패", e)
+            alert("결제 요청 중 오류가 발생했습니다.")
+        }
+    }
+
+    // 결제 성공 후 후처리
+    useEffect(() => {
+        const payPending = localStorage.getItem("PAY_PENDING")
+        if (!payPending) return
+
+        // 성공 페이지를 거쳐 되돌아온 경우
+        const cameFromSuccess = document.referrer.includes("/pay/success")
+
+        if (cameFromSuccess) {
+            console.log("결제 성공 후 MyPage 진입 — 후처리 시작")
 
             const stored = localStorage.getItem("ORDER_CART_IDS")
             if (stored) {
                 const cartIds = JSON.parse(stored)
 
-                await axios.delete(
-                    "http://localhost:8090/api/v1/mypage/cart/after-order",
-                    {
-                        data: { cartIds },
-                        withCredentials: true,
-                    }
-                )
-
-                localStorage.removeItem("ORDER_CART_IDS")
+                axios.delete("http://localhost:8090/api/v1/mypage/cart/after-order", {
+                    data: { cartIds },
+                    withCredentials: true,
+                }).then(() => {
+                    console.log("장바구니 삭제 완료")
+                    localStorage.removeItem("ORDER_CART_IDS")
+                    fetchCart(userData?.id) // 장바구니 UI 즉시 갱신
+                })
             }
-        } catch (e) {
-            console.error("결제 요청 실패", e)
+
+            // 모달·결제 관련 상태 초기화
+            setIsModalOpen(false)
+            setPaymentWidget(null)
+            setTotal(0)
+            setOrderCode(null)
+            setSelectedItems([])
+
+            // 결제 플래그 제거
+            localStorage.removeItem("PAY_PENDING")
         }
-    }
+    }, [])
 
     //장바구니 위젯 초기화
     const handleInitPaymentWidget = async (amount: number) => {
@@ -2948,7 +2973,7 @@ export default function MyPage() {
                         </div>
                     </div>
                 </div>
-            )}  
+            )}
         </div>
     )
 }
