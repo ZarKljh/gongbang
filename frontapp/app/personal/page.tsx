@@ -502,7 +502,9 @@ export default function MyPage() {
         formData.append('file', profileFile)
 
         try {
-            const { data } = await axios.patch( `http://localhost:8090/api/v1/image/profile`, formData,
+            const { data } = await axios.patch(
+                `http://localhost:8090/api/v1/image/profile`,
+                formData,
                 {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
@@ -513,12 +515,21 @@ export default function MyPage() {
                 alert('프로필 이미지가 업데이트되었습니다.')
                 setIsProfileModalOpen(false)
                 setProfileFile(null)
-                const uploadedUrl = `http://localhost:8090${data.data?.profileImageUrl || ''}`
-                setPreviewProfileImage(uploadedUrl)
+
+                // 서버에서 받은 새 URL
+                let uploadedUrl = `http://localhost:8090${data.data}`
+                // 캐시 무효화
+                uploadedUrl = `${uploadedUrl}?t=${Date.now()}`
+
+                // preview 초기화
+                setPreviewProfileImage(null)
+
+                // stats 갱신 (즉시 렌더링 반영)
                 setStats(prev => ({
                     ...prev,
                     profileImageUrl: uploadedUrl,
                 }))
+
             } else {
                 alert('업로드 실패')
             }
@@ -1032,11 +1043,13 @@ export default function MyPage() {
                 { withCredentials: true }
             )
 
-            console.log('수량 수정 성공:', data)
+            const newQty = data.data.quantity
 
-            setCart((prev) =>
-                prev.map((item) =>
-                    item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item
+            setInfiniteCart(prev =>
+                prev.map(item =>
+                    item.cartId === cartId
+                        ? { ...item, quantity: newQty }
+                        : item
                 )
             )
         } catch (error) {
@@ -1049,7 +1062,9 @@ export default function MyPage() {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
 
-            setCart((prev) => prev.filter((item) => item.cartId !== cartId))
+            setInfiniteCart(prev => prev.filter(item => item.cartId !== cartId))
+
+            setSelectedItems(prev => prev.filter(id => id !== cartId))
         } catch (error) {
             console.error('장바구니 삭제 실패:', error)
             alert('삭제에 실패했습니다.')
@@ -1341,6 +1356,20 @@ export default function MyPage() {
                 failUrl: `${window.location.origin}/pay/fail`,
             })
 
+            const stored = localStorage.getItem("ORDER_CART_IDS")
+            if (stored) {
+                const cartIds = JSON.parse(stored)
+
+                await axios.delete(
+                    "http://localhost:8090/api/v1/mypage/cart/after-order",
+                    {
+                        data: { cartIds },
+                        withCredentials: true,
+                    }
+                )
+
+                localStorage.removeItem("ORDER_CART_IDS")
+            }
         } catch (e) {
             console.error("결제 요청 실패", e)
         }
@@ -1379,33 +1408,13 @@ export default function MyPage() {
         setSelectedItems([])  // 선택된 상품 초기화 (선택 구매한 경우)
     }
 
-    //결제완료 시 장바구니 상품 삭제
-    useEffect(() => {
-        const deletePurchased = async () => {
-            const stored = localStorage.getItem("ORDER_CART_IDS")
-            if (!stored) return
+    // 선택된 목록에서 첫 번째 cartId
+    const firstSelectedCartId = selectedItems[0]
 
-            const cartIds = JSON.parse(stored)
-
-            try {
-                await axios.delete(
-                    "http://localhost:8090/api/v1/mypage/cart/after-order",
-                    {
-                        data: { cartIds },
-                        withCredentials: true
-                    }
-                )
-
-                // 사용 후 삭제
-                localStorage.removeItem("ORDER_CART_IDS")
-
-            } catch (e) {
-                console.error("장바구니 항목 삭제 실패:", e)
-            }
-        }
-
-        deletePurchased()
-    }, [])
+    // 첫번째 상품 데이터
+    const firstSelectedItem = infiniteCart.find(
+        item => item.cartId === firstSelectedCartId
+    )
 
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
@@ -1769,7 +1778,7 @@ export default function MyPage() {
                                                 </div>
 
                                                 <div className='cart-info'>
-                                                    <Link href={`/product/list/detail?productId=${item.productId}`} className="product-name shortcut-btn">
+                                                    <Link href={`/product/list/detail?productId=${item.productId}`} className="cart-product-name shortcut-btn">
                                                         {item.productName}
                                                     </Link>
                                                     <div className="product-unit-price">
@@ -1813,7 +1822,7 @@ export default function MyPage() {
                                     <div className="cart-footer">
                                         <div className="cart-summary">
                                             <div className="summary-row">
-                                                <span className="summary-label">상품 금액</span>
+                                                {/* <span className="summary-label">상품 금액</span>
                                                 <span className="summary-value">
                                                     {selectedItems.length === 0
                                                         ? 0
@@ -1821,7 +1830,7 @@ export default function MyPage() {
                                                             .filter(item => selectedItems.includes(item.cartId))
                                                             .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
                                                             .toLocaleString()}원
-                                                </span>
+                                                </span> */}
                                             </div>
                                             <div className="summary-row">
                                                 <span className="summary-label">배송비</span>
@@ -1894,7 +1903,7 @@ export default function MyPage() {
                                 )}
                             </div>
 
-                            <div>
+                            <div className='form-group-box'>
                                 <div className="form-group">
                                     <label>이름</label>
                                     <p>{userData.fullName}</p>
@@ -2138,7 +2147,10 @@ export default function MyPage() {
                                                         <div className="wishlist-btn-box">
                                                             <button
                                                                 className="link-btn delete"
-                                                                onClick={() => handleRemoveWish(item.wishlistId)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    handleRemoveWish(item.wishlistId)
+                                                                }}
                                                             >
                                                                 삭제
                                                             </button>
@@ -2881,8 +2893,8 @@ export default function MyPage() {
                                 <div className="summaryThumb">
                                     <img
                                         src={
-                                            infiniteCart.find(item => selectedItems.includes(item.cartId))?.imageUrl
-                                                ? `http://localhost:8090${infiniteCart.find(item => selectedItems.includes(item.cartId))?.imageUrl}`
+                                            firstSelectedItem?.imageUrl
+                                                ? `http://localhost:8090${firstSelectedItem.imageUrl}`
                                                 : "/default-product.png"
                                         }
                                         alt="장바구니 대표 이미지"
