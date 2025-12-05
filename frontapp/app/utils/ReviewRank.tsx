@@ -19,7 +19,7 @@ interface ReviewRank {
 }
 
 export default function ReviewRank() {
-    const [products, setProducts] = useState<PopularReviewProduct[]>([])
+    const [products, setProducts] = useState<ReviewRank[]>([])
     // const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -62,7 +62,7 @@ export default function ReviewRank() {
             <div className="review-rank-sub">리뷰가 보장하는 상품이에요</div>
 
             {products.length === 0 && <div className="review-rank-empty-text">아직 인기 리뷰 상품이 없습니다.</div>}
-            
+
             {products.length > 0 && (
                 <div className="review-rank-slider-wrapper">
                     <Swiper
@@ -72,13 +72,14 @@ export default function ReviewRank() {
                         slidesPerGroup={4}
                         spaceBetween={20}
                         loop={false}
-                        navigation={{
-                            prevEl: prevRef.current,
-                            nextEl: nextRef.current,
-                        }}
-                        onBeforeInit={(swiper) => {
-                            swiper.params.navigation.prevEl = prevRef.current
-                            swiper.params.navigation.nextEl = nextRef.current
+                        navigation={false}
+                        onSwiper={(swiper) => {
+                            setTimeout(() => {
+                                swiper.params.navigation.prevEl = prevRef.current
+                                swiper.params.navigation.nextEl = nextRef.current
+                                swiper.navigation.init()
+                                swiper.navigation.update()
+                            }, 0)
                         }}
                         className="review-rank-swiper"
                         breakpoints={{

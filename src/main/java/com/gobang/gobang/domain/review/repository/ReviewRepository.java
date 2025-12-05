@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.review.repository;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.review.dto.response.ReviewPopularProductResponse;
 import com.gobang.gobang.domain.review.entity.Review;
@@ -82,4 +83,5 @@ HAVING COUNT(r.reviewId) >= 100
 ORDER BY AVG(r.rating) DESC, COUNT(r.reviewId) DESC
 """)
     List<ReviewPopularProductResponse> findPopularReviewProducts();
+
 }

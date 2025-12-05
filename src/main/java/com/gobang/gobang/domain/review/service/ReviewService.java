@@ -312,33 +312,26 @@ public class ReviewService {
         return map;
     }
 
-    // 유저 프로필 이미지 가져오기
+    // 리뷰 100개 이상 상품 이미지 가져오기
     public List<ReviewPopularProductResponse> getProfileImageUrl() {
 
         List<ReviewPopularProductResponse> list = reviewRepository.findPopularReviewProducts();
 
         for (ReviewPopularProductResponse p : list) {
 
-            String basePath = "C:/Users/SBS/Desktop/jhy/gobang/uploads/products/";
-            // 너의 실제 로컬 절대 경로로 변경!
+            // 대표 이미지 조회 (sortOrder ASC 우선)
+            List<Image> images = imageRepository.findByRefTypeAndRefIdOrderBySortOrderAsc(
+                    Image.RefType.PRODUCT,
+                    p.getProductId()
+            );
 
-            String prefix = p.getName();
-            String thumbnail = null;
-
-            for (int i = 1; i <= 5; i++) {
-                File file = new File(basePath + prefix + i + ".jfif");
-                if (file.exists()) {
-                    thumbnail = "/uploads/products/" + prefix + i + ".jfif";
-                    break;
-                }
+            if (!images.isEmpty()) {
+                // DB에 들어있는 image_url 그대로 사용
+                p.setThumbnail(images.get(0).getImageUrl());
+            } else {
+                // 기본 이미지
+                p.setThumbnail("/images/no-image-soft.png");
             }
-
-            // 아무 이미지도 없으면 기본 이미지
-            if (thumbnail == null) {
-                thumbnail = "/uploads/products/no-image-soft.png";
-            }
-
-            p.setThumbnail(thumbnail);
         }
 
         // 하루 랜덤 리스트 유지용 셔플
