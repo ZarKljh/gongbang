@@ -134,6 +134,7 @@ export default function MyPage() {
     const [reviewToDelete, setReviewToDelete] = useState<any>(null)
     const [editReviewContent, setEditReviewContent] = useState('')
     const [editReviewRating, setEditReviewRating] = useState(0)
+    const [reviewImageCache, setReviewImageCache] = useState<Record<number, string[]>>({})
 
     // 위시리스트/팔로우
     const [wishList, setWishList] = useState<any[]>([])
@@ -361,18 +362,43 @@ export default function MyPage() {
         }
     }
 
-    const fetchMyReviews = async (id?: number) => {
+    const fetchMyReviews = async () => {
         try {
             const { data } = await axios.get(`${API_BASE_URL}/reviews`, { withCredentials: true })
             const list = data.data || []
-            setMyReviews(list)
-            setStats((prev) => ({
+
+            setReviewImageCache(prevCache => {
+                // 캐시 복사
+                const nextCache = { ...prevCache }
+
+                // 서버에서 이미지 있으면 캐시에 저장
+                list.forEach(r => {
+                    if (r.images?.length > 0) {
+                        nextCache[r.reviewId] = r.images
+                    }
+                })
+
+                // mergedReviews 만들 때는 **nextCache**를 사용해야 한다!!
+                const mergedReviews = list.map(r => ({
+                    ...r,
+                    images:
+                        r.images?.length > 0
+                            ? r.images
+                            : (nextCache[r.reviewId] ?? [])
+                }))
+
+                // 리뷰 리스트 업데이트
+                setMyReviews(mergedReviews)
+
+                return nextCache
+            })
+
+            setStats(prev => ({
                 ...prev,
                 totalReviews: list.length,
             }))
         } catch (error) {
-            console.error('리뷰 조회 실패:', error)
-            setStats([])
+            console.error("리뷰 조회 실패:", error)
         }
     }
 
@@ -1077,12 +1103,6 @@ export default function MyPage() {
         )
     }
 
-    // 전체 상품 구매
-    const handlePurchaseAll = () => {
-        console.log("전체 상품 구매:", cart)
-        // 전체 구매 프로세스 진행
-    }
-
     // 전체 선택
     const handleToggleSelectAll = () => {
         if (selectedItems.length === cart.length) {
@@ -1353,8 +1373,6 @@ export default function MyPage() {
             return
         }
 
-        console.log("[PAY] requestPayment 시작", { orderCode, total })
-
         try {
             await paymentWidget.requestPayment({
                 amount: total,
@@ -1364,25 +1382,13 @@ export default function MyPage() {
                 failUrl: `${window.location.origin}/pay/fail`,
             })
 
-            console.log("[PAY] requestPayment resolve - 이 다음은 보통 안 옴 (success로 리다이렉트됨)")
-
-            // 🔹 여기서는 아무 것도 하지 마. 성공 처리는 success 페이지에서.
-
         } catch (e: any) {
-            console.error("[PAY] requestPayment catch 발생", e)
-
-            // 👇 이게 핵심: 여기 들어왔다는 건 "유저가 결제창에서 취소" 같은 케이스
             try {
-                console.log("[PAY] cancel-before-payment API 호출 시작", orderCode)
-
                 await axios.post(
                     "http://localhost:8090/api/v1/mypage/orders/cancel-before-payment",
                     { orderCode },
                     { withCredentials: true }
                 )
-
-                console.log("[PAY] cancel-before-payment API 호출 성공")
-
             } catch (cancelErr) {
                 console.error("[PAY] cancel-before-payment API 호출 실패", cancelErr)
             }
@@ -2270,7 +2276,7 @@ export default function MyPage() {
                                 <div className="empty-state">작성한 리뷰가 없습니다.</div>
                             ) : (
                                 <div className="my-review-list">
-                                    {myReviews.map((review) => (
+                                    {myReviews.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()).map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
                                                 <Link href={`http://localhost:3000/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
@@ -2416,7 +2422,7 @@ export default function MyPage() {
                                                 </div>
                                                 <div className="modal-order-info">
                                                     <span className="product-name">{order.items?.[0]?.productName || "상품 없음"}</span>
-                                                    <span className={`status-badge ${order.deliveryStatus}`}>
+                                                    <span className={`badge ${order.deliveryStatus}`}>
                                                         {order.deliveryStatus}
                                                     </span>
                                                 </div>

@@ -416,6 +416,7 @@ body {
     color: white;
     border-radius: 12px;
     font-weight: 600;
+    letter-spacing : 1px; /* 자간 조절 */
 }
 
 .card-actions {
@@ -1402,15 +1403,6 @@ body {
     font-weight: 600;
     color: #111827;
     flex: 1;
-}
-
-.status-badge {
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-weight: 600;
-    background: #EBC2CA;
-    color: white;
 }
 
 .modal-order-footer {

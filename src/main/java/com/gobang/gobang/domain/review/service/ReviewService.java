@@ -184,6 +184,13 @@ public class ReviewService {
         review.setContent(request.getContent());
         review.setModifiedDate(LocalDateTime.now());
 
+        // 이미지 수정이 없는 경우 (마이페이지 수정)
+        // request.getImageUrls()가 아예 null이거나, 프론트가 필드 자체를 보내지 않으면 그대로 유지
+        if (request.getImageUrls().isEmpty()) {
+            reviewRepository.save(review);
+            return RsData.of("200", "리뷰가 수정되었습니다.(이미지 변경 없음)", review);
+        }
+
         // 최종 이미지 URL 리스트(프론트에서 순서대로 보냄)
         List<String> targetUrls = Optional.ofNullable(request.getImageUrls()).orElseGet(List::of)
                 .stream()
