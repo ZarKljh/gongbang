@@ -177,10 +177,14 @@ export default function ProductDetailView() {
             )
         },
         onError: (err: any) => {
-            if (err?.response?.status === 401) {
-                alert('로그인이 필요합니다.')
+            const error = err?.response?.data?.error // ✅ 여기!
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return
             } else {
-                alert('로그인이 필요합니다.')
                 console.error('팔로우 에러:', err)
             }
         },
@@ -190,12 +194,15 @@ export default function ProductDetailView() {
     const cartMutation = useMutation({
         mutationFn: ([prodId, quantity]: [number, number]) =>
             api.post(`/product/${prodId}/cart`, { quantity }).then((res) => res.data),
-        onSuccess: (resData) => {
-            const { resultCode, data: cartData } = resData
 
+        onSuccess: (resData, variables) => {
+            const { resultCode, data: cartData } = resData
             if (resultCode !== '200') return
 
             if (!productId) return
+
+            // variables 가 우리가 mutate 할 때 넘긴 [prodId, quantity]
+            const [prodId, quantity] = variables as [number, number]
 
             queryClient.setQueryData(['productDetail', productId], (old: any) =>
                 old
@@ -207,16 +214,11 @@ export default function ProductDetailView() {
                       }
                     : old,
             )
+
             console.log('🧾 cartData:', cartData)
-            alert('장바구니에 담았습니다.')
-        },
-        onError: (err: any) => {
-            if (err?.response?.status === 401) {
-                alert('로그인이 필요합니다.')
-            } else {
-                alert('로그인이 필요합니다.')
-                console.error('장바구니 에러:', err)
-            }
+
+            alert(`🛒 '${product?.name ?? '상품'}' ${quantity}개를 장바구니에 담았어요!`)
+            // 또는 product?.name 쓰고 싶으면 위에 product를 가져다 쓰면 됨
         },
     })
 
@@ -250,11 +252,15 @@ export default function ProductDetailView() {
             )
         },
         onError: (err: any) => {
-            if (err?.response?.status === 401) {
-                alert('로그인이 필요합니다.')
+            const error = err?.response?.data?.error // ✅ 여기!
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return
             } else {
-                alert('로그인이 필요합니다.')
-                console.error('팔로우 에러:', err)
+                console.error('좋아요 에러:', err)
             }
         },
     })

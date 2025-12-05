@@ -5,7 +5,6 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
-import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.entity.Follow;
 import com.gobang.gobang.domain.personal.entity.WishList;
@@ -19,6 +18,7 @@ import com.gobang.gobang.domain.product.productList.repository.ProductImageRepos
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.domain.seller.repository.SellerFollowRepository;
+import com.gobang.gobang.global.config.SecurityUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -73,7 +73,7 @@ public class ProductService {
                 .toList();
     }
 
-    public FilterProductResponse getProductFilterList(Long subCategoryId, int size, MultiValueMap<String, String> params, SiteUserResponse currentUser) {
+    public FilterProductResponse getProductFilterList(Long subCategoryId, int size, MultiValueMap<String, String> params, SecurityUser currentUser) {
         int limit = Math.max(1, Math.min(size, 50));
 //        boolean useColor = colors != null && !colors.isEmpty();
 
