@@ -1344,22 +1344,54 @@ export default function MyPage() {
     //장바구니 상품 결제
     const handleRequestPayment = async () => {
         if (!paymentWidget) {
-            console.warn("paymentWidget 없음")
+            console.warn("[PAY] paymentWidget 없음")
             return
         }
+
+        if (!orderCode) {
+            console.warn("[PAY] orderCode 없음")
+            return
+        }
+
+        console.log("[PAY] requestPayment 시작", { orderCode, total })
 
         try {
             await paymentWidget.requestPayment({
                 amount: total,
-                orderId: orderCode,
+                orderId: orderCode, // 준비 API에서 받은 orderCode
                 orderName: "장바구니 상품 결제",
-                successUrl: `${window.location.origin}/pay/success?orderCode=${orderCode}`,
+                successUrl: `${window.location.origin}/pay/success`,
                 failUrl: `${window.location.origin}/pay/fail`,
             })
-            // 여기서 장바구니 삭제 절대 금지!!
-        } catch (e) {
-            console.error("결제 요청 실패", e)
-            alert("결제 요청 중 오류가 발생했습니다.")
+
+            console.log("[PAY] requestPayment resolve - 이 다음은 보통 안 옴 (success로 리다이렉트됨)")
+
+            // 🔹 여기서는 아무 것도 하지 마. 성공 처리는 success 페이지에서.
+
+        } catch (e: any) {
+            console.error("[PAY] requestPayment catch 발생", e)
+
+            // 👇 이게 핵심: 여기 들어왔다는 건 "유저가 결제창에서 취소" 같은 케이스
+            try {
+                console.log("[PAY] cancel-before-payment API 호출 시작", orderCode)
+
+                await axios.post(
+                    "http://localhost:8090/api/v1/mypage/orders/cancel-before-payment",
+                    { orderCode },
+                    { withCredentials: true }
+                )
+
+                console.log("[PAY] cancel-before-payment API 호출 성공")
+
+            } catch (cancelErr) {
+                console.error("[PAY] cancel-before-payment API 호출 실패", cancelErr)
+            }
+
+            if (e?.code === "USER_CANCEL") {
+                alert("결제가 취소되었습니다.")
+            } else {
+                alert("결제 요청 중 오류가 발생했습니다.")
+            }
         }
     }
 

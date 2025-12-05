@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.personal.controller;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.personal.dto.request.CancelBeforePayRequest;
 import com.gobang.gobang.domain.personal.dto.request.DeliveryRequest;
 import com.gobang.gobang.domain.personal.dto.request.OrdersRequest;
 import com.gobang.gobang.domain.personal.dto.response.DeliveryResponse;
@@ -82,4 +83,9 @@ public class OrdersController {
         return RsData.of("200", "주문 무한스크롤 조회 성공", orders);
     }
 
+    @PostMapping("/cancel-before-payment")
+    public RsData<Void> cancelBeforePayment(@RequestBody CancelBeforePayRequest req) {
+        ordersService.cancelBeforePayment(req.getOrderCode());
+        return RsData.of("200", "결제 취소로 인한 주문 삭제 완료");
+    }
 }

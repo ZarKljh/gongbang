@@ -156,4 +156,12 @@ public class OrdersService {
 
         return new PrepareOrderResponse(order.getOrderCode(), total.longValueExact());
     }
+
+    @Transactional
+    public void cancelBeforePayment(String orderCode) {
+        Orders order = ordersRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다."));
+
+        ordersRepository.delete(order);
+    }
 }
