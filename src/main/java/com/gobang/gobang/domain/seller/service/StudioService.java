@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.personal.repository.FollowRepository;
 import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
 import com.gobang.gobang.domain.product.category.repository.SubCategoryRepository;
 import com.gobang.gobang.domain.product.common.ProductStatus;
@@ -38,6 +39,7 @@ public class StudioService {
     private final CategoryRepository categoryRepository;
     private final SubCategoryRepository subCategoryRepository;
     private final ProductOfStudioRepository productOfStudioRepository;
+    private final FollowRepository followRepository;
 
     public Page<ProductDto> getProductListByStudioId(Long studioId, Pageable pageable) {
         Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);
@@ -447,5 +449,10 @@ public class StudioService {
         Product modifiedProduct = productRepository.save(product);
 
         return modifiedProduct;
+    }
+
+    public int getFollowerCount(Long studioId) {
+
+        return followRepository.countByStudioStudioId(studioId);
     }
 }

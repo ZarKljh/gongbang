@@ -11,7 +11,7 @@ interface SidebarProps {
 export default function Sidebar({ userData, activeTab, onTabClick, studioList, studio }: SidebarProps) {
     return (
         <div className="mypage-sidebar">
-            <h1>{userData.nickName}</h1>
+            <h1>{studio.studioName}</h1>
 
             <nav>
                 <div className="nav-section">

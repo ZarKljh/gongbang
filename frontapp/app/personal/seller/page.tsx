@@ -39,6 +39,9 @@ export default function MyPage() {
     const [studioList, setStudioList] = useState<any[]>([])
     const [studio, setStudio] = useState<any>(null)
 
+    // 공방에 걸려있는 팔로우갯수
+    const [studioFollowerCount, setStudioFollowerCount] = useState(0)
+
     // 이미지저장을 위한 데이터 상태
     // 공방 관련 이미지 상태 (STUDIO_MAIN / STUDIO_LOGO / STUDIO 등 refType별)
     const [studioImages, setStudioImages] = useState({
@@ -49,6 +52,7 @@ export default function MyPage() {
     const [deletedGalleryImageIds, setDeletedGalleryImageIds] = useState<number[]>([])
 
     //상품리스트 관련 데이터상태
+    const [productTotalCount, setProductTotalCount] = useState(0) //상품전체갯수
     const [productList, setProductList] = useState<any[]>([]) // 현재 화면에 표시되는 상품 리스트 데이터
     const [productPage, setProductPage] = useState(0) // 현재 페이지 번호 (백엔드의 page 파라미터와 동일, 0부터 시작)
     const [productPageSize, setProductPageSize] = useState(5) // 한 페이지에 불러올 상품 개수 (페이지 사이즈)
@@ -166,6 +170,17 @@ export default function MyPage() {
         }
     }
 
+    const fetchFollowerCount = async (studioId: number) => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/studio/${studioId}/followers/count`, { withCredentials: true })
+            setStudioFollowerCount(res.data.data) // 숫자라고 가정
+            console.log('공방ID: ', studioId)
+            console.log('팔로워수 : ', res)
+        } catch (err) {
+            console.error('팔로워 수 로딩 실패:', err)
+        }
+    }
+
     const fetchStudioProducts = async (studioId: number, page = 0) => {
         if (!studioId) return
         setProductLoading(true)
@@ -200,6 +215,7 @@ export default function MyPage() {
             const data = result.data
 
             // 페이지 교체 방식 (검색/페이징용)
+            setProductTotalCount(data.totalElements)
             setProductList(data.content ?? [])
             setProductHasNext(!data.last)
             setProductPage(data.number)
@@ -286,7 +302,8 @@ export default function MyPage() {
 
     useEffect(() => {
         if (studio?.studioId) {
-            fetchStudioProducts(studio.studioId, 0)
+            fetchStudioProducts(studio?.studioId, 0)
+            fetchFollowerCount(studio?.studioId)
         }
     }, [studio])
 
@@ -887,6 +904,7 @@ export default function MyPage() {
                 qna={qna}
                 studioList={studioList}
                 studio={studio}
+                studioFollowerCount={studioFollowerCount}
                 tempData={tempData}
                 isAuthenticated={isAuthenticated}
                 editMode={editMode}
@@ -907,6 +925,7 @@ export default function MyPage() {
                 deletedGalleryImageIds={deletedGalleryImageIds}
                 setDeletedGalleryImageIds={setDeletedGalleryImageIds}
                 setStudioImages={setStudioImages}
+                productTotalCount={productTotalCount}
                 productList={productList}
                 productPage={productPage}
                 productPageSize={productPageSize}

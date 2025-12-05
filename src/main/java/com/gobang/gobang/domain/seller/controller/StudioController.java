@@ -104,6 +104,13 @@ public class StudioController {
         return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
     }
 
+    @GetMapping("/{studioId}/followers/count")
+    public RsData<Integer> getFollowerCount(@PathVariable("studioId") Long studioId) {
+        System.out.println("공방 팔러워수 조회를 위한 아이디값: " + studioId);
+        //System.out.println("팔로우수 : " + count);
+        return RsData.of("200", "팔로워 수 조회 성공", studioService.getFollowerCount(studioId));
+    }
+
     @GetMapping("/{id}/category-summary")
     public RsData<CategoryTreeResponse> getCategorySummary(@PathVariable("id") Long studioId) {
 

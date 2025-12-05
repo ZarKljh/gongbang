@@ -29,8 +29,10 @@ export default function SignupUser() {
     // 중복검사 결과 저장
     const [userNameCheckMsg, setUserNameCheckMsg] = useState('')
     const [nickNameCheckMsg, setNickNameCheckMsg] = useState('')
+    const [emailCheckMsg, setEmailCheckMsg] = useState('')
     const [isUserNameValid, setIsUserNameValid] = useState(false)
     const [isNickNameValid, setIsNickNameValid] = useState(false)
+    const [isEmailValid, setIsEmailValid] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
 
     const checkUserName = async () => {
@@ -63,6 +65,19 @@ export default function SignupUser() {
         setIsNickNameValid(body.data === true)
     }
 
+    const checkEmail = async () => {
+        if (!formData.email) {
+            setEmailCheckMsg('이메일을 입력해주세요.')
+            return
+        }
+
+        const res = await fetch(`http://localhost:8090/api/v1/auth/signup/user/checkemail?email=${formData.email}`)
+        const body = await res.json()
+
+        setEmailCheckMsg(body.msg)
+        setIsEmailValid(body.data === true)
+    }
+
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
@@ -71,6 +86,10 @@ export default function SignupUser() {
         if (name === 'userName') {
             setIsUserNameValid(false)
             setUserNameCheckMsg('')
+        }
+        if (name === 'email') {
+            setIsEmailValid(false)
+            setEmailCheckMsg('')
         }
         if (name === 'nickName') {
             setIsNickNameValid(false)
@@ -115,7 +134,10 @@ export default function SignupUser() {
             alert('아이디 중복확인을 해주세요.')
             return
         }
-
+        if (!isEmailValid) {
+            alert('이메일 중복확인을 해주세요.')
+            return
+        }
         if (!isNickNameValid) {
             alert('닉네임 중복확인을 해주세요.')
             return
@@ -244,8 +266,12 @@ export default function SignupUser() {
                             value={formData.email}
                             placeholder="소문자로입력해주세요"
                         />
+                        <button type="button" className="btn btn-secondary" onClick={checkEmail}>
+                            중복확인
+                        </button>
                     </div>
-                    <ErrorMessage message={errors.email} />
+                    {errors.email && <ErrorMessage message={errors.email} />}
+                    {!errors.email && emailCheckMsg && <ErrorMessage message={emailCheckMsg} success={isEmailValid} />}
                     <div className="form-group">
                         <label className="form-label required">생년월일</label>
                         <input

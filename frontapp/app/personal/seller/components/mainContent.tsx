@@ -54,7 +54,7 @@ interface MainContentProps {
 
 export default function MainContent(props: MainContentProps) {
     //const { activeTab, userData, stats, studioList, studio } = props
-    const { activeTab, studio, orders } = props
+    const { activeTab, studio, orders, productTotalCount, studioFollowerCount } = props
 
     return (
         <div className="main-content">
@@ -64,8 +64,8 @@ export default function MainContent(props: MainContentProps) {
                         <thead>
                             <tr>
                                 <th>프로필</th>
-                                <th>등록공방수</th>
                                 <th>등록상품수</th>
+                                <th>팔로우</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -82,8 +82,8 @@ export default function MainContent(props: MainContentProps) {
                                         )}
                                     </div>
                                 </td>
-                                <td>{/*stats.totalQna*/}</td>
-                                <td>{/*stats.totalReviews*/}</td>
+                                <td>{productTotalCount}</td>
+                                <td>{studioFollowerCount}</td>
                             </tr>
                         </tbody>
                     </table>
