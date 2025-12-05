@@ -75,11 +75,6 @@ export default function MyPage() {
     const [infiniteWishHasMore, setInfiniteWishHasMore] = useState(true)
     const [infiniteWishLastId, setInfiniteWishLastId] = useState<number | null>(null)
 
-    const [infiniteCart, setInfiniteCart] = useState<CartItem[]>([])
-    const [infiniteCartLoading, setInfiniteCartLoading] = useState(false)
-    const [infiniteCartHasMore, setInfiniteCartHasMore] = useState(true)
-    const [infiniteCartLastId, setInfiniteCartLastId] = useState<number | null>(null)
-
     const SIZE = 10
 
     // 인증
@@ -90,11 +85,9 @@ export default function MyPage() {
 
     // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
-    const [openOrderId, setOpenOrderId] = useState(null)
     const [selectedStatus, setSelectedStatus] = useState(null)
     const [isStatusModal, setIsStatusModal] = useState(false)
     const [activeFilter, setActiveFilter] = useState('전체')
-    const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
     const [isReasonModal, setIsReasonModal] = useState(false)
     const [reasonModalTitle, setReasonModalTitle] = useState("")
     const [reasonModalOnSubmit, setReasonModalOnSubmit] = useState<(reason: string) => void>(() => {})
@@ -137,7 +130,7 @@ export default function MyPage() {
     const [reviewImageCache, setReviewImageCache] = useState<Record<number, string[]>>({})
 
     // 위시리스트/팔로우
-    const [wishList, setWishList] = useState<any[]>([])
+    const [wishlist, setWishlist] = useState<any[]>([])
     const [followList, setFollowList] = useState<any[]>([])
 
     // 장바구니
@@ -199,13 +192,11 @@ export default function MyPage() {
     const loadAllData = async (userId: number) => {
         try {
             await Promise.all([
-                fetchOrders(userId),
                 fetchAddresses(userId),
                 fetchPaymentMethods(),
-                fetchWishList(userId),
                 fetchFollowList(userId),
                 fetchStatsData(userId),
-                fetchMyReviews(userId),
+                fetchMyReviews(),
                 fetchCart(userId),
                 fetchQna(userId),
                 fetchProfileImage(userId),
@@ -230,29 +221,6 @@ export default function MyPage() {
         }
     }
 
-    const fetchOrders = async (id?: number) => {
-        if (!id) return
-
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/orders`, {
-                params: { lastOrderId: infiniteOrdersLastId, size: SIZE },
-                withCredentials: true,
-            })
-            
-            if (data.resultCode === '200') {
-                const orderList = data.data || []
-                setOrders(Array.isArray(orderList) ? orderList : [])
-            } else {
-                console.warn('주문 조회 실패:', data.msg)
-                alert(data.msg || '주문 내역을 불러오는데 실패했습니다.')
-                setOrders([])
-            }
-        } catch (error) {
-            console.error('주문 내역 조회 실패:', error)
-            setOrders([])
-        }
-    }
-
     const fetchCart = async (id?: number) => {
         if (!id) return
 
@@ -266,15 +234,9 @@ export default function MyPage() {
             // 기존 cart 저장
             setCart(list)
 
-            // 화면 렌더링용 infiniteCart에도 저장
-            setInfiniteCart(list)
-            setInfiniteCartLastId(list.length ? list[list.length - 1].cartId : null)
-            setInfiniteCartHasMore(false) // 장바구니는 일반적으로 페이징 안함
-
         } catch (error) {
             console.error('장바구니 목록 조회 실패:', error)
             setCart([])
-            setInfiniteCart([])
         }
     }
 
@@ -309,25 +271,6 @@ export default function MyPage() {
         } catch (error: any) {
             console.error('결제수단 조회 실패:', error)
             alert(error?.response?.data?.msg ?? '결제수단 조회 중 오류가 발생했습니다.')
-        }
-    }
-
-    const fetchWishList = async (id?: number) => {
-        if (!id) return
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/wishlist`, { withCredentials: true })
-
-            const list = Array.isArray(data.data) ? data.data : []
-
-            setWishList(list)             // 기존 state
-            setInfiniteWishList(list)     // 화면 렌더링용
-            setInfiniteWishLastId(list.length ? list[list.length - 1].wishlistId : null)
-            setInfiniteWishHasMore(false) // 기본적으로 페이지가 없다고 처리
-
-        } catch (error) {
-            console.error('위시 목록 조회 실패:', error)
-            setWishList([])
-            setInfiniteWishList([])
         }
     }
 
@@ -1050,7 +993,9 @@ export default function MyPage() {
 
             if (data.resultCode === '200') {
                 alert('위시리스트에서 삭제되었습니다.')
-                await fetchWishList(userData.id)
+                setInfiniteWishList(prev =>
+                    prev.filter(item => item.wishlistId !== wishlistId)
+                )
             } else {
                 alert(`삭제 실패: ${data.msg}`)
             }
@@ -1173,36 +1118,34 @@ export default function MyPage() {
     }
 
     const fetchInfiniteWishList = async (lastId: number | null) => {
+        if (infiniteWishLoading) return
+        if (!infiniteWishHasMore && lastId !== null) return
+
         setInfiniteWishLoading(true)
+
         try {
-            const res = await axios.get(`${API_BASE_URL}/wishlist/infinite`, {
-                params: {
-                    lastWishlistId: lastId ?? Number.MAX_SAFE_INTEGER,
-                    size: SIZE,
-                },
-                withCredentials: true,
-            })
+            const res = await axios.get(
+                `${API_BASE_URL}/wishlist/infinite`,
+                {
+                    params: { lastWishId: lastId, size: 10 },
+                    withCredentials: true
+                }
+            )
+
+            const newItems = res.data.data || []
+
+            // 뒤에 이어붙이기
+            setInfiniteWishList(prev => [...prev, ...newItems])
+
+            if (newItems.length > 0) {
+                setInfiniteWishLastId(newItems[newItems.length - 1].wishlistId)
+            }
+
+            // 다음 요청이 필요한지 체크
+            setInfiniteWishHasMore(newItems.length === 10)
             
-            const newWishList = res.data.data
-
-            if (newWishList.length < SIZE) {
-                setInfiniteWishHasMore(false)
-            }
-
-            setInfiniteWishList(prev => {
-                const merged = [...prev, ...newWishList]
-                const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(t => t.wishlistId === item.wishlistId)
-                )
-                return unique
-            })
-
-            if (newWishList.length > 0) {
-                setInfiniteWishLastId(newWishList[newWishList.length - 1].wishlistId)
-            }
-        } catch (error) {
-            console.error('위시리스트 로드 실패:', error)
+        } catch (e) {
+            console.error("무한스크롤 위시 실패:", e)
         } finally {
             setInfiniteWishLoading(false)
         }
@@ -1212,48 +1155,6 @@ export default function MyPage() {
         setInfiniteWishList([])
         setInfiniteWishHasMore(true)
         setInfiniteWishLastId(null)
-    }
-
-    const fetchInfiniteCart = async (lastId: number | null) => {
-        setInfiniteCartLoading(true)
-        try {
-            const res = await axios.get(`${API_BASE_URL}/cart/infinite`, {
-                params: {
-                    lastCartId: lastId ?? Number.MAX_SAFE_INTEGER,
-                    size: SIZE,
-                },
-                withCredentials: true,
-            })
-            
-            const newCart = res.data.data
-
-            if (newCart.length < SIZE) {
-                setInfiniteCartHasMore(false)
-            }
-
-            setInfiniteCart(prev => {
-                const merged = [...prev, ...newCart]
-                const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(t => t.cartId === item.cartId)
-                )
-                return unique
-            })
-
-            if (newCart.length > 0) {
-                setInfiniteCartLastId(newCart[newCart.length - 1].cartId)
-            }
-        } catch (error) {
-            console.error('장바구니 로드 실패:', error)
-        } finally {
-            setInfiniteCartLoading(false)
-        }
-    }
-
-    const resetInfiniteCart = () => {
-        setInfiniteCart([])
-        setInfiniteCartHasMore(true)
-        setInfiniteCartLastId(null)
     }
 
     useEffect(() => {
@@ -1268,8 +1169,6 @@ export default function MyPage() {
                     fetchInfiniteOrders(infiniteOrdersLastId)
                 } else if (activeTab === 'like' && activeSubTab === 'product' && !infiniteWishLoading && infiniteWishHasMore) {
                     fetchInfiniteWishList(infiniteWishLastId)
-                } else if (activeTab === 'cart' && !infiniteCartLoading && infiniteCartHasMore) {
-                    fetchInfiniteCart(infiniteCartLastId)
                 }
             }
         }
@@ -1290,9 +1189,6 @@ export default function MyPage() {
         infiniteWishLoading,
         infiniteWishHasMore,
         infiniteWishLastId,
-        infiniteCartLoading,
-        infiniteCartHasMore,
-        infiniteCartLastId
     ])
 
     useEffect(() => {
@@ -1302,9 +1198,6 @@ export default function MyPage() {
         } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
             resetInfiniteWishList()
             fetchInfiniteWishList(null)
-        } else if (activeTab === 'cart' && infiniteCart.length === 0) {
-            resetInfiniteCart()
-            fetchInfiniteCart(null)
         }
     }, [activeTab, activeSubTab])
 
@@ -1317,7 +1210,7 @@ export default function MyPage() {
         }
 
         // 선택된 cartId → productId + quantity 로 변환
-        const selected = infiniteCart
+        const selected = cart
             .filter(item => selectedItems.includes(item.cartId))
             .map(item => ({
                 productId: item.productId,
@@ -1475,7 +1368,7 @@ export default function MyPage() {
     const firstSelectedCartId = selectedItems[0]
 
     // 첫번째 상품 데이터
-    const firstSelectedItem = infiniteCart.find(
+    const firstSelectedItem = cart.find(
         item => item.cartId === firstSelectedCartId
     )
 
@@ -1787,7 +1680,7 @@ export default function MyPage() {
                                 <h2>장바구니</h2>
                             </div>
 
-                            {infiniteCart.length === 0 ? (
+                            {cart.length === 0 ? (
                                 <div className="empty-state">
                                     <div className="empty-state-icon">🛒</div>
                                     <p>장바구니에 담은 상품이 없습니다.</p>
@@ -1803,7 +1696,7 @@ export default function MyPage() {
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={selectedItems.length === infiniteCart.length && infiniteCart.length > 0}
+                                                    checked={selectedItems.length === cart.length && cart.length > 0}
                                                     onChange={handleToggleSelectAll}
                                                 />
                                                 전체 선택
@@ -1823,7 +1716,7 @@ export default function MyPage() {
 
                                     {/* 장바구니 목록 */}
                                     <div className="cart-list">
-                                        {infiniteCart.map((item) => (
+                                        {cart.map((item) => (
                                             <div key={item.cartId} className="cart-product">
                                                 <div className="cart-checkbox">
                                                     <input
@@ -1904,7 +1797,7 @@ export default function MyPage() {
                                                 <span className="summary-value">
                                                     {selectedItems.length === 0
                                                         ? 0
-                                                        : infiniteCart
+                                                        : cart
                                                             .filter(item => selectedItems.includes(item.cartId))
                                                             .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
                                                             .toLocaleString()}원
@@ -1921,8 +1814,6 @@ export default function MyPage() {
                                     </div>
                                 </>
                             )}
-                            {infiniteCartLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteCartHasMore && infiniteCart.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                         </div>
                     )}
 
