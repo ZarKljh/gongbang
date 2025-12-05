@@ -84,4 +84,42 @@ ORDER BY AVG(r.rating) DESC, COUNT(r.reviewId) DESC
 """)
     List<ReviewPopularProductResponse> findPopularReviewProducts();
 
+    /// 명확한 정렬 기준 선언 (별점 필터)
+    @Query(
+            value = """
+        SELECT r FROM Review r
+        WHERE r.productId = :productId
+          AND r.rating = :rating
+          AND r.isActive = true
+        """,
+            countQuery = """
+        SELECT COUNT(r) FROM Review r
+        WHERE r.productId = :productId
+          AND r.rating = :rating
+          AND r.isActive = true
+        """
+    )
+    Page<Review> findRatingFiltered(
+            @Param("productId") Long productId,
+            @Param("rating") Integer rating,
+            Pageable pageable);
+
+
+    // productId 없는 경우
+    @Query(
+            value = """
+        SELECT r FROM Review r
+        WHERE r.rating = :rating
+          AND r.isActive = true
+        """,
+            countQuery = """
+        SELECT COUNT(r) FROM Review r
+        WHERE r.rating = :rating
+          AND r.isActive = true
+        """
+    )
+    Page<Review> findRatingFilteredGlobal(
+            @Param("rating") Integer rating,
+            Pageable pageable);
+
 }

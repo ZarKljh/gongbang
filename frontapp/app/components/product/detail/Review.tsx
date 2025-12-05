@@ -55,6 +55,18 @@ export default function Review() {
     // 수정 버튼 클릭시 상태 변화 감지
     const editTextareaRef = useRef<HTMLTextAreaElement | null>(null)
 
+    // 별점 필터
+    const [ratingFilter, setRatingFilter] = useState<number | null>(null)
+    // 별점 옵션
+    const RATING_OPTIONS = [
+        { value: null, label: '전체' },
+        { value: 5, label: '★ 5점' },
+        { value: 4, label: '★ 4점' },
+        { value: 3, label: '★ 3점' },
+        { value: 2, label: '★ 2점' },
+        { value: 1, label: '★ 1점' },
+    ]
+
     const router = useRouter()
 
     // searchParams 감지해서 productId 채우기 (하나로 통합)
@@ -107,12 +119,12 @@ export default function Review() {
     }, [])
 
     // 리뷰 목록 조회
-    const fetchReviews = async (productId: number, page = 0, sort: string) => {
+    const fetchReviews = async (productId: number, page = 0, sort: string, ratingFilter: number | null) => {
         try {
             const res = await fetch(
-                `http://localhost:8090/api/v1/reviews?productId=${productId}&page=${page}&sort=${sort}&keyword=${encodeURIComponent(
-                    keyword,
-                )}`,
+                `http://localhost:8090/api/v1/reviews?productId=${productId}&page=${page}&sort=${sort}&rating=${
+                    ratingFilter ?? ''
+                }`,
                 {
                     method: 'GET',
                     credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
@@ -151,17 +163,12 @@ export default function Review() {
         startPage = Math.max(0, endPage - maxPageButtons)
     }
 
-    // productId / currentPage / sortType 바뀔 때마다 리뷰 재조회
+    // productId / currentPage / sortType / ratingFilter 바뀔 때마다 리뷰 재조회
     useEffect(() => {
         if (!productId) return
-        fetchReviews(productId, currentPage, sortType)
+        fetchReviews(productId, currentPage, sortType, ratingFilter)
         fetchLikedReviews(productId)
-    }, [productId, currentPage, sortType])
-
-    // 페이지 버튼 클릭 시 상단 이동
-    // const scrollToTop = () => {
-    //     reviewTopRef.current?.scrollIntoView({ behavior: 'smooth' })
-    // }
+    }, [productId, currentPage, sortType, ratingFilter])
 
     const scrollToTop = () => {
         const top = reviewTopRef.current?.offsetTop
@@ -394,6 +401,8 @@ export default function Review() {
         })
         if (!res.ok) return
         const data = await res.json()
+
+        const list: number[] = Array.isArray(data.data) ? data.data : []
 
         const likedState: Record<number, boolean> = {}
         data.data.forEach((reviewId: number) => {
@@ -745,6 +754,23 @@ export default function Review() {
                                 검색
                             </button>
                         </div> */}
+                        <div className="review-sort-right">
+                            <select className='review-rating-select'
+                                value={ratingFilter ?? ''}
+                                onChange={(e) => {
+                                    const v = e.target.value ? Number(e.target.value) : null
+                                    setRatingFilter(v)
+                                    setCurrentPage(0) // 필터 바뀌면 0페이지부터
+                                }}
+                            >
+                                <option value="">전체</option>
+                                <option value="5">5점</option>
+                                <option value="4">4점</option>
+                                <option value="3">3점</option>
+                                <option value="2">2점</option>
+                                <option value="1">1점</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="review-list">

@@ -295,14 +295,14 @@
 
 
 /* 검색창 */
-.review-search-input {
+/* .review-search-input {
     padding: 8px 16px;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 14px;
-}
+} */
 
-.review-search-btn {
+/* .review-search-btn {
     background-color: #ad9263;
     background-color: #DAC0A3;
     color: white;
@@ -318,11 +318,29 @@
     background-color: #DAC0A3;
     background-color: rgba(177, 116, 87, 0.63);
     transition: all 0.3s ease;
-}
+} */
 /* 정렬 + 검색 바 끝*/
 
-/* 리뷰 리스트 */
+.review-rating-select {
+    padding: 8px 16px;
+    border-radius: 16px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    font-size: 13px;
+    color: #444;
+    cursor: pointer;
+    outline: none;
+    appearance: none;          /* 기본 select 화살표 최소화 */
+    -moz-appearance: none;
+    -webkit-appearance: none;
+}
 
+/* select hover */
+.review-rating-select:hover {
+    border-color: #bbb;
+}
+
+/* 리뷰 리스트 */
 
 .review-title {
     font-weight: 700;
