@@ -283,9 +283,9 @@ export default function ProductDetailView() {
         }
     }
 
-    // React Query mutation 훅
+    // React Query mutation usePrepareOrder 훅
     const { mutateAsync: prepareOrderMutation } = usePrepareOrder()
-    // React Query mutation 훅
+    // React Query mutation useBuyBtn 훅
     const { mutateAsync: buyBtnMutation } = useBuyBtn()
 
     const handleRequestPayment = async () => {
@@ -344,22 +344,27 @@ export default function ProductDetailView() {
 
             console.log('status = ', e?.response?.status)
             console.log('data   = ', e?.response?.data)
-            const error = e?.response?.data
+            const error = e?.response?.data?.error // ✅ 여기!
 
             //기본 배송지 없음
-            if (error?.code === 'NO_DEFAULT_ADDRESS') {
-                alert(error.message)
-                router.push('/mypage/address')
+            if (error?.code === 'A001') {
+                const result = window.confirm('기본 배송지가 설정되어 있지 않습니다.\n 배송 등록 페이지로 이동할까요?')
+
+                if (result) {
+                    router.push('/personal?tab=addresses')
+                }
                 return
             }
 
             // 로그인 안 되어 있음
-            if (e?.response?.status === 401) {
-                alert('로그인이 필요한 서비스입니다.')
-                router.push('/auth/login')
-                return
-            }
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
 
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return // confirm 후에는 실행 중단
+            }
             alert(error?.message || '기본 배송지가 설정되어 있지 않습니다2.')
         }
     }

@@ -19,12 +19,10 @@ import com.gobang.gobang.global.exception.CustomException;
 import com.gobang.gobang.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -184,7 +182,8 @@ public class ProductController {
     ) {
         if (user == null) {
             // 방법 1: 예외 던지기
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+            //throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+            throw new CustomException(ErrorCode.LOGIN_INPUT_INVALID);
         }
 
         // 2) SecurityUser → SiteUser 조회
