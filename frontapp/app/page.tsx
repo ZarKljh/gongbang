@@ -83,7 +83,7 @@ export default function Main() {
             {/* 배너 */}
             <div className={styles.pageContainer}>
                 <div className={styles.heroBanner}>
-                    <img src="http://localhost:8090/uploads/sogum.jfif" alt="메인 배너" />
+                    <img src="http://localhost:8090/uploads/banner3.png" alt="메인 배너" />
                 </div>
             </div>
             {/* 카테고리 */}
