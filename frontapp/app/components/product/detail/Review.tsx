@@ -727,7 +727,7 @@ export default function Review() {
                         </div>
 
                         {/* 검색 */}
-                        <div className="search" style={{ display: 'flex', alignItems: 'center' }}>
+                        {/* <div className="search" style={{ display: 'flex', alignItems: 'center' }}>
                             <input
                                 type="text"
                                 className="review-search-input"
@@ -744,7 +744,7 @@ export default function Review() {
                             <button className="review-search-btn" onClick={handleSearch}>
                                 검색
                             </button>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="review-list">
