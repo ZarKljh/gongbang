@@ -227,7 +227,9 @@ export default function Product() {
                                 // ❗ 여기가 핵심: 절대경로 보정
                                 imageUrl: img.imageUrl.startsWith('http') ? img.imageUrl : `${BASE_URL}${img.imageUrl}`,
                             })) ?? []
+
                         const review = reviewMapList?.[p.id] ?? null
+
                         return {
                             ...p,
                             images,
