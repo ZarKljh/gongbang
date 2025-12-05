@@ -11,7 +11,6 @@ import 'swiper/css/navigation'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
 
-
 export default function Review() {
     // ================= 리뷰 =================
     const [reviews, setReviews] = useState([])
@@ -276,15 +275,7 @@ export default function Review() {
                 if (res.ok) {
                     const counts = data.data
 
-                    const total = Object.values(counts).reduce((a: number, b: number) => a + b, 0)
-
-                    // 퍼센트로 변환
-                    const percentData: Record<number, number> = {}
-                    for (let i = 1; i <= 5; i++) {
-                        percentData[i] = total === 0 ? 0 : Math.round((counts[i] / total) * 100)
-                    }
-
-                    setRatingData(percentData)
+                    setRatingData(counts)
                 }
             } catch (err) {
                 console.error('별점 분포 불러오기 실패:', err)
@@ -292,6 +283,7 @@ export default function Review() {
         }
 
         fetchRatingGroup()
+        const totalCount = Object.values(ratingData).reduce((a: number, b: number) => a + b, 0)
     }, [productId])
 
     // 정렬 요청
@@ -556,7 +548,7 @@ export default function Review() {
                     <div className="review-banner">
                         {/* <h2>생생한 리뷰를 기다리고 있어요!</h2> */}
                         {/* <p>사진과 함께 리뷰를 남겨주시면 다른 분들께 큰 도움이 됩니다</p> */}
-                        <img className="review-banner-img" src='/images/리뷰_배너2.png' alt="배너 이미지" />
+                        <img className="review-banner-img" src="/images/리뷰_배너2.png" alt="배너 이미지" />
                     </div>
 
                     {/* 제목 + 버튼 */}
@@ -690,7 +682,10 @@ export default function Review() {
                         <div className="review-average-graph">
                             {['5', '4', '3', '2', '1'].map((label, i) => {
                                 const score = 5 - i
-                                const percent = ratingData[score] || 0
+                                const count = ratingData[score] || 0
+
+                                // width: 전체 대비 비율
+                                const width = totalCount === 0 ? 0 : Math.round((count / totalCount) * 100)
 
                                 return (
                                     <div className="review-graph-row" key={label}>
@@ -699,9 +694,11 @@ export default function Review() {
                                             {label}
                                         </span>
                                         <div className="review-graph-bar-bg">
-                                            <div className="review-graph-bar-fill" style={{ width: `${percent}%` }} />
+                                            <div className="review-graph-bar-fill" style={{ width: `${width}%` }} />
                                         </div>
-                                        <span className="review-graph-percent">{percent}%</span>
+
+                                        {/* 표시 부분: count 개 */}
+                                        <span className="review-graph-percent">{count}</span>
                                     </div>
                                 )
                             })}
@@ -805,10 +802,10 @@ export default function Review() {
 
                                                 {(Number(currentUserId) === Number(review.userId) ||
                                                     roleType === 'ADMIN') && (
-                                                        <button
+                                                    <button
                                                         className="review-delete-btn"
                                                         onClick={() => handleDeleteClick(review.reviewId)}
-                                                        >
+                                                    >
                                                         삭제
                                                     </button>
                                                 )}
