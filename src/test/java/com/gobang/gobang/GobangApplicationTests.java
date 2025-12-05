@@ -33,6 +33,133 @@ class GobangApplicationTests {
     // 테스트 데이터를 돌리기 전 아래 sql문 실행해야합니다.
     // ALTER TABLE tbl_review DROP CONSTRAINT IF EXISTS tbl_review_order_item_id_key;
 
+    // 1~180번 상품 50개 이하 랜덤 리뷰 데이터 생성
+    //
+    @Test
+    void initReviewTestData() {
+
+        System.out.println("🔶 테스트 리뷰 데이터 생성 시작!");
+
+        // 1) 유저 로드
+        List<SiteUser> users = siteUserRepository.findByRole(RoleType.USER);
+
+        if (users.size() < 150) {
+            throw new RuntimeException("리뷰 생성에 필요한 유저가 150명 이상 존재해야 합니다.");
+        }
+
+        users = users.subList(0, 150);
+        System.out.println("✔ 유저 " + users.size() + "명 로드 완료");
+
+        // 2) 이미지 목록
+        String[] catImages = {
+                "/uploads/reviews/공방1.jfif",
+                "/uploads/reviews/공방2.jfif",
+                "/uploads/reviews/공방3.jfif",
+                "/uploads/reviews/공방4.jfif",
+                "/uploads/reviews/공방5.jfif",
+                "/uploads/reviews/공방6.jfif"
+        };
+
+        // 긴 텍스트
+        String longText = "이 제품은 정말 만족스러웠습니다. 디자인도 고급스럽고 사용감도 훌륭했습니다. "
+                + "특히 포장 상태가 매우 좋았으며 배송도 예상보다 빨랐습니다. "
+                + "선물용으로도 손색이 없을 만큼 품질이 좋아서 너무 만족스러웠어요. "
+                + "앞으로도 재구매 의사가 있고 주변에도 추천할 예정입니다.";
+
+        int userIndex = 0;
+
+        // -------------------------------
+        // 100~150개 생성할 상품 ID
+        // -------------------------------
+        Set<Long> heavyProducts = Set.of(
+                1L, 3L, 5L, 10L, 15L, 20L, 25L, 30L, 35L, 40L
+        );
+
+        System.out.println("▶ 100~150 리뷰 생성될 상품 ID: " + heavyProducts);
+
+        // -------------------------------
+        // 3) 1~180번 상품 리뷰 생성
+        // -------------------------------
+        for (long productId = 1; productId <= 180; productId++) {
+
+            // 32, 75번 제외
+            if (productId == 32 || productId == 75) continue;
+
+            int reviewCount;
+
+            // 대량 리뷰 상품
+            if (heavyProducts.contains(productId)) {
+                reviewCount = 100 + (int)(Math.random() * 51); // 100~150
+            } else {
+                reviewCount = 1 + (int)(Math.random() * 50); // 1~50
+            }
+
+            System.out.println(" productId=" + productId + " 리뷰 생성 시작 (" + reviewCount + "개)");
+
+            for (int i = 1; i <= reviewCount; i++) {
+
+                SiteUser writer = users.get(userIndex % users.size());
+                userIndex++;
+
+                String content = (i % 10 == 0)
+                        ? longText
+                        : "이 상품 정말 만족합니다! 테스트 리뷰 " + i;
+
+                // 평점 랜덤 (4점대 비율 높게)
+                double r = Math.random();
+                int rating;
+
+                if (r < 0.05) rating = 1;
+                else if (r < 0.10) rating = 2;
+                else if (r < 0.15) rating = 3;
+                else if (r < 0.45) rating = 4;
+                else rating = 5;
+
+                int viewCount = (int)(Math.random() * 20);
+                int likeCount = (int)(Math.random() * 10);
+
+                // 리뷰 저장
+                Review review = Review.builder()
+                        .orderId(productId * 1000 + i)
+                        .orderItemId(productId * 2000 + i)
+                        .productId(productId)
+                        .siteUser(writer)
+                        .rating(rating)
+                        .content(content)
+                        .reviewLike(likeCount)
+                        .viewCount(viewCount)
+                        .createdBy(writer.getNickName())
+                        .createdDate(LocalDateTime.now())
+                        .modifiedDate(LocalDateTime.now())
+                        .isActive(true)
+                        .build();
+
+                Review savedReview = reviewRepository.save(review);
+
+                // 이미지 60% 확률
+                if (Math.random() < 0.6) {
+
+                    int imgIndex = (i + (int)productId) % catImages.length;
+
+                    String imgUrl = catImages[imgIndex];
+                    String fileName = imgUrl.substring(imgUrl.lastIndexOf("/") + 1);
+
+                    Image img = Image.builder()
+                            .refType(Image.RefType.REVIEW)
+                            .refId(savedReview.getReviewId())
+                            .imageUrl(imgUrl)
+                            .imageFileName(fileName)
+                            .sortOrder(0)
+                            .build();
+
+                    imageRepository.save(img);
+                }
+            }
+        }
+
+        System.out.println("🎉 리뷰 + 이미지 생성 완료!");
+    }
+
     // 32번 상품 스마일 뱃지(->키링 변경) 테스트 리뷰 데이터
     @Test
     public void initProduct32Reviews() {
@@ -391,49 +518,6 @@ class GobangApplicationTests {
         }
 
         System.out.println("🎉 productId=75 랜덤 포토 리뷰 포함 24개 생성 완료!");
-    }
-
-
-    // 1~180 상품 모두 랜덤 갯수의 리뷰 생성
-    @Test
-    public void generateRandomReviewSQL() {
-
-        String[] contents = {
-                "너무 좋아요!", "만족합니다.", "퀄리티 최고예요.", "선물용으로 샀어요.",
-                "배송 빨라요.", "귀여워요!", "강추합니다.", "실물이 더 예쁨",
-                "가격 대비 좋아요.", "재구매 의사 100%"
-        };
-
-        Random random = new Random();
-
-        System.out.println("------ SQL 생성 시작 ------");
-
-        for (int productId = 1; productId <= 180; productId++) {
-
-            int reviewCount = random.nextInt(100) + 1;  // 1 ~ 100개 랜덤
-
-            for (int idx = 1; idx <= reviewCount; idx++) {
-
-                int rating = (random.nextDouble() < 0.8) ? 5 : 4;  // 별점 높게
-                int userId = 101 + random.nextInt(100); // 101~200 랜덤 유저
-
-                String content = contents[random.nextInt(contents.length)];
-
-                long orderId = productId * 1000 + idx;
-                long orderItemId = productId * 2000 + idx;
-
-                String sql = String.format(
-                        "INSERT INTO tbl_review (order_id, order_item_id, product_id, user_id, rating, content, review_like, view_count, created_by, created_date, modified_date, is_active) " +
-                                "VALUES (%d, %d, %d, %d, %d, '%s', %d, %d, 'system', NOW(), NOW(), true);",
-                        orderId, orderItemId, productId, userId, rating, content,
-                        random.nextInt(20), random.nextInt(50)
-                );
-
-                System.out.println(sql);
-            }
-        }
-
-        System.out.println("------ SQL 생성 완료 ------");
     }
 
     // 테스트 돌리면 로그인 상태.
