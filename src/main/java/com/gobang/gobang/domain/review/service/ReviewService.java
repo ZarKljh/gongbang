@@ -352,4 +352,18 @@ public class ReviewService {
         Collections.shuffle(list);
         return list.size() > 10 ? list.subList(0, 10) : list;
     }
+
+    public List<ReviewResponse> getInfiniteReviews(Long userId, Long lastId, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        List<Review> reviews = reviewRepository.findInfiniteReviews(
+                userId,
+                lastId,
+                pageable
+        );
+
+        return reviews.stream()
+                .map(review -> ReviewResponse.fromEntity(review, imageRepository))
+                .toList();
+    }
 }

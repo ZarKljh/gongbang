@@ -44,6 +44,15 @@ interface CartItem {
   productId: number
 }
 
+interface ReviewItem {
+  reviewId: number
+  content: string
+  rating: number
+  images: string[]
+  productName: string
+  createdDate: string
+}
+
 export default function MyPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -74,6 +83,11 @@ export default function MyPage() {
     const [infiniteWishLoading, setInfiniteWishLoading] = useState(false)
     const [infiniteWishHasMore, setInfiniteWishHasMore] = useState(true)
     const [infiniteWishLastId, setInfiniteWishLastId] = useState<number | null>(null)
+
+    const [infiniteReviews, setInfiniteReviews] = useState<ReviewItem[]>([])
+    const [infiniteReviewLoading, setInfiniteReviewLoading] = useState(false)
+    const [infiniteReviewHasMore, setInfiniteReviewHasMore] = useState(true)
+    const [infiniteReviewLastId, setInfiniteReviewLastId] = useState<number | null>(null)
 
     const SIZE = 10
 
@@ -120,7 +134,6 @@ export default function MyPage() {
     const [defaultPayment, setDefaultPayment] = useState(false)
 
     // 리뷰
-    const [myReviews, setMyReviews] = useState<any[]>([])
     const [isEditReviewModal, setIsEditReviewModal] = useState(false)
     const [isDeleteReviewModal, setIsDeleteReviewModal] = useState(false)
     const [editReview, setEditReview] = useState<any>(null)
@@ -130,7 +143,6 @@ export default function MyPage() {
     const [reviewImageCache, setReviewImageCache] = useState<Record<number, string[]>>({})
 
     // 위시리스트/팔로우
-    const [wishlist, setWishlist] = useState<any[]>([])
     const [followList, setFollowList] = useState<any[]>([])
 
     // 장바구니
@@ -196,7 +208,6 @@ export default function MyPage() {
                 fetchPaymentMethods(),
                 fetchFollowList(userId),
                 fetchStatsData(userId),
-                fetchMyReviews(),
                 fetchCart(userId),
                 fetchQna(userId),
                 fetchProfileImage(userId),
@@ -302,46 +313,6 @@ export default function MyPage() {
         } catch (error) {
             console.error('통계 조회 실패:', error)
             setStats({ totalQna: 0, totalReviews: 0 })
-        }
-    }
-
-    const fetchMyReviews = async () => {
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/reviews`, { withCredentials: true })
-            const list = data.data || []
-
-            setReviewImageCache(prevCache => {
-                // 캐시 복사
-                const nextCache = { ...prevCache }
-
-                // 서버에서 이미지 있으면 캐시에 저장
-                list.forEach(r => {
-                    if (r.images?.length > 0) {
-                        nextCache[r.reviewId] = r.images
-                    }
-                })
-
-                // mergedReviews 만들 때는 **nextCache**를 사용해야 한다!!
-                const mergedReviews = list.map(r => ({
-                    ...r,
-                    images:
-                        r.images?.length > 0
-                            ? r.images
-                            : (nextCache[r.reviewId] ?? [])
-                }))
-
-                // 리뷰 리스트 업데이트
-                setMyReviews(mergedReviews)
-
-                return nextCache
-            })
-
-            setStats(prev => ({
-                ...prev,
-                totalReviews: list.length,
-            }))
-        } catch (error) {
-            console.error("리뷰 조회 실패:", error)
         }
     }
 
@@ -906,7 +877,18 @@ export default function MyPage() {
 
             if (data.resultCode === '200') {
                 alert('리뷰가 수정되었습니다.')
-                await fetchMyReviews()
+                setInfiniteReviews(prev =>
+                    prev.map(r =>
+                        r.reviewId === editReview.reviewId
+                            ? {
+                                ...r,
+                                rating: editReviewRating,
+                                content: editReviewContent,
+                                modifiedDate: new Date().toISOString(),
+                            }
+                            : r
+                    )
+                )
                 handleCloseModal()
             } else {
                 alert(`수정 실패: ${data.msg}`)
@@ -927,7 +909,9 @@ export default function MyPage() {
 
             if (data.resultCode === '200') {
                 alert('리뷰가 삭제되었습니다.')
-                await fetchMyReviews()
+                setInfiniteReviews(prev =>
+                    prev.filter(r => r.reviewId !== reviewToDelete.reviewId)
+                )
                 handleCloseModal()
             } else {
                 alert(`삭제 실패: ${data.msg}`)
@@ -1016,13 +1000,6 @@ export default function MyPage() {
 
             const newQty = data.data.quantity
 
-            setInfiniteCart(prev =>
-                prev.map(item =>
-                    item.cartId === cartId
-                        ? { ...item, quantity: newQty }
-                        : item
-                )
-            )
         } catch (error) {
             console.error('장바구니 수량 수정 실패:', error)
             alert('수량 수정에 실패했습니다.')
@@ -1032,8 +1009,6 @@ export default function MyPage() {
     const handleDeleteCart = async (cartId: number) => {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
-
-            setInfiniteCart(prev => prev.filter(item => item.cartId !== cartId))
 
             setSelectedItems(prev => prev.filter(id => id !== cartId))
         } catch (error) {
@@ -1157,6 +1132,59 @@ export default function MyPage() {
         setInfiniteWishLastId(null)
     }
 
+    const fetchInfiniteReviews = async (lastId: number | null) => {
+        if (infiniteReviewLoading) return
+        if (!infiniteReviewHasMore && lastId !== null) return
+
+        setInfiniteReviewLoading(true)
+
+        try {
+            const res = await axios.get(`${API_BASE_URL}/reviews/infinite`, {
+                params: { lastReviewId: lastId, size: 10 },
+                withCredentials: true
+            })
+
+            const newItems = res.data.data || []
+
+            // 1) 더 이상 데이터 없음 → 종료
+            if (newItems.length === 0) {
+                setInfiniteReviewHasMore(false)
+                return
+            }
+
+            // 2) 마지막 ID 동일하면 종료
+            const newLastId = newItems[newItems.length - 1].reviewId
+            if (newLastId === infiniteReviewLastId) {
+                setInfiniteReviewHasMore(false)
+                return
+            }
+
+            // 3) 중복 제거 후 append
+            setInfiniteReviews(prev => {
+                const merged = [...prev, ...newItems]
+
+                // reviewId 기준 unique
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(r => r.reviewId === item.reviewId)
+                )
+
+                return unique
+            })
+
+            // 4) lastId 업데이트
+            setInfiniteReviewLastId(newLastId)
+
+            // 5) 다음 페이지 필요 여부
+            setInfiniteReviewHasMore(newItems.length === 10)
+
+        } catch (e) {
+            console.error("리뷰 무한스크롤 실패:", e)
+        } finally {
+            setInfiniteReviewLoading(false)
+        }
+    }
+
     useEffect(() => {
         const handleScroll = () => {
             const scrollTop = window.scrollY
@@ -1169,6 +1197,8 @@ export default function MyPage() {
                     fetchInfiniteOrders(infiniteOrdersLastId)
                 } else if (activeTab === 'like' && activeSubTab === 'product' && !infiniteWishLoading && infiniteWishHasMore) {
                     fetchInfiniteWishList(infiniteWishLastId)
+                } else if (activeTab === 'reviews' && !infiniteReviewLoading && infiniteReviewHasMore) {
+                    fetchInfiniteReviews(infiniteReviewLastId)
                 }
             }
         }
@@ -1189,6 +1219,9 @@ export default function MyPage() {
         infiniteWishLoading,
         infiniteWishHasMore,
         infiniteWishLastId,
+        infiniteReviewLoading,
+        infiniteReviewHasMore,
+        infiniteReviewLastId,
     ])
 
     useEffect(() => {
@@ -1198,6 +1231,11 @@ export default function MyPage() {
         } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
             resetInfiniteWishList()
             fetchInfiniteWishList(null)
+        } else if (activeTab === 'reviews' && infiniteReviews.length === 0) {
+            setInfiniteReviews([])
+            setInfiniteReviewHasMore(true)
+            setInfiniteReviewLastId(null)
+            fetchInfiniteReviews(null)
         }
     }, [activeTab, activeSubTab])
 
@@ -1611,7 +1649,7 @@ export default function MyPage() {
                                 ))
                             )}
                             {infiniteOrdersLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
+                            {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>-</p>}
                         </div>
                     )}
 
@@ -1653,7 +1691,7 @@ export default function MyPage() {
                                         return (
                                             <div key={order.orderId} className="order-card">
 
-                                                {/* --- 주문 요약 --- */}
+                                                {/* 주문 요약 */}
                                                 <div
                                                     className="order-header"
                                                     onClick={() => router.push(`/personal/${order.orderId}`)}
@@ -2115,7 +2153,7 @@ export default function MyPage() {
                                         </div>
                                     )}
                                     {infiniteWishLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
+                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>-</p>}
                                 </div>
                             )}
 
@@ -2163,11 +2201,11 @@ export default function MyPage() {
                                 <h2>상품 리뷰</h2>
                             </div>
 
-                            {myReviews.length === 0 ? (
+                            {infiniteReviews.length === 0 ? (
                                 <div className="empty-state">작성한 리뷰가 없습니다.</div>
                             ) : (
                                 <div className="my-review-list">
-                                    {myReviews.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()).map((review) => (
+                                    {infiniteReviews.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()).map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
                                                 <Link href={`http://localhost:3000/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
@@ -2212,6 +2250,8 @@ export default function MyPage() {
                                     ))}
                                 </div>
                             )}
+                            {infiniteReviewLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
+                            {!infiniteReviewHasMore && infiniteReviews.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>-</p>}
                         </div>
                     )}
 
