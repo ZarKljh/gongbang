@@ -424,7 +424,9 @@ export default function ProductDetailView() {
                     {sellerinfo && (
                         <div className={styles.creatorBox}>
                             <div className={styles.creatorLeft}>
-                                <img className={styles.creatorProfile} src={gbImageUrl} alt="프로필" />
+                                <Link href={`/seller/studio/${sellerinfo.studioId}`}>
+                                    <img className={styles.creatorProfile} src={gbImageUrl} alt="프로필" />
+                                </Link>
                                 <div className={styles.creatorInfo}>
                                     <div className={styles.creatorName}>{sellerinfo.studioName}</div>
                                     <div className={styles.creatorActions}>
@@ -439,7 +441,7 @@ export default function ProductDetailView() {
                                             {isFollowed ? '언팔로우' : '+ 팔로우'}
                                         </button>
                                         <Link href={`/seller/studio/${sellerinfo.studioId}`} className={styles.btnHome}>
-                                            작가홈
+                                            공방이동
                                         </Link>
                                     </div>
                                 </div>

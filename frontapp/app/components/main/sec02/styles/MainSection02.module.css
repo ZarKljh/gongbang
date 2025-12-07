@@ -135,7 +135,7 @@
 /* 반응형 */
 @media (max-width: 1024px) {
     .productItem {
-        flex: 0 0 200px;
+        flex: 0 0 300px;
     }
     .productCard {
         height: 170px;
@@ -147,18 +147,55 @@
         font-size: 20px;
     }
     .productItem {
-        flex: 0 0 160px;
+        flex: 0 0 250px;
     }
     .productCard {
         height: 150px;
     }
 }
-
+/* 📱 480px 이하 모바일 반응형 */
 @media (max-width: 480px) {
-    .productItem {
-        flex: 0 0 140px;
+    .sectionBox {
+        max-width: 100%;
+        margin: 0 auto 24px;
+        padding: 0 16px; /* 좌우 여백 줘서 꽉 차보이지 않게 */
+        gap: 12px;
     }
+
+    .header {
+        align-items: flex-end; /* 타이틀과 버튼 라인 맞추기 */
+    }
+
+    .sectionTitle {
+        font-size: 18px; /* 모바일에서 조금 작게 */
+    }
+
+    .controls {
+        gap: 4px;
+    }
+
+    .navBtn {
+        padding: 4px 8px;
+        font-size: 12px; /* 버튼도 살짝 줄이기 */
+    }
+
+    .track {
+        gap: 12px; /* 카드 간격 살짝 축소 */
+    }
+
+    .productItem {
+        flex: 0 0 200px; /* 한 화면에 1.5~2개 정도 보이도록 */
+    }
+
     .productCard {
-        height: 130px;
+        height: 160px; /* 카드 세로 길이 조금 줄이기 */
+    }
+
+    .productTitle {
+        font-size: 13px;
+    }
+
+    .productPrice {
+        font-size: 16px;
     }
 }

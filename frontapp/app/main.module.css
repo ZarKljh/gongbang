@@ -37,20 +37,13 @@
 
 .slider {
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    justify-content: center; /* 🔥 핵심 */
+    gap: 12px; /* 버튼 사이 적당한 간격 */
     padding: 1rem 0;
     width: 100%;
     align-items: center;
     justify-content: center;
-
-    display: flex;
-    align-items: center;
-    justify-content: center; /* 🔥 핵심 */
-    gap: 12px; /* 버튼 사이 적당한 간격 */
-
-    /* background-color: #f9f9f9; */
-    /* margin: 0 auto;
-    max-width: 1280px; */
 }
 
 .sliderPrev,
@@ -138,89 +131,108 @@
     color: #6b5642;
 }
 
-.headerNav {
-}
-
-.navList {
-    display: flex;
-    gap: 16px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.navItem a {
-    text-decoration: none;
-    color: #000;
-    font-weight: 500;
-}
-
-/* ---------------- 2차 카테고리 ---------------- */
-.categoryContainer {
-    display: flex;
-    justify-content: center; /* 가운데 정렬 */
-    align-items: flex-start;
-    gap: 40px;
-    padding: 20px;
-    background-color: #f9f9f9;
-}
-
-.categoryList2 {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    min-width: 150px;
-}
-
-.categoryTitle {
-    display: block;
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 8px;
-    color: #6b5642;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 4px;
-}
-
-.subcategoryList {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.subcategoryList li {
-    margin-bottom: 6px;
-}
-
-.subcategoryList a {
-    text-decoration: none;
-    color: #8a7661;
-    font-size: 16px;
-}
-
-.subcategoryList a:hover {
-    color: #745f45;
-}
-
 body {
     /* background-color: #f7f3eb; */
 }
 
+/* ===========================
+   📱 1024px 이하 (태블릿 가로)
+   =========================== */
+@media (max-width: 1024px) {
+    .pageContainer {
+        padding: 8px 16px;
+    }
+
+    .heroBanner {
+        height: auto; /* 고정 높이 대신 이미지가 조절되도록 */
+    }
+
+    .heroBanner img {
+        height: clamp(240px, 35vw, 420px); /* 너무 크지 않게 조절 */
+    }
+
+    .mainPage {
+        max-width: 100%;
+        padding: 0 16px;
+    }
+
+    .categoryList {
+        gap: 1.5rem;
+    }
+}
+
+/* ===========================
+   📱 768px 이하 (태블릿 세로 / 작은 화면)
+   =========================== */
 @media (max-width: 768px) {
+    .pageContainer {
+        padding: 8px 12px;
+    }
+
+    .heroBanner img {
+        border-radius: 12px;
+    }
+
     .slider {
-        justify-content: flex-start;
+        justify-content: flex-start; /* 왼쪽 정렬로 자연스럽게 */
         padding: 0.5rem 0;
+    }
+
+    /* 모바일에서는 버튼 없이 스와이프로 넘기기 */
+    .sliderPrev,
+    .sliderNext {
+        display: none;
     }
 
     .categoryList {
         justify-content: flex-start;
         gap: 1rem;
-        overflow-x: auto; /* 가로 스크롤 */
-        padding-bottom: 6px;
+        overflow-x: auto; /* 가로 스크롤 가능하게 */
+        padding: 0 4px;
+        scrollbar-width: none; /* Firefox 스크롤바 숨김 */
+    }
+
+    .categoryList::-webkit-scrollbar {
+        display: none; /* Chrome 등에서 스크롤바 숨김 */
     }
 
     .categoryItem {
-        flex: 0 0 auto; /* 줄바꿈 말고 옆으로 나열 */
+        flex: 0 0 auto; /* 가로로 줄줄이 나열 */
+    }
+
+    .categoryBtn {
+        width: 88px;
+        height: 88px;
+    }
+
+    .categoryLabel {
+        font-size: 13px;
+    }
+}
+
+/* ===========================
+   📱 480px 이하 (핸드폰)
+   =========================== */
+@media (max-width: 480px) {
+    .pageContainer {
+        padding: 8px 10px;
+    }
+
+    .heroBanner img {
+        height: clamp(190px, 48vw, 260px); /* 폰에서 너무 길지 않게 */
+        border-radius: 10px;
+    }
+
+    .mainPage {
+        padding: 0 10px;
+    }
+
+    .slider {
+        gap: 8px;
+    }
+
+    .categoryList {
+        gap: 0.75rem;
     }
 
     .categoryBtn {
@@ -233,53 +245,7 @@ body {
         margin-top: 4px;
     }
 
-    .sliderPrev,
-    .sliderNext {
-        font-size: 1.2rem;
-        padding: 0 4px;
-    }
-}
-@media (max-width: 480px) {
-    .slider {
-        gap: 0.5rem;
-        padding: 0.3rem 0;
-    }
-
-    .categoryList {
-        gap: 0.75rem;
-        padding-bottom: 4px;
-        overflow-x: auto;
-    }
-
-    .categoryItem {
-        flex: 0 0 auto;
-    }
-
-    /* 🔥 카테고리 원본보다 더 작게 */
-    .categoryBtn {
-        width: 60px;
-        height: 60px;
-    }
-
-    /* 🔥 텍스트도 더 작게 */
-    .categoryLabel {
-        font-size: 11px;
-        margin-top: 3px;
-    }
-
-    /* 🔥 화살표 버튼 더 축소 */
-    .sliderPrev,
-    .sliderNext {
-        font-size: 1rem;
-        padding: 0 2px;
-    }
-
-    /* 여백도 조금 더 밀착 */
-    .mainPage {
-        padding: 0 12px;
-    }
-
-    .pageContainer {
-        padding: 10px 12px;
+    .headerTitle {
+        font-size: 16px;
     }
 }
