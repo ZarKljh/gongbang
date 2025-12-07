@@ -89,10 +89,29 @@ public class ProductService {
         String brightness = first(params, "BRIGHTNESS");
         String colorTemp = first(params, "COLOR_TEMP");
         String restType = first(params, "REST_TYPE");
-        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Order.asc("basePrice"), Sort.Order.asc("id")));
+        String kw = first(params, "keyword");
+        String sort = first(params, "sort"); // "LIKE", "PRICE_ASC", "PRICE_DESC"
+
+        Sort sortSpec = switch (sort) {
+            case "PRICE_ASC"  -> Sort.by(Sort.Direction.ASC, "basePrice");
+            case "PRICE_DESC" -> Sort.by(Sort.Direction.DESC, "basePrice");
+            case "LIKE"       -> Sort.by(Sort.Direction.DESC, "salesCount"); // 또는 likes
+            default           -> Sort.by(Sort.Direction.DESC, "id");
+        };
+        Pageable pageable = PageRequest.of(0, limit, sortSpec);
+
+        String kwPattern = null;
+
+        if (kw != null) {
+            kw = kw.trim();
+            if (!kw.isEmpty()) {
+                kwPattern = "%" + kw.toLowerCase() + "%";   // 🔍 %디퓨저%
+            }
+        }
+
         List<Product> list = productRepository.searchByFilters(
                 subCategoryId, priceMin, priceMax, style, pkg, color, design, material, scent,
-                duration, brightness, colorTemp, restType, pageable
+                duration, brightness, colorTemp, restType, kwPattern, pageable
         );
         List<ProductDto> productDtoList = list.stream()
                 .map(ProductDto::new)   // ✅ Product → ProductDto 생성자 변환

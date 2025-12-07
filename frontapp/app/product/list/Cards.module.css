@@ -98,13 +98,41 @@
 }
 
 .textSm {
-    padding: 100px 0;
+    padding: 2px 0;
     text-align: center;
     color: #7a6a58;
     background: #f6f0e8;
     border: 1px solid #e0d6ca;
     border-radius: 8px;
-    margin-top: 12px;
+    margin: 8px;
+}
+
+.searchBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    font-size: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #5a4331; /* 아이콘 컬러 */
+    border-radius: 50%; /* 동그랗게 */
+
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.searchBtn:hover {
+    background: rgba(200, 143, 94, 0.15); /* 크림톤 hover */
+    transform: scale(1.05);
+}
+
+.searchBtn:active {
+    transform: scale(0.92);
+    background: rgba(200, 143, 94, 0.25);
 }
 
 /* --- 카드 레이아웃 ----------------------------------------*/
@@ -199,10 +227,6 @@
     font-size: 14px;
 }
 
-.likeBtn.active {
-    /* 필요하면 포인트색으로 변경 */
-}
-
 /* ===== 필터 바 ===== */
 .filterArea {
     background: #e9dac7; /* 따뜻한 베이지 */
@@ -289,8 +313,12 @@
 .prChip:hover {
     background: #efe3d3;
 }
+.sortBtn:hover {
+    background: #efe3d3;
+}
 
 /* 칩 선택 상태 */
+.sortBtn.active,
 .chip.active,
 .prChip.active {
     background: #b17457;
@@ -357,6 +385,85 @@
     transition: 0.2s ease;
 }
 
+/* 🔹 텍스트 공통 규격 — 요청한 textSm 클래스 */
+.textSm2 {
+    width: 100%;
+    padding: 200px 0;
+    text-align: center;
+    color: #9c8a78; /* 은은한 브라운 */
+    background: #faf7f2; /* 옅은 베이지 톤 */
+    border-radius: 14px;
+    border: 1px dashed #d6c6b4;
+    box-sizing: border-box;
+}
+
+/* 전체 컨테이너 */
+.searchFilterBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 20px;
+    background: #faf7f0;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    margin-bottom: 40px;
+}
+
+/* 검색박스 */
+.searchBox {
+    flex: 1;
+    max-width: 280px;
+    display: flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid #d8c8b0;
+    background: #fdf9f4;
+    padding: 0 10px 0 14px;
+}
+
+.searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #4a3725;
+}
+
+.searchInput::placeholder {
+    color: #bcae9a;
+}
+
+/* 정렬 버튼 그룹 */
+.sortGroup {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sortBtn {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #d8c8b0;
+    background: #faf4ec;
+    color: #5a4331;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+/* hover 효과 */
+/* .sortBtn:hover {
+    background: #efddcb;
+}
+
+/* 활성 버튼 */
+.active {
+    background: #c88f5e;
+    color: #fff;
+    border-color: #c88f5e;
+}
+
 /* ===========================
    🖥 1024px 이하 - 태블릿/작은 노트북
    =========================== */
@@ -389,6 +496,12 @@
    📒 768px 이하 - 태블릿 세로 / 큰 폰
    =========================== */
 @media (max-width: 768px) {
+    .searchFilterBar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
     .pageFrame {
         padding: 10px 12px;
     }

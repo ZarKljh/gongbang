@@ -73,6 +73,9 @@ export default function Product() {
     const searchParams = useSearchParams()
     const didMount = useRef(false)
 
+    //필터버튼 활성화용
+    const [sort, setSort] = useState<'LIKE' | 'PRICE_ASC' | 'PRICE_DESC'>('LIKE')
+
     const [items, setItems] = useState<any[]>([])
     const [products, setProducts] = useState<Product[]>([])
 
@@ -506,9 +509,71 @@ export default function Product() {
                     {/* 카드 섹션 */}
                     <section aria-labelledby="cards-title" className={styles.cardsWrap}>
                         <div className={styles.cardHeader}>{activeSubName}</div>
+                        {/* 검색필터영역 */}
+                        <div className={styles.searchFilterBar}>
+                            <div className={styles.searchBox}>
+                                <input
+                                    form="filterForm"
+                                    name="keyword"
+                                    type="text"
+                                    className={`${styles.searchInput} ${styles.textSm}`}
+                                    placeholder="상품명을 입력하세요"
+                                    onChange={(e) => handleFilterClick('keyword', e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            return false // 어떤 경우라도 submit/실행 X
+                                        }
+                                    }}
+                                />
+                                <button className={styles.searchBtn}>🔍</button>
+                            </div>
+
+                            <div className={styles.sortGroup}>
+                                <button
+                                    type="button"
+                                    className={`${styles.sortBtn} ${styles.textSm} ${
+                                        sort === 'LIKE' ? styles.active : ''
+                                    }`}
+                                    onClick={() => {
+                                        setSort('LIKE')
+                                        handleFilterClick('sort', 'LIKE')
+                                    }}
+                                >
+                                    좋아요순
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className={`${styles.sortBtn} ${styles.textSm} ${
+                                        sort === 'PRICE_ASC' ? styles.active : ''
+                                    }`}
+                                    onClick={() => {
+                                        setSort('PRICE_ASC')
+                                        handleFilterClick('sort', 'PRICE_ASC')
+                                    }}
+                                >
+                                    낮은 가격순
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className={`${styles.sortBtn} ${styles.textSm} ${
+                                        sort === 'PRICE_DESC' ? styles.active : ''
+                                    }`}
+                                    onClick={() => {
+                                        setSort('PRICE_DESC')
+                                        handleFilterClick('sort', 'PRICE_DESC')
+                                    }}
+                                >
+                                    높은 가격순
+                                </button>
+                            </div>
+                        </div>
 
                         {products.length === 0 ? (
-                            <p className={styles.textSm}>표시할 상품목록이 없습니다.</p>
+                            <p className={styles.textSm2}>표시할 상품목록이 없습니다.</p>
                         ) : (
                             <ul className={styles.cardGrid} role="list">
                                 {products.map((p) => (
