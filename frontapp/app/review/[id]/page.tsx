@@ -15,6 +15,7 @@ export default function ReviewDetail() {
     const [reviews, setReviews] = useState([])
     const [currentUserId, setCurrentUserId] = useState(null)
     const [selectedImageIndex, setSelectedImageIndex] = useState(null) // ✅ index 기반으로 변경
+    const [slideDirection, setSlideDirection] = useState(null)
 
     const searchParams = useSearchParams()
     const [product, setProduct] = useState(null)
@@ -25,6 +26,9 @@ export default function ReviewDetail() {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
 
     const [roleType, setRoleType] = useState<string | null>(null)
+
+    // 모달 이미지 확대 축소
+    const [zoom, setZoom] = useState(1)
 
     useEffect(() => {
         checkLoginStatus()
@@ -60,6 +64,17 @@ export default function ReviewDetail() {
             onClickSubCategory(catId, subId)
         }
     }, [searchParams])
+
+    // 모달 열릴때 zoom 초기화
+    useEffect(() => {
+        if (selectedImageIndex !== null) {
+            const timer = setTimeout(() => {
+                setZoom(1)
+            }, 200) // 슬라이드 종료 후 실행
+
+            return () => clearTimeout(timer)
+        }
+    }, [selectedImageIndex])
 
     // 로그인 정보 확인
     const checkLoginStatus = async () => {
@@ -150,18 +165,40 @@ export default function ReviewDetail() {
     // 이전/다음 이미지 이동
     const handlePrevImage = (e) => {
         e.stopPropagation()
-        setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : review.imageUrls.length - 1))
+        setSlideDirection('left')
+        setTimeout(() => {
+            setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : review.imageUrls.length - 1))
+        }, 150) // 애니메이션 시간만큼 딜레이
     }
 
     const handleNextImage = (e) => {
         e.stopPropagation()
-        setSelectedImageIndex((prev) => (prev < review.imageUrls.length - 1 ? prev + 1 : 0))
+        setSlideDirection('right')
+        setTimeout(() => {
+            setSelectedImageIndex((prev) => (prev < review.imageUrls.length - 1 ? prev + 1 : 0))
+        }, 150)
     }
 
     const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
 
     if (!review) {
         return null
+    }
+
+    const handleWheelZoom = (e) => {
+        e.preventDefault()
+        if (e.deltaY < 0) {
+            // 위로 스크롤 → 확대
+            setZoom((z) => Math.min(z + 0.2, 3))
+        } else {
+            // 아래로 스크롤 → 축소
+            setZoom((z) => Math.max(z - 0.2, 1))
+        }
+    }
+
+    const handleDoubleClickZoom = (e) => {
+        e.preventDefault()
+        setZoom((z) => (z >= 2 ? 1 : 2)) // 1배 ↔ 2배 토글
     }
 
     return (
@@ -256,6 +293,7 @@ export default function ReviewDetail() {
                 {selectedImageIndex !== null && (
                     <div className="review-modal-overlay" onClick={() => setSelectedImageIndex(null)}>
                         <div className="review-modal-wrapper">
+                            <div className='review-modal-image-box'>
                             <img
                                 src={
                                     currentImage?.startsWith('data:')
@@ -264,6 +302,16 @@ export default function ReviewDetail() {
                                 }
                                 alt="확대 이미지"
                                 className="review-modal-image"
+                                onWheel={handleWheelZoom}
+                                onDoubleClick={handleDoubleClickZoom}
+                                style={{
+                                    transform: `scale(${zoom})`,
+                                    cursor: zoom > 1 ? 'zoom-out' : 'zoom-in',
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation() // 부모 overlay 클릭 방지
+                                     setZoom((prev) => (prev === 1 ? 1.8 : 1)) // 1 ↔ 1.8 토글
+                                }}
                             />
 
                             <button
@@ -278,16 +326,29 @@ export default function ReviewDetail() {
 
                             {review.imageUrls.length > 1 && (
                                 <>
-                                    <button className="review-modal-prev" onClick={handlePrevImage}>
+                                    <button
+                                        className="review-modal-prev"
+                                        onClick={(e) => {
+                                            e.stopPropagation() // 🔥 모달 닫힘 방지
+                                            handlePrevImage(e)
+                                        }}
+                                    >
                                         <FaChevronLeft />
                                     </button>
-                                    <button className="review-modal-next" onClick={handleNextImage}>
+                                    <button
+                                        className="review-modal-next"
+                                        onClick={(e) => {
+                                            e.stopPropagation() // 🔥 모달 닫힘 방지
+                                            handlePrevImage(e)
+                                        }}
+                                    >
                                         <FaChevronRight />
                                     </button>
                                 </>
                             )}
                         </div>
                     </div>
+                </div>
                 )}
             </div>
         </div>

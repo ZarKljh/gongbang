@@ -714,7 +714,7 @@ export default function Review() {
                         </div>
                     </div>
 
-                    {/* ⭐ 정렬 + 검색 바 */}
+                    {/* 정렬 + 검색 바 */}
                     <div className="review-sort-search">
                         {/* 정렬 */}
                         <div className="review-sort-buttons">
@@ -755,21 +755,24 @@ export default function Review() {
                             </button>
                         </div> */}
                         <div className="review-sort-right">
-                            <select className='review-rating-select'
-                                value={ratingFilter ?? ''}
-                                onChange={(e) => {
-                                    const v = e.target.value ? Number(e.target.value) : null
-                                    setRatingFilter(v)
-                                    setCurrentPage(0) // 필터 바뀌면 0페이지부터
-                                }}
-                            >
-                                <option value="">전체</option>
-                                <option value="5">5점</option>
-                                <option value="4">4점</option>
-                                <option value="3">3점</option>
-                                <option value="2">2점</option>
-                                <option value="1">1점</option>
-                            </select>
+                            <div className="rating-select-wrapper">
+                                <select
+                                    className="review-rating-select"
+                                    value={ratingFilter ?? ''}
+                                    onChange={(e) => {
+                                        const v = e.target.value ? Number(e.target.value) : null
+                                        setRatingFilter(v)
+                                        setCurrentPage(0)
+                                    }}
+                                >
+                                    <option value="">전체 별점</option>
+                                    <option value="5">5점 (최고)</option>
+                                    <option value="4">4점 (좋음)</option>
+                                    <option value="3">3점 (보통)</option>
+                                    <option value="2">2점 (별로)</option>
+                                    <option value="1">1점 (나쁨)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -835,7 +838,9 @@ export default function Review() {
                                                         삭제
                                                     </button>
                                                 )}
-                                                <ReportButton targetType="POST" targetId={review.review_id} />
+                                                <div className="report-btn">
+                                                    <ReportButton targetType="POST" targetId={review.review_id} />
+                                                </div>
                                             </div>
                                         </div>
                                         {/* 리뷰 내용 */}

@@ -22,7 +22,7 @@
 .photoReview-swiper {
     overflow: hidden !important;
     width: 100%;
-    padding: 15px 0 40px ;
+    padding: 15px 0 40px;
 }
 
 /* .photoReview-swiper .swiper-wrapper {
@@ -148,7 +148,7 @@
 }
 
 .review-write-btn {
-  background-color: #DAC0A3;
+    background-color: #dac0a3;
     font-size: 20 px;
     color: white;
     border: none;
@@ -161,7 +161,7 @@
 }
 
 .review-write-btn:hover {
-    background-color: rgba(177, 116, 87, 0.63)
+    background-color: rgba(177, 116, 87, 0.63);
 }
 
 /* 리뷰 평균 별점 (별 형식)*/
@@ -195,7 +195,6 @@
 
 .review-average-count {
     color: #777;
-    
 }
 /* 리뷰 평균 별점 (별 형식) 끝*/
 
@@ -277,7 +276,7 @@
 }
 
 .review-sort-btn.active {
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: white;
     /* font-weight: ; */
     padding: 8px 16px;
@@ -291,8 +290,6 @@
     padding: 8px 16px;
     transition: all 0.3s ease;
 }
-
-
 
 /* 검색창 */
 /* .review-search-input {
@@ -321,25 +318,44 @@
 } */
 /* 정렬 + 검색 바 끝*/
 
+
 .review-rating-select {
+    display: flex;
+    align-items: stretch;
+    background-color: #DAC0A3;
+    color: white;
+    border: none;
+    border-radius: 8px;
     padding: 8px 16px;
-    border-radius: 16px;
-    border: 1px solid #ddd;
-    background-color: #fff;
-    font-size: 13px;
-    color: #444;
     cursor: pointer;
-    outline: none;
-    appearance: none;          /* 기본 select 화살표 최소화 */
-    -moz-appearance: none;
-    -webkit-appearance: none;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.rating-select-wrapper {
+    position: relative;
+    display: inline-block;
 }
 
 /* select hover */
 .review-rating-select:hover {
-    border-color: #bbb;
+    background-color: rgba(177, 116, 87, 0.63);
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+.review-rating-select:invalid {
+    color: white;
 }
 
+.review-rating-select option[value=""] {
+    color: #ffffff;
+}
+
+/* ⭐ placeholder 효과 */
+.review-rating-select:invalid::after {
+    content: "필터";
+    color: white;
+}
 /* 리뷰 리스트 */
 
 .review-title {
@@ -367,13 +383,12 @@
     display: flex;
     /* justify-content: space-between; */
     align-items: center;
-     gap: 10px;
+    gap: 10px;
 }
 
 .review-user {
     display: flex;
     align-items: center;
-   
 }
 
 .review-user-avatar {
@@ -414,13 +429,11 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 8px;
-    
 }
 
 .review-stars {
     display: flex;
     align-items: center;
-
 }
 
 .review-actions {
@@ -432,7 +445,7 @@
 /* 👍 좋아요 버튼 */
 .review-like-btn {
     background-color: #ff8080;
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: #555;
     color: white;
     border: none;
@@ -452,14 +465,14 @@
 
 .review-like-btn.liked {
     color: #fff;
-    background-color:#F4991A ;
+    background-color: #f4991a;
     transform: scale(1.05);
 }
 
 .review-like-btn.liked:hover {
     background-color: #bb9d71;
     background-color: rgba(177, 116, 87, 0.63);
-    background-color:#eeaf58 ;
+    background-color: #eeaf58;
 }
 /* 🗑️ 삭제 버튼 */
 .review-delete-btn {
@@ -474,6 +487,10 @@
 }
 .review-delete-btn:hover {
     background-color: #bbb;
+}
+
+.report-btn button{
+transform: scale(0.7);
 }
 
 /* 📃 리뷰 내용 */
@@ -552,8 +569,8 @@
 .review-comment-delete-btn,
 .review-comment-add-btn,
 .review-comment-save-btn,
-.review-comment-cancel-btn  {
-    background-color: #DAC0A3;
+.review-comment-cancel-btn {
+    background-color: #dac0a3;
     color: white;
     border: none;
     border-radius: 8px;
@@ -565,16 +582,15 @@
     transition: all 0.3s ease;
 }
 .review-comment-delete-btn {
-    background-color:#DAC0A3 ;
+    background-color: #dac0a3;
 }
 
 .review-comment-edit-btn:hover,
 .review-comment-add-btn:hover,
 .review-comment-save-btn:hover,
 .review-comment-cancel-btn:hover,
-.review-comment-delete-btn:hover
- {
-    background-color: #DAC0A3;
+.review-comment-delete-btn:hover {
+    background-color: #dac0a3;
     background-color: rgba(177, 116, 87, 0.63);
 }
 
@@ -582,7 +598,7 @@
 .review-comment-label {
     font-weight: bold;
     margin-bottom: 6px;
-    color: #4d3815; 
+    color: #4d3815;
     font-size: 14px;
 }
 
@@ -593,7 +609,6 @@
     gap: 10px;
     margin-top: 5px;
 }
-
 
 .review-comment-editbox,
 .review-comment-addbox {
@@ -620,7 +635,6 @@
     margin-top: 8px;
 }
 /* 리뷰 리스트 끝*/
-
 
 /* 페이지네이션 */
 /* 페이지네이션 전체 */
