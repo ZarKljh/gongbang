@@ -72,6 +72,7 @@ export default function MyPage() {
     const [activeTab, setActiveTab] = useState("orders")
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
     //무한스크롤
     const [infiniteOrders, setInfiniteOrders] = useState<Order[]>([])
@@ -96,6 +97,7 @@ export default function MyPage() {
     const [passwordInput, setPasswordInput] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+    const [showAuthBox, setShowAuthBox] = useState(false)
 
     // 주문/배송
     const [orders, setOrders] = useState<any[]>([])
@@ -355,6 +357,33 @@ export default function MyPage() {
         }
     }
 
+    // =============== 기본설정 모달 ===============
+    const handleAskDefaultAddress = () => {
+        if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
+            alert('이름과 주소를 모두 입력해주세요.')
+            return
+        }
+
+        setConfirmModal({
+            open: true,
+            message: "이 배송지를 기본 배송지로 설정하시겠습니까?",
+            onConfirm: () => handleSaveAddress(true),
+            onCancel: () => handleSaveAddress(false),
+        })
+    }
+
+    const handleAskDefaultPayment = () => {
+        if (!validatePayment()) return;
+
+        setConfirmModal({
+            open: true,
+            message: "이 결제수단을 기본 결제수단으로 설정하시겠습니까?",
+            onConfirm: () => {
+                handleSavePayment(true)
+            }
+        })
+    }
+
     // =============== 유틸리티 함수 ===============
     const flattenAddresses = (data: any[]): any[] => {
         return data.map((addr) => ({
@@ -540,7 +569,9 @@ export default function MyPage() {
 
             if (data.resultCode === '200') {
                 setIsAuthenticated(true)
-                alert('비밀번호 인증 완료. 정보 수정을 진행할 수 있습니다.')
+                setShowAuthBox(false)                     // 인증박스 닫기
+                setEditMode(prev => ({ ...prev, profile: true }))  // 수정모드 켜기
+                alert('비밀번호 인증 완료!')
             } else {
                 alert('비밀번호가 올바르지 않습니다.')
             }
@@ -640,13 +671,16 @@ export default function MyPage() {
     }
 
     // =============== 배송지 ===============
-    const handleSaveAddress = async () => {
+    const handleSaveAddress = async (isDefaultFlag: boolean) => {
         if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
             alert('이름과 주소를 모두 입력해주세요.')
             return
         }
 
-        const addressToSave = { ...newAddress, isDefault: defaultAddress }
+        const addressToSave = { 
+            ...newAddress, 
+            isDefault: isDefaultFlag, 
+        }
 
         try {
             const { data } = await axios.post(`${API_BASE_URL}/addresses`, addressToSave, {
@@ -726,7 +760,7 @@ export default function MyPage() {
     }
 
     // =============== 결제수단 ===============
-    const handleSavePayment = async () => {
+    const handleSavePayment = async (isDefaultFlag: boolean) => {
         if (paymentType === 'BANK' && (!bankName || !accountNumber || !accountHolder)) {
             alert('은행명과 계좌번호를 입력해주세요.')
             return
@@ -739,7 +773,7 @@ export default function MyPage() {
 
         const payload: any = {
             type: paymentType,
-            defaultPayment,
+            defaultPayment: isDefaultFlag,
         }
 
         if (paymentType === "BANK") {
@@ -1042,12 +1076,20 @@ export default function MyPage() {
         setActiveTab(tabName)
         setEditMode({})
         setTempData({ ...userData })
+        setIsMobileSidebarOpen(false)
     }
 
     const handleStatusClick = (status: string) => {
         setSelectedStatus(status)
         setIsStatusModal(true)
     }
+
+    const [confirmModal, setConfirmModal] = useState({
+        open: false,
+        message: "",
+        onConfirm: null as null | (() => void),
+        onCancel: null as null | (() => void),
+    })
 
     // =============== 무한 스크롤 ===============
     const fetchInfiniteOrders = async (lastId: number | null) => {
@@ -1427,8 +1469,25 @@ export default function MyPage() {
     // =============== 메인 렌더링 ===============
     return (
         <div className="mypage-container">
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@40,400,0,0&icon_names=user_attributes" />
+            {/* 햄버거 메뉴 버튼 */}
+            <button 
+                className={`mobile-menu-button ${isMobileSidebarOpen ? 'active' : ''}`}
+                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            >
+                <span className="material-symbols-outlined user-attributes">
+                    user_attributes
+                </span>
+            </button>
+
+            {/* 사이드바 오버레이 */}
+            <div 
+                className={`sidebar-overlay ${isMobileSidebarOpen ? 'active' : ''}`}
+                onClick={() => setIsMobileSidebarOpen(false)}
+            ></div>
+
             {/* 왼쪽 사이드바 */}
-            <div className="mypage-sidebar">
+            <div className={`mypage-sidebar ${isMobileSidebarOpen ? 'active' : ''}`}>
                 <h1>{userData.nickName}</h1>
 
                 <nav>
@@ -1858,29 +1917,16 @@ export default function MyPage() {
                     {/* 회원정보수정 */}
                     {activeTab === 'profile' && (
                         <div className="tab-content">
-                            {!isAuthenticated ? (
-                                <div className="auth-banner">
-                                    <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
-                                    <div className='auth-banner-input'>
-                                        <input
-                                            type="password"
-                                            placeholder="현재 비밀번호 입력"
-                                            value={passwordInput}
-                                            onChange={(e) => setPasswordInput(e.target.value)}
-                                            onKeyDown={(e) => {if (e.key === "Enter") handleVerifyPassword()}}
-                                        />
-                                        <div className='auth-banner-btn' onClick={handleVerifyPassword}>인증 확인</div>
-                                    </div>
-                                    
-                                </div>
-                            ) : (
-                                <div className="auth-banner success">인증 완료</div>
-                            )}
-
                             <div className="section-header">
                                 <h2>회원정보수정</h2>
                                 {!editMode.profile ? (
-                                    <button className="btn-primary" onClick={() => handleEdit('profile')}>
+                                    <button
+                                        className="btn-primary"
+                                        onClick={() => {
+                                            setShowAuthBox(!showAuthBox); 
+                                            handleEdit('profile');
+                                        }}
+                                    >
                                         수정
                                     </button>
                                 ) : (
@@ -1894,6 +1940,35 @@ export default function MyPage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* 아코디언 전체 */}
+                            <div className={showAuthBox && !isAuthenticated ? "auth-accordion open" : "auth-accordion"}>
+                                {!isAuthenticated && (
+                                    <div className="auth-banner">
+                                        <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
+
+                                        <div className='auth-banner-input'>
+                                            <input
+                                                type="password"
+                                                placeholder="현재 비밀번호 입력"
+                                                value={passwordInput}
+                                                onChange={(e) => setPasswordInput(e.target.value)}
+                                                onKeyDown={(e) => { if (e.key === "Enter") handleVerifyPassword() }}
+                                            />
+                                            <div className='auth-banner-btn' onClick={handleVerifyPassword}>
+                                                인증 확인
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {isAuthenticated && (
+                                    <div className="auth-banner success">인증 완료</div>
+                                )}
+                            </div>
+
+                            {/* 인증 완료 표시 */}
+                            {isAuthenticated && <div className="auth-banner success">인증 완료</div>}
 
                             <div className='form-group-box'>
                                 <div className="form-group">
@@ -2454,7 +2529,7 @@ export default function MyPage() {
                             <button className="btn-primary delete" onClick={() => setIsAddressModal(false)}>
                                 취소
                             </button>
-                            <button className="btn-primary" onClick={handleSaveAddress}>
+                            <button className="btn-primary" onClick={handleAskDefaultAddress}>
                                 저장
                             </button>
                         </div>
@@ -2665,9 +2740,14 @@ export default function MyPage() {
                             <button
                                 className="btn-primary"
                                 onClick={() => {
-                                    if (validatePayment()) {
-                                        handleSavePayment()
-                                    }
+                                    if (!validatePayment()) return
+
+                                    setConfirmModal({
+                                        open: true,
+                                        message: "이 결제수단을 기본 결제수단으로 설정하시겠습니까?",
+                                        onConfirm: () => handleSavePayment(true),   // 기본 결제수단 설정
+                                        onCancel: () => handleSavePayment(false),   // 기본 미설정
+                                    })
                                 }}
                             >
                                 등록
@@ -2938,6 +3018,40 @@ export default function MyPage() {
                                 disabled={!widgetLoaded}
                             >
                                 {widgetLoaded ? "결제하기" : "결제 준비중…"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 기본설정 모달 */}
+            {confirmModal.open && (
+                <div className="modal-overlay" onClick={() => setConfirmModal({ open: false })}>
+                    <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>확인</h2>
+                        </div>
+                        <div className="modal-body">
+                            <p>{confirmModal.message}</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button 
+                                className="btn-primary delete" 
+                                onClick={() => {
+                                    confirmModal.onCancel?.()
+                                    setConfirmModal(prev => ({ ...prev, open: false }))
+                                }}
+                            >
+                                아니요
+                            </button>
+                            <button 
+                                className="btn-primary"
+                                onClick={() => {
+                                    confirmModal.onConfirm?.()
+                                    setConfirmModal({ open: false })
+                                }}
+                            >
+                                예
                             </button>
                         </div>
                     </div>
