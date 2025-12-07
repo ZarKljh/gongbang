@@ -92,12 +92,25 @@ public class ProductService {
         String kw = first(params, "keyword");
         String sort = first(params, "sort"); // "LIKE", "PRICE_ASC", "PRICE_DESC"
 
-        Sort sortSpec = switch (sort) {
-            case "PRICE_ASC"  -> Sort.by(Sort.Direction.ASC, "basePrice");
-            case "PRICE_DESC" -> Sort.by(Sort.Direction.DESC, "basePrice");
-            case "LIKE"       -> Sort.by(Sort.Direction.DESC, "salesCount"); // 또는 likes
-            default           -> Sort.by(Sort.Direction.DESC, "id");
-        };
+
+        if (sort == null || sort.isBlank()) {
+            // 해제 시: 아예 정렬 안 걸거나, 기본 정렬만
+            sort = null; // or "LIKE" 로 강제
+        }
+
+        // 정렬 객체 만들 때
+        Sort sortSpec;
+        if (sort == null) {
+            sortSpec = Sort.by(Sort.Direction.DESC, "id"); // 기본 정렬
+        } else {
+            sortSpec = switch (sort) {
+                case "PRICE_ASC" -> Sort.by(Sort.Direction.ASC, "basePrice");
+                case "PRICE_DESC" -> Sort.by(Sort.Direction.DESC, "basePrice");
+                case "NEW" ->  Sort.by(Sort.Direction.DESC, "id");
+                default -> Sort.by(Sort.Direction.ASC, "id");
+            };
+        }
+
         Pageable pageable = PageRequest.of(0, limit, sortSpec);
 
         String kwPattern = null;
@@ -262,8 +275,6 @@ public class ProductService {
                         .build())
                 .toList();
     }
-
-
 
 
     //필터 파라미터용 유틸코드

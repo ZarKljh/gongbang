@@ -74,7 +74,7 @@ export default function Product() {
     const didMount = useRef(false)
 
     //필터버튼 활성화용
-    const [sort, setSort] = useState<'LIKE' | 'PRICE_ASC' | 'PRICE_DESC'>('LIKE')
+    const [sort, setSort] = useState<'NEW' | 'PRICE_ASC' | 'PRICE_DESC' | null>(null)
 
     const [items, setItems] = useState<any[]>([])
     const [products, setProducts] = useState<Product[]>([])
@@ -113,6 +113,7 @@ export default function Product() {
         setSelectedBtn({}) // 선택된 필터버튼 초기화
         setFilterGroups([]) // 기존 필터 그룹 제거
         setFilterOptions({}) // 기존 필터 옵션 제거
+        setSort(null) // 페이지 전환시 아무 정렬도 선택되지 않은 상태
         //setItems([]) // 필터 검색 결과 초기화
         //setProducts([]) // 서브카테고리별 기본 상품목록 초기화
 
@@ -534,14 +535,19 @@ export default function Product() {
                                 <button
                                     type="button"
                                     className={`${styles.sortBtn} ${styles.textSm} ${
-                                        sort === 'LIKE' ? styles.active : ''
+                                        sort === 'NEW' ? styles.active : ''
                                     }`}
                                     onClick={() => {
-                                        setSort('LIKE')
-                                        handleFilterClick('sort', 'LIKE')
+                                        setSort((prev) => (prev === 'NEW' ? null : 'NEW'))
+
+                                        if (sort === 'NEW') {
+                                            handleFilterClick('sort', '')
+                                        } else {
+                                            handleFilterClick('sort', 'NEW')
+                                        }
                                     }}
                                 >
-                                    좋아요순
+                                    최신순
                                 </button>
 
                                 <button
@@ -550,8 +556,13 @@ export default function Product() {
                                         sort === 'PRICE_ASC' ? styles.active : ''
                                     }`}
                                     onClick={() => {
-                                        setSort('PRICE_ASC')
-                                        handleFilterClick('sort', 'PRICE_ASC')
+                                        setSort((prev) => (prev === 'PRICE_ASC' ? null : 'PRICE_ASC'))
+
+                                        if (sort === 'PRICE_ASC') {
+                                            handleFilterClick('sort', '')
+                                        } else {
+                                            handleFilterClick('sort', 'PRICE_ASC')
+                                        }
                                     }}
                                 >
                                     낮은 가격순
@@ -563,8 +574,13 @@ export default function Product() {
                                         sort === 'PRICE_DESC' ? styles.active : ''
                                     }`}
                                     onClick={() => {
-                                        setSort('PRICE_DESC')
-                                        handleFilterClick('sort', 'PRICE_DESC')
+                                        setSort((prev) => (prev === 'PRICE_DESC' ? null : 'PRICE_DESC'))
+
+                                        if (sort === 'PRICE_DESC') {
+                                            handleFilterClick('sort', '')
+                                        } else {
+                                            handleFilterClick('sort', 'PRICE_DESC')
+                                        }
                                     }}
                                 >
                                     높은 가격순
@@ -594,7 +610,9 @@ export default function Product() {
                                                         alt={p.name}
                                                     />
                                                 </div>
-                                                <h3 className={styles.cardTitle}>{p.name}</h3>
+                                                <h3 className={styles.cardTitle}>
+                                                    {p.name} - {p.id}
+                                                </h3>
 
                                                 <p className={styles.cardDesc}>{p.seoTitle}</p>
                                                 <p className={styles.cardDescPrice}>{p.basePrice.toLocaleString()}원</p>
