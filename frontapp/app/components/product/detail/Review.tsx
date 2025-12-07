@@ -815,6 +815,9 @@ export default function Review() {
 
                                             {/* 좋아요 / 삭제 버튼 */}
                                             <div className="review-actions">
+                                                <div className="report-btn">
+                                                    <ReportButton targetType="POST" targetId={review.review_id} />
+                                                </div>
                                                 <button
                                                     className={`review-like-btn ${
                                                         liked[Number(review.reviewId)] ? 'liked' : ''
@@ -838,9 +841,6 @@ export default function Review() {
                                                         삭제
                                                     </button>
                                                 )}
-                                                <div className="report-btn">
-                                                    <ReportButton targetType="POST" targetId={review.review_id} />
-                                                </div>
                                             </div>
                                         </div>
                                         {/* 리뷰 내용 */}

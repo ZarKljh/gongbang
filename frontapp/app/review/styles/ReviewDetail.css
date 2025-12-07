@@ -129,6 +129,11 @@
     transition: 0.3s;
 }
 
+.report-btn button{
+transform: scale(0.7);
+}
+
+
 .review-delete-btn {
     background-color: #ccc;
     color: #fff;

@@ -235,7 +235,7 @@ export default function ReviewDetail() {
                                 <div className="review-author-name">{review.createdBy}</div>
                                 <div>{review.createdDate}</div>
                             </div>
-                            &nbsp;&nbsp;&nbsp; <ReportButton targetType="POST" targetId={review.review_id} />
+                            
                         </div>
                     </div>
 
@@ -264,10 +264,13 @@ export default function ReviewDetail() {
                                 style={{ marginRight: '4px' }}
                             />
                         ))}
-                        <span className="review-rating-text">{review.rating} / 5</span>
+                        <span className="review-rating-text">{review.rating} / 5</span> &nbsp; &nbsp; <div className="report-btn">
+                                <ReportButton targetType="POST" targetId={review.review_id} />
+                            </div>
                     </div>
 
                     {/* 내용 */}
+                    
                     <div className="review-content-box-D">{review.content || '리뷰 내용이 없습니다.'}</div>
 
                     {/* 버튼 영역 */}
@@ -293,62 +296,62 @@ export default function ReviewDetail() {
                 {selectedImageIndex !== null && (
                     <div className="review-modal-overlay" onClick={() => setSelectedImageIndex(null)}>
                         <div className="review-modal-wrapper">
-                            <div className='review-modal-image-box'>
-                            <img
-                                src={
-                                    currentImage?.startsWith('data:')
-                                        ? currentImage
-                                        : `http://localhost:8090${currentImage}`
-                                }
-                                alt="확대 이미지"
-                                className="review-modal-image"
-                                onWheel={handleWheelZoom}
-                                onDoubleClick={handleDoubleClickZoom}
-                                style={{
-                                    transform: `scale(${zoom})`,
-                                    cursor: zoom > 1 ? 'zoom-out' : 'zoom-in',
-                                }}
-                                onClick={(e) => {
-                                    e.stopPropagation() // 부모 overlay 클릭 방지
-                                     setZoom((prev) => (prev === 1 ? 1.8 : 1)) // 1 ↔ 1.8 토글
-                                }}
-                            />
+                            <div className="review-modal-image-box">
+                                <img
+                                    src={
+                                        currentImage?.startsWith('data:')
+                                            ? currentImage
+                                            : `http://localhost:8090${currentImage}`
+                                    }
+                                    alt="확대 이미지"
+                                    className="review-modal-image"
+                                    onWheel={handleWheelZoom}
+                                    onDoubleClick={handleDoubleClickZoom}
+                                    style={{
+                                        transform: `scale(${zoom})`,
+                                        cursor: zoom > 1 ? 'zoom-out' : 'zoom-in',
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation() // 부모 overlay 클릭 방지
+                                        setZoom((prev) => (prev === 1 ? 1.8 : 1)) // 1 ↔ 1.8 토글
+                                    }}
+                                />
 
-                            <button
-                                className="review-modal-close"
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    setSelectedImageIndex(null)
-                                }}
-                            >
-                                <FaTimes />
-                            </button>
+                                <button
+                                    className="review-modal-close"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setSelectedImageIndex(null)
+                                    }}
+                                >
+                                    <FaTimes />
+                                </button>
 
-                            {review.imageUrls.length > 1 && (
-                                <>
-                                    <button
-                                        className="review-modal-prev"
-                                        onClick={(e) => {
-                                            e.stopPropagation() // 🔥 모달 닫힘 방지
-                                            handlePrevImage(e)
-                                        }}
-                                    >
-                                        <FaChevronLeft />
-                                    </button>
-                                    <button
-                                        className="review-modal-next"
-                                        onClick={(e) => {
-                                            e.stopPropagation() // 🔥 모달 닫힘 방지
-                                            handlePrevImage(e)
-                                        }}
-                                    >
-                                        <FaChevronRight />
-                                    </button>
-                                </>
-                            )}
+                                {review.imageUrls.length > 1 && (
+                                    <>
+                                        <button
+                                            className="review-modal-prev"
+                                            onClick={(e) => {
+                                                e.stopPropagation() // 🔥 모달 닫힘 방지
+                                                handlePrevImage(e)
+                                            }}
+                                        >
+                                            <FaChevronLeft />
+                                        </button>
+                                        <button
+                                            className="review-modal-next"
+                                            onClick={(e) => {
+                                                e.stopPropagation() // 🔥 모달 닫힘 방지
+                                                handlePrevImage(e)
+                                            }}
+                                        >
+                                            <FaChevronRight />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
                 )}
             </div>
         </div>
