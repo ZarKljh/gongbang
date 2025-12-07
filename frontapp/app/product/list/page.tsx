@@ -97,6 +97,12 @@ export default function Product() {
     }
     const BASE_URL = 'http://localhost:8090'
 
+    // 모바일페이지용 6개씩 페이지 단위로 나누기
+    const pages = []
+    for (let i = 0; i < products.length; i += 6) {
+        pages.push(products.slice(i, 6 + i))
+    }
+
     const onClickSubCategory = (catId: number, subId: number) => {
         // 2️⃣ 이전 필터·선택 상태·결과 초기화
         setSelectedBtn({}) // 선택된 필터버튼 초기화
@@ -543,6 +549,61 @@ export default function Product() {
                                 ))}
                             </ul>
                         )}
+
+                        {/* 📱 모바일 - 좌우 슬라이드 6개씩 */}
+                        <div className={styles.mobileSlider}>
+                            <div className={styles.mobileTrack}>
+                                {pages.map((page, i) => (
+                                    <ul className={styles.mobileGrid} key={i}>
+                                        {page.map((p) => (
+                                            <li className={styles.card} key={p.id}>
+                                                <article>
+                                                    <Link
+                                                        href={{
+                                                            pathname: '/product/list/detail',
+                                                            query: { productId: p.id },
+                                                        }}
+                                                        className={styles.cardLink}
+                                                    >
+                                                        <div className={styles.cardMedia}>
+                                                            <img
+                                                                src={
+                                                                    p.images && p.images.length > 0
+                                                                        ? p.images[0].imageUrl
+                                                                        : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                                }
+                                                                alt={p.name}
+                                                            />
+                                                        </div>
+                                                        <h3 className={styles.cardTitle}>{p.name}</h3>
+                                                        <p className={styles.cardDescPrice}>
+                                                            {p.basePrice.toLocaleString()}원
+                                                        </p>
+                                                    </Link>
+
+                                                    <footer className={styles.cardActions}>
+                                                        <span>
+                                                            ⭐{Math.round((p.avgRating ?? 0) * 10) / 10} (
+                                                            {p.ratingCount ?? 0})
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.likeBtn}
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                handleToggleLike(p.id)
+                                                            }}
+                                                        >
+                                                            {p.liked ? '💗' : '🤍'}
+                                                        </button>
+                                                    </footer>
+                                                </article>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ))}
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>
