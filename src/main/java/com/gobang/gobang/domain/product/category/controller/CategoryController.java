@@ -4,6 +4,7 @@ import com.gobang.gobang.domain.product.category.service.CategoryService;
 import com.gobang.gobang.domain.product.dto.CategoryDto;
 import com.gobang.gobang.domain.product.dto.SubCategoryDto;
 import com.gobang.gobang.domain.product.dto.response.CategoryResponse;
+import com.gobang.gobang.domain.product.dto.response.SubCategoryInfo;
 import com.gobang.gobang.domain.product.dto.response.SubCategoryResponse;
 import com.gobang.gobang.global.RsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,9 +43,9 @@ public class CategoryController {
 
     // GET /subcategory/{categoryId}/min-id 서브카테고리 최소값 id 조회
     @GetMapping("/{categoryId}/min")
-    public RsData<Long> getMinSubCategoryId(@PathVariable Long categoryId) {
-        Long minSubId = categoryService.getMinSubCategoryId(categoryId);
+    public RsData<SubCategoryInfo> getMinSubCategoryId(@PathVariable Long categoryId) {
+        SubCategoryDto subCategoryDto = categoryService.getMinSubCategoryId2(categoryId);
 
-        return RsData.of("200", "서브카테고리의 최소값 조회 성공", minSubId);
+        return RsData.of("200", "서브카테고리의 최소값 조회 성공", new SubCategoryInfo(subCategoryDto));
     }
 }

@@ -87,6 +87,10 @@ export default function Product() {
     // code별로 선택된 값 집합 관리 (예: COLOR → {베이지, 화이트})
     const [selectedBtn, setSelectedBtn] = useState<Record<string, string | null>>({})
 
+    // 상단에 state 선언 active
+    const [activeSub, setActiveSub] = useState<number | null>(null)
+    const [activeSubName, setActiveSubName] = useState<string | null>(null) // ← 추가
+
     const MUTEX: Record<string, string[]> = {
         PRICE_MIN: ['PRICE_MAX'],
         PRICE_MAX: ['PRICE_MIN'],
@@ -249,6 +253,10 @@ export default function Product() {
     // ✅ 파라미터에서 categoryId, subId 받아서 상태로 설정
     useEffect(() => {
         const catIdStr = searchParams.get('categoryId')
+        const subCatName = searchParams.get('subName')
+        console.log(`subCatName :${subCatName}`)
+        setActiveSubName(subCatName)
+
         const subIdStr = searchParams.get('subId') ?? '0'
         if (!catIdStr) return
 
@@ -261,9 +269,11 @@ export default function Product() {
         if (subId === 0) {
             api.get(`category/${catId}/min`)
                 .then((res) => {
-                    const minSubId = res.data?.data
-
+                    console.log('로그 출력 data:', res.data.data)
+                    const minSubId = res.data?.data.subCategoryDto.id
+                    const subCatName = res.data?.data.subCategoryDto.name
                     onClickSubCategory(catId, minSubId)
+                    setActiveSubName(subCatName)
                 })
                 .catch((err) => {
                     console.error(' sub-min 값 검색 실패:', err)
@@ -332,10 +342,13 @@ export default function Product() {
                                     {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
                                         <li key={sub.id}>
                                             <a
+                                                className={activeSub === sub.id ? styles.activeSub : ''}
                                                 href="#"
                                                 onClick={(e) => {
                                                     e.preventDefault()
+                                                    setActiveSub(sub.id)
                                                     onClickSubCategory(cat.id, sub.id)
+                                                    setActiveSubName(sub.name) //
                                                 }}
                                             >
                                                 {sub.name}
@@ -479,7 +492,7 @@ export default function Product() {
 
                     {/* 카드 섹션 */}
                     <section aria-labelledby="cards-title" className={styles.cardsWrap}>
-                        <h2 id="cards-title">카테고리별 상품</h2>
+                        <div className={styles.cardHeader}>{activeSubName}</div>
 
                         {products.length === 0 ? (
                             <p className={styles.textSm}>표시할 상품목록이 없습니다.</p>

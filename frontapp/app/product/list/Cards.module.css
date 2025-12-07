@@ -108,6 +108,16 @@
 }
 
 /* --- 카드 레이아웃 ----------------------------------------*/
+.cardHeader {
+    font-size: 26px;
+    font-weight: 700;
+
+    color: #3f2f22;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border-radius: 8px;
+}
+
 .cardGrid {
     display: grid;
     max-width: 1280px;
@@ -335,4 +345,13 @@
     border-top: none;
     border-left: none;
     transform: rotate(45deg);
+}
+
+/* 카테고리 탭 효과 */
+.subcategoryList li a.activeSub {
+    font-weight: 600;
+    color: #fff; /* 텍스트는 그대로 화이트 유지 */
+    border-radius: 6px;
+    backdrop-filter: brightness(1.1);
+    transition: 0.2s ease;
 }

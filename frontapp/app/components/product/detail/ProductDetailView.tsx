@@ -444,11 +444,11 @@ export default function ProductDetailView() {
                                     </div>
                                 </div>
                             </div>
-
+                            {/* 
                             <div className={styles.creatorRight}>
                                 <div className={styles.followerLabel}>팔로워</div>
                                 <div className={styles.followerCount}>{followerCount}</div>
-                            </div>
+                            </div> */}
                         </div>
                     )}
 
