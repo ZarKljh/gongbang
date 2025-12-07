@@ -220,6 +220,18 @@ export default function ProductDetailView() {
             alert(`🛒 '${product?.name ?? '상품'}' ${quantity}개를 장바구니에 담았어요!`)
             // 또는 product?.name 쓰고 싶으면 위에 product를 가져다 쓰면 됨
         },
+        onError: (err: any) => {
+            const error = err?.response?.data?.error // ✅ 여기!
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return
+            } else {
+                console.error('장바구니 에러:', err)
+            }
+        },
     })
 
     // 🟡 4) 좋아요(WishList) 토글 뮤테이션 (캐시 직접 수정)

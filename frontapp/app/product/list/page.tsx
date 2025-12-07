@@ -8,6 +8,7 @@ import styles from './Cards.module.css'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
@@ -102,6 +103,7 @@ export default function Product() {
     for (let i = 0; i < products.length; i += 6) {
         pages.push(products.slice(i, 6 + i))
     }
+    const router = useRouter()
 
     const onClickSubCategory = (catId: number, subId: number) => {
         // 2️⃣ 이전 필터·선택 상태·결과 초기화
@@ -321,12 +323,17 @@ export default function Product() {
 
                 setProducts((prev) => prev.map((p) => (p.id === targetId ? { ...p, liked, likeCount } : p)))
             })
+
             .catch((err) => {
-                if (err.response?.status === 401) {
-                    alert('로그인이 필요합니다.')
+                const error = err?.response?.data?.error // ✅ 여기!
+                if (error?.code === 'M002') {
+                    const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                    if (result) {
+                        router.push('/auth/login')
+                    }
+                    return
                 } else {
-                    alert('로그인이 필요합니다.')
-                    console.error('좋아요 에러:', err)
+                    console.error('장바구니 에러:', err)
                 }
             })
     }
