@@ -137,13 +137,15 @@ export default function ProductDetailView() {
     const liked: boolean = data?.productLikeInfo?.liked ?? false
     const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
+    const BASE_URL = 'http://localhost:8090'
+
     const pdImageUrl = detailImage
-        ? `http://localhost:8090${detailImage.imageUrl}`
-        : 'http://localhost:8090/uploads/products/no-image-soft.png'
+        ? `${BASE_URL}${detailImage.imageUrl}`
+        : `${BASE_URL}/uploads/products/no-image-soft.png`
 
     const gbImageUrl = gbLogo
-        ? `http://localhost:8090/images/${gbLogo.imageUrl}`
-        : 'http://localhost:8090/uploads/products/no-image-soft.png'
+        ? `${BASE_URL}/images/${gbLogo.imageUrl}`
+        : `${BASE_URL}/uploads/products/no-image-soft.png`
 
     const unitPrice = useMemo(() => product?.basePrice ?? 0, [product])
     const total = unitPrice * count
