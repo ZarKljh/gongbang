@@ -13,6 +13,7 @@ import { loadPaymentWidget /*, ANONYMOUS*/ } from '@tosspayments/payment-widget-
 import { v4 as uuidv4 } from 'uuid'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { useBuyBtn, usePrepareOrder } from '@/app/utils/api/order'
+import { createPortal } from 'react-dom'
 
 type ProductDetail = {
     id: number
@@ -472,76 +473,77 @@ export default function ProductDetailView() {
                         </button>
 
                         {/* 결제 모달 */}
-                        {isModalOpen && (
-                            <div className={styles.modalOverlay}>
-                                <div className={styles.modalContainer}>
-                                    {/* 헤더 */}
-                                    <div className={styles.modalHeader}>
-                                        <h2 className={styles.modalTitle}>결제하기</h2>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setIsModalOpen(false)
-                                                setWidgetLoaded(false)
-                                            }}
-                                            className={styles.modalCloseBtn}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
+                        {isModalOpen &&
+                            createPortal(
+                                <div className={styles.modalOverlay}>
+                                    <div className={styles.modalContainer}>
+                                        {/* 헤더 */}
+                                        <div className={styles.modalHeader}>
+                                            <h2 className={styles.modalTitle}>결제하기</h2>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsModalOpen(false)
+                                                    setWidgetLoaded(false)
+                                                }}
+                                                className={styles.modalCloseBtn}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
 
-                                    {/* ✅ 한 섹션 카드 안에 상품요약 + 결제위젯 같이 */}
-                                    <div className={styles.modalSection}>
-                                        {/* 상품 정보 요약 */}
-                                        <div className={styles.modalProductSummary}>
-                                            <div className={styles.summaryThumb}>
-                                                <img src={pdImageUrl} alt={product?.name} />
+                                        {/* 한 섹션 카드 안에 상품요약 + 결제위젯 */}
+                                        <div className={styles.modalSection}>
+                                            {/* 상품 정보 요약 */}
+                                            <div className={styles.modalProductSummary}>
+                                                <div className={styles.summaryThumb}>
+                                                    <img src={pdImageUrl} alt={product?.name} />
+                                                </div>
+
+                                                <div className={styles.summaryText}>
+                                                    <div className={styles.summaryTitle}>{product?.name}</div>
+                                                    <div className={styles.summaryDesc}>
+                                                        {product?.description ?? '상품 설명이 없습니다.'}
+                                                    </div>
+
+                                                    <div className={styles.summaryRow}>
+                                                        <span className={styles.summaryLabel}>수량</span>
+                                                        <span className={styles.summaryValue}>{count}개</span>
+                                                    </div>
+
+                                                    <div className={styles.summaryRow}>
+                                                        <span className={styles.summaryLabel}>총 결제 금액</span>
+                                                        <span className={styles.summaryTotal}>
+                                                            {total.toLocaleString()}원
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div className={styles.summaryText}>
-                                                <div className={styles.summaryTitle}>{product?.name}</div>
-                                                <div className={styles.summaryDesc}>
-                                                    {product?.description ?? '상품 설명이 없습니다.'}
-                                                </div>
+                                            <div className={styles.sectionDivider} />
 
-                                                <div className={styles.summaryRow}>
-                                                    <span className={styles.summaryLabel}>수량</span>
-                                                    <span className={styles.summaryValue}>{count}개</span>
-                                                </div>
-
-                                                <div className={styles.summaryRow}>
-                                                    <span className={styles.summaryLabel}>총 결제 금액</span>
-                                                    <span className={styles.summaryTotal}>
-                                                        {total.toLocaleString()}원
-                                                    </span>
-                                                </div>
+                                            {/* 토스 결제 UI 영역 */}
+                                            <div className={styles.paymentBox}>
+                                                <div id="payment-method" className={styles.paymentMethods} />
+                                                <div id="agreement" className={styles.paymentAgreement} />
                                             </div>
                                         </div>
 
-                                        {/* 섹션 안 구분선 */}
-                                        <div className={styles.sectionDivider} />
-
-                                        {/* 토스 결제 위젯 영역 */}
-                                        <div className={styles.paymentBox}>
-                                            <div id="payment-method" className={styles.paymentMethods} />
-                                            <div id="agreement" className={styles.paymentAgreement} />
+                                        {/* 하단 결제 버튼 */}
+                                        <div className={styles.modalFooter}>
+                                            <button
+                                                type="button"
+                                                onClick={handleRequestPayment}
+                                                className={styles.paymentSubmitBtn}
+                                                disabled={!widgetLoaded}
+                                            >
+                                                {widgetLoaded ? '결제하기' : '결제 준비중…'}
+                                            </button>
                                         </div>
                                     </div>
-
-                                    {/* 하단 결제 버튼 + 상태 텍스트(오른쪽 정렬 강조) */}
-                                    <div className={styles.modalFooter}>
-                                        <button
-                                            type="button"
-                                            onClick={handleRequestPayment}
-                                            className={styles.paymentSubmitBtn}
-                                            disabled={!widgetLoaded}
-                                        >
-                                            {widgetLoaded ? '결제하기' : '결제 준비중…'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                                </div>,
+                                document.body,
+                            )}
 
                         <div className={styles.subButtons}>
                             <button

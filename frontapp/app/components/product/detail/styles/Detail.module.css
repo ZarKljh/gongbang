@@ -10,11 +10,10 @@
 /* 2열 레이아웃 (이미지 : 구매패널) */
 .layout {
     display: grid;
-    grid-template-columns: 650px 1fr;
+    grid-template-columns: minmax(0, 650px) minmax(0, 1fr);
     column-gap: 40px;
-    align-items: flex-start; /* 위 기준 정렬 */
+    align-items: flex-start;
 }
-
 /* 왼쪽 이미지 영역 */
 .imagePanel {
     position: sticky;
@@ -346,7 +345,7 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 9999;
+    z-index: 1999 !important;
 }
 
 .modalContainer {
