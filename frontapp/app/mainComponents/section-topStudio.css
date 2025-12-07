@@ -65,6 +65,10 @@
   margin-bottom: 0;
 }
 
+.topStudioName:hover {
+  text-decoration: underline;
+}
+
 .topStudioFollowers {
   font-size: 14px;
   font-weight: 500;

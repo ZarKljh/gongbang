@@ -71,7 +71,7 @@ export default function TopStudios() {
                                         className="topStudioMainImg"
                                     />
                                     <div className="topStudioTxtBox">
-                                        <Link className="topStudioName" href={`/studio/${studio.studioId}`}>
+                                        <Link className="topStudioName" href={`/seller/studio/${studio.studioId}`}>
                                             {studio.studioName}
                                         </Link>
                                         <p className="topStudioFollowers">
@@ -82,21 +82,19 @@ export default function TopStudios() {
 
                                 <div className="topStudioProductWrap">
                                     {studio.recentProducts.map((p) => (
-                                        <div key={p.productId} className="topProductCardSmall">
+                                        <Link href={`/product/list/detail?productId=${p.productId}`} key={p.productId} className="topProductCardSmall">
                                             <img
                                                 src={`http://localhost:8090${p.imageUrl}`}
                                                 alt={p.productName}
                                                 className="topProductImgSmall"
                                             />
-                                            <Link
+                                            <p 
                                                 className="topProductNameSmall"
-                                                href={`/product/list/detail?productId=${p.productId}`}
                                             >
                                                 {p.productName}
-                                            </Link>
+                                            </p>
                                             <p className="topProductsummary">{p.summary}</p>
-                                            {/* <p className="topProductsummary">{p.price}원</p> */}
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             </div>
