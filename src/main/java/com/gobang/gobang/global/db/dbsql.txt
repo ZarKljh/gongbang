@@ -2002,4 +2002,5 @@ INSERT INTO image (
 ('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm2.jfif', 7, 'PRODUCT', 1, 'moodlightWarm2.jfif'),
 ('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini4.jfif', 8, 'PRODUCT', 1, 'moodlightMini4.jfif'),
 ('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightWarm5.jfif', 9, 'PRODUCT', 1, 'moodlightWarm5.jfif'),
-('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini2.jfif', 10, 'PRODUCT', 1, 'moodlightMini2.jfif');
+('2025-11-13 14:32:00', NULL, '/uploads/products/moodlightMini2.jfif', 10, 'PRODUCT', 1, 'moodlightMini2.jfif'),
+('2025-11-13 14:32:00', NULL, '/uploads/products/베이지스마일키링1.jpg', 32, 'PRODUCT', 0, '베이지스마일키링1.jpg');

@@ -2,9 +2,13 @@ package com.gobang.gobang.domain.personal.controller;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
+import com.gobang.gobang.domain.personal.dto.request.CartDeleteRequest;
+import com.gobang.gobang.domain.personal.dto.request.CartOrderRequest;
 import com.gobang.gobang.domain.personal.dto.request.CartRequest;
 import com.gobang.gobang.domain.personal.dto.response.CartResponse;
+import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
 import com.gobang.gobang.domain.personal.service.CartService;
+import com.gobang.gobang.domain.personal.service.OrdersService;
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,7 @@ public class CartController {
 
     private final CartService cartService;
     private final SiteUserService siteUserService;
+    private final OrdersService orderService;
 
     @GetMapping
     public RsData<List<CartResponse>> cartList() {
@@ -59,7 +64,7 @@ public class CartController {
         return RsData.of("200", "장바구니 개수 조회 성공", count);
     }
 
-    @GetMapping("/cart/infinite")
+    @GetMapping("/infinite")
     public RsData<List<CartResponse>> getInfiniteCart(
             @RequestParam(required = false) Long lastCartId,
             @RequestParam(defaultValue = "10") int size
@@ -69,4 +74,20 @@ public class CartController {
         return RsData.of("200", "장바구니 무한스크롤 조회 성공", carts);
     }
 
+    @PostMapping("/prepare")
+    public RsData<PrepareOrderResponse> prepareCartOrder(@RequestBody CartOrderRequest request) {
+
+        SiteUser user = siteUserService.getCurrentUser();
+
+        PrepareOrderResponse response = orderService.prepareCartOrder(user, request.getItems());
+
+        return RsData.of("200", "장바구니 주문 준비 성공", response);
+    }
+
+    @DeleteMapping("/after-order")
+    public RsData<Void> deletePurchasedItems(@RequestBody CartDeleteRequest request) {
+        SiteUser user = siteUserService.getCurrentUser();
+        cartService.deletePurchasedItems(user, request.getCartIds());
+        return RsData.of("200", "구매한 상품 장바구니 삭제 완료");
+    }
 }

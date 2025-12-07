@@ -116,8 +116,17 @@ export default function OrderDetailPage() {
 
     return (
         <>
+            {/* 뒤로가기 */}
+            
             <h2 className='order-detail-title'>주문 상세 보기</h2>
+            
             <div className="order-detail-container">
+                <button
+                    className="back-btn"
+                    onClick={() => router.push('/personal?tab=orders')}
+                >
+                    ← 주문 목록으로
+                </button>
                 {/* 주문 기본 정보 */}
                 <div className="order-detail-box">
                     <p><strong>주문일자:</strong> {order.createdDate}</p>
@@ -149,7 +158,7 @@ export default function OrderDetailPage() {
                 <div className="order-items-list">
                     {order.items?.map((item: any) => (
                         <div key={item.orderItemId} className="order-detail-item">
-                            <img src={item.imageUrl || '/default-product.png'} alt="" />
+                            <img src={`http://localhost:8090${item.imageUrl}`} alt={item.productName} />
                             <div>
                                 <Link href={`http://localhost:3000/product/list/detail?productId=${item.productId}`} className="my-review-product-name">
                                     <p className="item-name">{item.productName}</p>
@@ -185,14 +194,6 @@ export default function OrderDetailPage() {
                         </>
                     )}
                 </div>
-
-                {/* 뒤로가기 */}
-                <button
-                    className="back-btn"
-                    onClick={() => router.push('/personal?tab=orders')}
-                >
-                    ← 주문 목록으로
-                </button>
 
                 {/* 모달 */}
                 {isReasonModal && (

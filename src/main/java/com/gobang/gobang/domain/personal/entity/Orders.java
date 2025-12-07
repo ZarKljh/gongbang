@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.personal.entity;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -68,4 +70,32 @@ public class Orders {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+
+    //  임시 주문 생성
+    public static Orders createTempOrder(SiteUser user) {
+        Orders order = new Orders();
+        order.setSiteUser(user);
+        order.setStatus("TEMP"); // 임시 주문 상태
+        order.setOrderCode("ORD_" + UUID.randomUUID());
+        order.setTotalPrice(BigDecimal.ZERO); // 일단 0 -> 뒤에서 계산됨
+
+        return order;
+    }
+
+    //  주문 상품 추가
+    public void addOrderItem(Product product, Long quantity, BigDecimal price) {
+        OrderItem item = new OrderItem();
+
+        item.setOrder(this);
+        item.setProduct(product);
+        item.setQuantity(quantity);
+        item.setPrice(price);
+
+        if (this.orderItems == null) {
+            this.orderItems = new ArrayList<>();
+        }
+
+        this.orderItems.add(item);
+    }
 }

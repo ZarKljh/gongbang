@@ -11,6 +11,7 @@ import 'swiper/css/navigation'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
 
+
 export default function Review() {
     // ================= 리뷰 =================
     const [reviews, setReviews] = useState([])
@@ -553,8 +554,9 @@ export default function Review() {
                 >
                     {/* 🎨 상단 배너 */}
                     <div className="review-banner">
-                        <h2>생생한 리뷰를 기다리고 있어요!</h2>
-                        <p>사진과 함께 리뷰를 남겨주시면 다른 분들께 큰 도움이 됩니다</p>
+                        {/* <h2>생생한 리뷰를 기다리고 있어요!</h2> */}
+                        {/* <p>사진과 함께 리뷰를 남겨주시면 다른 분들께 큰 도움이 됩니다</p> */}
+                        <img className="review-banner-img" src='/images/리뷰_배너2.png' alt="배너 이미지" />
                     </div>
 
                     {/* 제목 + 버튼 */}
@@ -800,17 +802,17 @@ export default function Review() {
                                                     )}
                                                     도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
                                                 </button>
-                                                <ReportButton targetType="POST" targetId={review.review_id} />
 
                                                 {(Number(currentUserId) === Number(review.userId) ||
                                                     roleType === 'ADMIN') && (
-                                                    <button
+                                                        <button
                                                         className="review-delete-btn"
                                                         onClick={() => handleDeleteClick(review.reviewId)}
-                                                    >
+                                                        >
                                                         삭제
                                                     </button>
                                                 )}
+                                                <ReportButton targetType="POST" targetId={review.review_id} />
                                             </div>
                                         </div>
                                         {/* 리뷰 내용 */}

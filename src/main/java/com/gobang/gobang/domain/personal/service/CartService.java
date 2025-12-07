@@ -76,7 +76,10 @@ public class CartService {
                 .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다."));
 
         cart.setQuantity(quantity);
-        return CartResponse.from(cart, imageRepository);
+
+        Cart saved = cartRepository.save(cart);
+
+        return CartResponse.from(saved, imageRepository);
     }
 
     // 장바구니 항목 삭제
@@ -105,4 +108,12 @@ public class CartService {
         return carts.stream().map(cart -> CartResponse.from(cart, imageRepository)).toList();
     }
 
+    @Transactional
+    public void deletePurchasedItems(SiteUser user, List<Long> cartIds) {
+        if (cartIds == null || cartIds.isEmpty()) return;
+
+        List<Cart> carts = cartRepository.findByCartIdInAndSiteUser(cartIds, user);
+
+        cartRepository.deleteAll(carts);
+    }
 }

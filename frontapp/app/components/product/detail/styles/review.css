@@ -114,19 +114,21 @@
 /* 포토 리뷰 슬라이드 영역 끝*/
 
 .review-banner {
-    max-width: 1280px;
-    height: 200px;
+    /* max-width: 1280px; */
+    /* height: 300px; */
     border-radius: 8px;
-    background: linear-gradient(90deg, #ebc0c8e0, #EBC2CA);
+    /* background: linear-gradient(90deg, #ebc0c8e0, #EBC2CA); */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 30px 40px;
+    /* padding: 30px 40px; */
     margin-bottom: 50px;
     margin-top: 100px;
-    color: #b34760;
-    font-family: 'P-regular';
-    /* box-shadow: 0 6px 12px rgba(255, 165, 185, 0.3); */
+    /* color: #b34760; */
+}
+
+.review-banner-img {
+    border-radius: 8px;
 }
 .review-banner h2 {
     font-size: 38px;
@@ -146,15 +148,16 @@
 }
 
 .review-write-btn {
-    background-color: #DAC0A3;
+  background-color: #DAC0A3;
+    font-size: 20 px;
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 10px 20px;
+    padding: 12px 28px;
     cursor: pointer;
-    font-size: 16px;
-    margin-bottom: 20px;
-    transition: background-color 0.3s ease;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: all 0.3s ease;
 }
 
 .review-write-btn:hover {
@@ -276,7 +279,7 @@
 .review-sort-btn.active {
     background-color: #DAC0A3;
     color: white;
-    font-weight: bold;
+    /* font-weight: ; */
     padding: 8px 16px;
     border-radius: 8px;
 }
@@ -286,7 +289,7 @@
     background-color: #b17457c2;
     background-color: rgba(177, 116, 87, 0.63);
     padding: 8px 16px;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
 
@@ -314,7 +317,7 @@
     background-color: #8f7851;
     background-color: #DAC0A3;
     background-color: rgba(177, 116, 87, 0.63);
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 /* 정렬 + 검색 바 끝*/
 
@@ -422,7 +425,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 .review-like-btn:hover {
     background-color: #e7e7e7;
@@ -448,7 +451,7 @@
     border-radius: 8px;
     padding: 8px 16px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     font-size: 14px;
 }
 .review-delete-btn:hover {
@@ -469,7 +472,7 @@
     overflow: hidden;
     cursor: pointer;
     background-color: #fafafa;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     line-height: 1.6;
     margin-bottom: 10px;
 }
@@ -513,7 +516,7 @@
     overflow: hidden;
     cursor: pointer;
     background-color: #fafafa;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     line-height: 1.6;
     margin-bottom: 10px;
     justify-content: space-between;
@@ -541,21 +544,20 @@
     margin-bottom: 10px;
     margin-left: 5px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 .review-comment-delete-btn {
-    background-color:#F4991A ;
+    background-color:#DAC0A3 ;
 }
 
 .review-comment-edit-btn:hover,
 .review-comment-add-btn:hover,
-.review-comment-save-btn:hover {
+.review-comment-save-btn:hover,
+.review-comment-cancel-btn:hover,
+.review-comment-delete-btn:hover
+ {
     background-color: #DAC0A3;
     background-color: rgba(177, 116, 87, 0.63);
-}
-
-.review-comment-delete-btn:hover{
-    background-color:#eeaf58 ;
 }
 
 /* 댓글 수정/등록 박스 */
@@ -588,7 +590,7 @@
     padding: 15px;
     overflow: hidden;
     background-color: #fafafa;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     line-height: 1.6;
     margin-bottom: 10px;
     resize: none;
@@ -599,20 +601,10 @@
     gap: 10px;
     margin-top: 8px;
 }
-
-.review-comment-cancel-btn {
-    background-color: #ccc;
-    color: white;
-    cursor: pointer;
-}
-.review-comment-cancel-btn:hover {
-    background-color: #bbb;
-}
-
 /* 리뷰 리스트 끝*/
 
-/* 페이지네이션 */
 
+/* 페이지네이션 */
 /* 페이지네이션 전체 */
 .review-pagination {
     margin-top: 20px;
@@ -628,7 +620,7 @@
     background-color: white;
     color: black;
     cursor: pointer;
-    transition: 0.1s;
+    transition: all 0.3s ease;
     margin: 0 4px;
     font-size: 14px;
 }

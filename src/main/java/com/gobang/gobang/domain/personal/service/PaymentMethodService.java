@@ -35,10 +35,22 @@ public class PaymentMethodService {
 
     @Transactional
     public PaymentMethodResponse createPaymentMethod(PaymentMethodRequest request) {
+        SiteUser siteUser = request.getSiteUser();
 
-        // 기본 결제수단으로 등록할 경우 기존 결제수단 모두 해제
-        if (Boolean.TRUE.equals(request.getDefaultPayment())) {
-            paymentMethodRepository.unsetDefaultBySiteUser(request.getSiteUser());
+        // 기존 기본 결제수단이 있는지 확인
+        boolean hasDefault = paymentMethodRepository.existsBySiteUserAndDefaultPayment(siteUser, true);
+
+        // 사용자가 요청한 기본 설정 여부
+        boolean isDefault = Boolean.TRUE.equals(request.getDefaultPayment());
+
+        // 기본 결제수단이 아직 없다면 → 자동 기본 설정
+        if (!hasDefault) {
+            isDefault = true;
+        }
+
+        // 기본 결제수단으로 설정될 경우 → 기존 기본 해제
+        if (isDefault) {
+            paymentMethodRepository.unsetDefaultBySiteUser(siteUser);
         }
 
         // 카드 번호 마스킹
@@ -56,7 +68,7 @@ public class PaymentMethodService {
                 .cardCompany(request.getCardCompany())
                 .cardNumber(maskedCard)
                 .cardExpire(request.getCardExpire())
-                .defaultPayment(request.getDefaultPayment() != null && request.getDefaultPayment())
+                .defaultPayment(isDefault)
                 .build();
 
         return PaymentMethodResponse.from(paymentMethodRepository.save(pm));

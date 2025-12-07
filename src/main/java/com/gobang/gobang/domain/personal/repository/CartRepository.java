@@ -40,4 +40,5 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     """)
         List<Cart> findInfiniteCart(Long userId, Long lastCartId, Pageable pageable);
 
+    List<Cart> findByCartIdInAndSiteUser(List<Long> ids, SiteUser siteUser);
 }

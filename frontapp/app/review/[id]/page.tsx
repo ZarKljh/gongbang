@@ -165,127 +165,131 @@ export default function ReviewDetail() {
     }
 
     return (
-        <div className="review-detail-container">
-            {/* 리뷰 상세 */}
-            <div className="review-detail-left">
-                <Link
-                    href={{
-                        pathname: '/product/list/detail',
-                        query: { productId: review?.productId },
-                    }}
-                    className="review-back-btn"
-                >
-                    ← 목록으로
-                </Link>
+        <div className="review-detail-wrapper">
+            <div className="review-detail-container">
+                {/* 리뷰 상세 */}
+                <div className="review-detail-left">
+                    <Link
+                        href={{
+                            pathname: '/product/list/detail',
+                            query: { productId: review?.productId },
+                        }}
+                        className="review-back-btn"
+                    >
+                        ← 목록으로
+                    </Link>
 
-                <h2 className="review-detail-title">리뷰 상세보기</h2>
+                    <h2 className="review-detail-title">리뷰 상세보기</h2>
 
-                {/* 작성자 정보 */}
-                <div className="review-author-box">
-                    {/* <div className="review-user-avatar"> */}
-                    <img
-                        className="review-user-avatar"
-                        src={
-                            review.profileImageUrl
-                                ? `http://localhost:8090${review.profileImageUrl}`
-                                : '/images/default_profile.jpg'
-                        }
-                        alt="프로필"
-                    />
-                    {/* </div> */}
-                    <strong className="review-author-name">{review.createdBy}</strong>
-                    &nbsp; / &nbsp;
-                    {review.createdDate}
-                    &nbsp;&nbsp;&nbsp; <ReportButton targetType="POST" targetId={review.review_id} />
-                </div>
-
-                {/* 리뷰 이미지 섹션 */}
-                {review.imageUrls && review.imageUrls.length > 0 && (
-                    <div className="review-image-list">
-                        {review.imageUrls.map((url, i) => (
+                    {/* 작성자 정보 */}
+                    <div className="review-author-box">
+                        <div className="review-header">
                             <img
-                                key={i}
-                                src={url.startsWith('data:') ? url : `http://localhost:8090${url}`}
-                                alt={`리뷰 이미지 ${i + 1}`}
-                                className="review-image-item"
-                                onClick={() => setSelectedImageIndex(i)}
+                                className="review-user-avatar"
+                                src={
+                                    review.profileImageUrl
+                                        ? `http://localhost:8090${review.profileImageUrl}`
+                                        : '/images/default_profile.jpg'
+                                }
+                                alt="프로필"
+                            />
+                            {/* </div> */}
+                            <div className="review-user-info">
+                                <div className="review-author-name">{review.createdBy}</div>
+                                <div>{review.createdDate}</div>
+                            </div>
+                            &nbsp;&nbsp;&nbsp; <ReportButton targetType="POST" targetId={review.review_id} />
+                        </div>
+                    </div>
+
+                    {/* 리뷰 이미지 섹션 */}
+                    {review.imageUrls && review.imageUrls.length > 0 && (
+                        <div className="review-image-list">
+                            {review.imageUrls.map((url, i) => (
+                                <img
+                                    key={i}
+                                    src={url.startsWith('data:') ? url : `http://localhost:8090${url}`}
+                                    alt={`리뷰 이미지 ${i + 1}`}
+                                    className="review-image-item"
+                                    onClick={() => setSelectedImageIndex(i)}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* 별점 */}
+                    <div className="review-rating-box">
+                        {[1, 2, 3, 4, 5].map((num) => (
+                            <FaStar
+                                key={num}
+                                size={26}
+                                color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
+                                style={{ marginRight: '4px' }}
                             />
                         ))}
+                        <span className="review-rating-text">{review.rating} / 5</span>
                     </div>
-                )}
 
-                {/* 별점 */}
-                <div className="review-rating-box">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                        <FaStar
-                            key={num}
-                            size={26}
-                            color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
-                            style={{ marginRight: '4px' }}
-                        />
-                    ))}
-                    <span className="review-rating-text">{review.rating} / 5</span>
-                </div>
+                    {/* 내용 */}
+                    <div className="review-content-box-D">{review.content || '리뷰 내용이 없습니다.'}</div>
 
-                {/* 내용 */}
-                <div className="review-content-box-D">{review.content || '리뷰 내용이 없습니다.'}</div>
+                    {/* 버튼 영역 */}
+                    <div className="review-action-buttons">
+                        {Number(currentUserId) === Number(review.userId) && (
+                            <button
+                                onClick={() => router.push(`/review/${params.id}/modify`)}
+                                className="review-modify-btn"
+                            >
+                                리뷰 수정하기
+                            </button>
+                        )}
 
-                {/* 버튼 영역 */}
-                <div className="review-action-buttons">
-                    {Number(currentUserId) === Number(review.userId) && (
-                        <button
-                            onClick={() => router.push(`/review/${params.id}/modify`)}
-                            className="review-modify-btn"
-                        >
-                            리뷰 수정하기
-                        </button>
-                    )}
-
-                    {(Number(currentUserId) === Number(review.userId) || roleType === 'ADMIN') && (
-                        <button className="review-delete-btn" onClick={() => handleDeleteClick(review.reviewId)}>
-                            삭제
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* 팝업 모달 */}
-            {selectedImageIndex !== null && (
-                <div className="review-modal-overlay" onClick={() => setSelectedImageIndex(null)}>
-                    <div className="review-modal-wrapper">
-                        <img
-                            src={
-                                currentImage?.startsWith('data:')
-                                    ? currentImage
-                                    : `http://localhost:8090${currentImage}`
-                            }
-                            alt="확대 이미지"
-                            className="review-modal-image"
-                        />
-
-                        <button
-                            className="review-modal-close"
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                setSelectedImageIndex(null)
-                            }}
-                        >
-                            <FaTimes />
-                        </button>
-
-                        {review.imageUrls.length > 1 && (
-                            <>
-                                <button className="review-modal-prev" onClick={handlePrevImage}>
-                                    <FaChevronLeft />
-                                </button>
-                                <button className="review-modal-next" onClick={handleNextImage}>
-                                    <FaChevronRight />
-                                </button>
-                            </>
+                        {(Number(currentUserId) === Number(review.userId) || roleType === 'ADMIN') && (
+                            <button className="review-delete-btn" onClick={() => handleDeleteClick(review.reviewId)}>
+                                삭제
+                            </button>
                         )}
                     </div>
                 </div>
-            )}
+
+                {/* 팝업 모달 */}
+                {selectedImageIndex !== null && (
+                    <div className="review-modal-overlay" onClick={() => setSelectedImageIndex(null)}>
+                        <div className="review-modal-wrapper">
+                            <img
+                                src={
+                                    currentImage?.startsWith('data:')
+                                        ? currentImage
+                                        : `http://localhost:8090${currentImage}`
+                                }
+                                alt="확대 이미지"
+                                className="review-modal-image"
+                            />
+
+                            <button
+                                className="review-modal-close"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedImageIndex(null)
+                                }}
+                            >
+                                <FaTimes />
+                            </button>
+
+                            {review.imageUrls.length > 1 && (
+                                <>
+                                    <button className="review-modal-prev" onClick={handlePrevImage}>
+                                        <FaChevronLeft />
+                                    </button>
+                                    <button className="review-modal-next" onClick={handleNextImage}>
+                                        <FaChevronRight />
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
