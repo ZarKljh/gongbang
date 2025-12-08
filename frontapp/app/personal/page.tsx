@@ -79,17 +79,14 @@ export default function MyPage() {
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-    const EditModal = ({
-        open,
-        title,
-        children,
-        onClose,
-        onSave,
-        saveText = "저장",
-        cancelText = "취소"
-    }) => {
-        if (!open) return null;
-    }
+    const [deleteModal, setDeleteModal] = useState({
+        open: false,
+        title: "",
+        message: "",
+        warning: "",
+        onConfirm: () => {},
+        onCancel: () => {},
+    })
 
     //무한스크롤
     const [infiniteOrders, setInfiniteOrders] = useState<Order[]>([])
@@ -154,7 +151,6 @@ export default function MyPage() {
 
     // 리뷰
     const [isEditReviewModal, setIsEditReviewModal] = useState(false)
-    const [isDeleteReviewModal, setIsDeleteReviewModal] = useState(false)
     const [editReview, setEditReview] = useState<any>(null)
     const [reviewToDelete, setReviewToDelete] = useState<any>(null)
     const [editReviewContent, setEditReviewContent] = useState('')
@@ -418,6 +414,35 @@ export default function MyPage() {
             message: "이 결제수단을 기본 결제수단으로 설정하시겠습니까?",
             onConfirm: () => handleSavePayment(true),
             onCancel: () => handleSavePayment(false),
+        })
+    }
+
+    // =============== 삭제 모달 ===============
+    const handleDeleteClick = (review) => {
+        setDeleteModal({
+            open: true,
+            title: "리뷰 삭제",
+            message: "정말로 이 리뷰를 삭제하시겠습니까?",
+            warning: "삭제된 리뷰는 복구할 수 없습니다.",
+            onConfirm: () => {
+                handleDeleteReview(review.reviewId)
+                setDeleteModal(prev => ({ ...prev, open: false }))
+            },
+            onCancel: () => setDeleteModal(prev => ({ ...prev, open: false }))
+        })
+    }
+
+    const askDeleteCart = (cartId) => {
+        setDeleteModal({
+            open: true,
+            title: "장바구니 삭제",
+            message: "이 상품을 장바구니에서 삭제하시겠습니까?",
+            warning: "",
+            onConfirm: () => {
+                handleDeleteCart(cartId)
+                setDeleteModal(prev => ({ ...prev, open: false }))
+            },
+            onCancel: () => setDeleteModal(prev => ({ ...prev, open: false }))
         })
     }
 
@@ -940,14 +965,8 @@ export default function MyPage() {
         setIsEditReviewModal(true)
     }
 
-    const handleDeleteClick = (review: any) => {
-        setReviewToDelete(review)
-        setIsDeleteReviewModal(true)
-    }
-
     const handleCloseModal = () => {
         setIsEditReviewModal(false)
-        setIsDeleteReviewModal(false)
         setEditReview(null)
         setReviewToDelete(null)
         setEditReviewContent('')
@@ -959,7 +978,7 @@ export default function MyPage() {
 
         try {
             const { data } = await axios.patch(
-                `http://localhost:8090/api/v1/reviews/${editReview.reviewId}`,
+                `${api.defaults.baseURL}/reviews/${editReview.reviewId}`,
                 { rating: editReviewRating, content: editReviewContent },
                 { withCredentials: true },
             )
@@ -988,20 +1007,16 @@ export default function MyPage() {
         }
     }
 
-    const handleDeleteReview = async () => {
+    const handleDeleteReview = async (reviewId: number) => {
         if (!reviewToDelete) return
 
         try {
-            const { data } = await axios.delete(`http://localhost:8090/api/v1/reviews/${reviewToDelete.reviewId}`, {
+            const { data } = await axios.delete(`${api.defaults.baseURL}/reviews/${reviewToDelete.reviewId}`, {
                 withCredentials: true,
             })
 
             if (data.resultCode === '200') {
                 alert('리뷰가 삭제되었습니다.')
-                setInfiniteReviews(prev =>
-                    prev.filter(r => r.reviewId !== reviewToDelete.reviewId)
-                )
-                handleCloseModal()
             } else {
                 alert(`삭제 실패: ${data.msg}`)
             }
@@ -1065,10 +1080,7 @@ export default function MyPage() {
             })
 
             if (data.resultCode === '200') {
-                alert('위시리스트에서 삭제되었습니다.')
-                setInfiniteWishList(prev =>
-                    prev.filter(item => item.wishlistId !== wishlistId)
-                )
+                setInfiniteWishList(prev => prev.filter(item => item.wishlistId !== wishlistId))
             } else {
                 alert(`삭제 실패: ${data.msg}`)
             }
@@ -1106,7 +1118,7 @@ export default function MyPage() {
     const handleDeleteCart = async (cartId: number) => {
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
-
+            setCart(prev => prev.filter(item => item.cartId !== cartId))
             setSelectedItems(prev => prev.filter(id => id !== cartId))
         } catch (error) {
             console.error('장바구니 삭제 실패:', error)
@@ -1927,7 +1939,7 @@ export default function MyPage() {
                                                 <div className="cart-delete">
                                                     <button
                                                         className="link-btn delete cart-btn"
-                                                        onClick={() => handleDeleteCart(item.cartId)}
+                                                        onClick={() => askDeleteCart(item.cartId)}
                                                     >
                                                         삭제
                                                     </button>
@@ -2794,16 +2806,7 @@ export default function MyPage() {
                             </button>
                             <button
                                 className="btn-primary"
-                                onClick={() => {
-                                    if (!validatePayment()) return
-
-                                    setConfirmModal({
-                                        open: true,
-                                        message: "이 결제수단을 기본 결제수단으로 설정하시겠습니까?",
-                                        onConfirm: () => handleSavePayment(true),   // 기본 결제수단 설정
-                                        onCancel: () => handleSavePayment(false),   // 기본 미설정
-                                    })
-                                }}
+                                onClick={() => handleAskDefaultPayment()}
                             >
                                 등록
                             </button>
@@ -2862,29 +2865,28 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/*  리뷰 삭제 모달  */}
-            {isDeleteReviewModal && (
-                <div className="modal-overlay" onClick={() => setIsDeleteReviewModal(false)}>
+            {/*  삭제 모달  */}
+            {deleteModal.open && (
+                <div className="modal-overlay" onClick={deleteModal.onCancel}>
                     <div className="modal-container modal-sm" onClick={(e) => e.stopPropagation()}>
+                        
                         <div className="modal-header">
-                            <h2>리뷰 삭제</h2>
-                            <button className="modal-close" onClick={() => setIsDeleteReviewModal(false)}>
-                                ✕
-                            </button>
+                            <h2>{deleteModal.title || "삭제"}</h2>
+                            <button className="modal-close" onClick={deleteModal.onCancel}>✕</button>
                         </div>
 
                         <div className="modal-body">
-                            <div className="modal-confirm-message">
-                                <p>정말로 이 리뷰를 삭제하시겠습니까?</p>
-                                <p className="modal-warning">삭제된 리뷰는 복구할 수 없습니다.</p>
-                            </div>
+                            <p>{deleteModal.message || "정말 삭제하시겠습니까?"}</p>
+                            {deleteModal.warning && (
+                                <p className="modal-warning">{deleteModal.warning}</p>
+                            )}
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={handleCloseModal}>
+                            <button className="btn-primary" onClick={deleteModal.onCancel}>
                                 취소
                             </button>
-                            <button className="btn btn-danger" onClick={handleDeleteReview}>
+                            <button className="btn-primary delete" onClick={deleteModal.onConfirm}>
                                 삭제
                             </button>
                         </div>
@@ -2916,11 +2918,11 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setIsReasonModal(false)}>
+                            <button className="btn-primary" onClick={() => setIsReasonModal(false)}>
                                 취소
                             </button>
                             <button
-                                className="btn btn-primary"
+                                className="btn-primary"
                                 onClick={() => {
                                     if (!reasonText.trim()) {
                                         alert("사유를 입력해주세요.")
