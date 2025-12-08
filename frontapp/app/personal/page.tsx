@@ -2040,9 +2040,10 @@ export default function MyPage() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label>비밀번호</label>
-                                    {editMode.profile ? (
+                                    
+                                    {editMode.profile && (
                                         <div className='profile-input'>
+                                            <label>비밀번호</label>
                                             <input
                                                 type="password"
                                                 placeholder="새 비밀번호 입력"
@@ -2052,15 +2053,13 @@ export default function MyPage() {
                                             />
                                             {errors.newPassword && <p className="error-msg">{errors.newPassword}</p>}
                                         </div>
-                                    ) : (
-                                        <p>********</p>
                                     )}
                                 </div>
 
                                 <div className="form-group">
-                                    <label>비밀번호 확인</label>
                                     {editMode.profile && (
                                         <div className='profile-input'>
+                                            <label>비밀번호 확인</label>
                                             <input
                                                 type="password"
                                                 placeholder="비밀번호 재입력"
