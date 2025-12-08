@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,4 +29,15 @@ public class MyReviewController {
         List<ReviewResponse> reviews = reviewService.getReviewsByUserId(user.getId());
         return RsData.of("200", "리뷰 조회 성공", reviews);
     }
+
+    @GetMapping("/infinite")
+    public RsData<List<ReviewResponse>> getInfiniteReviews(
+            @RequestParam(required = false) Long lastReviewId,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Long userId = siteUserService.getCurrentUser().getId();
+        List<ReviewResponse> list = reviewService.getInfiniteReviews(userId, lastReviewId, size);
+        return RsData.of("200", "리뷰 무한스크롤 조회 성공", list);
+    }
+
 }
