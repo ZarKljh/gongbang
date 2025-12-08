@@ -130,8 +130,11 @@ export default function ReviewModify() {
             formData.append('refType', 'REVIEW')
             formData.append('sortOrder', i.toString())
 
-            await api.post('/images/upload', {
-                body: formData,
+            await api.post('/images/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true,
             })
         }
 

@@ -198,7 +198,7 @@ export default function Review() {
     }
 
     useEffect(() => {
-        if (productId) fetchPhotoReviews()
+        if (productId) fetchPhotoReviews(productId)
     }, [productId])
 
     // 모달 열기 + 전체 이미지 세팅
