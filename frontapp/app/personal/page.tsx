@@ -10,6 +10,7 @@ import { loadPaymentWidget } from "@tosspayments/payment-widget-sdk"
 import api from '@/app/utils/api'
 
 const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 interface Post {
   id: number
@@ -370,7 +371,7 @@ export default function MyPage() {
         if (!userId) return
         
         try {
-            const response = await axios.get(`http://localhost:8090/api/v1/image/profile/${userId}`, {
+            const response = await axios.get(`${api.defaults.baseURL}/image/profile/${userId}`, {
             responseType: 'blob',
             withCredentials: true,
             })
@@ -497,7 +498,7 @@ export default function MyPage() {
 
         try {
             const { data } = await axios.patch(
-                `http://localhost:8090/api/v1/image/profile`,
+                `${api.defaults.baseURL}/image/profile`,
                 formData,
                 {
                     headers: { 'Content-Type': 'multipart/form-data' },
@@ -511,7 +512,7 @@ export default function MyPage() {
                 setProfileFile(null)
 
                 // 서버에서 받은 새 URL
-                let uploadedUrl = `http://localhost:8090${data.data}`
+                let uploadedUrl = `${IMAGE_BASE_URL}${data.data}`
                 // 캐시 무효화
                 uploadedUrl = `${uploadedUrl}?t=${Date.now()}`
 
