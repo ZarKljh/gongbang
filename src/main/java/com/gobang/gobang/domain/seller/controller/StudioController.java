@@ -90,6 +90,8 @@ public class StudioController {
             @RequestParam(required = false) String status
 
     ){
+
+        System.out.println("🔥 전달된 stock 파라미터 = " + stock);
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         List<String> activeList = convertToList(active);
@@ -102,6 +104,13 @@ public class StudioController {
         Page<ProductListOfStudioResponse> productPage = studioService.getProductListByStudioIdWithFilter(studioId, filterRequest, pageable);
         //Page<ProductListOfStudioResponse> productPage = studioService.getProductListByStudioIdWithCategory(studioId, keyword, pageable);
         return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
+    }
+
+    @GetMapping("/{studioId}/followers/count")
+    public RsData<Integer> getFollowerCount(@PathVariable("studioId") Long studioId) {
+        System.out.println("공방 팔러워수 조회를 위한 아이디값: " + studioId);
+        //System.out.println("팔로우수 : " + count);
+        return RsData.of("200", "팔로워 수 조회 성공", studioService.getFollowerCount(studioId));
     }
 
     @GetMapping("/{id}/category-summary")
@@ -339,6 +348,29 @@ public class StudioController {
         Image image = studioService.getProductMainImage(productId);
 
         return RsData.of("200", "상품 정보가 성공적으로 수정되었습니다.", new ProductDetailResponse(modifiedProduct, image, category));
+    }
+
+    /**
+     * 🔥 단건 상품 삭제
+     */
+    @DeleteMapping("/single-delete/{productId}")
+    public RsData<?> deleteProduct(
+            @PathVariable Long productId
+    ) {
+        studioService.deleteProductById(productId);
+        return RsData.of("200", "상품이 삭제되었습니다.", null);
+    }
+
+
+    /**
+     * 🔥 복수 상품 삭제
+     */
+    @PostMapping("/multiple-delete")
+    public RsData<?> deleteProducts(
+            @RequestBody List<Long> productIds
+    ) {
+        int deletedCount = studioService.deleteProducts(productIds);
+        return RsData.of("200", deletedCount + "개의 상품이 삭제되었습니다.", deletedCount);
     }
 
 }

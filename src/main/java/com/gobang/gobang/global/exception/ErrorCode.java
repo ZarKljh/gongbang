@@ -24,7 +24,7 @@ public enum ErrorCode {
 
 
     //배송지오류
-    NO_DEFAULT_ADDRESS(HttpStatus.BAD_REQUEST, "NO_DEFAULT_ADDRESS", "기본 배송지가 설정되어 있지 않습니다.");
+    NO_DEFAULT_ADDRESS(HttpStatus.BAD_REQUEST, "A001", "기본 배송지가 설정되어 있지 않습니다.");
 
 
     private final HttpStatus status;

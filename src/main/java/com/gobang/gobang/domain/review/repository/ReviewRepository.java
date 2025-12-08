@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.review.repository;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.review.dto.response.ReviewPopularProductResponse;
 import com.gobang.gobang.domain.review.entity.Review;
@@ -90,4 +91,43 @@ ORDER BY AVG(r.rating) DESC, COUNT(r.reviewId) DESC
         ORDER BY r.reviewId DESC
     """)
     List<Review> findInfiniteReviews(Long userId, Long lastId, Pageable pageable);
+
+    /// 명확한 정렬 기준 선언 (별점 필터)
+    @Query(
+            value = """
+        SELECT r FROM Review r
+        WHERE r.productId = :productId
+          AND r.rating = :rating
+          AND r.isActive = true
+        """,
+            countQuery = """
+        SELECT COUNT(r) FROM Review r
+        WHERE r.productId = :productId
+          AND r.rating = :rating
+          AND r.isActive = true
+        """
+    )
+    Page<Review> findRatingFiltered(
+            @Param("productId") Long productId,
+            @Param("rating") Integer rating,
+            Pageable pageable);
+
+
+    // productId 없는 경우
+    @Query(
+            value = """
+        SELECT r FROM Review r
+        WHERE r.rating = :rating
+          AND r.isActive = true
+        """,
+            countQuery = """
+        SELECT COUNT(r) FROM Review r
+        WHERE r.rating = :rating
+          AND r.isActive = true
+        """
+    )
+    Page<Review> findRatingFilteredGlobal(
+            @Param("rating") Integer rating,
+            Pageable pageable);
+
 }

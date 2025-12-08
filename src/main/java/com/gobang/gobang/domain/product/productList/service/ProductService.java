@@ -5,7 +5,6 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
-import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.personal.entity.Follow;
 import com.gobang.gobang.domain.personal.entity.WishList;
@@ -19,6 +18,7 @@ import com.gobang.gobang.domain.product.productList.repository.ProductImageRepos
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.domain.seller.repository.SellerFollowRepository;
+import com.gobang.gobang.global.config.SecurityUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -73,7 +73,7 @@ public class ProductService {
                 .toList();
     }
 
-    public FilterProductResponse getProductFilterList(Long subCategoryId, int size, MultiValueMap<String, String> params, SiteUserResponse currentUser) {
+    public FilterProductResponse getProductFilterList(Long subCategoryId, int size, MultiValueMap<String, String> params, SecurityUser currentUser) {
         int limit = Math.max(1, Math.min(size, 50));
 //        boolean useColor = colors != null && !colors.isEmpty();
 
@@ -89,10 +89,42 @@ public class ProductService {
         String brightness = first(params, "BRIGHTNESS");
         String colorTemp = first(params, "COLOR_TEMP");
         String restType = first(params, "REST_TYPE");
-        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Order.asc("basePrice"), Sort.Order.asc("id")));
+        String kw = first(params, "keyword");
+        String sort = first(params, "sort"); // "LIKE", "PRICE_ASC", "PRICE_DESC"
+
+
+        if (sort == null || sort.isBlank()) {
+            // 해제 시: 아예 정렬 안 걸거나, 기본 정렬만
+            sort = null; // or "LIKE" 로 강제
+        }
+
+        // 정렬 객체 만들 때
+        Sort sortSpec;
+        if (sort == null) {
+            sortSpec = Sort.by(Sort.Direction.DESC, "id"); // 기본 정렬
+        } else {
+            sortSpec = switch (sort) {
+                case "PRICE_ASC" -> Sort.by(Sort.Direction.ASC, "basePrice");
+                case "PRICE_DESC" -> Sort.by(Sort.Direction.DESC, "basePrice");
+                case "NEW" ->  Sort.by(Sort.Direction.DESC, "id");
+                default -> Sort.by(Sort.Direction.ASC, "id");
+            };
+        }
+
+        Pageable pageable = PageRequest.of(0, limit, sortSpec);
+
+        String kwPattern = null;
+
+        if (kw != null) {
+            kw = kw.trim();
+            if (!kw.isEmpty()) {
+                kwPattern = "%" + kw.toLowerCase() + "%";   // 🔍 %디퓨저%
+            }
+        }
+
         List<Product> list = productRepository.searchByFilters(
                 subCategoryId, priceMin, priceMax, style, pkg, color, design, material, scent,
-                duration, brightness, colorTemp, restType, pageable
+                duration, brightness, colorTemp, restType, kwPattern, pageable
         );
         List<ProductDto> productDtoList = list.stream()
                 .map(ProductDto::new)   // ✅ Product → ProductDto 생성자 변환
@@ -243,8 +275,6 @@ public class ProductService {
                         .build())
                 .toList();
     }
-
-
 
 
     //필터 파라미터용 유틸코드

@@ -30,31 +30,27 @@ class GobangApplicationTests {
     @Autowired
     private ImageRepository imageRepository;
 
+    // 테스트 데이터를 돌리기 전 아래 sql문 실행해야합니다.
+    // ALTER TABLE tbl_review DROP CONSTRAINT IF EXISTS tbl_review_order_item_id_key;
+
+    // 1~180번 상품 50개 이하 랜덤 리뷰 데이터 생성
+    //
     @Test
     void initReviewTestData() {
 
         System.out.println("🔶 테스트 리뷰 데이터 생성 시작!");
 
-        // ------------------------------
-        // 1) 기존 DB에 있는 일반 유저 불러오기
-        //    예: ID 101~200 / 혹은 ROLE_USER 만 가져오면 됨
-        // ------------------------------
-//        List<SiteUser> users = siteUserRepository.findAll();
-        // 또는 조건 사용:
-         List<SiteUser> users = siteUserRepository.findByRole(RoleType.USER);
+        // 1) 유저 로드
+        List<SiteUser> users = siteUserRepository.findByRole(RoleType.USER);
 
-        if (users.size() < 40) {
-            throw new RuntimeException("리뷰 생성에 필요한 유저가 40명 이상 존재해야 합니다.");
+        if (users.size() < 150) {
+            throw new RuntimeException("리뷰 생성에 필요한 유저가 150명 이상 존재해야 합니다.");
         }
 
-        // 최대150명 사용
         users = users.subList(0, 150);
-
         System.out.println("✔ 유저 " + users.size() + "명 로드 완료");
 
-        // ------------------------------
-        // 2) 이미지 파일 목록
-        // ------------------------------
+        // 2) 이미지 목록
         String[] catImages = {
                 "/uploads/reviews/공방1.jfif",
                 "/uploads/reviews/공방2.jfif",
@@ -64,6 +60,7 @@ class GobangApplicationTests {
                 "/uploads/reviews/공방6.jfif"
         };
 
+        // 긴 텍스트
         String longText = "이 제품은 정말 만족스러웠습니다. 디자인도 고급스럽고 사용감도 훌륭했습니다. "
                 + "특히 포장 상태가 매우 좋았으며 배송도 예상보다 빨랐습니다. "
                 + "선물용으로도 손색이 없을 만큼 품질이 좋아서 너무 만족스러웠어요. "
@@ -71,26 +68,31 @@ class GobangApplicationTests {
 
         int userIndex = 0;
 
-        // ------------------------------
-        // 3) 20개 중 랜덤 10개만 많은 리뷰를 생성하도록 처리
-        // ------------------------------
-        List<Long> pick = new ArrayList<>();
-        for (long i = 1; i <= 20; i++) pick.add(i);
-        Collections.shuffle(pick);
-        Set<Long> highReviewProducts = pick.stream().limit(10).collect(Collectors.toSet());
+        // -------------------------------
+        // 100~150개 생성할 상품 ID
+        // -------------------------------
+        Set<Long> heavyProducts = Set.of(
+                1L, 3L, 5L, 10L, 15L, 20L, 25L, 30L, 35L, 40L
+        );
 
-        System.out.println("▶ 리뷰 많이 생성되는 상품 ID: " + highReviewProducts);
+        System.out.println("▶ 100~150 리뷰 생성될 상품 ID: " + heavyProducts);
 
-        // ------------------------------
-        // 4) productId = 1~20 리뷰 생성
-        //    (변경: 일부는 랜덤 100~150개)
-        // ------------------------------
-        for (long productId = 1; productId <= 20; productId++) {
+        // -------------------------------
+        // 3) 1~180번 상품 리뷰 생성
+        // -------------------------------
+        for (long productId = 1; productId <= 180; productId++) {
 
-            // 100~150 랜덤 or 기본 40
-            int reviewCount = highReviewProducts.contains(productId)
-                    ? (100 + (int)(Math.random() * 51))  // 100~150
-                    : 40;
+            // 32, 75번 제외
+            if (productId == 32 || productId == 75) continue;
+
+            int reviewCount;
+
+            // 대량 리뷰 상품
+            if (heavyProducts.contains(productId)) {
+                reviewCount = 100 + (int)(Math.random() * 51); // 100~150
+            } else {
+                reviewCount = 1 + (int)(Math.random() * 50); // 1~50
+            }
 
             System.out.println(" productId=" + productId + " 리뷰 생성 시작 (" + reviewCount + "개)");
 
@@ -103,7 +105,7 @@ class GobangApplicationTests {
                         ? longText
                         : "이 상품 정말 만족합니다! 테스트 리뷰 " + i;
 
-                // 평균 4.3 ~ 4.5
+                // 평점 랜덤 (4점대 비율 높게)
                 double r = Math.random();
                 int rating;
 
@@ -112,9 +114,11 @@ class GobangApplicationTests {
                 else if (r < 0.15) rating = 3;
                 else if (r < 0.45) rating = 4;
                 else rating = 5;
+
                 int viewCount = (int)(Math.random() * 20);
                 int likeCount = (int)(Math.random() * 10);
 
+                // 리뷰 저장
                 Review review = Review.builder()
                         .orderId(productId * 1000 + i)
                         .orderItemId(productId * 2000 + i)
@@ -132,12 +136,10 @@ class GobangApplicationTests {
 
                 Review savedReview = reviewRepository.save(review);
 
-                // ------------------------------
-                // 4) 60% 확률로 이미지 1장 생성
-                // ------------------------------
+                // 이미지 60% 확률
                 if (Math.random() < 0.6) {
 
-                    int imgIndex = (int)((i + productId) % catImages.length);
+                    int imgIndex = (i + (int)productId) % catImages.length;
 
                     String imgUrl = catImages[imgIndex];
                     String fileName = imgUrl.substring(imgUrl.lastIndexOf("/") + 1);
@@ -153,12 +155,10 @@ class GobangApplicationTests {
                     imageRepository.save(img);
                 }
             }
-
         }
 
         System.out.println("🎉 리뷰 + 이미지 생성 완료!");
     }
-
 
     // 32번 상품 스마일 뱃지(->키링 변경) 테스트 리뷰 데이터
     @Test
@@ -189,10 +189,10 @@ class GobangApplicationTests {
 
         List<String> photoImages = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
-            photoImages.add("/uploads/reviews/키링리뷰" + i + ".jpg");
+            photoImages.add("/images/키링리뷰" + i + ".jpg");
         }
 
-        String photoExtraImage = "/uploads/reviews/키링리뷰10-1.jpg";
+        String photoExtraImage = "/images/키링리뷰10-1.jpg";
 
         // 중복 방지
         Collections.shuffle(photoImages);
@@ -366,10 +366,10 @@ class GobangApplicationTests {
 
         List<String> photoImages = new ArrayList<>();
         for (int i = 1; i <= 6; i++) {
-            photoImages.add("/uploads/reviews/러그리뷰" + i + ".jpg");
+            photoImages.add("/images/러그리뷰" + i + ".jpg");
         }
 
-        String photoExtraImage = "/uploads/reviews/러그리뷰6-1.jpg";
+        String photoExtraImage = "/images/러그리뷰6-1.jpg";
 
         // 중복 방지
         Collections.shuffle(photoImages);
@@ -519,7 +519,6 @@ class GobangApplicationTests {
 
         System.out.println("🎉 productId=75 랜덤 포토 리뷰 포함 24개 생성 완료!");
     }
-
 
     // 테스트 돌리면 로그인 상태.
     // 테스트 종류 후 로그아웃 처리
