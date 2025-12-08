@@ -137,7 +137,7 @@ export default function ProductDetailView() {
     const liked: boolean = data?.productLikeInfo?.liked ?? false
     const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
-    const BASE_URL = 'http://localhost:8090'
+    const BASE_URL = 'http://192.168.0.11:8090'
 
     const pdImageUrl = detailImage
         ? `${BASE_URL}${detailImage.imageUrl}`

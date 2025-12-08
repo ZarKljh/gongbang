@@ -24,7 +24,7 @@ type SubCategory = {
 export default function Main() {
     const [categories, setCategories] = useState<Category[]>([])
     const [subCategoriesByCat, setSubCategoriesByCat] = useState<Record<number, SubCategory[]>>({})
-    const BASE_URL = 'http://localhost:8090'
+    const BASE_URL = 'http://192.168.0.11:8090'
 
     useEffect(() => {
         fetchAll()
