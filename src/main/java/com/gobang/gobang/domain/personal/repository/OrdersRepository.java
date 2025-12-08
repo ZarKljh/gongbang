@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,4 +41,26 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             @Param("lastOrderId") Long lastOrderId,
             Pageable pageable
     );
+
+    // 배송준비중, 배송중 전체 카운트
+    @Query("""
+        SELECT COUNT(o)
+        FROM Orders o
+        JOIN o.deliveries d
+        WHERE o.siteUser.id = :userId
+          AND d.deliveryStatus = :status
+    """)
+    long countByStatus(Long userId, String status);
+
+
+    // 최근 7일 배송완료 카운트
+    @Query("""
+        SELECT COUNT(o)
+        FROM Orders o
+        JOIN o.deliveries d
+        WHERE o.siteUser.id = :userId
+          AND d.deliveryStatus = '배송완료'
+          AND d.completedAt >= :sevenDaysAgo
+    """)
+    long countCompletedWithin7Days(Long userId, LocalDateTime sevenDaysAgo);
 }

@@ -7,8 +7,9 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import { loadPaymentWidget } from "@tosspayments/payment-widget-sdk"
+import api from '@/app/utils/api'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
+const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 
 interface Post {
   id: number
@@ -62,9 +63,13 @@ export default function MyPage() {
     const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
     const [stats, setStats] = useState<any>({
-        totalQna: 0,
-        totalReviews: 0,
-    })
+    totalQna: 0,
+    totalReviews: 0,
+    preparing: 0,   // 배송준비중
+    shipping: 0,    // 배송중
+    completed: 0,   // 배송완료(7일 이내)
+    profileImageUrl: null,
+})
     const [errors, setErrors] = useState<any>({})
 
     // UI 상태
@@ -142,7 +147,6 @@ export default function MyPage() {
     const [reviewToDelete, setReviewToDelete] = useState<any>(null)
     const [editReviewContent, setEditReviewContent] = useState('')
     const [editReviewRating, setEditReviewRating] = useState(0)
-    const [reviewImageCache, setReviewImageCache] = useState<Record<number, string[]>>({})
 
     // 위시리스트/팔로우
     const [followList, setFollowList] = useState<any[]>([])
@@ -206,6 +210,7 @@ export default function MyPage() {
     const loadAllData = async (userId: number) => {
         try {
             await Promise.all([
+                fetchOrders(userId),
                 fetchAddresses(userId),
                 fetchPaymentMethods(),
                 fetchFollowList(userId),
@@ -231,6 +236,17 @@ export default function MyPage() {
         } catch (error) {
             console.error('사용자 정보 조회 실패:', error)
             return null
+        }
+    }
+
+    const fetchOrders = async (id?: number) => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/orders`, {
+                withCredentials: true,
+            })
+            setOrders(res.data.data)
+        } catch (e) {
+            console.error("전체 주문 조회 실패:", e)
         }
     }
 
@@ -311,10 +327,20 @@ export default function MyPage() {
             setStats({
                 totalQna: data.totalQna ?? 0,
                 totalReviews: data.totalReviews ?? 0,
+                preparing: data.preparing ?? 0,
+                shipping: data.shipping ?? 0,
+                completed: data.completed ?? 0,
             })
         } catch (error) {
             console.error('통계 조회 실패:', error)
-            setStats({ totalQna: 0, totalReviews: 0 })
+            setStats({
+                totalQna: 0,
+                totalReviews: 0,
+                preparing: 0,
+                shipping: 0,
+                completed: 0,
+                profileImageUrl: stats.profileImageUrl,
+            })
         }
     }
 
@@ -373,14 +399,13 @@ export default function MyPage() {
     }
 
     const handleAskDefaultPayment = () => {
-        if (!validatePayment()) return;
+        if (!validatePayment()) return
 
         setConfirmModal({
             open: true,
             message: "이 결제수단을 기본 결제수단으로 설정하시겠습니까?",
-            onConfirm: () => {
-                handleSavePayment(true)
-            }
+            onConfirm: () => handleSavePayment(true),
+            onCancel: () => handleSavePayment(false),
         })
     }
 
@@ -540,6 +565,24 @@ export default function MyPage() {
         const diffDays = diffTime / (1000 * 60 * 60 * 24)
         return diffDays <= 7
     }
+
+    useEffect(() => {
+        if (!orders.length) return
+
+        const preparing = orders.filter(o => o.deliveryStatus === "배송준비중").length
+        const shipping = orders.filter(o => o.deliveryStatus === "배송중").length
+        const completed = orders.filter(o =>
+            o.deliveryStatus === "배송완료" &&
+            isWithinSevenDays(o.completedAt)
+        ).length
+
+        setStats(prev => ({
+            ...prev,
+            preparing,
+            shipping,
+            completed
+        }))
+    }, [orders])
 
     // ================= 주문 취소 / 반품 / 교환 =================
     const filteredOrders = orders.filter((order) => {
@@ -1105,9 +1148,14 @@ export default function MyPage() {
             
             const newOrders = res.data.data
 
-            if (newOrders.length < SIZE) {
-                setInfiniteOrdersHasMore(false)
-            }
+            setOrders(prev => {
+                const merged = [...prev, ...newOrders]
+                const unique = merged.filter(
+                    (item, index, self) =>
+                        index === self.findIndex(t => t.orderId === item.orderId)
+                )
+                return unique
+            })
 
             setInfiniteOrders(prev => {
                 const merged = [...prev, ...newOrders]
@@ -1117,6 +1165,10 @@ export default function MyPage() {
                 )
                 return unique
             })
+
+            if (newOrders.length < SIZE) {
+                setInfiniteOrdersHasMore(false)
+            }
 
             if (newOrders.length > 0) {
                 setInfiniteOrdersLastId(newOrders[newOrders.length - 1].orderId)
@@ -1637,9 +1689,7 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송준비중</p>
-                                    <p>{infiniteOrders.filter((o) => 
-                                        o.deliveryStatus?.replace(/\s/g, '') === '배송준비중'
-                                    ).length}</p>
+                                    <p>{stats.preparing}</p>
                                 </div>
 
                                 {/* 배송중 - 전체 */}
@@ -1651,9 +1701,7 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송중</p>
-                                    <p>{infiniteOrders.filter((o) => 
-                                        o.deliveryStatus?.replace(/\s/g, '') === '배송중'
-                                    ).length}</p>
+                                    <p>{stats.shipping}</p>
                                 </div>
 
                                 {/* 배송완료 - 7일 이내만 */}
@@ -1665,10 +1713,7 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송완료</p>
-                                    <p>{infiniteOrders.filter((o) => 
-                                        o.deliveryStatus?.replace(/\s/g, '') === '배송완료' &&
-                                        isWithinSevenDays(o.completedAt)
-                                    ).length}</p>
+                                    <p>{stats.completed}</p>
                                 </div>
                             </div>
 
@@ -1923,8 +1968,8 @@ export default function MyPage() {
                                     <button
                                         className="btn-primary"
                                         onClick={() => {
-                                            setShowAuthBox(!showAuthBox); 
-                                            handleEdit('profile');
+                                            setShowAuthBox(!showAuthBox) 
+                                            handleEdit('profile')
                                         }}
                                     >
                                         수정
