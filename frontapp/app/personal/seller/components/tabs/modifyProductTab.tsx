@@ -14,6 +14,7 @@ export type ProductModifyTabProps = Pick<
     | 'onEdit'
     | 'onCancel'
     | 'onSave'
+    | 'onTabClick'
     | 'onTempChange'
     | 'tempData'
     | 'globalCategoryOptions'
@@ -22,6 +23,8 @@ export type ProductModifyTabProps = Pick<
     | 'onProductImageChange'
     | 'selectedProductId'
     | 'fetchProductDetail'
+    | 'deleteSingleProduct'
+    | 'resetProductState'
 >
 
 export default function ProductModifyTab(props: ProductModifyTabProps) {
@@ -33,6 +36,7 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
         onEdit,
         onCancel,
         onSave,
+        onTabClick,
         onTempChange,
         onVerifyPassword,
         globalCategoryOptions = [],
@@ -41,6 +45,8 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
         onProductImageChange,
         selectedProductId,
         fetchProductDetail,
+        deleteSingleProduct,
+        resetProductState,
     } = props
 
     const { errors, validateField, validateAll } = addProductValidation()
@@ -72,6 +78,18 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
         onTempChange(field, value)
         if (!editMode.productModify) return
         validateField(field as any, value, { ...tempData, [field]: value })
+    }
+
+    const handleDeleteProduct = async () => {
+        if (!window.confirm('정말 이 상품을 삭제하시겠습니까?')) return
+        if (!tempData?.productId) return alert('상품 ID가 없습니다.')
+
+        // 부모에게 삭제 요청
+        await deleteSingleProduct?.(tempData.productId)
+
+        // 삭제 후 수정 화면 종료
+        resetProductState?.()
+        onCancel?.('productList')
     }
 
     /** 🔥 editMode 켜지면 전체 유효성 체크 */
@@ -163,9 +181,23 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
                 <h2>상품 수정</h2>
 
                 {!editMode.productModify ? (
-                    <button className="btn-primary" onClick={() => onEdit?.('productModify')}>
-                        수정
-                    </button>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                        <button className="btn-primary" onClick={() => onEdit?.('productModify')}>
+                            수정
+                        </button>
+                        <button className="btn-secondary" onClick={() => onEdit?.('handleDeleteProduct')}>
+                            삭제
+                        </button>
+                        <button
+                            className="btn-secondary"
+                            onClick={() => {
+                                resetProductState?.()
+                                onTabClick?.('productList')
+                            }}
+                        >
+                            목록으로
+                        </button>
+                    </div>
                 ) : (
                     <div style={{ display: 'flex', gap: 10 }}>
                         <button className="btn-primary" disabled={!isFormValid} onClick={handleSave}>

@@ -186,6 +186,11 @@ export default function MyPage() {
         setProductLoading(true)
 
         try {
+            // ⭐ 여기서 stock 값 변환만 추가 ⭐
+            const stockParam = productFilters.stock
+                .map((s) => (s === 'in' ? 'inStock' : s === 'out' ? 'outOfStock' : ''))
+                .filter(Boolean)
+
             const query = new URLSearchParams({
                 page: String(page),
                 size: String(productPageSize),
@@ -199,6 +204,7 @@ export default function MyPage() {
 
                 active: productFilters.active.join(','),
                 stock: productFilters.stock.join(','),
+                //stock: stockParam.join(','),
                 status: productFilters.status.join(','),
             })
 
@@ -297,6 +303,62 @@ export default function MyPage() {
             })
         } catch (err) {
             console.error('상품 상세 조회 실패:', err)
+        }
+    }
+
+    const deleteSingleProduct = async (productId: number) => {
+        if (!studio?.studioId) {
+            alert('공방 정보가 없습니다.')
+            return
+        }
+
+        try {
+            const res = await axios.delete(`${API_BASE_URL}/studio/single-delete/${productId}`, {
+                withCredentials: true,
+            })
+
+            if (res.data.resultCode !== '200') {
+                alert('삭제 실패: ' + res.data.msg)
+                return
+            }
+
+            alert('상품이 삭제되었습니다.')
+
+            // 상품 목록 새로고침
+            fetchStudioProducts(studio.studioId, 0)
+
+            // 🔥 productList 탭으로 전환
+            setActiveTab('productList')
+
+            // 필요하다면 선택된 productId도 초기화
+            setSelectedProductId(null)
+            setTempData({})
+        } catch (err) {
+            console.error('단건 삭제 실패:', err)
+            alert('삭제 중 오류가 발생했습니다.')
+        }
+    }
+
+    const deleteMultipleProducts = async (productIds: number[]) => {
+        if (!studio?.studioId) return alert('공방 정보가 없습니다.')
+
+        try {
+            const res = await axios.post(`${API_BASE_URL}/studio/multiple-delete`, productIds, {
+                withCredentials: true,
+            })
+
+            if (res.data.resultCode !== '200') {
+                alert('삭제 실패: ' + res.data.msg)
+                return
+            }
+
+            alert('선택된 상품이 삭제되었습니다.')
+
+            // 🔥 목록 새로고침
+            fetchStudioProducts(studio.studioId, 0)
+        } catch (err) {
+            console.error('일괄 삭제 실패:', err)
+            alert('삭제 중 오류가 발생했습니다.')
         }
     }
 
@@ -945,6 +1007,8 @@ export default function MyPage() {
                 selectedProductId={selectedProductId}
                 setSelectedProductId={setSelectedProductId}
                 fetchProductDetail={fetchProductDetail}
+                onDeleteProducts={deleteMultipleProducts}
+                deleteSingleProduct={deleteSingleProduct}
             />
         </div>
     )

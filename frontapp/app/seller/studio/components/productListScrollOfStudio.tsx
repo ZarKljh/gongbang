@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import '../style/studio.css'
 
@@ -80,16 +81,18 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
                 <ul className="product-grid">
                     {products.map((product) => (
                         <li className="product-card" key={product.id}>
-                            <img
-                                className="product-image"
-                                src={product.imageUrl || 'http://localhost:8090/images/no-image-soft.png'} // 기본 이미지 설정 가능
-                                alt={product.name}
-                            />
-                            <div className="product-info">
-                                <div className="product-name">상품명 : {product.name}</div>
-                                <div className="product-price">가격: {product.basePrice.toLocaleString()}원</div>
-                                <div className="product-stock">재고: {product.stockQuantity}개</div>
-                            </div>
+                            <Link href={`/product/list/detail?productId=${product.id}`}>
+                                <img
+                                    className="product-image"
+                                    src={product.imageUrl || 'http://localhost:8090/images/no-image-soft.png'} // 기본 이미지 설정 가능
+                                    alt={product.name}
+                                />
+                                <div className="product-info">
+                                    <div className="product-name">상품명 : {product.name}</div>
+                                    <div className="product-price">가격: {product.basePrice.toLocaleString()}원</div>
+                                    <div className="product-stock">재고: {product.stockQuantity}개</div>
+                                </div>
+                            </Link>
                         </li>
                     ))}
                 </ul>

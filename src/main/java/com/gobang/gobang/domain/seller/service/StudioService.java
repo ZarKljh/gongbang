@@ -317,8 +317,8 @@ public class StudioService {
 
         boolean inStock = p.getStockQuantity() > 0;
 
-        if (filter.getStock().contains("in") && inStock) return true;
-        if (filter.getStock().contains("out") && !inStock) return true;
+        if (filter.getStock().contains("inStock") && inStock) return true;
+        if (filter.getStock().contains("outOfStock") && !inStock) return true;
 
         return false;
     }
@@ -452,7 +452,39 @@ public class StudioService {
     }
 
     public int getFollowerCount(Long studioId) {
+        Studio studio = studioRepository.findById(studioId)
+                .orElseThrow(() -> new RuntimeException("Studio not found"));
 
-        return followRepository.countByStudioStudioId(studioId);
+        System.out.println("실제 매핑되는 Studio.id = " + studio.getStudioId());
+
+        long count = followRepository.countByStudio(studio);
+        System.out.println("팔로워 수 = " + count);
+
+        return (int) count;
+
+
+        //return (int) followRepository.countByStudio(studio);
+        //return followRepository.countByStudioStudioId(studioId);
+    }
+
+    /**
+     * 🔥 단건 삭제 (공통 삭제로직)
+     */
+    public void deleteProductById(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다. id=" + productId));
+
+        // 필요 시: 삭제 권한 검증 / 상태 변경 / 이미지 삭제 등 추가 가능
+        productRepository.delete(product);
+    }
+
+    public int deleteProducts(List<Long> productIds) {
+        int count = 0;
+
+        for(Long id : productIds) {
+            deleteProductById(id);
+            count++;
+        }
+        return count;
     }
 }

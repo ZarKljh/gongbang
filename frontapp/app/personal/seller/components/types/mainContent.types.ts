@@ -93,4 +93,7 @@ export interface MainContentProps {
     selectedProductId?: number | null
     setSelectedProductId?: (id: number | null) => void
     fetchProductDetail?: (productId: number) => Promise<void>
+    deleteProducts(productIds: number[]): Promise<void>
+    onDeleteProducts?: (productIds: number[]) => Promise<void>
+    deleteSingleProduct?: (productId: number) => Promise<void>
 }

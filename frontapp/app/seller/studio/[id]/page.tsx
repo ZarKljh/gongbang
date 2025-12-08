@@ -3,7 +3,6 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import ProductList from '../components/productListOfStudio'
 import '../style/studio.css'
 import ProductListScroll from '../components/productListScrollOfStudio'
 //import useCurrentUser from '@/app/auth/common/useCurrentUser'
@@ -188,21 +187,6 @@ export default function viewStudioInfo() {
                                     <ul className="seller-info-detail">
                                         <li>📝 닉네임: {seller.nickName}</li>
                                         <li>👤 아이디: {seller.userName}</li>
-                                    </ul>
-                                </div>
-                                <div className="studio-list">
-                                    <h2>{seller.nickName}님의 공방리스트</h2>
-                                    <ul className="sutdio-logo-list">
-                                        {studioList.map((item) => (
-                                            <li key={item.studioId}>
-                                                <Link href={`/seller/studio/${item.studioId}`}>
-                                                    <img
-                                                        src={`http://localhost:8090/images/${item.studioLogoImage?.imageFileName}`}
-                                                        alt={item.studioName}
-                                                    />
-                                                </Link>
-                                            </li>
-                                        ))}
                                     </ul>
                                 </div>
                             </div>

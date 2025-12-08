@@ -90,6 +90,8 @@ public class StudioController {
             @RequestParam(required = false) String status
 
     ){
+
+        System.out.println("🔥 전달된 stock 파라미터 = " + stock);
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         List<String> activeList = convertToList(active);
@@ -346,6 +348,29 @@ public class StudioController {
         Image image = studioService.getProductMainImage(productId);
 
         return RsData.of("200", "상품 정보가 성공적으로 수정되었습니다.", new ProductDetailResponse(modifiedProduct, image, category));
+    }
+
+    /**
+     * 🔥 단건 상품 삭제
+     */
+    @DeleteMapping("/single-delete/{productId}")
+    public RsData<?> deleteProduct(
+            @PathVariable Long productId
+    ) {
+        studioService.deleteProductById(productId);
+        return RsData.of("200", "상품이 삭제되었습니다.", null);
+    }
+
+
+    /**
+     * 🔥 복수 상품 삭제
+     */
+    @PostMapping("/multiple-delete")
+    public RsData<?> deleteProducts(
+            @RequestBody List<Long> productIds
+    ) {
+        int deletedCount = studioService.deleteProducts(productIds);
+        return RsData.of("200", deletedCount + "개의 상품이 삭제되었습니다.", deletedCount);
     }
 
 }
