@@ -72,7 +72,13 @@ public class CategoryService {
                 .orElseThrow(() -> new RuntimeException("목록을 찾을 수 없습니다: categoryId=" + categoryId));
     }
 
-
+    public SubCategoryDto getMinSubCategoryId2(Long categoryId) {
+        return subCategoryRepository.findTopByCategoryIdOrderByIdAsc(categoryId)
+                .map(SubCategoryDto::new)
+                .orElseThrow(() ->
+                        new RuntimeException("목록을 찾을 수 없습니다: categoryId=" + categoryId)
+                );
+    }
 
     @Transactional
     public void initCategory(String code, String name, String description, int order) {

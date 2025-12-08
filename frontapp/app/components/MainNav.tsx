@@ -248,6 +248,7 @@ export default function MainNav() {
                                                                 query: {
                                                                     categoryId: String(cat.id),
                                                                     subId: String(sub.id),
+                                                                    subName: String(sub.name),
                                                                 },
                                                             }}
                                                             prefetch={false}

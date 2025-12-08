@@ -4,7 +4,6 @@ package com.gobang.gobang.domain.personal.repository;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.entity.Cart;
 import com.gobang.gobang.domain.product.entity.Product;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,14 +30,6 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("SELECT c FROM Cart c JOIN FETCH c.product p WHERE c.siteUser.id = :userId")
     List<Cart> findByUserIdWithProduct(@Param("userId") Long userId);
-
-    @Query("""
-        SELECT c FROM Cart c
-        WHERE c.siteUser.id = :userId
-          AND (:lastCartId IS NULL OR c.cartId < :lastCartId)
-        ORDER BY c.cartId DESC
-    """)
-        List<Cart> findInfiniteCart(Long userId, Long lastCartId, Pageable pageable);
 
     List<Cart> findByCartIdInAndSiteUser(List<Long> ids, SiteUser siteUser);
 }

@@ -1,8 +1,11 @@
 package com.gobang.gobang.domain.admin.web;
 
+import com.gobang.gobang.global.exception.CustomException;
+import com.gobang.gobang.global.exception.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -31,5 +34,22 @@ public class ApiErrors {
         return ResponseEntity.status(500).body(
                 Map.of("error", Map.of("code","INTERNAL","message", e.getMessage()))
         );
+    }
+
+    // ✅ 1) CustomException 핸들러 추가
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<?> handleCustom(CustomException e) {
+        ErrorCode errorCode = e.getErrorCode();
+
+        return ResponseEntity
+                .status(errorCode.getStatus())  // ErrorCode에 들어있는 HttpStatus 사용
+                .body(
+                        Map.of(
+                                "error", Map.of(
+                                        "code", errorCode.getCode(),      // "M002" 같은 코드
+                                        "message", errorCode.getMessage()  // "Login input is invalid"
+                                )
+                        )
+                );
     }
 }

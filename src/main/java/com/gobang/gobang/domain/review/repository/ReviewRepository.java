@@ -84,6 +84,14 @@ ORDER BY AVG(r.rating) DESC, COUNT(r.reviewId) DESC
 """)
     List<ReviewPopularProductResponse> findPopularReviewProducts();
 
+    @Query("""
+        SELECT r FROM Review r
+        WHERE r.siteUser.id = :userId
+        AND (:lastId IS NULL OR r.reviewId < :lastId)
+        ORDER BY r.reviewId DESC
+    """)
+    List<Review> findInfiniteReviews(Long userId, Long lastId, Pageable pageable);
+
     /// 명확한 정렬 기준 선언 (별점 필터)
     @Query(
             value = """
