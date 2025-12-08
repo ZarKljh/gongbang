@@ -15,6 +15,7 @@ export default function ReviewDetail() {
     const [reviews, setReviews] = useState([])
     const [currentUserId, setCurrentUserId] = useState(null)
     const [selectedImageIndex, setSelectedImageIndex] = useState(null) // ✅ index 기반으로 변경
+    const [slideDirection, setSlideDirection] = useState(null)
 
     const searchParams = useSearchParams()
     const [product, setProduct] = useState(null)
@@ -25,6 +26,9 @@ export default function ReviewDetail() {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
 
     const [roleType, setRoleType] = useState<string | null>(null)
+
+    // 모달 이미지 확대 축소
+    const [zoom, setZoom] = useState(1)
 
     useEffect(() => {
         checkLoginStatus()
@@ -61,18 +65,26 @@ export default function ReviewDetail() {
         }
     }, [searchParams])
 
+    // 모달 열릴때 zoom 초기화
+    useEffect(() => {
+        if (selectedImageIndex !== null) {
+            const timer = setTimeout(() => {
+                setZoom(1)
+            }, 200) // 슬라이드 종료 후 실행
+
+            return () => clearTimeout(timer)
+        }
+    }, [selectedImageIndex])
+
     // 로그인 정보 확인
     const checkLoginStatus = async () => {
         try {
-            const res = await fetch('http://localhost:8090/api/v1/auth/me', {
-                method: 'GET',
-                credentials: 'include',
-            })
-            if (res.ok) {
-                const data = await res.json()
-                setIsLoggedIn(true)
-                setCurrentUserId(data?.data?.id || null)
-            }
+            const res = await api.get('/auth/me')
+
+            const data = res.data
+
+            setIsLoggedIn(true)
+            setCurrentUserId(data?.data?.id || null)
         } catch (err) {
             console.error('로그인 확인 실패:', err)
             setIsLoggedIn(false)
@@ -82,9 +94,9 @@ export default function ReviewDetail() {
     // 리뷰 상세 불러오기
     const fetchReviewDetail = async () => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
-            const data = await res.json()
-            if (res.ok) setReview(data.data)
+            const res = await api(`/reviews/${params.id}`)
+            const data = res.data
+            setReview(data.data)
         } catch (err) {
             console.error('리뷰 상세 조회 실패:', err)
         }
@@ -106,19 +118,17 @@ export default function ReviewDetail() {
 
             const token = localStorage.getItem('accessToken') // 관리자 토큰 가져오기
 
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
-                method: 'DELETE',
+            const res = await api.delete(`/reviews/${reviewId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
             })
 
-            const data = await res.json()
+            const data = res.data
             console.log('🗑️ 삭제 응답:', data)
 
-            if (res.ok && data.resultCode === '200') {
+            if (data.resultCode === '200') {
                 alert('리뷰가 삭제되었습니다.')
                 // 목록에서 제거
                 setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId))
@@ -150,18 +160,40 @@ export default function ReviewDetail() {
     // 이전/다음 이미지 이동
     const handlePrevImage = (e) => {
         e.stopPropagation()
-        setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : review.imageUrls.length - 1))
+        setSlideDirection('left')
+        setTimeout(() => {
+            setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : review.imageUrls.length - 1))
+        }, 150) // 애니메이션 시간만큼 딜레이
     }
 
     const handleNextImage = (e) => {
         e.stopPropagation()
-        setSelectedImageIndex((prev) => (prev < review.imageUrls.length - 1 ? prev + 1 : 0))
+        setSlideDirection('right')
+        setTimeout(() => {
+            setSelectedImageIndex((prev) => (prev < review.imageUrls.length - 1 ? prev + 1 : 0))
+        }, 150)
     }
 
     const currentImage = selectedImageIndex !== null ? review.imageUrls[selectedImageIndex] : null
 
     if (!review) {
         return null
+    }
+
+    const handleWheelZoom = (e) => {
+        e.preventDefault()
+        if (e.deltaY < 0) {
+            // 위로 스크롤 → 확대
+            setZoom((z) => Math.min(z + 0.2, 3))
+        } else {
+            // 아래로 스크롤 → 축소
+            setZoom((z) => Math.max(z - 0.2, 1))
+        }
+    }
+
+    const handleDoubleClickZoom = (e) => {
+        e.preventDefault()
+        setZoom((z) => (z >= 2 ? 1 : 2)) // 1배 ↔ 2배 토글
     }
 
     return (
@@ -198,7 +230,6 @@ export default function ReviewDetail() {
                                 <div className="review-author-name">{review.createdBy}</div>
                                 <div>{review.createdDate}</div>
                             </div>
-                            &nbsp;&nbsp;&nbsp; <ReportButton targetType="POST" targetId={review.review_id} />
                         </div>
                     </div>
 
@@ -227,10 +258,14 @@ export default function ReviewDetail() {
                                 style={{ marginRight: '4px' }}
                             />
                         ))}
-                        <span className="review-rating-text">{review.rating} / 5</span>
+                        <span className="review-rating-text">{review.rating} / 5</span> &nbsp; &nbsp;{' '}
+                        <div className="report-btn">
+                            <ReportButton targetType="POST" targetId={review.review_id} />
+                        </div>
                     </div>
 
                     {/* 내용 */}
+
                     <div className="review-content-box-D">{review.content || '리뷰 내용이 없습니다.'}</div>
 
                     {/* 버튼 영역 */}
@@ -256,36 +291,60 @@ export default function ReviewDetail() {
                 {selectedImageIndex !== null && (
                     <div className="review-modal-overlay" onClick={() => setSelectedImageIndex(null)}>
                         <div className="review-modal-wrapper">
-                            <img
-                                src={
-                                    currentImage?.startsWith('data:')
-                                        ? currentImage
-                                        : `http://localhost:8090${currentImage}`
-                                }
-                                alt="확대 이미지"
-                                className="review-modal-image"
-                            />
+                            <div className="review-modal-image-box">
+                                <img
+                                    src={
+                                        currentImage?.startsWith('data:')
+                                            ? currentImage
+                                            : `http://localhost:8090${currentImage}`
+                                    }
+                                    alt="확대 이미지"
+                                    className="review-modal-image"
+                                    onWheel={handleWheelZoom}
+                                    onDoubleClick={handleDoubleClickZoom}
+                                    style={{
+                                        transform: `scale(${zoom})`,
+                                        cursor: zoom > 1 ? 'zoom-out' : 'zoom-in',
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation() // 부모 overlay 클릭 방지
+                                        setZoom((prev) => (prev === 1 ? 1.8 : 1)) // 1 ↔ 1.8 토글
+                                    }}
+                                />
 
-                            <button
-                                className="review-modal-close"
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    setSelectedImageIndex(null)
-                                }}
-                            >
-                                <FaTimes />
-                            </button>
+                                <button
+                                    className="review-modal-close"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setSelectedImageIndex(null)
+                                    }}
+                                >
+                                    <FaTimes />
+                                </button>
 
-                            {review.imageUrls.length > 1 && (
-                                <>
-                                    <button className="review-modal-prev" onClick={handlePrevImage}>
-                                        <FaChevronLeft />
-                                    </button>
-                                    <button className="review-modal-next" onClick={handleNextImage}>
-                                        <FaChevronRight />
-                                    </button>
-                                </>
-                            )}
+                                {review.imageUrls.length > 1 && (
+                                    <>
+                                        <button
+                                            className="review-modal-prev"
+                                            onClick={(e) => {
+                                                e.stopPropagation() // 🔥 모달 닫힘 방지
+                                                handlePrevImage(e)
+                                            }}
+                                        >
+                                            <FaChevronLeft />
+                                        </button>
+                                        <button
+                                            className="review-modal-next"
+                                            onClick={(e) => {
+                                                e.stopPropagation() // 🔥 모달 닫힘 방지
+                                                handlePrevImage(e)
+                                            }}
+                                        >
+                                            <FaChevronRight />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
