@@ -224,15 +224,6 @@ body {
     font-weight: bold;
 }
 
-.section-header button {
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
 /* 배송 상태 요약 */
 .delivery-status-summary {
     display: flex;
@@ -2093,7 +2084,6 @@ button.link-btn:disabled:hover {
     /* 탭 네비게이션 */
     .tab-nav {
         gap: 16px;
-        overflow-x: auto;
     }
 
     .tab-nav button {
@@ -2403,11 +2393,6 @@ button.link-btn:disabled:hover {
         flex-direction: column;
     }
 
-    .modal-footer button,
-    .modal-footer .btn-primary {
-        width: 100%;
-    }
-
     /* 폼 필드 */
     .form-field label {
         font-size: 13px;
@@ -2438,7 +2423,7 @@ button.link-btn:disabled:hover {
 
     .file-input-button {
         display: block;
-        width: 100%;
+        width: 95%;
         text-align: center;
         padding: 10px;
         background: #f3f4f6;
