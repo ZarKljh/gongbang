@@ -74,13 +74,15 @@ public class OrdersController {
     }
 
     @GetMapping("/infinite")
-    public RsData<List<OrdersResponse>> getInfiniteOrders(
+    public RsData<List<OrdersResponse>> infiniteOrders(
             @RequestParam(required = false) Long lastOrderId,
             @RequestParam(defaultValue = "10") int size
     ) {
-        SiteUser siteUser = siteUserService.getCurrentUser();
-        List<OrdersResponse> orders = ordersService.getInfiniteOrders(siteUser, lastOrderId, size);
-        return RsData.of("200", "주문 무한스크롤 조회 성공", orders);
+        SiteUser user = siteUserService.getCurrentUser();
+        List<OrdersResponse> list =
+                ordersService.getInfiniteOrders(user.getId(), lastOrderId, size);
+
+        return RsData.of("200", "주문 무한스크롤 조회 성공", list);
     }
 
     @PostMapping("/cancel-before-payment")

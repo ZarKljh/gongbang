@@ -4,12 +4,14 @@ import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.CartOrderItemDto;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
+import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
 import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
-import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,8 +124,10 @@ public class OrdersService {
         return OrdersResponse.from(order, imageRepository);
     }
 
-    public List<OrdersResponse> getInfiniteOrders(SiteUser user, Long lastOrderId, int size) {
-        List<Orders> orders = ordersRepository.findInfiniteOrders(user.getId(), lastOrderId, size);
+    public List<OrdersResponse> getInfiniteOrders(Long userId, Long lastOrderId, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        List<Orders> orders = ordersRepository.findInfiniteOrders(userId, lastOrderId, pageable);
 
         return orders.stream()
                 .map(order -> OrdersResponse.from(order, imageRepository))

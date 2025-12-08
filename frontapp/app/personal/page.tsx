@@ -1097,7 +1097,7 @@ export default function MyPage() {
         try {
             const res = await axios.get(`${API_BASE_URL}/orders/infinite`, {
                 params: {
-                    lastOrderId: lastId ?? Number.MAX_SAFE_INTEGER,
+                    lastOrderId: lastId || undefined,
                     size: SIZE,
                 },
                 withCredentials: true,
