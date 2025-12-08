@@ -89,6 +89,7 @@ export default function MyPage() {
         cancelText = "취소"
     }) => {
         if (!open) return null;
+    }
 
     //무한스크롤
     const [infiniteOrders, setInfiniteOrders] = useState<Order[]>([])
