@@ -79,15 +79,12 @@ export default function ReviewDetail() {
     // 로그인 정보 확인
     const checkLoginStatus = async () => {
         try {
-            const res = await fetch('http://localhost:8090/api/v1/auth/me', {
-                method: 'GET',
-                credentials: 'include',
-            })
-            if (res.ok) {
-                const data = await res.json()
-                setIsLoggedIn(true)
-                setCurrentUserId(data?.data?.id || null)
-            }
+            const res = await api.get('/auth/me')
+
+            const data = res.data
+
+            setIsLoggedIn(true)
+            setCurrentUserId(data?.data?.id || null)
         } catch (err) {
             console.error('로그인 확인 실패:', err)
             setIsLoggedIn(false)
@@ -97,9 +94,9 @@ export default function ReviewDetail() {
     // 리뷰 상세 불러오기
     const fetchReviewDetail = async () => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`)
-            const data = await res.json()
-            if (res.ok) setReview(data.data)
+            const res = await api(`/reviews/${params.id}`)
+            const data = res.data
+            setReview(data.data)
         } catch (err) {
             console.error('리뷰 상세 조회 실패:', err)
         }
@@ -121,19 +118,17 @@ export default function ReviewDetail() {
 
             const token = localStorage.getItem('accessToken') // 관리자 토큰 가져오기
 
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
-                method: 'DELETE',
+            const res = await api.delete(`/reviews/${reviewId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
             })
 
-            const data = await res.json()
+            const data = res.data
             console.log('🗑️ 삭제 응답:', data)
 
-            if (res.ok && data.resultCode === '200') {
+            if (data.resultCode === '200') {
                 alert('리뷰가 삭제되었습니다.')
                 // 목록에서 제거
                 setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId))
@@ -235,7 +230,6 @@ export default function ReviewDetail() {
                                 <div className="review-author-name">{review.createdBy}</div>
                                 <div>{review.createdDate}</div>
                             </div>
-                            
                         </div>
                     </div>
 
@@ -264,13 +258,14 @@ export default function ReviewDetail() {
                                 style={{ marginRight: '4px' }}
                             />
                         ))}
-                        <span className="review-rating-text">{review.rating} / 5</span> &nbsp; &nbsp; <div className="report-btn">
-                                <ReportButton targetType="POST" targetId={review.review_id} />
-                            </div>
+                        <span className="review-rating-text">{review.rating} / 5</span> &nbsp; &nbsp;{' '}
+                        <div className="report-btn">
+                            <ReportButton targetType="POST" targetId={review.review_id} />
+                        </div>
                     </div>
 
                     {/* 내용 */}
-                    
+
                     <div className="review-content-box-D">{review.content || '리뷰 내용이 없습니다.'}</div>
 
                     {/* 버튼 영역 */}

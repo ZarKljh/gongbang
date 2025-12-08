@@ -81,11 +81,12 @@ export default function ReviewCreate() {
             formData.append('refType', 'REVIEW')
             formData.append('sortOrder', i.toString())
 
-            await fetch('http://localhost:8090/api/v1/images/upload', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-            })
+            await api.post('/images/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            withCredentials: true,
+        })
         }
 
         alert('리뷰가 등록되었습니다.')

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { FaStar, FaPlus, FaTimes } from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import Link from 'next/link'
+import api from '@/app/utils/api'
 
 export default function ReviewModify() {
     const params = useParams()
@@ -25,17 +26,14 @@ export default function ReviewModify() {
 
     const fetchReview = async () => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`, {
-                method: 'GET',
+            const res = await api.get(`/reviews/${params.id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
                 },
-                credentials: 'include',
             })
-            const data = await res.json()
-            if (res.ok) {
-                setReview(data.data)
-            }
+            const data = res.data
+
+            setReview(data.data)
         } catch (err) {
             console.error('리뷰 불러오기 실패:', err)
         }
@@ -132,10 +130,8 @@ export default function ReviewModify() {
             formData.append('refType', 'REVIEW')
             formData.append('sortOrder', i.toString())
 
-            await fetch('http://localhost:8090/api/v1/images/upload', {
-                method: 'POST',
+            await api.post('/images/upload', {
                 body: formData,
-                credentials: 'include',
             })
         }
 

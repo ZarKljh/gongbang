@@ -10,6 +10,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import 'swiper/css/navigation'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
+import api from '@/app/utils/api'
 
 export default function Review() {
     // ================= 리뷰 =================
@@ -83,27 +84,15 @@ export default function Review() {
     // 로그인 여부 확인
     const checkLoginStatus = async () => {
         try {
-            const res = await fetch('http://localhost:8090/api/v1/auth/me', {
-                method: 'GET',
-                credentials: 'include',
-            })
+            const res = await api.get('auth/me')
 
             console.log('로그인 상태 : ', res.status, res.ok)
 
-            if (res.ok) {
-                const data = await res.json()
-                console.log('🧭 currentUserId:', currentUserId)
-                console.log('✅ 로그인된 사용자:', data.data)
-                console.log('✅ 역할:', data?.data?.role)
+            const data = res.data
 
-                setIsLoggedIn(true)
-                setCurrentUserId(data.data.id)
-                setRoleType(data?.data?.role || null)
-            } else {
-                setIsLoggedIn(false)
-                setRoleType(null)
-                setCurrentUserId(null)
-            }
+            setIsLoggedIn(true)
+            setCurrentUserId(data.data.id)
+            setRoleType(data.data.role || null)
         } catch (err) {
             console.error('로그인 상태 확인 실패', err)
             setIsLoggedIn(false)
@@ -121,17 +110,16 @@ export default function Review() {
     // 리뷰 목록 조회
     const fetchReviews = async (productId: number, page = 0, sort: string, ratingFilter: number | null) => {
         try {
-            const res = await fetch(
-                `http://localhost:8090/api/v1/reviews?productId=${productId}&page=${page}&sort=${sort}&rating=${
-                    ratingFilter ?? ''
-                }`,
-                {
-                    method: 'GET',
-                    credentials: 'omit', // 쿠키 없이 요청 (비로그인도 가능)
+            const res = await api.get(`/reviews`, {
+                params: {
+                    productId,
+                    page,
+                    sort,
+                    rating: ratingFilter ?? '',
                 },
-            )
+            })
 
-            const data = await res.json()
+            const data = res.data
             const fetchedReviews = data.data.reviews || []
 
             setReviews(fetchedReviews)
@@ -190,11 +178,13 @@ export default function Review() {
 
     const fetchPhotoReviews = async (productId) => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/photo?productId=${productId}`)
+            const res = await api.get(`/reviews/photo`, {
+                params: { productId },
+            })
 
-            const data = await res.json()
+            const data = res.data
 
-            if (res.ok && data.data) {
+            if (data.data) {
                 const formatted = data.data.map((r) => ({
                     id: r.reviewId,
                     img: `http://localhost:8090${r.imageUrl}`,
@@ -250,8 +240,9 @@ export default function Review() {
 
         const fetchAverage = async () => {
             try {
-                const res = await fetch(`http://localhost:8090/api/v1/reviews/average/${productId}`)
-                const data = await res.json()
+                const res = await api.get(`/reviews/average/${productId}`)
+                const data = res.data
+
                 console.log('⭐ 평균별점 응답:', data)
                 setAvgRating(data?.data?.avgRating || 0)
                 setTotalCount(data?.data?.totalCount || 0)
@@ -276,14 +267,12 @@ export default function Review() {
 
         const fetchRatingGroup = async () => {
             try {
-                const res = await fetch(`http://localhost:8090/api/v1/reviews/rating-group/${productId}`)
-                const data = await res.json()
+                const res = await api.get(`/reviews/rating-group/${productId}`)
+                const data = res.data
 
-                if (res.ok) {
-                    const counts = data.data
+                const counts = data.data
 
-                    setRatingData(counts)
-                }
+                setRatingData(counts)
             } catch (err) {
                 console.error('별점 분포 불러오기 실패:', err)
             }
@@ -306,23 +295,22 @@ export default function Review() {
     }
 
     // 검색
-    const handleSearch = async () => {
-        if (!productId) return
+    // const handleSearch = async () => {
+    //     if (!productId) return
 
-        console.log('검색 버튼 클릭, keyword =', keyword)
-        // keyword는 state로 관리되고 있으니, 여기서는 현재 sortType 그대로 0페이지부터 조회
+    //     console.log('검색 버튼 클릭, keyword =', keyword)
+    //     // keyword는 state로 관리되고 있으니, 여기서는 현재 sortType 그대로 0페이지부터 조회
 
-        setCurrentPage(0)
+    //     setCurrentPage(0)
 
-        fetchReviews(productId, 0, sortType)
-    }
+    //     fetchReviews(productId, 0, sortType)
+    // }
 
     // 댓글 조회
     const fetchComment = async (reviewId: number) => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments`)
-            if (!res.ok) return
-            const data = await res.json()
+            const res = await api.get(`/reviews/${reviewId}/comments`)
+            const data = res.data
             setComments((prev) => ({
                 ...prev,
                 [reviewId]: data.data || null,
@@ -347,18 +335,14 @@ export default function Review() {
     // 리뷰 좋아요 버튼
     const handleLikeClick = async (reviewId: number) => {
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/like`, {
-                method: 'POST',
-                credentials: 'include',
-            })
+            const res = await api.post(`/reviews/${reviewId}/like`)
+            const data = res.data
 
             if (!isLoggedIn) {
                 if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
                     window.location.href = '/auth/login'
                 }
             }
-
-            const data = await res.json()
 
             // 요청 실패 시 (서버 오류등)
             if (!data || !data.msg) {
@@ -396,11 +380,11 @@ export default function Review() {
 
     // 좋아요 상태 받아오기
     const fetchLikedReviews = async (productId: number) => {
-        const res = await fetch(`http://localhost:8090/api/v1/reviews/likes/me?productId=${productId}`, {
-            credentials: 'include',
+        const res = await api.get(`/reviews/likes/me`, {
+            params: { productId },
         })
-        if (!res.ok) return
-        const data = await res.json()
+
+        const data = res.data
 
         const list: number[] = Array.isArray(data.data) ? data.data : []
 
@@ -419,28 +403,22 @@ export default function Review() {
         }
 
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    review_id: reviewId,
-                    review_comment: reviewComment,
-                }),
+            const res = await api.post(`/reviews/${reviewId}/comments`, {
+                review_id: reviewId,
+                review_comment: reviewComment,
             })
 
-            if (res.ok) {
-                alert('댓글이 등록되었습니다.')
-                setReviewComment('')
-                setActiveCommentBox(null)
-                fetchComment(reviewId) // 등록 후 갱신
-            } else if (res.status === 401) {
+            alert('댓글이 등록되었습니다.')
+            setReviewComment('')
+            setActiveCommentBox(null)
+            fetchComment(reviewId) // 등록 후 갱신
+        } catch (err: any) {
+            if (err.response?.status === 401) {
                 alert('로그인이 필요합니다.')
                 window.location.href = '/auth/login'
             } else {
                 alert('댓글 등록 실패')
             }
-        } catch (err) {
             console.error('댓글 등록 에러:', err)
         }
     }
@@ -453,27 +431,21 @@ export default function Review() {
         }
 
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    review_comment: reviewComment,
-                }),
+            await api.patch(`/reviews/${reviewId}/comments/${commentId}`, {
+                review_comment: reviewComment,
             })
 
-            if (res.ok) {
-                alert('댓글이 수정되었습니다.')
-                setReviewComment('')
-                setActiveCommentBox(null)
-                fetchComment(reviewId) // 수정 후 다시 불러오기
-            } else if (res.status === 401) {
+            alert('댓글이 수정되었습니다.')
+            setReviewComment('')
+            setActiveCommentBox(null)
+            fetchComment(reviewId) // 수정 후 갱신
+        } catch (err: any) {
+            if (err.response?.status === 401) {
                 alert('로그인이 필요합니다.')
                 window.location.href = '/auth/login'
             } else {
                 alert('댓글 수정 실패')
             }
-        } catch (err) {
             console.error('댓글 수정 에러:', err)
         }
     }
@@ -483,19 +455,14 @@ export default function Review() {
         if (!confirm('댓글을 삭제하시겠습니까?')) return
 
         try {
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}/comments/${commentId}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            })
+            const res = await api.delete(`/reviews/${reviewId}/comments/${commentId}`)
+            const data = res.data
 
-            const data = await res.json()
-            if (res.ok) {
-                alert('댓글이 삭제되었습니다.')
-                fetchComment(reviewId)
-            } else {
-                alert(data.msg || '댓글 삭제 실패')
-            }
-        } catch (err) {
+            alert('댓글이 삭제되었습니다.')
+            fetchComment(reviewId)
+        } catch (err: any) {
+            const msg = err.response?.data?.msg || '댓글 삭제 실패'
+            alert(msg)
             console.error('댓글 삭제 에러:', err)
         }
     }
@@ -511,21 +478,16 @@ export default function Review() {
 
             const token = localStorage.getItem('accessToken') // 관리자 토큰 가져오기
 
-            const res = await fetch(`http://localhost:8090/api/v1/reviews/${reviewId}`, {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
+            const res = await api.delete(`/reviews/${reviewId}`, {
+                headers: { Authorization: `Bearer ${token}` },
             })
 
             if (!confirm('리뷰를 삭제하시겠습니까?')) return
 
-            const data = await res.json()
+            const data = res.data
             console.log('🗑️ 삭제 응답:', data)
 
-            if (res.ok && data.resultCode === '200') {
+            if (data.resultCode === '200') {
                 alert('리뷰가 삭제되었습니다.')
                 setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId)) // ✅ 즉시 반영
                 return
@@ -714,7 +676,7 @@ export default function Review() {
                         </div>
                     </div>
 
-                    {/* 정렬 + 검색 바 */}
+                    {/* ⭐ 정렬 + 검색 바 */}
                     <div className="review-sort-search">
                         {/* 정렬 */}
                         <div className="review-sort-buttons">
@@ -755,24 +717,22 @@ export default function Review() {
                             </button>
                         </div> */}
                         <div className="review-sort-right">
-                            <div className="rating-select-wrapper">
-                                <select
-                                    className="review-rating-select"
-                                    value={ratingFilter ?? ''}
-                                    onChange={(e) => {
-                                        const v = e.target.value ? Number(e.target.value) : null
-                                        setRatingFilter(v)
-                                        setCurrentPage(0)
-                                    }}
-                                >
-                                    <option value="">전체 별점</option>
-                                    <option value="5">5점 (최고)</option>
-                                    <option value="4">4점 (좋음)</option>
-                                    <option value="3">3점 (보통)</option>
-                                    <option value="2">2점 (별로)</option>
-                                    <option value="1">1점 (나쁨)</option>
-                                </select>
-                            </div>
+                            <select
+                                className="review-rating-select"
+                                value={ratingFilter ?? ''}
+                                onChange={(e) => {
+                                    const v = e.target.value ? Number(e.target.value) : null
+                                    setRatingFilter(v)
+                                    setCurrentPage(0) // 필터 바뀌면 0페이지부터
+                                }}
+                            >
+                                <option value="">전체</option>
+                                <option value="5">5점</option>
+                                <option value="4">4점</option>
+                                <option value="3">3점</option>
+                                <option value="2">2점</option>
+                                <option value="1">1점</option>
+                            </select>
                         </div>
                     </div>
 

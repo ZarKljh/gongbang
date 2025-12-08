@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import api from './api'
 
 interface ReviewRank {
     thumbnail?: string
@@ -30,17 +31,11 @@ export default function ReviewRank() {
     useEffect(() => {
         const fetchPopularProducts = async () => {
             try {
-                const res = await fetch('http://localhost:8090/api/v1/reviews/popular', {
-                    method: 'GET',
-                    credentials: 'include',
-                })
+                const res = await api.get('/reviews/popular')
 
-                if (!res.ok) {
-                    console.error('❌ API 응답 오류:', res.status)
-                    return
-                }
+                console.error('❌ API 응답 오류:', res.status)
 
-                const json = await res.json()
+                const json = res.data
                 console.log('🔥 인기 리뷰 상품 API 응답:', json)
 
                 setProducts(json.data || [])
