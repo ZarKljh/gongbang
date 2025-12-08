@@ -158,10 +158,19 @@
   .review-rank-card {
     width: 180px !important;
   }
-}
-
-@media (max-width: 480px) {
-  .review-rank-card {
-    width: 150px !important;
-  }
 } */
+
+@media (max-width: 460px) {
+  .review-rank-container {
+    padding: 0 16px !important;
+  }
+  .review-rank-card {
+    width: 160px !important;
+    height: 300px;
+  }
+
+  .review-rank-image-wrapper{
+    width: 200px !important;
+    height: 160px ip !important;
+  }
+}
