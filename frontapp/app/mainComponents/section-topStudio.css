@@ -154,6 +154,9 @@
     color: #fff;
 }
 
+/* ===========================
+   Mobile (460px 이하)
+=========================== */
 @media (max-width: 460px) {
     .topStudioSection {
         padding: 0 16px;
@@ -201,22 +204,24 @@
     }
 
     .topStudioProductWrap {
+        width: 100%;
         margin-right: 0;
         gap: 10px;
-        padding: 0 10px;
-        overflow-x: auto;
-        justify-content: flex-start;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-    }
-
-    .topStudioProductWrap::-webkit-scrollbar {
-        display: none;
+        padding: 0;
+        overflow: hidden;
+        justify-content: space-around;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: 1fr;
     }
 
     .topProductCardSmall {
-        min-width: 120px;
-        flex-shrink: 0;
+        min-width: auto;
+        width: 100%;
+    }
+
+    .topProductCardSmall:nth-child(n+3) {
+        display: none;
     }
 
     .topProductImgSmall {
