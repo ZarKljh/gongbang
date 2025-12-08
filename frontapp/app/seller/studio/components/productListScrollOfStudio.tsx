@@ -1,5 +1,7 @@
 'use client'
-
+import axios from 'axios'
+import { api } from '@/app/utils/api'
+import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import '../style/studio.css'
 
@@ -26,6 +28,8 @@ interface ProductListInfiniteProps {
     studioId: number | string
 }
 
+const API_BASE_URL = 'http://localhost:8090/api/v1'
+
 export default function ProductListInfinite({ studioId }: ProductListInfiniteProps) {
     const [products, setProducts] = useState<Product[]>([])
     const [page, setPage] = useState(0)
@@ -35,16 +39,18 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
     const fetchProducts = async (pageNumber: number) => {
         if (loading || !hasNext) return
         setLoading(true)
+
         try {
-            const response = await fetch(
-                `http://localhost:8090/api/v1/studio/${studioId}/products?page=${pageNumber}&size=5`,
-                {
-                    method: 'GET',
-                    credentials: 'include',
+            const response = await api.get(`/studio/${studioId}/products`, {
+                params: {
+                    page: pageNumber,
+                    size: 5,
                 },
-            )
-            const result = await response.json()
+            })
+
+            const result = response.data
             const newProducts = result.data.content
+
             setProducts((prev) => [...prev, ...newProducts])
             setHasNext(!result.data.last)
             setPage(result.data.number + 1)
@@ -73,23 +79,25 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
 
     return (
         <div className="product-list">
-            <h2 className="product-list-title">상품 리스트 (무한스크롤)</h2>
+            <h2 className="product-list-title">상품 리스트</h2>
             {products.length === 0 ? (
                 <p>등록된 상품이 없습니다.</p>
             ) : (
                 <ul className="product-grid">
                     {products.map((product) => (
                         <li className="product-card" key={product.id}>
-                            <img
-                                className="product-image"
-                                src={product.imageUrl || 'http://localhost:8090/images/no-image-soft.png'} // 기본 이미지 설정 가능
-                                alt={product.name}
-                            />
-                            <div className="product-info">
-                                <div className="product-name">상품명 : {product.name}</div>
-                                <div className="product-price">가격: {product.basePrice.toLocaleString()}원</div>
-                                <div className="product-stock">재고: {product.stockQuantity}개</div>
-                            </div>
+                            <Link href={`/product/list/detail?productId=${product.id}`}>
+                                <img
+                                    className="product-image"
+                                    src={product.imageUrl || 'http://localhost:8090/images/no-image-soft.png'} // 기본 이미지 설정 가능
+                                    alt={product.name}
+                                />
+                                <div className="product-info">
+                                    <div className="product-name">상품명 : {product.name}</div>
+                                    <div className="product-price">가격: {product.basePrice.toLocaleString()}원</div>
+                                    <div className="product-stock">재고: {product.stockQuantity}개</div>
+                                </div>
+                            </Link>
                         </li>
                     ))}
                 </ul>

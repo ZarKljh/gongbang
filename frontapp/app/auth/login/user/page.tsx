@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import './login_user.css'
 import { loginUserValidation } from '@/app/auth/hooks/loginUserValidation'
 import ErrorMessage from '@/app/auth/common/errorMessage'
+import axios from 'axios'
+import { api } from '@/app/utils/api'
 
 export default function LoginUser() {
     const router = useRouter()
@@ -25,35 +27,26 @@ export default function LoginUser() {
             return
         }
 
-        const response = await fetch(`http://localhost:8090/api/v1/auth/login/user`, {
-            method: 'POST',
-            credentials: 'include', //인증정보를 함께 보내는 경우, 쿠키와 같은 것들포함
-            //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            //무엇을 json으로 할지 선언한것
-            body: JSON.stringify(user),
-        })
-        if (response.ok) {
-            alert('login success')
-            router.push(`/`)
-        } else {
-            alert('login fail')
+        try {
+            // ✔ baseURL 자동 적용됨
+            const response = await api.post('/auth/login/user', user)
+
+            alert('로그인성공하였습니다')
+            router.push('/')
+        } catch (error) {
+            alert('로그인에 실패하였습니다. 아이디 혹은 비밀번호를 확인해주세요')
         }
     }
 
     //로그아웃을 위한 메소드
     const handleLogout = async () => {
-        const response = await fetch('http://localhost:8090/api/v1/auth/logout', {
-            method: 'POST',
-            credentials: 'include',
-        })
-        if (response.ok) {
-            alert('logout success')
-            router.push(`/`)
-        } else {
-            alert('logout fail')
+        try {
+            await api.post('/auth/logout') // baseURL 자동 적용
+
+            alert('로그아웃 성공하였습니다.')
+            router.push('/')
+        } catch (error) {
+            alert('로그아웃에 실패하였습니다.')
         }
     }
 

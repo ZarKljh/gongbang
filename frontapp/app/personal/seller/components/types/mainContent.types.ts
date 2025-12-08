@@ -15,7 +15,7 @@ export interface MainContentProps {
     wishList: any[]
     followList: any[]
     qna: any[]
-
+    studioFollowerCount?: number
     studioList: any[]
     studio: any
 
@@ -53,6 +53,7 @@ export interface MainContentProps {
 
     /** 삼품관련 props*/
     // ====== 상품 리스트 / 검색 / 페이징 관련 ======
+    productTotalCount?: number
     productList?: any[]
     productPage?: number
     productPageSize?: number
@@ -92,4 +93,8 @@ export interface MainContentProps {
     selectedProductId?: number | null
     setSelectedProductId?: (id: number | null) => void
     fetchProductDetail?: (productId: number) => Promise<void>
+    deleteProducts(productIds: number[]): Promise<void>
+    onDeleteProducts?: (productIds: number[]) => Promise<void>
+    deleteSingleProduct?: (productId: number) => Promise<void>
+    resetProductState?: () => void
 }
