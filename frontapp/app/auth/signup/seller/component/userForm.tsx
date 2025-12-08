@@ -57,17 +57,19 @@ export default function UserForm({
             <h4 className="form-title">사용자 정보 입력</h4>
             <div className="form-group">
                 <label className="form-label required">아이디</label>
-                <input
-                    type="text"
-                    name="userName"
-                    className="form-input"
-                    value={userInfo.userName}
-                    onChange={onChange}
-                    placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
-                />
-                <button type="button" className="btn btn-secondary" onClick={checkUserName}>
-                    중복확인
-                </button>
+                <div className="form-row">
+                    <input
+                        type="text"
+                        name="userName"
+                        className="form-input"
+                        value={userInfo.userName}
+                        onChange={onChange}
+                        placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
+                    />
+                    <button type="button" className="btn btn-secondary" onClick={checkUserName}>
+                        중복확인
+                    </button>
+                </div>
             </div>
             {errors.userName && <ErrorMessage message={errors.userName} />}
             {!errors.userName && userNameCheckMsg && (
@@ -133,17 +135,19 @@ export default function UserForm({
             </div>
             <div className="form-group">
                 <label className="form-label required">닉네임</label>
-                <input
-                    type="text"
-                    name="nickName"
-                    className="form-input"
-                    value={userInfo.nickName}
-                    onChange={onChange}
-                    placeholder="닉네임은 2글자 이상이어야합니다"
-                />
-                <button type="button" className="btn btn-secondary" onClick={checkNickName}>
-                    중복확인
-                </button>
+                <div className="form-row">
+                    <input
+                        type="text"
+                        name="nickName"
+                        className="form-input"
+                        value={userInfo.nickName}
+                        onChange={onChange}
+                        placeholder="닉네임은 2글자 이상이어야합니다"
+                    />
+                    <button type="button" className="btn btn-secondary" onClick={checkNickName}>
+                        중복확인
+                    </button>
+                </div>
             </div>
             {errors.nickName && <ErrorMessage message={errors.nickName} />}
             {!errors.nickName && nickNameCheckMsg && (

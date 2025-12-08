@@ -1,111 +1,179 @@
-/* signup.css */
+/* =========================================
+   일반회원 회원가입 페이지 - Personal 스타일 통일
+========================================= */
 
+body {
+    background: #faf7f0;
+}
+
+/* 컨테이너 카드 상자 */
 .signup-container {
     width: 100%;
-    max-width: 500px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    max-width: 540px;
+    margin: 60px auto;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
 }
 
+/* 페이지 제목 */
 .signup-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1e293b;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 28px;
 }
 
+/* 폼 제목 */
+.form-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #111;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #000;
+}
+
+/* 폼 그룹 (공통) */
 .form-group {
-    margin-bottom: 1rem;
-}
-
-.form-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #334155;
-    margin-bottom: 0.25rem;
-}
-
-.form-input,
-.signup-container select {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
     width: 100%;
-    height: 40px;
-    padding: 0 0.75rem;
-    font-size: 0.875rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.75rem;
-    outline: none;
-    box-sizing: border-box;
 }
 
-.form-input:focus,
-.signup-container select:focus {
-    border-color: #94a3b8;
-    box-shadow: 0 0 0 2px #cbd5e1;
+/* ─────────────────────────────
+   ID / Email / Nickname → input + button 정렬
+────────────────────────────── */
+.form-row {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    gap: 8px;
 }
 
-.btn {
-    height: 40px;
-    padding: 0 1rem;
-    font-size: 0.875rem;
-    border-radius: 0.75rem;
-    border: 1px solid #cbd5e1;
-    background-color: white;
-    color: #1e293b;
+.form-row .form-input {
+    flex: 1;
+}
+
+/* 버튼 스타일 */
+.btn-secondary {
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    white-space: nowrap;
+    font-size: 14px;
 }
 
-.btn:hover {
-    background-color: #f1f5f9;
+.btn-secondary:hover {
+    background: #f3f4f6;
 }
 
-.btn-primary {
-    background-color: #0f172a;
-    color: white;
-    border: none;
+/* ─────────────────────────────
+   공통 라벨 및 input
+────────────────────────────── */
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
 }
 
-.btn-primary:hover {
-    background-color: #1e293b;
+.form-label.required::after {
+    content: ' *';
+    color: #dc2626;
+    font-weight: 700;
 }
-/* 에러 텍스트 */
-.error-text {
-    margin-top: 0.25rem; /* 4px */
-    font-size: 0.75rem; /* text-xs */
-    line-height: 1rem; /* line-tight */
-    color: #dc2626; /* red-600 */
-    font-weight: 500; /* 살짝 강조 */
+
+.form-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box !important;
+    max-width: 100%; /* 안전장치 */
 }
-/* 에러가 존재하는 input 스타일 */
+
+.form-input:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 1px #000;
+}
+
+/* 에러 input */
 .form-input.error {
-    border-color: #dc2626 !important; /* red-600 */
-    background-color: #fef2f2; /* red-50 */
-    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15); /* red-600/15 */
+    border-color: #dc2626 !important;
+    background: #fef2f2;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
 }
 
-/* 에러 input 포커스 */
-.form-input.error:focus {
-    border-color: #b91c1c !important; /* red-700 */
-    box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.25); /* red-700/25 */
+/* 에러 메시지 */
+.error-text {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #dc2626;
+    font-weight: 500;
 }
 
+/* 성공 메시지 */
 .success-text {
     color: green;
-    font-size: 0.9rem;
+    font-size: 13px;
     margin-top: 4px;
     font-weight: 600;
 }
 
-/* 필수 입력 항목용 빨간 별표 */
-.form-label.required::after {
-    content: ' *';
-    color: #dc2626; /* red-600 */
-    font-weight: 700;
+/* 이미지 미리보기 */
+.image-preview img {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+/* 이미지 삭제 버튼 */
+.remove-image-btn {
+    margin-top: 10px;
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.remove-image-btn:hover {
+    background: #b91c1c;
+}
+
+/* 저장 버튼 영역 */
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* 저장 버튼 */
+.btn-primary {
+    height: 44px;
+    padding: 0 18px;
+    background: #000;
+    color: #fff;
+    border-radius: 8px;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #1f2937;
 }

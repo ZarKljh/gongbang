@@ -96,4 +96,5 @@ export interface MainContentProps {
     deleteProducts(productIds: number[]): Promise<void>
     onDeleteProducts?: (productIds: number[]) => Promise<void>
     deleteSingleProduct?: (productId: number) => Promise<void>
+    resetProductState?: () => void
 }

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { MainContentProps } from './types/mainContent.types'
 /*
 import OrdersTab from './tabs/OrdersTab'
@@ -73,10 +74,12 @@ export default function MainContent(props: MainContentProps) {
                                 <td>
                                     <div className="profile-image">
                                         {studio?.studioLogoImage?.imageFileName ? (
-                                            <img
-                                                src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
-                                                alt="공방로고사진"
-                                            />
+                                            <Link href={`/seller/studio/${studio.studioId}`}>
+                                                <img
+                                                    src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
+                                                    alt="공방로고사진"
+                                                />
+                                            </Link>
                                         ) : (
                                             <div className="no-image">default gray gradient circle</div>
                                         )}

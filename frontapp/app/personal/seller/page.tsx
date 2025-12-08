@@ -81,6 +81,15 @@ export default function MyPage() {
     })
 
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
+    const resetProductState = () => {
+        setSelectedProductId(null)
+        setTempData({})
+        setProductImages({
+            PRODUCT_MAIN: null,
+            PRODUCT: [],
+        })
+        setEditMode((prev) => ({ ...prev, productModify: false }))
+    }
 
     // ======= 초기 로딩 =======
     useEffect(() => {
@@ -1008,6 +1017,7 @@ export default function MyPage() {
                 setSelectedProductId={setSelectedProductId}
                 fetchProductDetail={fetchProductDetail}
                 onDeleteProducts={deleteMultipleProducts}
+                resetProductState={resetProductState}
                 deleteSingleProduct={deleteSingleProduct}
             />
         </div>
