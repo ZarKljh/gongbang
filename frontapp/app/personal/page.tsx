@@ -79,6 +79,16 @@ export default function MyPage() {
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+    const EditModal = ({
+        open,
+        title,
+        children,
+        onClose,
+        onSave,
+        saveText = "저장",
+        cancelText = "취소"
+    }) => {
+        if (!open) return null;
 
     //무한스크롤
     const [infiniteOrders, setInfiniteOrders] = useState<Order[]>([])
@@ -651,10 +661,10 @@ export default function MyPage() {
 
         // 새 비밀번호 검증
         if (newPassword?.trim()) {
-            const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
+            const pwRegex = /^(?=.*[A-Za-z]{4,})(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{5,}$/;
             if (!pwRegex.test(newPassword)) {
-                newErrors.newPassword = '비밀번호는 8자 이상, 영문과 숫자를 포함해야 합니다.'
-                hasError = true
+                newErrors.newPassword = '비밀번호는 영문 4자 이상, 특수기호 1개 이상, 총 5자 이상이어야 합니다.';
+                hasError = true;
             }
             if (newPassword !== confirmPassword) {
                 newErrors.confirmPassword = '비밀번호 확인이 일치하지 않습니다.'
@@ -1078,6 +1088,14 @@ export default function MyPage() {
 
             const newQty = data.data.quantity
 
+            setCart(prev =>
+                prev.map(item =>
+                    item.cartId === cartId
+                        ? { ...item, quantity: newQty }
+                        : item
+                )
+            )
+
         } catch (error) {
             console.error('장바구니 수량 수정 실패:', error)
             alert('수량 수정에 실패했습니다.')
@@ -1352,7 +1370,7 @@ export default function MyPage() {
 
         try {
             const res = await axios.post(
-                "http://localhost:8090/api/v1/mypage/cart/prepare",
+                `${API_BASE_URL}/cart/prepare`,
                 { items: selected },
                 { withCredentials: true }
             )
@@ -1411,7 +1429,7 @@ export default function MyPage() {
         } catch (e: any) {
             try {
                 await axios.post(
-                    "http://localhost:8090/api/v1/mypage/orders/cancel-before-payment",
+                    `${API_BASE_URL}/orders/cancel-before-payment`,
                     { orderCode },
                     { withCredentials: true }
                 )
@@ -1442,7 +1460,7 @@ export default function MyPage() {
             if (stored) {
                 const cartIds = JSON.parse(stored)
 
-                axios.delete("http://localhost:8090/api/v1/mypage/cart/after-order", {
+                axios.delete(`${API_BASE_URL}/cart/after-order`, {
                     data: { cartIds },
                     withCredentials: true,
                 }).then(() => {
@@ -1659,7 +1677,7 @@ export default function MyPage() {
                                                 <img
                                                     src={
                                                         previewProfileImage ||
-                                                        stats.profileImageUrl || `http://localhost:8090${stats.profileImageUrl}` // 서버 이미지
+                                                        stats.profileImageUrl || `${IMAGE_BASE_URL}${stats.profileImageUrl}` // 서버 이미지
                                                     }
                                                     onError={(e) => {
                                                         e.currentTarget.src = "/images/default_profile.jpg"
@@ -1871,7 +1889,7 @@ export default function MyPage() {
 
                                                 <div className="cart-image">
                                                     <img 
-                                                        src={`http://localhost:8090${item.imageUrl}`}
+                                                        src={`${IMAGE_BASE_URL}${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 </div>
@@ -1921,15 +1939,6 @@ export default function MyPage() {
                                     <div className="cart-footer">
                                         <div className="cart-summary">
                                             <div className="summary-row">
-                                                {/* <span className="summary-label">상품 금액</span>
-                                                <span className="summary-value">
-                                                    {selectedItems.length === 0
-                                                        ? 0
-                                                        : infiniteCart
-                                                            .filter(item => selectedItems.includes(item.cartId))
-                                                            .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
-                                                            .toLocaleString()}원
-                                                </span> */}
                                             </div>
                                             <div className="summary-row">
                                                 <span className="summary-label">배송비</span>
