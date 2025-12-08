@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useState } from 'react'
 import { MainContentProps } from '../types/mainContent.types'
 
@@ -28,6 +29,7 @@ export default function ProductListTab(props: MainContentProps) {
         onTabClick,
         onEdit,
         setSelectedProductId,
+        onDeleteProducts,
     } = props
 
     console.log('📦 현재 productList:', props.productList)
@@ -67,15 +69,15 @@ export default function ProductListTab(props: MainContentProps) {
             priceMax: maxPrice,
 
             stock: Object.entries(stockOption)
-                .filter(([k, v]) => v)
+                .filter(([_, v]) => v)
                 .map(([k]) => k),
 
             active: Object.entries(activeOption)
-                .filter(([k, v]) => v)
+                .filter(([_, v]) => v)
                 .map(([k]) => k),
 
             status: Object.entries(statusOption)
-                .filter(([k, v]) => v)
+                .filter(([_, v]) => v)
                 .map(([k]) => k),
         }))
     }
@@ -110,6 +112,8 @@ export default function ProductListTab(props: MainContentProps) {
         if (checkedItems.length === 0) return alert('선택된 상품이 없습니다.')
         if (!confirm(`${checkedItems.length}개 상품을 삭제하시겠습니까?`)) return
         console.log('여러개 삭제 요청:', checkedItems)
+        onDeleteProducts?.(checkedItems)
+        setCheckedItems([])
         // 🔥 선택 삭제 API 호출 필요
     }
 
@@ -344,7 +348,14 @@ export default function ProductListTab(props: MainContentProps) {
                                         onChange={() => toggleItem(item.product.id)}
                                     />
                                 </td>
-                                <td>{item.product.name}</td>
+                                <td>
+                                    <Link
+                                        href={`/product/list/detail?productId=${item.product.id}`}
+                                        className="product-name-link"
+                                    >
+                                        {item.product.name}
+                                    </Link>
+                                </td>
                                 <td>{item.categoryName}</td>
                                 <td>{item.subcategoryName}</td>
                                 <td>{item.product.basePrice.toLocaleString()}원</td>

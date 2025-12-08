@@ -5,6 +5,7 @@ import { UserInfo, StudioInfo } from './types'
 import { useRouter } from 'next/navigation'
 import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
 import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
+import { api } from '@/app/utils/api'
 
 export default function SellerSignupPage() {
     const [step, setStep] = useState(1)
@@ -70,13 +71,12 @@ export default function SellerSignupPage() {
             return
         }
 
-        const res = await fetch(
-            `http://localhost:8090/api/v1/auth/signup/user/checkusername?userName=${userInfo.userName}`,
-        )
-        const body = await res.json()
+        const { data } = await api.get('/auth/signup/user/checkusername', {
+            params: { userName: userInfo.userName },
+        })
 
-        setUserNameCheckMsg(body.msg)
-        setIsUserNameValid(body.data === true)
+        setUserNameCheckMsg(data.msg)
+        setIsUserNameValid(data.data === true)
     }
 
     const checkNickName = async () => {
@@ -85,13 +85,12 @@ export default function SellerSignupPage() {
             return
         }
 
-        const res = await fetch(
-            `http://localhost:8090/api/v1/auth/signup/user/checknickname?nickName=${userInfo.nickName}`,
-        )
-        const body = await res.json()
+        const { data } = await api.get('/auth/signup/user/checknickname', {
+            params: { nickName: userInfo.nickName },
+        })
 
-        setNickNameCheckMsg(body.msg)
-        setIsNickNameValid(body.data === true)
+        setNickNameCheckMsg(data.msg)
+        setIsNickNameValid(data.data === true)
     }
 
     const handleUserChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -276,15 +275,13 @@ export default function SellerSignupPage() {
         // ✅ 여기에서 콘솔로 확인
         console.log('회원가입 요청 payload:', [...formData.entries()])
 
-        const response = await fetch('http://localhost:8090/api/v1/auth/signup/seller', {
-            method: 'POST',
-            body: formData,
-        })
+        try {
+            const response = await api.post('/auth/signup/seller', formData)
 
-        if (response.ok) {
             alert('회원가입 완료! 로그인을 해주세요')
-            router.push('/') // ✅ 메인페이지로 이동
-        } else {
+            router.push('/')
+        } catch (error) {
+            console.error('회원가입 실패:', error)
             alert('회원가입 실패')
         }
     }

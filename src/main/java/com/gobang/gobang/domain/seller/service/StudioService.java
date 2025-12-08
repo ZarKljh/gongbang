@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.auth.entity.Studio;
 import com.gobang.gobang.domain.auth.repository.StudioRepository;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.personal.repository.FollowRepository;
 import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
 import com.gobang.gobang.domain.product.category.repository.SubCategoryRepository;
 import com.gobang.gobang.domain.product.common.ProductStatus;
@@ -38,6 +39,7 @@ public class StudioService {
     private final CategoryRepository categoryRepository;
     private final SubCategoryRepository subCategoryRepository;
     private final ProductOfStudioRepository productOfStudioRepository;
+    private final FollowRepository followRepository;
 
     public Page<ProductDto> getProductListByStudioId(Long studioId, Pageable pageable) {
         Page<Product> productPage = productRepository.findByStudioId(studioId, pageable);
@@ -315,8 +317,8 @@ public class StudioService {
 
         boolean inStock = p.getStockQuantity() > 0;
 
-        if (filter.getStock().contains("in") && inStock) return true;
-        if (filter.getStock().contains("out") && !inStock) return true;
+        if (filter.getStock().contains("inStock") && inStock) return true;
+        if (filter.getStock().contains("outOfStock") && !inStock) return true;
 
         return false;
     }
@@ -447,5 +449,42 @@ public class StudioService {
         Product modifiedProduct = productRepository.save(product);
 
         return modifiedProduct;
+    }
+
+    public int getFollowerCount(Long studioId) {
+        Studio studio = studioRepository.findById(studioId)
+                .orElseThrow(() -> new RuntimeException("Studio not found"));
+
+        System.out.println("실제 매핑되는 Studio.id = " + studio.getStudioId());
+
+        long count = followRepository.countByStudio(studio);
+        System.out.println("팔로워 수 = " + count);
+
+        return (int) count;
+
+
+        //return (int) followRepository.countByStudio(studio);
+        //return followRepository.countByStudioStudioId(studioId);
+    }
+
+    /**
+     * 🔥 단건 삭제 (공통 삭제로직)
+     */
+    public void deleteProductById(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다. id=" + productId));
+
+        // 필요 시: 삭제 권한 검증 / 상태 변경 / 이미지 삭제 등 추가 가능
+        productRepository.delete(product);
+    }
+
+    public int deleteProducts(List<Long> productIds) {
+        int count = 0;
+
+        for(Long id : productIds) {
+            deleteProductById(id);
+            count++;
+        }
+        return count;
     }
 }
