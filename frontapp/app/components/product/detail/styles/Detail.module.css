@@ -10,11 +10,10 @@
 /* 2열 레이아웃 (이미지 : 구매패널) */
 .layout {
     display: grid;
-    grid-template-columns: 650px 1fr;
+    grid-template-columns: minmax(0, 650px) minmax(0, 1fr);
     column-gap: 40px;
-    align-items: flex-start; /* 위 기준 정렬 */
+    align-items: flex-start;
 }
-
 /* 왼쪽 이미지 영역 */
 .imagePanel {
     position: sticky;
@@ -346,7 +345,7 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 9999;
+    z-index: 1999 !important;
 }
 
 .modalContainer {
@@ -520,8 +519,107 @@
     font-weight: 600;
 }
 
-/* 모바일 대응 */
+/* ===========================
+   1024px 이하 - 태블릿 가로 / 작은 노트북
+   =========================== */
+@media (max-width: 1024px) {
+    .detailPage {
+        padding: 24px 16px 0;
+    }
+
+    .layout {
+        grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+        column-gap: 24px;
+    }
+
+    .imagePanel {
+        top: 16px;
+    }
+
+    .purchaseSection {
+        top: 16px;
+        max-height: none; /* 세로 제한 풀기 */
+        height: auto;
+    }
+}
+
+/* ===========================
+   768px 이하 - 태블릿 세로 / 큰 폰
+   =========================== */
+@media (max-width: 768px) {
+    .detailPage {
+        padding: 16px 12px 0;
+    }
+
+    /* 2열 → 1열: 이미지 위, 구매패널 아래 */
+    .layout {
+        display: flex;
+        flex-direction: column;
+        row-gap: 16px;
+    }
+
+    .imagePanel {
+        position: relative;
+        top: 0;
+        margin-bottom: 8px;
+    }
+
+    .purchaseSection {
+        position: relative;
+        top: 0;
+        max-height: none;
+        height: auto;
+    }
+
+    .creatorBox {
+        flex-direction: column;
+        align-items: flex-start;
+        row-gap: 10px;
+    }
+
+    .subButtons {
+        flex-direction: row;
+    }
+}
+
+/* ===========================
+   480px 이하 - 모바일
+   =========================== */
 @media (max-width: 480px) {
+    .detailPage {
+        padding: 14px 10px 0;
+    }
+
+    .productTitle {
+        font-size: 20px;
+    }
+
+    .optionRow {
+        grid-template-columns: 1fr;
+        row-gap: 8px;
+    }
+
+    .totalRow {
+        font-size: 15px;
+    }
+
+    .creatorProfile {
+        width: 48px;
+        height: 48px;
+    }
+
+    .subButtons {
+        flex-direction: column;
+    }
+
+    .btnFav {
+        width: 100%;
+    }
+
+    .btnCart {
+        width: 100%;
+    }
+
     .modalContainer {
         max-width: calc(100% - 24px);
         padding: 16px 14px 14px;

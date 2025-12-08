@@ -98,16 +98,54 @@
 }
 
 .textSm {
-    padding: 100px 0;
+    padding: 2px 0;
     text-align: center;
     color: #7a6a58;
     background: #f6f0e8;
     border: 1px solid #e0d6ca;
     border-radius: 8px;
-    margin-top: 12px;
+    margin: 8px;
+}
+
+.searchBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    font-size: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #5a4331; /* 아이콘 컬러 */
+    border-radius: 50%; /* 동그랗게 */
+
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.searchBtn:hover {
+    background: rgba(200, 143, 94, 0.15); /* 크림톤 hover */
+    transform: scale(1.05);
+}
+
+.searchBtn:active {
+    transform: scale(0.92);
+    background: rgba(200, 143, 94, 0.25);
 }
 
 /* --- 카드 레이아웃 ----------------------------------------*/
+.cardHeader {
+    font-size: 26px;
+    font-weight: 700;
+
+    color: #3f2f22;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border-radius: 8px;
+}
+
 .cardGrid {
     display: grid;
     max-width: 1280px;
@@ -189,10 +227,6 @@
     font-size: 14px;
 }
 
-.likeBtn.active {
-    /* 필요하면 포인트색으로 변경 */
-}
-
 /* ===== 필터 바 ===== */
 .filterArea {
     background: #e9dac7; /* 따뜻한 베이지 */
@@ -202,9 +236,10 @@
 
 .filterGroups {
     display: flex;
-    gap: 40px; /* 색상 / 디자인 / 가격대 간 간격 */
+    gap: 30px; /* 색상 / 디자인 / 가격대 간 간격 */
     align-items: flex-start;
     list-style: none;
+    flex-wrap: wrap; /* 🔥 여러 줄로 내려갈 수 있게 */
 }
 
 .filterGroup {
@@ -278,8 +313,12 @@
 .prChip:hover {
     background: #efe3d3;
 }
+.sortBtn:hover {
+    background: #efe3d3;
+}
 
 /* 칩 선택 상태 */
+.sortBtn.active,
 .chip.active,
 .prChip.active {
     background: #b17457;
@@ -335,4 +374,300 @@
     border-top: none;
     border-left: none;
     transform: rotate(45deg);
+}
+
+/* 카테고리 탭 효과 */
+.subcategoryList li a.activeSub {
+    font-weight: 600;
+    color: #fff; /* 텍스트는 그대로 화이트 유지 */
+    border-radius: 6px;
+    backdrop-filter: brightness(1.1);
+    transition: 0.2s ease;
+}
+
+/* 🔹 텍스트 공통 규격 — 요청한 textSm 클래스 */
+.textSm2 {
+    width: 100%;
+    padding: 200px 0;
+    text-align: center;
+    color: #9c8a78; /* 은은한 브라운 */
+    background: #faf7f2; /* 옅은 베이지 톤 */
+    border-radius: 14px;
+    border: 1px dashed #d6c6b4;
+    box-sizing: border-box;
+}
+
+/* 전체 컨테이너 */
+.searchFilterBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 20px;
+    background: #faf7f0;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    margin-bottom: 40px;
+}
+
+/* 검색박스 */
+.searchBox {
+    flex: 1;
+    max-width: 280px;
+    display: flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid #d8c8b0;
+    background: #fdf9f4;
+    padding: 0 10px 0 14px;
+}
+
+.searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #4a3725;
+}
+
+.searchInput::placeholder {
+    color: #bcae9a;
+}
+
+/* 정렬 버튼 그룹 */
+.sortGroup {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sortBtn {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #d8c8b0;
+    background: #faf4ec;
+    color: #5a4331;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+/* hover 효과 */
+/* .sortBtn:hover {
+    background: #efddcb;
+}
+
+/* 활성 버튼 */
+.active {
+    background: #c88f5e;
+    color: #fff;
+    border-color: #c88f5e;
+}
+
+/* ===========================
+   🖥 1024px 이하 - 태블릿/작은 노트북
+   =========================== */
+@media (max-width: 1024px) {
+    .pageFrame {
+        padding: 12px 16px;
+    }
+
+    .grid {
+        grid-template-columns: 220px 1fr; /* 사이드바 살짝 줄이고 */
+        gap: 20px;
+    }
+
+    .categoryTree {
+        height: auto; /* vh 고정 대신 내용에 맞게 */
+        max-height: 70vh; /* 너무 길어지지 않게 */
+    }
+
+    .cardGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)); /* 카드 2열 */
+        gap: 14px;
+    }
+
+    .filterGroups {
+        gap: 24px;
+    }
+}
+
+/* ===========================
+   📒 768px 이하 - 태블릿 세로 / 큰 폰
+   =========================== */
+@media (max-width: 768px) {
+    .searchFilterBar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .pageFrame {
+        padding: 10px 12px;
+    }
+
+    /* 2열 → 1열 : 사이드바가 위로 올라감 */
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .categoryTree {
+        position: static; /* sticky 해제 */
+        height: auto;
+        max-height: 200px; /* 너무 길면 스크롤 생기게 */
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .contentColumn {
+        gap: 16px;
+    }
+
+    /* 필터 그룹은 세로로 쌓이게 */
+    .filterGroups {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .filterGroup {
+        width: 100%;
+    }
+
+    /* 카드 그리드는 2열 정도로 (가로가 768이라서) */
+    .cardGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .cardTitle {
+        font-size: 15px;
+    }
+
+    .cardDesc {
+        font-size: 13px;
+    }
+
+    .cardDescPrice {
+        font-size: 16px;
+    }
+}
+/* --- 기본에서는 모바일 슬라이더 숨김 (PC/태블릿용 cardGrid 보임) --- */
+.mobileSlider {
+    display: none;
+}
+
+/* ==========================================================================
+   📱 480px 이하 - 모바일 (2×3 페이지 슬라이더)
+   ========================================================================== */
+@media (max-width: 480px) {
+    /* PC 그리드 숨기고 모바일 활성화 */
+    .cardGrid {
+        display: none !important;
+    }
+
+    .mobileSlider {
+        display: block;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding: 6px 0 12px;
+    }
+    .mobileSlider::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 모든 페이지(6개씩)들을 가로로 나열 */
+    .mobileTrack {
+        display: flex;
+        gap: 12px; /* 페이지 간격 (원하면 0으로) */
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+    }
+
+    /* ================================
+       🔥 한 페이지 = 2×3 그리드 (6개)
+       ================================ */
+    .mobileGrid {
+        flex: 0 0 100%;
+        scroll-snap-align: start;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px 10px;
+        padding: 0 6px;
+        list-style: none;
+        margin: 0;
+
+        min-height: 420px; /* 🔥 페이지 높이 고정(대략 2x3 기준) */
+        align-content: flex-start;
+    }
+
+    /* 카드 스타일 모바일 최적화 */
+    .card {
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .cardLink {
+        padding: 10px;
+        display: block;
+    }
+
+    .cardMedia {
+        width: 100%;
+        aspect-ratio: 4 / 3; /* 세로 공간 확보 */
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 6px;
+    }
+
+    .cardMedia img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    /* 텍스트 크기 트림 */
+    .cardTitle {
+        font-size: 14px;
+        margin: 4px 0;
+        color: #4b3a2a;
+        line-height: 1.3;
+    }
+
+    .cardDesc {
+        display: none; /* 모바일에서는 설명 생략 깔끔하게 */
+    }
+
+    .cardDescPrice {
+        font-size: 15px;
+        font-weight: 600;
+        color: #c46a48;
+        margin-bottom: 6px;
+    }
+
+    /* 좋아요/평점 라인 */
+    .cardActions {
+        padding: 6px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #eee;
+    }
+
+    .cardActions span {
+        font-size: 12px;
+        color: #6b5642;
+    }
+
+    .likeBtn {
+        font-size: 13px;
+        height: 26px;
+        padding: 3px 6px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background: #fff;
+    }
 }
