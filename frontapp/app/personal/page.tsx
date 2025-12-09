@@ -64,13 +64,13 @@ export default function MyPage() {
     const [userData, setUserData] = useState<any>(null)
     const [tempData, setTempData] = useState<any>(null)
     const [stats, setStats] = useState<any>({
-    totalQna: 0,
-    totalReviews: 0,
-    preparing: 0,   // 배송준비중
-    shipping: 0,    // 배송중
-    completed: 0,   // 배송완료(7일 이내)
-    profileImageUrl: null,
-})
+        totalQna: 0,
+        totalReviews: 0,
+        preparing: 0,   // 배송준비중
+        shipping: 0,    // 배송중
+        completed: 0,   // 배송완료(7일 이내)
+        profileImageUrl: null,
+    })
     const [errors, setErrors] = useState<any>({})
 
     // UI 상태
@@ -1146,6 +1146,14 @@ export default function MyPage() {
         setSelectedItems([])
     }
 
+    const selectedProducts = cart
+        .filter(item => selectedItems.includes(item.cartId))
+        .map(item => ({
+            name: item.productName,
+            quantity: item.quantity,
+            amount: item.price * item.quantity,
+        }))
+
     // =============== UI ===============
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
@@ -1504,6 +1512,16 @@ export default function MyPage() {
                 widget = await loadPaymentWidget(clientKey, customerKey)
                 setPaymentWidget(widget)
             }
+
+            const selectedProducts = cart
+                .filter(item => selectedItems.includes(item.cartId))
+                .map(item => ({
+                    name: item.productName,
+                    quantity: item.quantity,
+                    amount: item.price * item.quantity,
+                }))
+
+            await widget.setOrderItems(selectedProducts)
 
             await widget.renderPaymentMethods("#payment-method", {
                 value: amount,
@@ -1877,7 +1895,13 @@ export default function MyPage() {
                                             </label>
                                             {selectedItems.length > 0 && (
                                                 <span className="selection-info">
-                                                    <span className="selection-count">{selectedItems.length}</span>개 상품 선택됨
+                                                    <span className="selection-count">
+                                                        {
+                                                            cart
+                                                                .filter(item => selectedItems.includes(item.cartId))
+                                                                .reduce((sum, item) => sum + item.quantity, 0)
+                                                        }
+                                                    </span>개 상품 선택됨
                                                 </span>
                                             )}
                                         </div>
@@ -3035,7 +3059,11 @@ export default function MyPage() {
                                 {/* 텍스트 */}
                                 <div className="summaryText">
                                     <div className="summaryTitle">
-                                        장바구니 상품 {selectedItems.length}개
+                                        장바구니 상품 {
+                                            cart
+                                                .filter(item => selectedItems.includes(item.cartId))
+                                                .reduce((sum, item) => sum + item.quantity, 0)
+                                        }개
                                     </div>
 
                                     <div className="summaryDesc">
@@ -3044,7 +3072,11 @@ export default function MyPage() {
 
                                     <div className="summaryRow">
                                         <span className="summaryLabel">총 상품 수</span>
-                                        <span className="summaryValue">{selectedItems.length}개</span>
+                                        {
+                                            cart
+                                                .filter(item => selectedItems.includes(item.cartId))
+                                                .reduce((sum, item) => sum + item.quantity, 0)
+                                        }개
                                     </div>
 
                                     <div className="summaryRow">
