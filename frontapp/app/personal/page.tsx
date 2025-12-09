@@ -1513,16 +1513,6 @@ export default function MyPage() {
                 setPaymentWidget(widget)
             }
 
-            const selectedProducts = cart
-                .filter(item => selectedItems.includes(item.cartId))
-                .map(item => ({
-                    name: item.productName,
-                    quantity: item.quantity,
-                    amount: item.price * item.quantity,
-                }))
-
-            await widget.setOrderItems(selectedProducts)
-
             await widget.renderPaymentMethods("#payment-method", {
                 value: amount,
             })
