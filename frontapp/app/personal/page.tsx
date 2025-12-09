@@ -180,6 +180,9 @@ export default function MyPage() {
     const [widgetLoaded, setWidgetLoaded] = useState(false)
     const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
     const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
+    // 배송지 선택 모달
+    const [isAddressSelectModalOpen, setIsAddressSelectModalOpen] = useState(false)
+    const [selectedAddress, setSelectedAddress] = useState<any>(null)
     
     // =============== Effects ===============
     useEffect(() => {
@@ -1392,7 +1395,10 @@ export default function MyPage() {
         try {
             const res = await axios.post(
                 `${API_BASE_URL}/cart/prepare`,
-                { items: selected },
+                {
+                    items: selected,
+                    addressId: selectedAddress.userAddressId,
+                },
                 { withCredentials: true }
             )
 
@@ -1404,7 +1410,8 @@ export default function MyPage() {
             // 모달을 띄우기 전에 결제 정보 저장
             setOrderCode(orderCode)
             setTotal(totalPrice)
-            setTimeout(() => setIsModalOpen(true), 0)  // 토스 결제 위젯 모달 열기
+
+            setIsAddressSelectModalOpen(true)
 
         } catch (e: any) {
             console.error("장바구니 결제 준비 실패:", e)
@@ -3006,6 +3013,73 @@ export default function MyPage() {
                                 업로드
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 배송지 선택 모달 */}
+            {isAddressSelectModalOpen && (
+                <div className="modalOverlay">
+                    <div className="modalContainer addressSelectModal">
+
+                        <div className="modalHeader">
+                            <h2 className="modalTitle">배송지 선택</h2>
+                            <button
+                                className="modalCloseBtn"
+                                onClick={() => setIsAddressSelectModalOpen(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="addressList">
+                            {addresses.map(addr => (
+                                <div
+                                    key={addr.userAddressId}
+                                    className={`
+                                        addressItem
+                                        ${addr.isDefault ? "defaultAddress" : ""}
+                                        ${selectedAddress?.userAddressId === addr.userAddressId ? "selectedAddress" : ""}
+                                    `}
+                                    onClick={() => {
+                                        setSelectedAddress(addr)
+                                    }}
+                                >
+                                    <div className="addrName">{addr.recipientName}</div>
+                                    <div className="addrDetail">
+                                        [{addr.zipcode}] {addr.baseAddress} {addr.detailAddress}
+                                    </div>
+
+                                    {addr.isDefault && <span className="defaultBadge">기본 배송지</span>}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="modalFooter">
+                            <button
+                                className="btn-primary"
+                                onClick={() => {
+                                    setIsAddressSelectModalOpen(false)
+                                    setActiveTab("address")  // 배송지 탭으로 이동
+                                }}
+                            >
+                                + 배송지 추가하기
+                            </button>
+                            <button
+                                className="btn-primary"
+                                onClick={() => {
+                                    if (!selectedAddress) {
+                                        alert("배송지를 먼저 선택해주세요.")
+                                        return
+                                    }
+                                    setIsAddressSelectModalOpen(false)
+                                    setIsModalOpen(true)
+                                }}
+                            >
+                                다음으로
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             )}

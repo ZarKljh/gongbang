@@ -98,4 +98,9 @@ public class Orders {
 
         this.orderItems.add(item);
     }
+
+    public void addDelivery(UserAddress address) {
+        Delivery delivery = Delivery.create(this, address);
+        this.deliveries.add(delivery);
+    }
 }

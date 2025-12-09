@@ -1473,6 +1473,34 @@ body {
     display: none;
 }
 
+/* 결제 전 배송지 선택 */
+.addressItem {
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    background: #fff;
+    transition: 0.2s ease;
+}
+
+.addressItem:hover {
+    background: #f9f9f9;
+}
+
+.selectedAddress {
+    border: 2px solid #4a7dff !important;
+    background: #eef3ff !important;
+}
+
+.defaultBadge {
+    background: #4a7dff;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
 /* 버튼 */
 .btn-primary {
     padding: 8px 16px;

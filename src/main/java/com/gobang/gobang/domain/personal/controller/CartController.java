@@ -69,9 +69,9 @@ public class CartController {
 
         SiteUser user = siteUserService.getCurrentUser();
 
-        PrepareOrderResponse response = orderService.prepareCartOrder(user, request.getItems());
+        PrepareOrderResponse response = orderService.prepareCartOrder(user, request.getItems(), request.getAddressId());
 
-        return RsData.of("200", "장바구니 주문 준비 성공", response);
+        return RsData.of("200", "장바구니 주문 준비 성공", response );
     }
 
     @DeleteMapping("/after-order")
