@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.review.service;
 
+import com.gobang.gobang.global.util.OpenAIClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

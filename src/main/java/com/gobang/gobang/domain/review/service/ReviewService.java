@@ -13,6 +13,7 @@ import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.util.OpenAIClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +37,7 @@ public class ReviewService {
     private final SiteUserRepository siteUserRepository;
     private final ReviewImageService reviewImageService ;
     private final ReviewImageRepository reviewImageRepository;
-    private final ImageRepository imageRepository;
+    private final ImageRepository imageRepository;]
 
     // 리뷰 목록 조회
     public Page<Review> getReviews(
