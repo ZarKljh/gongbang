@@ -389,4 +389,21 @@ public class ReviewService {
                 .map(review -> ReviewResponse.fromEntity(review, imageRepository))
                 .toList();
     }
+
+    public String generateReviewSummary(Long productId) {
+        List<Review> reviews = reviewRepository.findByProductIdAndIsActiveTrue(productId);
+
+        if (reviews.isEmpty()) {
+            return "아직 작성된 리뷰가 없습니다.";
+        }
+
+        // 리뷰 본문만 추출
+        List<String> contents = reviews.stream()
+                .map(Review::getContent)
+                .toList();
+
+        String joinedText = String.join("\n", contents);
+
+        return aiService.summarizeReviews(joinedText);
+    }
 }

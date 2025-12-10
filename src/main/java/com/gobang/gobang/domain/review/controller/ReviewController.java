@@ -196,4 +196,13 @@ public class ReviewController {
                 reviewService.getProfileImageUrl()
         );
     }
+
+    // ai 리뷰 요약
+    @GetMapping("/summary")
+    public RsData<String> getReviewSummary(@RequestParam Long productId) {
+
+        String summary = reviewService.generateReviewSummary(productId);
+
+        return RsData.of("200", "리뷰 요약 완료", summary);
+    }
 }
