@@ -36,7 +36,7 @@ public class OrdersService {
 
     // 사용자별 주문 목록 조회
     public List<OrdersResponse> getOrdersByUserId(SiteUser siteUser) {
-        List<Orders> orders = ordersRepository.findBySiteUserWithDelivery(siteUser);
+        List<Orders> orders = ordersRepository.findValidOrders(siteUser);
         List<Orders> distinctOrders = new ArrayList<>(new LinkedHashSet<>(orders));
 
         return distinctOrders.stream()

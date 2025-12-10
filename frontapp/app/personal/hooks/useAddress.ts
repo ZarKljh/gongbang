@@ -1,15 +1,28 @@
-// app/personal/hooks/useAddress.ts
+"use client"
+
 import { useState } from 'react'
 import axios from 'axios'
+import api from '@/app/utils/api'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
+const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 
 export const useAddress = (userId: number) => {
+  // ===== 배송지 리스트 =====
   const [addresses, setAddresses] = useState<any[]>([])
+
+  // ===== 배송지 작성·수정 모달 =====
   const [isAddressModal, setIsAddressModal] = useState(false)
   const [editAddressModal, setEditAddressModal] = useState(false)
   const [editAddressData, setEditAddressData] = useState<any>(null)
+
+  // ===== 배송지 선택 모달 =====
+  const [isAddressSelectModalOpen, setIsAddressSelectModalOpen] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<any>(null)
+
+  // ===== 기본 배송지 체크 =====
   const [defaultAddress, setDefaultAddress] = useState(false)
+
+  // ===== 신규 주소 입력 =====
   const [newAddress, setNewAddress] = useState({
     recipientName: '',
     zipcode: '',
@@ -18,8 +31,9 @@ export const useAddress = (userId: number) => {
     extraAddress: '',
   })
 
-  const flattenAddresses = (data: any[]): any[] => {
-    return data.map((addr) => ({
+  // API 반환 구조 평탄화
+  const flattenAddresses = (data: any[]): any[] =>
+    data.map(addr => ({
       userAddressId: addr.userAddressId,
       userId: addr.siteUser?.userId,
       userName: addr.siteUser?.userName,
@@ -30,8 +44,8 @@ export const useAddress = (userId: number) => {
       extraAddress: addr.extraAddress,
       isDefault: addr.isDefault,
     }))
-  }
 
+  // ===== 배송지 목록 조회 =====
   const fetchAddresses = async (id?: number) => {
     const targetUserId = id || userId
     if (!targetUserId) return
@@ -40,8 +54,7 @@ export const useAddress = (userId: number) => {
       const response = await axios.get(`${API_BASE_URL}/addresses?userId=${targetUserId}`, {
         withCredentials: true,
       })
-      const addressesData = response.data?.data || []
-      const cleaned = flattenAddresses(addressesData)
+      const cleaned = flattenAddresses(response.data?.data || [])
       setAddresses(cleaned)
     } catch (error) {
       console.error('배송지 조회 실패:', error)
@@ -49,6 +62,7 @@ export const useAddress = (userId: number) => {
     }
   }
 
+  // ===== 신규 주소 작성폼 초기화 =====
   const resetAddressForm = () => {
     setNewAddress({
       recipientName: '',
@@ -59,19 +73,17 @@ export const useAddress = (userId: number) => {
     })
   }
 
+  // ===== 배송지 저장 =====
   const handleSaveAddress = async (isDefaultFlag: boolean) => {
     if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
       alert('이름과 주소를 모두 입력해주세요.')
       return
     }
 
-    const addressToSave = { 
-      ...newAddress, 
-      isDefault: isDefaultFlag, 
-    }
+    const payload = { ...newAddress, isDefault: isDefaultFlag }
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/addresses`, addressToSave, {
+      const { data } = await axios.post(`${API_BASE_URL}/addresses`, payload, {
         withCredentials: true,
       })
 
@@ -89,15 +101,16 @@ export const useAddress = (userId: number) => {
     }
   }
 
+  // ===== 배송지 수정 =====
   const handleUpdateAddress = async () => {
     if (!editAddressData) return
 
-    const addressToSave = { ...editAddressData, isDefault: defaultAddress }
+    const payload = { ...editAddressData, isDefault: defaultAddress }
 
     try {
       const { data } = await axios.patch(
         `${API_BASE_URL}/addresses/${editAddressData.userAddressId}`,
-        addressToSave,
+        payload,
         { withCredentials: true },
       )
 
@@ -114,6 +127,7 @@ export const useAddress = (userId: number) => {
     }
   }
 
+  // ===== 배송지 삭제 =====
   const handleDeleteAddress = async (addressId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
 
@@ -124,7 +138,7 @@ export const useAddress = (userId: number) => {
 
       if (data.resultCode === '200') {
         alert('배송지 삭제 성공')
-        setAddresses((prev) => prev.filter((addr) => addr.userAddressId !== addressId))
+        setAddresses(prev => prev.filter(addr => addr.userAddressId !== addressId))
       } else {
         alert(`삭제 실패: ${data.msg}`)
       }
@@ -134,6 +148,7 @@ export const useAddress = (userId: number) => {
     }
   }
 
+  // ===== 신규 주소 카카오 주소 검색 =====
   const sample6_execDaumPostcode = () => {
     if (!window.daum || !window.daum.Postcode) {
       alert('카카오 우편번호 API가 아직 로드되지 않았습니다.')
@@ -141,35 +156,31 @@ export const useAddress = (userId: number) => {
     }
 
     new window.daum.Postcode({
-      oncomplete: (data) => {
+      oncomplete: data => {
         const addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress
-        let extraAddr = ''
+        let extra = ''
 
         if (data.userSelectedType === 'R') {
-          if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
-            extraAddr += data.bname
-          }
-          if (data.buildingName !== '' && data.apartment === 'Y') {
-            extraAddr += extraAddr !== '' ? ', ' + data.buildingName : data.buildingName
-          }
-          if (extraAddr !== '') {
-            extraAddr = ' (' + extraAddr + ')'
-          }
+          if (data.bname && /[동|로|가]$/g.test(data.bname)) extra += data.bname
+          if (data.buildingName && data.apartment === 'Y')
+            extra += extra ? `, ${data.buildingName}` : data.buildingName
+          if (extra) extra = ` (${extra})`
         }
 
-        setNewAddress((prev) => ({
+        setNewAddress(prev => ({
           ...prev,
           zipcode: data.zonecode,
           baseAddress: addr,
-          extraAddress: extraAddr,
+          extraAddress: extra,
         }))
       },
     }).open()
   }
 
+  // ===== 기존 주소 수정용 카카오 주소 검색 =====
   const sample6_execDaumPostcodeForEdit = () => {
     new window.daum.Postcode({
-      oncomplete: function (data: any) {
+      oncomplete: data => {
         setEditAddressData(prev => ({
           ...prev,
           zipcode: data.zonecode,
@@ -181,17 +192,26 @@ export const useAddress = (userId: number) => {
   }
 
   return {
+    // 상태
     addresses,
-    isAddressModal,
+    newAddress,
     editAddressModal,
     editAddressData,
+    isAddressModal,
     defaultAddress,
-    newAddress,
+    isAddressSelectModalOpen,
+    selectedAddress,
+
+    // setter
     setIsAddressModal,
     setEditAddressModal,
     setEditAddressData,
     setDefaultAddress,
     setNewAddress,
+    setIsAddressSelectModalOpen,
+    setSelectedAddress,
+
+    // 기능
     fetchAddresses,
     handleSaveAddress,
     handleUpdateAddress,

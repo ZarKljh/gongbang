@@ -2572,3 +2572,70 @@ button.link-btn:disabled:hover {
         box-shadow: none !important;
     }
 }
+
+/* AI 추천 전체 영역 */
+.rs-wrapper {
+    margin: 16px 0;
+    padding: 0 16px;
+}
+
+/* 헤더 */
+.rs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rs-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* 슬라이더 가로 영역 */
+.rs-slider {
+    margin-top: 12px;
+    display: flex;
+    overflow-x: auto;
+    gap: 16px;
+    padding-bottom: 10px;
+    scroll-behavior: smooth;
+}
+
+.rs-slider::-webkit-scrollbar {
+    display: none;
+}
+
+/* 카드 */
+.rs-card {
+    min-width: 150px;
+    flex-shrink: 0;
+    background: #f7f7f7;
+}
+
+/* 상품 이미지 */
+.rs-thumb {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: #f7f7f7;
+}
+
+/* 상품명 */
+.rs-name {
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+/* 가격 */
+.rs-price {
+    margin-top: 4px;
+    font-weight: bold;
+}
+
+/* AI 설명문 */
+.rs-message {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #888;
+}

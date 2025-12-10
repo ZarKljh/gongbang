@@ -68,4 +68,6 @@ public interface WishListRepository extends JpaRepository<WishList, Long> {
             """)
     List<Long> findLikedProductIds(@Param("userId") Long userId,
                                    @Param("productIds") List<Long> productIds);
+
+    List<WishList> findTop10BySiteUser_IdOrderByCreatedAtDesc(Long userId);
 }

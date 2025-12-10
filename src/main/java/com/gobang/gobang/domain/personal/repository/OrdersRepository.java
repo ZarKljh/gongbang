@@ -31,9 +31,11 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     Optional<Orders> findByOrderCode(String orderCode);
 
     @Query("""
-        SELECT o FROM Orders o 
+        SELECT o FROM Orders o
+        LEFT JOIN FETCH o.deliveries d
         WHERE o.siteUser.id = :userId
-        AND (:lastOrderId IS NULL OR o.id < :lastOrderId)
+          AND (:lastOrderId IS NULL OR o.id < :lastOrderId)
+          AND o.status <> 'TEMP'
         ORDER BY o.id DESC
     """)
     List<Orders> findInfiniteOrders(
@@ -42,25 +44,40 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             Pageable pageable
     );
 
-    // 배송준비중, 배송중 전체 카운트
+
+    // 배송 수량 카운트
     @Query("""
-        SELECT COUNT(o)
-        FROM Orders o
-        JOIN o.deliveries d
+        SELECT COUNT(d)
+        FROM Delivery d
+        JOIN d.order o
         WHERE o.siteUser.id = :userId
           AND d.deliveryStatus = :status
     """)
-    long countByStatus(Long userId, String status);
-
+    long countByDeliveryStatus(
+            @Param("userId") Long userId,
+            @Param("status") String status
+    );
 
     // 최근 7일 배송완료 카운트
     @Query("""
-        SELECT COUNT(o)
-        FROM Orders o
-        JOIN o.deliveries d
+        SELECT COUNT(d)
+        FROM Delivery d
+        JOIN d.order o
         WHERE o.siteUser.id = :userId
           AND d.deliveryStatus = '배송완료'
           AND d.completedAt >= :sevenDaysAgo
     """)
-    long countCompletedWithin7Days(Long userId, LocalDateTime sevenDaysAgo);
+    long countCompletedWithin7Days(
+            @Param("userId") Long userId,
+            @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo
+    );
+
+    @Query("""
+        SELECT o FROM Orders o
+        LEFT JOIN FETCH o.deliveries d
+        WHERE o.siteUser = :user
+          AND o.status <> 'TEMP'
+    """)
+    List<Orders> findValidOrders(@Param("user") SiteUser user);
+
 }

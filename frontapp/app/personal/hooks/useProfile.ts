@@ -1,23 +1,36 @@
-// app/personal/hooks/useProfile.ts
-import { useState } from 'react'
-import axios from 'axios'
+"use client"
 
-const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import api from '@/app/utils/api'
+
+const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 export const useProfile = (userData: any, setUserData: any) => {
-  const [tempData, setTempData] = useState<any>(null)
+
+  const [tempData, setTempData] = useState<any>(userData)
   const [errors, setErrors] = useState<any>({})
   const [editMode, setEditMode] = useState({})
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+
   const [passwordInput, setPasswordInput] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
   const [showAuthBox, setShowAuthBox] = useState(false)
+
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(null)
   const [profileFile, setProfileFile] = useState<File | null>(null)
 
+  // userData 변경되면 tempData도 동기화
+  useEffect(() => {
+    setTempData(userData)
+  }, [userData])
+
+
+  // ===== 비밀번호 인증 =====
   const handleVerifyPassword = async () => {
     if (!passwordInput) {
       alert('비밀번호를 입력해주세요.')
@@ -37,7 +50,6 @@ export const useProfile = (userData: any, setUserData: any) => {
       if (data.resultCode === '200') {
         setIsAuthenticated(true)
         setShowAuthBox(false)
-        setEditMode(prev => ({ ...prev, profile: true }))
         alert('비밀번호 인증 완료!')
       } else {
         alert('비밀번호가 올바르지 않습니다.')
@@ -48,21 +60,26 @@ export const useProfile = (userData: any, setUserData: any) => {
     }
   }
 
+
+  // ===== 특정 섹션 수정 모드 ON =====
   const handleEdit = (section: string) => {
     if (!isAuthenticated) {
       alert('정보 수정을 위해 비밀번호 인증이 필요합니다.')
       return
     }
-    setEditMode({ ...editMode, [section]: true })
+    setEditMode(prev => ({ ...prev, [section]: true }))
     setTempData({ ...userData })
   }
 
+
+  // ===== 저장 =====
   const handleSave = async (section: string) => {
     if (!userData?.id) return
 
-    const newErrors = { nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' }
+    const newErrors: any = { nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' }
     let hasError = false
 
+    // ===== 닉네임 =====
     if (tempData.nickName?.trim()) {
       const nicknameRegex = /^[a-zA-Z0-9가-힣ㄱ-ㅎ]{2,12}$/
       if (!nicknameRegex.test(tempData.nickName)) {
@@ -71,6 +88,7 @@ export const useProfile = (userData: any, setUserData: any) => {
       }
     }
 
+    // ===== 비밀번호 =====
     if (newPassword?.trim()) {
       const pwRegex = /^(?=.*[A-Za-z]{4,})(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{5,}$/
       if (!pwRegex.test(newPassword)) {
@@ -83,6 +101,7 @@ export const useProfile = (userData: any, setUserData: any) => {
       }
     }
 
+    // ===== 이메일 =====
     if (tempData.email?.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(tempData.email)) {
@@ -91,6 +110,7 @@ export const useProfile = (userData: any, setUserData: any) => {
       }
     }
 
+    // ===== 휴대폰 =====
     if (tempData.mobilePhone?.trim()) {
       const phoneRegex = /^010\d{7,8}$/
       if (!phoneRegex.test(tempData.mobilePhone)) {
@@ -100,7 +120,6 @@ export const useProfile = (userData: any, setUserData: any) => {
     }
 
     setErrors(newErrors)
-
     if (hasError) return
 
     try {
@@ -117,25 +136,31 @@ export const useProfile = (userData: any, setUserData: any) => {
 
       if (data.resultCode === '200' && data.data) {
         setUserData(data.data)
-        setEditMode({ ...editMode, [section]: false })
+        setEditMode(prev => ({ ...prev, [section]: false }))
         setNewPassword('')
         setConfirmPassword('')
-        setErrors({ nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' })
+        setErrors({})
       }
     } catch (error: any) {
       console.error('정보 수정 실패:', error.response?.data || error.message)
     }
   }
 
+
+  // ===== 취소 =====
   const handleCancel = (section: string) => {
     setTempData({ ...userData })
-    setEditMode({ ...editMode, [section]: false })
+    setEditMode(prev => ({ ...prev, [section]: false }))
   }
 
+
+  // ===== 프로필 이미지 모달 오픈 =====
   const handleProfileClick = () => {
     setIsProfileModalOpen(true)
   }
 
+
+  // ===== 이미지 선택 =====
   const handleProfileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -143,6 +168,8 @@ export const useProfile = (userData: any, setUserData: any) => {
     setPreviewProfileImage(URL.createObjectURL(file))
   }
 
+
+  // ===== 이미지 업로드 =====
   const handleProfileUpload = async () => {
     if (!profileFile) return alert('이미지를 선택해주세요.')
 
@@ -160,12 +187,17 @@ export const useProfile = (userData: any, setUserData: any) => {
       )
 
       if (data.resultCode === '200') {
+        let uploadedUrl = `${IMAGE_BASE_URL}${data.data}?t=${Date.now()}`
+
         alert('프로필 이미지가 업데이트되었습니다.')
         setIsProfileModalOpen(false)
         setProfileFile(null)
-        let uploadedUrl = `${IMAGE_BASE_URL}${data.data}?t=${Date.now()}`
         setPreviewProfileImage(uploadedUrl)
-      } else {
+
+        // userData 최신화
+        setUserData((prev: any) => ({ ...prev, profileImg: uploadedUrl }))
+      } 
+      else {
         alert('업로드 실패')
       }
     } catch (error) {
@@ -174,6 +206,8 @@ export const useProfile = (userData: any, setUserData: any) => {
     }
   }
 
+
+  // ===== 이미지 삭제 =====
   const handleProfileDelete = async () => {
     if (!confirm('프로필 이미지를 삭제하시겠습니까?')) return
 
@@ -187,8 +221,9 @@ export const useProfile = (userData: any, setUserData: any) => {
         setPreviewProfileImage(null)
         setProfileFile(null)
         setIsProfileModalOpen(false)
-      } else {
-        alert('삭제 실패')
+
+        // userData 최신화
+        setUserData((prev: any) => ({ ...prev, profileImg: null }))
       }
     } catch (error) {
       console.error(error)
@@ -196,6 +231,8 @@ export const useProfile = (userData: any, setUserData: any) => {
     }
   }
 
+
+  // ===== 프로필 이미지 GET =====
   const fetchProfileImage = async (userId: number) => {
     try {
       const response = await axios.get(`${IMAGE_BASE_URL}/api/v1/image/profile/${userId}`, {
@@ -210,32 +247,39 @@ export const useProfile = (userData: any, setUserData: any) => {
     }
   }
 
+
   return {
     tempData,
     errors,
     editMode,
     isAuthenticated,
+
     passwordInput,
     newPassword,
     confirmPassword,
     showAuthBox,
+
     isProfileModalOpen,
     previewProfileImage,
     profileFile,
+
     setPasswordInput,
     setNewPassword,
     setConfirmPassword,
     setShowAuthBox,
     setIsProfileModalOpen,
     setTempData,
+
     handleVerifyPassword,
     handleEdit,
     handleSave,
     handleCancel,
+
     handleProfileClick,
     handleProfileFileChange,
     handleProfileUpload,
     handleProfileDelete,
+
     fetchProfileImage,
   }
 }

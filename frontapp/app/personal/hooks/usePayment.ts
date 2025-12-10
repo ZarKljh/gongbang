@@ -1,22 +1,28 @@
-// app/personal/hooks/usePayment.ts
+"use client"
+
 import { useState } from 'react'
 import axios from 'axios'
+import api from '@/app/utils/api'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
+const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 
 export const usePayment = () => {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([])
   const [isPaymentModal, setIsPaymentModal] = useState(false)
+
   const [paymentType, setPaymentType] = useState<"CARD" | "BANK">("BANK")
   const [bankName, setBankName] = useState("")
   const [accountNumber, setAccountNumber] = useState("")
   const [accountHolder, setAccountHolder] = useState("")
+
   const [cardCompany, setCardCompany] = useState("")
   const [cardNumber, setCardNumber] = useState("")
   const [cardExpire, setCardExpire] = useState("")
+
   const [defaultPayment, setDefaultPayment] = useState(false)
   const [errors, setErrors] = useState<any>({})
 
+  // ======= 결제수단 조회 =======
   const fetchPaymentMethods = async () => {
     try {
       const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
@@ -34,6 +40,7 @@ export const usePayment = () => {
     }
   }
 
+  // ======= 폼 초기화 =======
   const resetPaymentForm = () => {
     setPaymentType('BANK')
     setBankName('')
@@ -43,8 +50,10 @@ export const usePayment = () => {
     setCardNumber('')
     setCardExpire('')
     setDefaultPayment(false)
+    setErrors({})
   }
 
+  // ======= 입력 검증 =======
   const validatePayment = () => {
     const newErrors: any = {}
 
@@ -60,11 +69,13 @@ export const usePayment = () => {
 
     if (paymentType === "CARD") {
       if (!cardCompany.trim()) newErrors.cardCompany = "카드사를 입력해주세요."
+
       if (!cardNumber.trim()) {
         newErrors.cardNumber = "카드번호를 입력해주세요."
       } else if (!/^[0-9]{14,16}$/.test(cardNumber.replace(/-/g, ""))) {
         newErrors.cardNumber = "카드번호는 숫자 14~16자리여야 합니다."
       }
+
       if (!cardExpire.trim()) {
         newErrors.cardExpire = "유효기간을 입력해주세요."
       } else if (!/^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(cardExpire)) {
@@ -76,6 +87,7 @@ export const usePayment = () => {
     return Object.keys(newErrors).length === 0
   }
 
+  // ======= 결제수단 등록 =======
   const handleSavePayment = async (isDefaultFlag: boolean) => {
     if (!validatePayment()) return
 
@@ -95,7 +107,9 @@ export const usePayment = () => {
     }
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, payload, { withCredentials: true })
+      const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, payload, {
+        withCredentials: true,
+      })
 
       if (data.resultCode === '200') {
         alert('결제수단 등록 성공')
@@ -111,6 +125,7 @@ export const usePayment = () => {
     }
   }
 
+  // ======= 기본결제수단 설정 =======
   const handleSetDefault = async (paymentId: number) => {
     try {
       const { data } = await axios.patch(
@@ -130,6 +145,7 @@ export const usePayment = () => {
     }
   }
 
+  // ======= 결제수단 삭제 =======
   const handleDeletePayment = async (paymentId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
 
@@ -144,14 +160,15 @@ export const usePayment = () => {
     }
   }
 
-  const maskCard = (num: string | undefined) => {
-    if (!num) return ""
-    return num.replace(/\d(?=\d{4})/g, "*")
-  }
+  const maskCard = (num: string | undefined) =>
+    num ? num.replace(/\d(?=\d{4})/g, "*") : ""
 
   return {
+    // 데이터
     paymentMethods,
-    isPaymentModal,
+    errors,
+
+    // 폼
     paymentType,
     bankName,
     accountNumber,
@@ -160,7 +177,11 @@ export const usePayment = () => {
     cardNumber,
     cardExpire,
     defaultPayment,
-    errors,
+
+    // 모달
+    isPaymentModal,
+
+    // setter
     setIsPaymentModal,
     setPaymentType,
     setBankName,
@@ -170,10 +191,13 @@ export const usePayment = () => {
     setCardNumber,
     setCardExpire,
     setDefaultPayment,
+
+    // 기능
     fetchPaymentMethods,
     handleSavePayment,
     handleSetDefault,
     handleDeletePayment,
     maskCard,
+    resetPaymentForm,
   }
 }

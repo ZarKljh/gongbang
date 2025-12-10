@@ -1,72 +1,96 @@
-// app/personal/hooks/useOrders.ts
-import { useState } from 'react'
-import axios from 'axios'
+"use client"
 
-const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
+import { useState } from "react"
+import axios from "axios"
+import api from "@/app/utils/api"
+
+const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 
 export const useOrders = () => {
   const [orders, setOrders] = useState<any[]>([])
+
+  // 무한스크롤
   const [infiniteOrders, setInfiniteOrders] = useState<any[]>([])
   const [infiniteOrdersLoading, setInfiniteOrdersLoading] = useState(false)
   const [infiniteOrdersHasMore, setInfiniteOrdersHasMore] = useState(true)
   const [infiniteOrdersLastId, setInfiniteOrdersLastId] = useState<number | null>(null)
-  const [selectedStatus, setSelectedStatus] = useState(null)
-  const [isStatusModal, setIsStatusModal] = useState(false)
-  const [activeFilter, setActiveFilter] = useState('전체')
-
   const SIZE = 10
 
+  // 모달/필터
+  const [openOrderId, setOpenOrderId] = useState<number | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState(null)
+  const [isStatusModal, setIsStatusModal] = useState(false)
+  const [activeFilter, setActiveFilter] = useState("전체")
+
+  // 취소/반품/교환 사유 모달
+  const [isReasonModal, setIsReasonModal] = useState(false)
+  const [reasonModalTitle, setReasonModalTitle] = useState("")
+  const [reasonModalOnSubmit, setReasonModalOnSubmit] =
+    useState<null | ((reason: string) => void)>(null)
+  const [reasonText, setReasonText] = useState("")
+
+  // API - 전체 주문 조회
   const fetchOrders = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/orders`, {
-        withCredentials: true,
-      })
-      setOrders(res.data.data)
+      const res = await axios.get(`${API_BASE_URL}/orders`, { withCredentials: true })
+      setOrders(res.data.data || [])
     } catch (e) {
       console.error("전체 주문 조회 실패:", e)
     }
   }
 
+  // 배송완료 7일 조건
+  const isWithinSevenDays = (dateString?: string) => {
+    if (!dateString) return false
+    const completedDate = new Date(dateString)
+    const now = new Date()
+    return (now.getTime() - completedDate.getTime()) / (1000 * 60 * 60 * 24) <= 7
+  }
+
+  const filterOrdersByStatus = (status) => {
+    return orders.filter((o) => {
+      if (o.deliveryStatus !== status) return false
+
+      if (status === "배송완료") {
+        return o.completedAt && isWithinSevenDays(o.completedAt)
+      }
+
+      return true
+    })
+  }
+
+  // 무한스크롤 데이터 로드
   const fetchInfiniteOrders = async (lastId: number | null) => {
+    if (infiniteOrdersLoading || (!infiniteOrdersHasMore && lastId !== null)) return
+
     setInfiniteOrdersLoading(true)
+
     try {
       const res = await axios.get(`${API_BASE_URL}/orders/infinite`, {
-        params: {
-          lastOrderId: lastId || undefined,
-          size: SIZE,
-        },
+        params: { lastOrderId: lastId || undefined, size: SIZE },
         withCredentials: true,
       })
-      
-      const newOrders = res.data.data
+
+      const newOrders = res.data.data || []
+
+      // 중복 제거 병합
+      setInfiniteOrders(prev => {
+        const merged = [...prev, ...newOrders]
+        return merged.filter((o, i, arr) => i === arr.findIndex(t => t.orderId === o.orderId))
+      })
 
       setOrders(prev => {
         const merged = [...prev, ...newOrders]
-        const unique = merged.filter(
-          (item, index, self) =>
-            index === self.findIndex(t => t.orderId === item.orderId)
-        )
-        return unique
+        return merged.filter((o, i, arr) => i === arr.findIndex(t => t.orderId === o.orderId))
       })
 
-      setInfiniteOrders(prev => {
-        const merged = [...prev, ...newOrders]
-        const unique = merged.filter(
-          (item, index, self) =>
-            index === self.findIndex(t => t.orderId === item.orderId)
-        )
-        return unique
-      })
-
-      if (newOrders.length < SIZE) {
-        setInfiniteOrdersHasMore(false)
-      }
-
-      if (newOrders.length > 0) {
+      if (newOrders.length > 0)
         setInfiniteOrdersLastId(newOrders[newOrders.length - 1].orderId)
-      }
-    } catch (error) {
-      console.error('주문 로드 실패:', error)
+      if (newOrders.length < SIZE)
+        setInfiniteOrdersHasMore(false)
+
+    } catch (e) {
+      console.error("무한스크롤 주문 조회 실패:", e)
     } finally {
       setInfiniteOrdersLoading(false)
     }
@@ -74,31 +98,33 @@ export const useOrders = () => {
 
   const resetInfiniteOrders = () => {
     setInfiniteOrders([])
-    setInfiniteOrdersHasMore(true)
     setInfiniteOrdersLastId(null)
+    setInfiniteOrdersHasMore(true)
   }
 
+  // 필터 주문
+  const filteredOrders = orders.filter(order => {
+    if (activeFilter === "전체")
+      return ["취소", "반품", "교환"].includes(order.deliveryStatus)
+    return order.deliveryStatus === activeFilter
+  })
+
+  // 모달 클릭
   const handleStatusClick = (status: string) => {
     setSelectedStatus(status)
     setIsStatusModal(true)
   }
 
-  const isWithinSevenDays = (dateString?: string) => {
-    if (!dateString) return false
-    const completedDate = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - completedDate.getTime())
-    const diffDays = diffTime / (1000 * 60 * 60 * 24)
-    return diffDays <= 7
+  const toggleOrderDetail = (orderId: number) => {
+    setOpenOrderId(prev => (prev === orderId ? null : orderId))
   }
 
-  const filteredOrders = orders.filter((order) => {
-    if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
-    if (activeFilter === "취소") return order.deliveryStatus === "취소"
-    if (activeFilter === "반품") return order.deliveryStatus === "반품"
-    if (activeFilter === "교환") return order.deliveryStatus === "교환"
-    return true
-  })
+  const submitReason = async () => {
+    if (!reasonModalOnSubmit) return
+    await reasonModalOnSubmit(reasonText)
+    setIsReasonModal(false)
+    setReasonText("")
+  }
 
   return {
     orders,
@@ -106,16 +132,29 @@ export const useOrders = () => {
     infiniteOrdersLoading,
     infiniteOrdersHasMore,
     infiniteOrdersLastId,
-    selectedStatus,
-    isStatusModal,
-    activeFilter,
     filteredOrders,
-    setIsStatusModal,
+
+    selectedStatus,
+    activeFilter,
+    isStatusModal,
+    openOrderId,
+    isReasonModal,
+    reasonModalTitle,
+    reasonText,
+
     setActiveFilter,
+    setIsStatusModal,
+    setIsReasonModal,
+    setReasonModalTitle,
+    setReasonModalOnSubmit,
+    setReasonText,
+
     fetchOrders,
     fetchInfiniteOrders,
     resetInfiniteOrders,
     handleStatusClick,
-    isWithinSevenDays,
+    toggleOrderDetail,
+    submitReason,
+    filterOrdersByStatus,
   }
 }
