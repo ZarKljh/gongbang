@@ -1378,13 +1378,13 @@ export default function MyPage() {
 
     // =============== 결제 ===============
     //선택 상품 구매하기
-    const handlePurchaseSelected = async () => {
+    const handlePurchaseSelected = () => {
         if (selectedItems.length === 0) {
             alert("선택된 상품이 없습니다.")
             return
         }
 
-        // 선택된 cartId → productId + quantity 로 변환
+        // 주문 상품 목록 저장
         const selected = cart
             .filter(item => selectedItems.includes(item.cartId))
             .map(item => ({
@@ -1392,39 +1392,37 @@ export default function MyPage() {
                 quantity: item.quantity,
             }))
 
+        // 임시 저장
+        setPendingOrderItems(selected)
+
+        // 배송지 모달 열기
+        setIsAddressSelectModalOpen(true)
+    }
+
+    const handleAddressNext = async () => {
+        if (!selectedAddress) {
+            alert("배송지를 선택해주세요.")
+            return
+        }
+
         try {
             const res = await axios.post(
                 `${API_BASE_URL}/cart/prepare`,
-                {
-                    items: selected,
-                    addressId: selectedAddress.userAddressId,
-                },
+                { items: pendingOrderItems, addressId: selectedAddress.userAddressId },
                 { withCredentials: true }
             )
 
             const { orderCode, totalPrice } = res.data.data
 
-            localStorage.setItem("ORDER_CART_IDS", JSON.stringify(selectedItems))
-            localStorage.setItem("PAY_PENDING", "1")
-
-            // 모달을 띄우기 전에 결제 정보 저장
             setOrderCode(orderCode)
             setTotal(totalPrice)
 
-            setIsAddressSelectModalOpen(true)
+            setIsAddressSelectModalOpen(false)
+            setIsModalOpen(true) // 결제 모달 열기
 
-        } catch (e: any) {
-            console.error("장바구니 결제 준비 실패:", e)
-
-            const err = e?.response?.data
-
-            if (e?.response?.status === 401) {
-                alert("로그인이 필요합니다.")
-                router.push("/auth/login")
-                return
-            }
-
-            alert(err?.message || "장바구니 주문 준비 중 오류가 발생했습니다.")
+        } catch (error) {
+            console.error("결제 준비 실패:", error)
+            alert("결제 준비 중 오류가 발생했습니다.")
         }
     }
 
