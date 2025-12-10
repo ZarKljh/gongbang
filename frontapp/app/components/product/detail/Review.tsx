@@ -539,7 +539,7 @@ export default function Review() {
 
                     {/* 제목 + 버튼 */}
                     <div className="review-list-title">
-                        <h2>리뷰 목록</h2>
+                        <h2 className='reviews-title'>리뷰 목록</h2>
                         {roleType === 'USER' && (
                             <button className="review-write-btn" onClick={handleCreateClick}>
                                 리뷰 작성하기
@@ -580,16 +580,7 @@ export default function Review() {
 
                         {/* 포토 모달 */}
                         {showModal && (
-                            <div
-                                style={{
-                                    position: 'fixed',
-                                    inset: 0,
-                                    background: 'rgba(0,0,0,0.7)',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    zIndex: 2000,
-                                }}
+                            <div className='photo-modal'
                                 onClick={closePhotoModal}
                             >
                                 {/* 모달 내용 */}
@@ -604,27 +595,15 @@ export default function Review() {
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <h3 style={{ marginBottom: '15px' }}>포토 리뷰 전체 보기</h3>
+                                    <h3 className="modal-title">포토 리뷰 전체 보기</h3>
 
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexWrap: 'wrap',
-                                            gap: '12px',
-                                        }}
-                                    >
+                                    <div className="modal-container">
                                         {modalImages.map((item) => (
                                             <img
+                                                className="modal-img"
                                                 key={item.id}
                                                 src={item.img}
                                                 alt=""
-                                                style={{
-                                                    width: '160px',
-                                                    height: '160px',
-                                                    objectFit: 'cover',
-                                                    borderRadius: '8px',
-                                                    cursor: 'pointer',
-                                                }}
                                                 onClick={() => moveToDetail(item.reviewId)} // 클릭 → 상세 페이지 이동
                                             />
                                         ))}
@@ -804,12 +783,12 @@ export default function Review() {
                                                     {liked[review.reviewId] ? (
                                                         <FaThumbsUp
                                                             className="like-icon"
-                                                            style={{ marginRight: '6px' }}
+                                                            
                                                         />
                                                     ) : (
                                                         <FaRegThumbsUp
                                                             className="like-icon"
-                                                            style={{ marginRight: '6px' }}
+                                                            
                                                         />
                                                     )}
                                                     <span className="like-text">

@@ -13,7 +13,6 @@ import java.util.List;
 @Builder
 public class PhotoReviewResponse {
     private Long reviewId;
-//        private String imageUrl;
     private List<String> imageUrls;
     private String content;
 
