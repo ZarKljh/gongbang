@@ -162,6 +162,7 @@ export default function MyPage() {
     // 장바구니
     const [cart, setCart] = useState<any[]>([])
     const [selectedItems, setSelectedItems] = useState<number[]>([])
+    const [pendingOrderItems, setPendingOrderItems] = useState<any[]>([])
 
     //문의
     const [qna, setQna] = useState<any[]>([])
@@ -1405,10 +1406,17 @@ export default function MyPage() {
             return
         }
 
+        const itemsToSend = cart
+            .filter(item => selectedItems.includes(item.cartId))
+            .map(item => ({
+                productId: item.productId,
+                quantity: item.quantity,
+            }))
+
         try {
             const res = await axios.post(
                 `${API_BASE_URL}/cart/prepare`,
-                { items: pendingOrderItems, addressId: selectedAddress.userAddressId },
+                { items: itemsToSend, addressId: selectedAddress.userAddressId },
                 { withCredentials: true }
             )
 
@@ -1548,6 +1556,13 @@ export default function MyPage() {
     const firstSelectedItem = cart.find(
         item => item.cartId === firstSelectedCartId
     )
+
+    useEffect(() => {
+        if (addresses.length === 0) return
+
+        const defaultAddr = addresses.find(a => a.isDefault)
+        setSelectedAddress(defaultAddr || addresses[0])
+    }, [addresses])
 
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
@@ -3065,14 +3080,7 @@ export default function MyPage() {
                             </button>
                             <button
                                 className="btn-primary"
-                                onClick={() => {
-                                    if (!selectedAddress) {
-                                        alert("배송지를 먼저 선택해주세요.")
-                                        return
-                                    }
-                                    setIsAddressSelectModalOpen(false)
-                                    setIsModalOpen(true)
-                                }}
+                                onClick={handleAddressNext}
                             >
                                 다음으로
                             </button>

@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -77,8 +76,6 @@ public class Orders {
         Orders order = new Orders();
         order.setSiteUser(user);
         order.setStatus("TEMP"); // 임시 주문 상태
-        order.setOrderCode("ORD_" + UUID.randomUUID());
-        order.setTotalPrice(BigDecimal.ZERO); // 일단 0 -> 뒤에서 계산됨
 
         return order;
     }
