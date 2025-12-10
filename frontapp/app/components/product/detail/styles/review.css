@@ -1,5 +1,6 @@
 /* 전체 프레임 */
 .detailPage {
+    width: 100%;
     max-width: 1280px; /* ✅ 고정 1280 */
     margin: 0 auto; /* 가운데 정렬 */
     padding: 0 20px;
@@ -395,7 +396,7 @@
 .review-list {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
 }
 
 .review-empty {
@@ -403,8 +404,9 @@
 }
 
 .review-item {
-    margin-bottom: 40px;
-    width: 820px;
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto 40px;
 }
 
 .review-header {
@@ -531,8 +533,10 @@
 }
 .review-content-box {
     display: flex;
-    width: 800px;
-    height: 200px;
+    width: 100% !important;
+    min-width: 300px;
+    max-width: 820px;
+    min-height: 200px;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 15px;
@@ -542,6 +546,7 @@
     transition: all 0.3s ease;
     line-height: 1.6;
     margin-bottom: 10px;
+    box-sizing: border-box;
 }
 .review-content-box:hover {
     background-color: #f5f5f5;
@@ -567,7 +572,8 @@
 }
 
 .review-divider {
-    width: 820px;
+    width: 100%;
+    max-width: 820px;
     border: none;
     border-top: 1px solid #ccc;
 }
@@ -575,19 +581,19 @@
 /* 💬 댓글 영역 */
 .review-comment {
     display: flex;
-    width: 800px;
-    height: 100px;
+    width: 100% !important;
+    min-width: 300px;
+    max-width: 820px;
+    min-height: 90px;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 15px;
     overflow: hidden;
-    cursor: pointer;
     background-color: #fafafa;
     transition: all 0.3s ease;
     line-height: 1.6;
     margin-bottom: 10px;
-    justify-content: space-between;
-    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .review-comment-content {
@@ -647,9 +653,11 @@
     margin-top: 10px;
 }
 .review-comment-textarea {
-    /* display: flex; */
-    width: 800px;
-    height: 100px;
+    display: flex;
+    width: 100% !important;
+    min-width: 300px;
+    max-width: 820px;
+    min-height: 100px;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 15px;
@@ -658,7 +666,7 @@
     transition: all 0.3s ease;
     line-height: 1.6;
     margin-bottom: 10px;
-    resize: none;
+    box-sizing: border-box;
 }
 
 .review-comment-edit-controls {
@@ -791,11 +799,10 @@
     }
 
     .review-rating-select:hover {
-    background-color: rgba(177, 116, 87, 0.63);
-    padding: 6px 12px;
-    transition: all 0.3s ease;
-}
-
+        background-color: rgba(177, 116, 87, 0.63);
+        padding: 6px 12px;
+        transition: all 0.3s ease;
+    }
 
     /* 별점 영역 */
     .review-rating-row {
@@ -846,7 +853,7 @@
 
     .review-content-box {
         width: 100% !important;
-        height: 90px !important;
+        min-height: 100px;
         padding: 12px;
         flex-direction: row;
         gap: 10px;
@@ -870,18 +877,12 @@
     }
 
     /* 댓글 영역 */
-    .review-comment,
+    .review-comment {
+    }
     .review-comment-textarea {
         width: 100%;
-    }
-
-    .review-comment {
-        padding: 12px;
-        height: auto;
-    }
-
-    .review-comment-textarea {
         height: 80px;
+        font-size: 13px;
     }
 
     .review-comment-actions {
@@ -896,7 +897,6 @@
         padding: 6px 10px;
         font-size: 12px;
     }
-
 
     /* 포토 슬라이드 */
     .photoCard {
@@ -964,7 +964,7 @@
         height: 90px;
     }
 
-      /* ============================
+    /* ============================
        기본 버튼 규격
        ============================ */
     .review-sort-btn,
@@ -984,7 +984,6 @@
         border-radius: 6px;
     }
 
-
     /* ============================
        정렬 버튼
        ============================ */
@@ -995,13 +994,12 @@
     }
 
     .review-sort-btn:hover {
-    color: white;
-    background-color: #b17457c2;
-    background-color: rgba(177, 116, 87, 0.63);
-    padding: 6px 12px;
-    transition: all 0.3s ease;
-}
-
+        color: white;
+        background-color: #b17457c2;
+        background-color: rgba(177, 116, 87, 0.63);
+        padding: 6px 12px;
+        transition: all 0.3s ease;
+    }
 
     /* ============================
        좋아요 버튼
@@ -1028,10 +1026,8 @@
     }
 
     .like-icon {
-        margin : 0;
-
+        margin: 0;
     }
-
 
     /* ============================
        삭제 버튼
@@ -1041,7 +1037,6 @@
         font-size: 12px;
     }
 
-
     /* ============================
        신고 버튼
        ============================ */
@@ -1049,7 +1044,6 @@
         transform: scale(0.6);
         margin-left: 4px;
     }
-
 
     /* ============================
        댓글용 버튼들
@@ -1070,7 +1064,6 @@
         gap: 6px;
     }
 
-
     /* ============================
        리뷰 작성 버튼 (상단)
        ============================ */
@@ -1079,9 +1072,7 @@
         font-size: 14px;
         border-radius: 6px;
         margin-top: 12px;
-
     }
-
 
     .report-btn {
         margin: 0;
