@@ -186,10 +186,12 @@ export default function Review() {
 
             if (data.data) {
                 const formatted = data.data.map((r) => ({
-                    id: r.reviewId,
-                    img: `http://localhost:8090${r.imageUrl}`,
+                    reviewId: r.reviewId,
+                    imageUrls: r.imageUrls ?? [], // 모든 이미지 리스트 유지
+                    content: r.content,
                     title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
                 }))
+
                 setPhotoReviews(formatted)
             }
         } catch (e) {
@@ -201,9 +203,27 @@ export default function Review() {
         if (productId) fetchPhotoReviews(productId)
     }, [productId])
 
+    // 모달용 전체 이미지들 구성
+    const allReviewImages = Array.isArray(photoReviews)
+        ? photoReviews.flatMap((review) =>
+              Array.isArray(review.imageUrls)
+                  ? review.imageUrls.map((url) => ({
+                        reviewId: review.reviewId,
+                        url,
+                    }))
+                  : [],
+          )
+        : []
     // 모달 열기 + 전체 이미지 세팅
     const openPhotoModal = () => {
-        setModalImages(photoReviews) // 전체 포토 이미지 모달에 표시
+        const allReviewImages = photoReviews.flatMap((review) =>
+            (review.imageUrls ?? []).map((url) => ({
+                reviewId: review.reviewId,
+                img: `http://localhost:8090${url}`,
+            })),
+        )
+
+        setModalImages(allReviewImages)
         setShowModal(true)
     }
 
@@ -509,12 +529,7 @@ export default function Review() {
     return (
         <>
             <div>
-                <div
-                    style={{
-                        maxWidth: '1280px',
-                        margin: '0 auto',
-                    }}
-                >
+                <div className="detailPage">
                     {/* 🎨 상단 배너 */}
                     <div className="review-banner">
                         {/* <h2>생생한 리뷰를 기다리고 있어요!</h2> */}
@@ -552,10 +567,11 @@ export default function Review() {
                             }}
                         >
                             {photoReviews.map((r) => (
-                                <SwiperSlide key={r.id}>
+                                <SwiperSlide key={r.reviewId}>
                                     <div className="photoCard" onClick={openPhotoModal}>
-                                        <img src={r.img} alt={r.title} />
-
+                                        {r.imageUrls?.[0] && (
+                                            <img src={`http://localhost:8090${r.imageUrls[0]}`} alt="" />
+                                        )}
                                         <p>{r.title}</p>
                                     </div>
                                 </SwiperSlide>
@@ -609,7 +625,7 @@ export default function Review() {
                                                     borderRadius: '8px',
                                                     cursor: 'pointer',
                                                 }}
-                                                onClick={() => moveToDetail(item.id)} // 클릭 → 상세 페이지 이동
+                                                onClick={() => moveToDetail(item.reviewId)} // 클릭 → 상세 페이지 이동
                                             />
                                         ))}
                                     </div>
@@ -765,6 +781,7 @@ export default function Review() {
                                             <div className="review-stars">
                                                 {[1, 2, 3, 4, 5].map((num) => (
                                                     <FaStar
+                                                        className="star-icon"
                                                         key={num}
                                                         size={28}
                                                         color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
@@ -785,11 +802,19 @@ export default function Review() {
                                                     onClick={() => handleLikeClick(review.reviewId)}
                                                 >
                                                     {liked[review.reviewId] ? (
-                                                        <FaThumbsUp style={{ marginRight: '6px' }} />
+                                                        <FaThumbsUp
+                                                            className="like-icon"
+                                                            style={{ marginRight: '6px' }}
+                                                        />
                                                     ) : (
-                                                        <FaRegThumbsUp style={{ marginRight: '6px' }} />
+                                                        <FaRegThumbsUp
+                                                            className="like-icon"
+                                                            style={{ marginRight: '6px' }}
+                                                        />
                                                     )}
-                                                    도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
+                                                    <span className="like-text">
+                                                        도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
+                                                    </span>
                                                 </button>
 
                                                 {(Number(currentUserId) === Number(review.userId) ||

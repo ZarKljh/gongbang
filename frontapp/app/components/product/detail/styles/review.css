@@ -1,8 +1,8 @@
 /* 전체 프레임 */
 .detailPage {
-    width: 1280px; /* ✅ 고정 1280 */
+    max-width: 1280px; /* ✅ 고정 1280 */
     margin: 0 auto; /* 가운데 정렬 */
-    padding: 24px 0;
+    padding: 0 20px;
     box-sizing: border-box;
 }
 
@@ -318,11 +318,10 @@
 } */
 /* 정렬 + 검색 바 끝*/
 
-
 .review-rating-select {
     display: flex;
     align-items: stretch;
-    background-color: #DAC0A3;
+    background-color: #dac0a3;
     color: white;
     border: none;
     border-radius: 8px;
@@ -347,13 +346,13 @@
     color: white;
 }
 
-.review-rating-select option[value=""] {
+.review-rating-select option[value=''] {
     color: #ffffff;
 }
 
 /* ⭐ placeholder 효과 */
 .review-rating-select:invalid::after {
-    content: "필터";
+    content: '필터';
     color: white;
 }
 /* 리뷰 리스트 */
@@ -489,8 +488,8 @@
     background-color: #bbb;
 }
 
-.report-btn button{
-transform: scale(0.7);
+.report-btn button {
+    transform: scale(0.7);
 }
 
 /* 📃 리뷰 내용 */
@@ -681,3 +680,242 @@ transform: scale(0.7);
 }
 
 /* 페이지네이션 끝*/
+
+/* 반응형 */
+@media (max-width: 460px) {
+    .detailPage {
+        width: 100%;
+        padding: 0 16px;
+    }
+
+    /* 리뷰 평균 별점 영역 */
+    .review-average-container {
+        flex-direction: column;
+        gap: 24px;
+        margin-bottom: 40px;
+        align-items: center;
+        padding: 0 16px;
+    }
+
+    .review-average-score {
+        width: auto;
+    }
+
+    .review-average-value {
+        font-size: 32px;
+    }
+
+    .review-average-count {
+        font-size: 13px;
+    }
+
+    .review-average-graph {
+        width: 100%;
+        padding: 16px;
+    }
+
+    .review-graph-label {
+        font-size: 12px;
+    }
+
+    /* 정렬 */
+    .review-sort-search {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 0;
+    }
+
+    .review-sort-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+        font-size: 14px;
+        gap: 8px;
+    }
+
+    .review-sort-btn {
+        padding: 6px 12px;
+    }
+
+    .review-rating-select {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    /* 별점 영역 */
+    .review-rating-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+
+    .review-stars {
+        display: flex;
+        gap: 2px;
+    }
+
+    .star-icon {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 18px !important; /* 일부 아이콘은 font-size 기준 */
+    }
+
+    .review-actions {
+        display: flex;
+        gap: 5px;
+        /* margin-top: 10px; */
+    }
+
+    /* 리뷰 내용 영역 */
+    .review-item {
+        width: 100%;
+        margin-bottom: 30px;
+        
+    }
+
+    .review-header {
+        gap: 6px;
+    }
+
+    .review-user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .review-user-name {
+        font-size: 13px;
+    }
+
+    .review-meta {
+        font-size: 12px;
+    }
+
+    .review-content-box {
+        width: 100% !important;
+        height: 90px !important;
+        padding: 12px;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .review-image {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin: 0;
+    }
+
+    .review-content-text {
+        -webkit-line-clamp: 3;
+        font-size: 13px;
+    }
+
+    .review-divider {
+        width: 100%;
+    }
+
+    /* 댓글 영역 */
+    .review-comment,
+    .review-comment-textarea {
+        width: 100%;
+    }
+
+    .review-comment {
+        padding: 12px;
+        height: auto;
+    }
+
+    .review-comment-textarea {
+        height: 80px;
+    }
+
+    .review-comment-actions {
+        gap: 6px;
+    }
+
+    .review-comment-edit-btn,
+    .review-comment-delete-btn,
+    .review-comment-add-btn,
+    .review-comment-save-btn,
+    .review-comment-cancel-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    /* 페이지네이션 */
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        margin: 0 2px;
+    }
+
+    /* ------ 버튼들 ------ */
+    /* 정렬 버튼 */
+    .review-sort-btn,
+    .review-sort-btn.active {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
+
+    /* 좋아요 버튼 */
+    .review-like-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+    .review-like-btn.liked {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 6px;
+        transform: scale(1.03);
+    }
+    .review-like-btn .like-text {
+        display: none;
+    }
+
+    .review-like-btn .like-icon {
+        font-size: 13px;
+    }
+
+    /* 리뷰 삭제 버튼 */
+    .review-delete-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
+
+    /* report 버튼 (신고) */
+    .report-btn button {
+        transform: scale(0.6); /* 더 작게 */
+        margin-left: 4px;
+    }
+
+    /* 댓글 버튼 전체 */
+    .review-comment-edit-btn,
+    .review-comment-delete-btn,
+    .review-comment-add-btn,
+    .review-comment-save-btn,
+    .review-comment-cancel-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+        margin: 4px 4px 8px 0;
+    }
+
+    /* 댓글 버튼 줄 맞추기 */
+    .review-comment-actions,
+    .review-comment-edit-controls {
+        gap: 6px;
+    }
+
+    /* 리뷰 작성 버튼 */
+    .review-write-btn {
+        padding: 10px 18px;
+        font-size: 14px;
+        border-radius: 6px;
+        margin-top: 12px;
+    }
+}

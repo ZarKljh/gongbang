@@ -64,7 +64,7 @@ public class ReviewService {
 
         Page<Review> reviewPage;
 
-        // ⭐⭐⭐ 1) 별점 필터가 가장 우선
+        // 1) 별점 필터가 가장 우선
         if (rating != null) {
             if (productId != null) {
                 reviewPage = reviewRepository.findRatingFiltered(productId, rating, pageable);
@@ -72,7 +72,7 @@ public class ReviewService {
                 reviewPage = reviewRepository.findRatingFilteredGlobal(rating, pageable);
             }
 
-            // ⭐ keyword도 별점 필터 내부에서 처리해야 함
+            // keyword도 별점 필터 내부에서 처리해야 함
             if (hasKeyword) {
                 if (productId != null) {
                     reviewPage = reviewRepository.findByProductIdAndContentContainingIgnoreCase(
@@ -86,7 +86,7 @@ public class ReviewService {
             return decorateReviews(reviewPage);
         }
 
-        // ⭐⭐⭐ 2) 별점 필터 없으면 기본 목록
+        // 2) 별점 필터 없으면 기본 목록
         if (productId != null) {
             if (hasKeyword) {
                 reviewPage = reviewRepository.findByProductIdAndContentContainingIgnoreCase(productId, keyword, pageable);
