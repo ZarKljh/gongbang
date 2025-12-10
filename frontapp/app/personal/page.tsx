@@ -6,42 +6,42 @@ import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
-import { loadPaymentWidget } from "@tosspayments/payment-widget-sdk"
+import { loadPaymentWidget } from '@tosspayments/payment-widget-sdk'
 
 const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
 
 interface Post {
-  id: number
-  title: string
-  content: string
-  imageUrl?: string
+    id: number
+    title: string
+    content: string
+    imageUrl?: string
 }
 
 interface Order {
-  orderId: number
-  orderCode: string
-  createdDate: string
-  deliveryStatus: string
-  totalPrice: number
-  completedAt?: string
-  items?: any[]
-  deliveries?: any[]
+    orderId: number
+    orderCode: string
+    createdDate: string
+    deliveryStatus: string
+    totalPrice: number
+    completedAt?: string
+    items?: any[]
+    deliveries?: any[]
 }
 
 interface WishItem {
-  wishlistId: number
-  productName: string
-  price: number
-  imageUrl?: string
+    wishlistId: number
+    productName: string
+    price: number
+    imageUrl?: string
 }
 
 interface CartItem {
-  cartId: number
-  productName: string
-  price: number
-  quantity: number
-  imageUrl?: string
-  productId: number
+    cartId: number
+    productName: string
+    price: number
+    quantity: number
+    imageUrl?: string
+    productId: number
 }
 
 export default function MyPage() {
@@ -60,7 +60,7 @@ export default function MyPage() {
 
     // UI 상태
     const [pageLoading, setPageLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState("orders")
+    const [activeTab, setActiveTab] = useState('orders')
     const [activeSubTab, setActiveSubTab] = useState('product')
     const [editMode, setEditMode] = useState({})
 
@@ -96,9 +96,9 @@ export default function MyPage() {
     const [activeFilter, setActiveFilter] = useState('전체')
     const [openedOrderId, setOpenedOrderId] = useState<number | null>(null)
     const [isReasonModal, setIsReasonModal] = useState(false)
-    const [reasonModalTitle, setReasonModalTitle] = useState("")
+    const [reasonModalTitle, setReasonModalTitle] = useState('')
     const [reasonModalOnSubmit, setReasonModalOnSubmit] = useState<(reason: string) => void>(() => {})
-    const [reasonText, setReasonText] = useState("")
+    const [reasonText, setReasonText] = useState('')
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -117,13 +117,13 @@ export default function MyPage() {
     // 결제수단
     const [paymentMethods, setPaymentMethods] = useState<any[]>([])
     const [isPaymentModal, setIsPaymentModal] = useState(false)
-    const [paymentType, setPaymentType] = useState<"CARD" | "BANK">("BANK")
-    const [bankName, setBankName] = useState("")
-    const [accountNumber, setAccountNumber] = useState("")
-    const [accountHolder, setAccountHolder] = useState("")
-    const [cardCompany, setCardCompany] = useState("")
-    const [cardNumber, setCardNumber] = useState("")
-    const [cardExpire, setCardExpire] = useState("")
+    const [paymentType, setPaymentType] = useState<'CARD' | 'BANK'>('BANK')
+    const [bankName, setBankName] = useState('')
+    const [accountNumber, setAccountNumber] = useState('')
+    const [accountHolder, setAccountHolder] = useState('')
+    const [cardCompany, setCardCompany] = useState('')
+    const [cardNumber, setCardNumber] = useState('')
+    const [cardExpire, setCardExpire] = useState('')
     const [defaultPayment, setDefaultPayment] = useState(false)
 
     // 리뷰
@@ -160,7 +160,7 @@ export default function MyPage() {
     const [widgetLoaded, setWidgetLoaded] = useState(false)
     const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
     const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
-    
+
     // =============== Effects ===============
     useEffect(() => {
         const init = async () => {
@@ -237,7 +237,7 @@ export default function MyPage() {
                 params: { lastOrderId: infiniteOrdersLastId, size: SIZE },
                 withCredentials: true,
             })
-            
+
             if (data.resultCode === '200') {
                 const orderList = data.data || []
                 setOrders(Array.isArray(orderList) ? orderList : [])
@@ -269,7 +269,6 @@ export default function MyPage() {
             setInfiniteCart(list)
             setInfiniteCartLastId(list.length ? list[list.length - 1].cartId : null)
             setInfiniteCartHasMore(false) // 장바구니는 일반적으로 페이징 안함
-
         } catch (error) {
             console.error('장바구니 목록 조회 실패:', error)
             setCart([])
@@ -318,11 +317,10 @@ export default function MyPage() {
 
             const list = Array.isArray(data.data) ? data.data : []
 
-            setWishList(list)             // 기존 state
-            setInfiniteWishList(list)     // 화면 렌더링용
+            setWishList(list) // 기존 state
+            setInfiniteWishList(list) // 화면 렌더링용
             setInfiniteWishLastId(list.length ? list[list.length - 1].wishlistId : null)
             setInfiniteWishHasMore(false) // 기본적으로 페이지가 없다고 처리
-
         } catch (error) {
             console.error('위시 목록 조회 실패:', error)
             setWishList([])
@@ -379,7 +377,7 @@ export default function MyPage() {
     const fetchQna = async (id?: number) => {
         const userId = id || userData?.id
         if (!userId) return
-        
+
         try {
             const response = await axios.get(`${API_BASE_URL}/qna`, {
                 params: { userId },
@@ -400,16 +398,16 @@ export default function MyPage() {
     const fetchProfileImage = async (id?: number) => {
         const userId = id || userData?.id
         if (!userId) return
-        
+
         try {
             const response = await axios.get(`http://localhost:8090/api/v1/image/profile/${userId}`, {
-            responseType: 'blob',
-            withCredentials: true,
+                responseType: 'blob',
+                withCredentials: true,
             })
             const blob = new Blob([response.data], { type: response.headers['content-type'] })
             const url = URL.createObjectURL(blob)
             setPreviewProfileImage(url)
-            setStats(prev => ({ ...prev, profileImageUrl: url }))
+            setStats((prev) => ({ ...prev, profileImageUrl: url }))
         } catch (err) {
             console.error(err)
         }
@@ -502,12 +500,10 @@ export default function MyPage() {
         formData.append('file', profileFile)
 
         try {
-            const { data } = await axios.patch( `http://localhost:8090/api/v1/image/profile`, formData,
-                {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    withCredentials: true,
-                }
-            )
+            const { data } = await axios.patch(`http://localhost:8090/api/v1/image/profile`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                withCredentials: true,
+            })
 
             if (data.resultCode === '200') {
                 alert('프로필 이미지가 업데이트되었습니다.')
@@ -515,7 +511,7 @@ export default function MyPage() {
                 setProfileFile(null)
                 const uploadedUrl = `http://localhost:8090${data.data?.profileImageUrl || ''}`
                 setPreviewProfileImage(uploadedUrl)
-                setStats(prev => ({
+                setStats((prev) => ({
                     ...prev,
                     profileImageUrl: uploadedUrl,
                 }))
@@ -540,7 +536,7 @@ export default function MyPage() {
                 alert('삭제 성공')
                 setPreviewProfileImage(null)
                 setProfileFile(null)
-                setStats(prev => ({ ...prev, profileImageUrl: null }))
+                setStats((prev) => ({ ...prev, profileImageUrl: null }))
                 setIsProfileModalOpen(false)
             } else {
                 alert('삭제 실패')
@@ -563,10 +559,10 @@ export default function MyPage() {
 
     // ================= 주문 취소 / 반품 / 교환 =================
     const filteredOrders = orders.filter((order) => {
-        if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
-        if (activeFilter === "취소") return order.deliveryStatus === "취소"
-        if (activeFilter === "반품") return order.deliveryStatus === "반품"
-        if (activeFilter === "교환") return order.deliveryStatus === "교환"
+        if (activeFilter === '전체') return ['취소', '반품', '교환'].includes(order.deliveryStatus)
+        if (activeFilter === '취소') return order.deliveryStatus === '취소'
+        if (activeFilter === '반품') return order.deliveryStatus === '반품'
+        if (activeFilter === '교환') return order.deliveryStatus === '교환'
         return true
     })
 
@@ -764,7 +760,7 @@ export default function MyPage() {
     const sample6_execDaumPostcodeForEdit = () => {
         new window.daum.Postcode({
             oncomplete: function (data: any) {
-                setEditAddressData(prev => ({
+                setEditAddressData((prev) => ({
                     ...prev,
                     zipcode: data.zonecode,
                     baseAddress: data.address,
@@ -791,7 +787,7 @@ export default function MyPage() {
             defaultPayment,
         }
 
-        if (paymentType === "BANK") {
+        if (paymentType === 'BANK') {
             payload.bankName = bankName
             payload.accountNumber = accountNumber
             payload.accountHolder = accountHolder
@@ -852,38 +848,38 @@ export default function MyPage() {
     }
 
     const maskCard = (num: string | undefined) => {
-        if (!num) return ""
-        return num.replace(/\d(?=\d{4})/g, "*")
+        if (!num) return ''
+        return num.replace(/\d(?=\d{4})/g, '*')
     }
 
     const validatePayment = () => {
         const newErrors: any = {}
 
         // 공통: BANK or CARD
-        if (paymentType === "BANK") {
-            if (!bankName.trim()) newErrors.bankName = "은행명을 입력해주세요."
+        if (paymentType === 'BANK') {
+            if (!bankName.trim()) newErrors.bankName = '은행명을 입력해주세요.'
             if (!accountNumber.trim()) {
-                newErrors.accountNumber = "계좌번호를 입력해주세요."
+                newErrors.accountNumber = '계좌번호를 입력해주세요.'
             } else if (!/^[0-9]{6,20}$/.test(accountNumber)) {
-                newErrors.accountNumber = "계좌번호는 숫자 6~20자리여야 합니다."
+                newErrors.accountNumber = '계좌번호는 숫자 6~20자리여야 합니다.'
             }
 
-            if (!accountHolder.trim()) newErrors.accountHolder = "예금주명을 입력해주세요."
+            if (!accountHolder.trim()) newErrors.accountHolder = '예금주명을 입력해주세요.'
         }
 
-        if (paymentType === "CARD") {
-            if (!cardCompany.trim()) newErrors.cardCompany = "카드사를 입력해주세요."
+        if (paymentType === 'CARD') {
+            if (!cardCompany.trim()) newErrors.cardCompany = '카드사를 입력해주세요.'
 
             if (!cardNumber.trim()) {
-                newErrors.cardNumber = "카드번호를 입력해주세요."
-            } else if (!/^[0-9]{14,16}$/.test(cardNumber.replace(/-/g, ""))) {
-                newErrors.cardNumber = "카드번호는 숫자 14~16자리여야 합니다."
+                newErrors.cardNumber = '카드번호를 입력해주세요.'
+            } else if (!/^[0-9]{14,16}$/.test(cardNumber.replace(/-/g, ''))) {
+                newErrors.cardNumber = '카드번호는 숫자 14~16자리여야 합니다.'
             }
 
             if (!cardExpire.trim()) {
-                newErrors.cardExpire = "유효기간을 입력해주세요."
+                newErrors.cardExpire = '유효기간을 입력해주세요.'
             } else if (!/^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(cardExpire)) {
-                newErrors.cardExpire = "유효기간은 MM/YY 형식이어야 합니다."
+                newErrors.cardExpire = '유효기간은 MM/YY 형식이어야 합니다.'
             }
         }
 
@@ -961,7 +957,7 @@ export default function MyPage() {
     // ================= Q&A 기능 =================
     // 문의 삭제
     const handleDeleteQna = async (qnaId: number) => {
-        if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return
+        if (!confirm('정말 이 문의를 삭제하시겠습니까?')) return
 
         try {
             const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, {
@@ -969,20 +965,20 @@ export default function MyPage() {
                 withCredentials: true,
             })
 
-            if (data.resultCode === "200") {
-                alert("문의가 삭제되었습니다.")
+            if (data.resultCode === '200') {
+                alert('문의가 삭제되었습니다.')
                 await fetchQna(userData.id)
             } else {
                 alert(`삭제 실패: ${data.msg}`)
             }
         } catch (error) {
-            console.error("문의 삭제 실패:", error)
-            alert("문의 삭제 중 오류가 발생했습니다.")
+            console.error('문의 삭제 실패:', error)
+            alert('문의 삭제 중 오류가 발생했습니다.')
         }
     }
 
     const toggleQna = (id) => {
-        setOpenQnaId(prev => (prev === id ? null : id))
+        setOpenQnaId((prev) => (prev === id ? null : id))
     }
 
     // =============== 팔로우 ===============
@@ -1029,15 +1025,13 @@ export default function MyPage() {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/cart/${cartId}?quantity=${quantity}`,
                 {},
-                { withCredentials: true }
+                { withCredentials: true },
             )
 
             console.log('수량 수정 성공:', data)
 
             setCart((prev) =>
-                prev.map((item) =>
-                    item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item
-                )
+                prev.map((item) => (item.cartId === cartId ? { ...item, quantity: data.data.quantity } : item)),
             )
         } catch (error) {
             console.error('장바구니 수량 수정 실패:', error)
@@ -1047,7 +1041,7 @@ export default function MyPage() {
 
     const handleDeleteCart = async (cartId: number) => {
         try {
-            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
+            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true })
 
             setCart((prev) => prev.filter((item) => item.cartId !== cartId))
         } catch (error) {
@@ -1057,14 +1051,12 @@ export default function MyPage() {
     }
 
     const handleSelectItem = (cartId: number, isChecked: boolean) => {
-        setSelectedItems(prev => 
-            isChecked ? [...prev, cartId] : prev.filter(id => id !== cartId)
-        )
+        setSelectedItems((prev) => (isChecked ? [...prev, cartId] : prev.filter((id) => id !== cartId)))
     }
 
     // 전체 상품 구매
     const handlePurchaseAll = () => {
-        console.log("전체 상품 구매:", cart)
+        console.log('전체 상품 구매:', cart)
         // 전체 구매 프로세스 진행
     }
 
@@ -1073,7 +1065,7 @@ export default function MyPage() {
         if (selectedItems.length === cart.length) {
             setSelectedItems([]) // 전체 해제
         } else {
-            setSelectedItems(cart.map(item => item.cartId)) // 전체 선택
+            setSelectedItems(cart.map((item) => item.cartId)) // 전체 선택
         }
     }
 
@@ -1105,18 +1097,17 @@ export default function MyPage() {
                 },
                 withCredentials: true,
             })
-            
+
             const newOrders = res.data.data
 
             if (newOrders.length < SIZE) {
                 setInfiniteOrdersHasMore(false)
             }
 
-            setInfiniteOrders(prev => {
+            setInfiniteOrders((prev) => {
                 const merged = [...prev, ...newOrders]
                 const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(t => t.orderId === item.orderId)
+                    (item, index, self) => index === self.findIndex((t) => t.orderId === item.orderId),
                 )
                 return unique
             })
@@ -1147,18 +1138,17 @@ export default function MyPage() {
                 },
                 withCredentials: true,
             })
-            
+
             const newWishList = res.data.data
 
             if (newWishList.length < SIZE) {
                 setInfiniteWishHasMore(false)
             }
 
-            setInfiniteWishList(prev => {
+            setInfiniteWishList((prev) => {
                 const merged = [...prev, ...newWishList]
                 const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(t => t.wishlistId === item.wishlistId)
+                    (item, index, self) => index === self.findIndex((t) => t.wishlistId === item.wishlistId),
                 )
                 return unique
             })
@@ -1189,18 +1179,17 @@ export default function MyPage() {
                 },
                 withCredentials: true,
             })
-            
+
             const newCart = res.data.data
 
             if (newCart.length < SIZE) {
                 setInfiniteCartHasMore(false)
             }
 
-            setInfiniteCart(prev => {
+            setInfiniteCart((prev) => {
                 const merged = [...prev, ...newCart]
                 const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(t => t.cartId === item.cartId)
+                    (item, index, self) => index === self.findIndex((t) => t.cartId === item.cartId),
                 )
                 return unique
             })
@@ -1231,7 +1220,12 @@ export default function MyPage() {
                 // 탭에 따라 다른 fetch 함수 실행
                 if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
                     fetchInfiniteOrders(infiniteOrdersLastId)
-                } else if (activeTab === 'like' && activeSubTab === 'product' && !infiniteWishLoading && infiniteWishHasMore) {
+                } else if (
+                    activeTab === 'like' &&
+                    activeSubTab === 'product' &&
+                    !infiniteWishLoading &&
+                    infiniteWishHasMore
+                ) {
                     fetchInfiniteWishList(infiniteWishLastId)
                 } else if (activeTab === 'cart' && !infiniteCartLoading && infiniteCartHasMore) {
                     fetchInfiniteCart(infiniteCartLastId)
@@ -1247,17 +1241,17 @@ export default function MyPage() {
             window.removeEventListener('touchmove', handleScroll)
         }
     }, [
-        activeTab, 
+        activeTab,
         activeSubTab,
-        infiniteOrdersLoading, 
-        infiniteOrdersHasMore, 
+        infiniteOrdersLoading,
+        infiniteOrdersHasMore,
         infiniteOrdersLastId,
         infiniteWishLoading,
         infiniteWishHasMore,
         infiniteWishLastId,
         infiniteCartLoading,
         infiniteCartHasMore,
-        infiniteCartLastId
+        infiniteCartLastId,
     ])
 
     useEffect(() => {
@@ -1277,46 +1271,45 @@ export default function MyPage() {
     //선택 상품 구매하기
     const handlePurchaseSelected = async () => {
         if (selectedItems.length === 0) {
-            alert("선택된 상품이 없습니다.")
+            alert('선택된 상품이 없습니다.')
             return
         }
 
         // 선택된 cartId → productId + quantity 로 변환
         const selected = infiniteCart
-            .filter(item => selectedItems.includes(item.cartId))
-            .map(item => ({
+            .filter((item) => selectedItems.includes(item.cartId))
+            .map((item) => ({
                 productId: item.productId,
                 quantity: item.quantity,
             }))
 
         try {
             const res = await axios.post(
-                "http://localhost:8090/api/v1/mypage/cart/prepare",
+                'http://localhost:8090/api/v1/mypage/cart/prepare',
                 { items: selected },
-                { withCredentials: true }
+                { withCredentials: true },
             )
 
             const { orderCode, totalPrice } = res.data.data
 
-            localStorage.setItem("ORDER_CART_IDS", JSON.stringify(selectedItems))
+            localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
 
             // 모달을 띄우기 전에 결제 정보 저장
             setOrderCode(orderCode)
             setTotal(totalPrice)
-            setTimeout(() => setIsModalOpen(true), 0)  // 토스 결제 위젯 모달 열기
-
+            setTimeout(() => setIsModalOpen(true), 0) // 토스 결제 위젯 모달 열기
         } catch (e: any) {
-            console.error("장바구니 결제 준비 실패:", e)
+            console.error('장바구니 결제 준비 실패:', e)
 
             const err = e?.response?.data
 
             if (e?.response?.status === 401) {
-                alert("로그인이 필요합니다.")
-                router.push("/auth/login")
+                alert('로그인이 필요합니다.')
+                router.push('/auth/login')
                 return
             }
 
-            alert(err?.message || "장바구니 주문 준비 중 오류가 발생했습니다.")
+            alert(err?.message || '장바구니 주문 준비 중 오류가 발생했습니다.')
         }
     }
 
@@ -1328,7 +1321,7 @@ export default function MyPage() {
     //장바구니 상품 결제
     const handleRequestPayment = async () => {
         if (!paymentWidget) {
-            console.warn("paymentWidget 없음")
+            console.warn('paymentWidget 없음')
             return
         }
 
@@ -1336,13 +1329,12 @@ export default function MyPage() {
             await paymentWidget.requestPayment({
                 amount: total,
                 orderId: orderCode,
-                orderName: "장바구니 상품 결제",  // 여러 상품일 때 이름 고정
+                orderName: '장바구니 상품 결제', // 여러 상품일 때 이름 고정
                 successUrl: `${window.location.origin}/pay/success`,
                 failUrl: `${window.location.origin}/pay/fail`,
             })
-
         } catch (e) {
-            console.error("결제 요청 실패", e)
+            console.error('결제 요청 실패', e)
         }
     }
 
@@ -1356,15 +1348,15 @@ export default function MyPage() {
                 setPaymentWidget(widget)
             }
 
-            await widget.renderPaymentMethods("#payment-method", {
+            await widget.renderPaymentMethods('#payment-method', {
                 value: amount,
             })
 
-            await widget.renderAgreement("#agreement")
+            await widget.renderAgreement('#agreement')
 
             setWidgetLoaded(true)
         } catch (e) {
-            console.error("장바구니 위젯 초기화 실패", e)
+            console.error('장바구니 위젯 초기화 실패', e)
             setWidgetLoaded(false)
         }
     }
@@ -1376,31 +1368,27 @@ export default function MyPage() {
         setPaymentWidget(null)
         setOrderCode(null)
         setTotal(0)
-        setSelectedItems([])  // 선택된 상품 초기화 (선택 구매한 경우)
+        setSelectedItems([]) // 선택된 상품 초기화 (선택 구매한 경우)
     }
 
     //결제완료 시 장바구니 상품 삭제
     useEffect(() => {
         const deletePurchased = async () => {
-            const stored = localStorage.getItem("ORDER_CART_IDS")
+            const stored = localStorage.getItem('ORDER_CART_IDS')
             if (!stored) return
 
             const cartIds = JSON.parse(stored)
 
             try {
-                await axios.delete(
-                    "http://localhost:8090/api/v1/mypage/cart/after-order",
-                    {
-                        data: { cartIds },
-                        withCredentials: true
-                    }
-                )
+                await axios.delete('http://localhost:8090/api/v1/mypage/cart/after-order', {
+                    data: { cartIds },
+                    withCredentials: true,
+                })
 
                 // 사용 후 삭제
-                localStorage.removeItem("ORDER_CART_IDS")
-
+                localStorage.removeItem('ORDER_CART_IDS')
             } catch (e) {
-                console.error("장바구니 항목 삭제 실패:", e)
+                console.error('장바구니 항목 삭제 실패:', e)
             }
         }
 
@@ -1414,7 +1402,7 @@ export default function MyPage() {
 
     if (!userData) {
         return (
-            <div className='need-login'>
+            <div className="need-login">
                 로그인이 필요합니다.
                 <button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>
             </div>
@@ -1519,8 +1507,10 @@ export default function MyPage() {
                         </ul>
                     </div>
                 </nav>
-                {userData?.roleType === "SELLER" && (
-                    <a href="/personal/seller" className='link-btn'>공방 페이지로 이동</a>
+                {userData?.roleType === 'SELLER' && (
+                    <a href="/personal/seller" className="link-btn">
+                        공방 페이지로 이동
+                    </a>
                 )}
             </div>
 
@@ -1541,20 +1531,25 @@ export default function MyPage() {
                                 <tr>
                                     <td>
                                         <div className="profile-image" onClick={handleProfileClick}>
-                                                <img
-                                                    src={
-                                                        previewProfileImage ||
-                                                        stats.profileImageUrl || `http://localhost:8090${stats.profileImageUrl}` // 서버 이미지
-                                                    }
-                                                    onError={(e) => {
-                                                        e.currentTarget.src = "/images/default_profile.jpg"
-                                                    }}
-                                                    alt="프로필 이미지"
-                                                />
+                                            <img
+                                                src={
+                                                    previewProfileImage ||
+                                                    stats.profileImageUrl ||
+                                                    `http://localhost:8090${stats.profileImageUrl}` // 서버 이미지
+                                                }
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/images/default_profile.jpg'
+                                                }}
+                                                alt="프로필 이미지"
+                                            />
                                         </div>
                                     </td>
-                                    <td className='shortcut-btn' onClick={() => handleTabClick('qna')}>{stats.totalQna}</td>
-                                    <td className='shortcut-btn' onClick={() => handleTabClick('reviews')}>{stats.totalReviews}</td>
+                                    <td className="shortcut-btn" onClick={() => handleTabClick('qna')}>
+                                        {stats.totalQna}
+                                    </td>
+                                    <td className="shortcut-btn" onClick={() => handleTabClick('reviews')}>
+                                        {stats.totalReviews}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1563,7 +1558,6 @@ export default function MyPage() {
                     {/* 주문배송조회 */}
                     {activeTab === 'orders' && (
                         <div className="tab-content">
-
                             {/* ================= 배송 상태 요약 ================= */}
                             <div className="delivery-status-summary">
                                 {/* 배송준비중 - 전체 */}
@@ -1575,9 +1569,13 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송준비중</p>
-                                    <p>{infiniteOrders.filter((o) => 
-                                        o.deliveryStatus?.replace(/\s/g, '') === '배송준비중'
-                                    ).length}</p>
+                                    <p>
+                                        {
+                                            infiniteOrders.filter(
+                                                (o) => o.deliveryStatus?.replace(/\s/g, '') === '배송준비중',
+                                            ).length
+                                        }
+                                    </p>
                                 </div>
 
                                 {/* 배송중 - 전체 */}
@@ -1589,9 +1587,13 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송중</p>
-                                    <p>{infiniteOrders.filter((o) => 
-                                        o.deliveryStatus?.replace(/\s/g, '') === '배송중'
-                                    ).length}</p>
+                                    <p>
+                                        {
+                                            infiniteOrders.filter(
+                                                (o) => o.deliveryStatus?.replace(/\s/g, '') === '배송중',
+                                            ).length
+                                        }
+                                    </p>
                                 </div>
 
                                 {/* 배송완료 - 7일 이내만 */}
@@ -1603,10 +1605,15 @@ export default function MyPage() {
                                     }}
                                 >
                                     <p>배송완료</p>
-                                    <p>{infiniteOrders.filter((o) => 
-                                        o.deliveryStatus?.replace(/\s/g, '') === '배송완료' &&
-                                        isWithinSevenDays(o.completedAt)
-                                    ).length}</p>
+                                    <p>
+                                        {
+                                            infiniteOrders.filter(
+                                                (o) =>
+                                                    o.deliveryStatus?.replace(/\s/g, '') === '배송완료' &&
+                                                    isWithinSevenDays(o.completedAt),
+                                            ).length
+                                        }
+                                    </p>
                                 </div>
                             </div>
 
@@ -1616,23 +1623,24 @@ export default function MyPage() {
                             </div>
 
                             {infiniteOrders.length === 0 ? (
-                                <p className='empty-state'>주문 내역이 없습니다.</p>
+                                <p className="empty-state">주문 내역이 없습니다.</p>
                             ) : (
                                 infiniteOrders.map((order) => (
-                                    <div
-                                        key={order.orderId}
-                                        className="order-card"
-                                    >
+                                    <div key={order.orderId} className="order-card">
                                         {/* 주문 요약 */}
                                         <div
                                             className="order-header"
                                             onClick={() => router.push(`/personal/${order.orderId}`)}
                                         >
-                                            <div className='order-title'>
-                                                <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
-                                                <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
+                                            <div className="order-title">
+                                                <p>
+                                                    주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
+                                                </p>
+                                                <span className={`badge ${order.deliveryStatus}`}>
+                                                    {order.deliveryStatus}
+                                                </span>
                                             </div>
-                                            <div className='order-img'>
+                                            <div className="order-img">
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
                                                     <img
                                                         key={idx}
@@ -1641,6 +1649,18 @@ export default function MyPage() {
                                                     />
                                                 ))}
                                             </div>
+                                        </div>
+                                        <div className="order-footer">
+                                            <button
+                                                type="button"
+                                                className="order-btn shipping-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation() // 상단 onClick 안 타게 방지
+                                                    router.push(`/personal/delivery/${order.orderId}`)
+                                                }}
+                                            >
+                                                배송 조회
+                                            </button>
                                         </div>
                                     </div>
                                 ))
@@ -1672,7 +1692,7 @@ export default function MyPage() {
 
                             <div className="orders-list">
                                 {filteredOrders.length === 0 ? (
-                                    <p className='empty-state'>해당 주문 내역이 없습니다.</p>
+                                    <p className="empty-state">해당 주문 내역이 없습니다.</p>
                                 ) : (
                                     filteredOrders.map((order) => {
                                         const items = order.orderItems || []
@@ -1683,20 +1703,23 @@ export default function MyPage() {
                                             .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0]
 
                                         const status = latestDelivery?.deliveryStatus || order.deliveryStatus
-                                        const statusDate = latestDelivery?.modifiedDate || latestDelivery?.createdDate || "N/A"
+                                        const statusDate =
+                                            latestDelivery?.modifiedDate || latestDelivery?.createdDate || 'N/A'
 
                                         return (
                                             <div key={order.orderId} className="order-card">
-
                                                 {/* --- 주문 요약 --- */}
                                                 <div
                                                     className="order-header"
                                                     onClick={() => router.push(`/personal/${order.orderId}`)}
                                                 >
-                                                    <div className='order-title'>
+                                                    <div className="order-title">
                                                         <p>주문번호: {order.orderCode}</p>
                                                         <p> | 주문일: {order.createdDate}</p>
-                                                        <p> | {status} 일시: {statusDate}</p>
+                                                        <p>
+                                                            {' '}
+                                                            | {status} 일시: {statusDate}
+                                                        </p>
                                                     </div>
                                                     <span className={`badge ${status}`}>{status}</span>
                                                 </div>
@@ -1710,8 +1733,8 @@ export default function MyPage() {
 
                     {/* 장바구니 */}
                     {activeTab === 'cart' && (
-                        <div className='tab-content'>
-                            <div className='section-header'>
+                        <div className="tab-content">
+                            <div className="section-header">
                                 <h2>장바구니</h2>
                             </div>
 
@@ -1731,14 +1754,18 @@ export default function MyPage() {
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={selectedItems.length === infiniteCart.length && infiniteCart.length > 0}
+                                                    checked={
+                                                        selectedItems.length === infiniteCart.length &&
+                                                        infiniteCart.length > 0
+                                                    }
                                                     onChange={handleToggleSelectAll}
                                                 />
                                                 전체 선택
                                             </label>
                                             {selectedItems.length > 0 && (
                                                 <span className="selection-info">
-                                                    <span className="selection-count">{selectedItems.length}</span>개 상품 선택됨
+                                                    <span className="selection-count">{selectedItems.length}</span>개
+                                                    상품 선택됨
                                                 </span>
                                             )}
                                         </div>
@@ -1757,19 +1784,24 @@ export default function MyPage() {
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedItems.includes(item.cartId)}
-                                                        onChange={(e) => handleSelectItem(item.cartId, e.target.checked)}
+                                                        onChange={(e) =>
+                                                            handleSelectItem(item.cartId, e.target.checked)
+                                                        }
                                                     />
                                                 </div>
 
                                                 <div className="cart-image">
-                                                    <img 
+                                                    <img
                                                         src={`http://localhost:8090${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 </div>
 
-                                                <div className='cart-info'>
-                                                    <Link href={`/product/list/detail?productId=${item.productId}`} className="product-name shortcut-btn">
+                                                <div className="cart-info">
+                                                    <Link
+                                                        href={`/product/list/detail?productId=${item.productId}`}
+                                                        className="product-name shortcut-btn"
+                                                    >
                                                         {item.productName}
                                                     </Link>
                                                     <div className="product-unit-price">
@@ -1781,7 +1813,7 @@ export default function MyPage() {
                                                 </div>
 
                                                 <div className="quantity-control">
-                                                    <button 
+                                                    <button
                                                         className="link-btn"
                                                         onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
                                                         disabled={item.quantity <= 1}
@@ -1789,7 +1821,7 @@ export default function MyPage() {
                                                         -
                                                     </button>
                                                     <span className="quantity-display">{item.quantity}</span>
-                                                    <button 
+                                                    <button
                                                         className="link-btn"
                                                         onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
                                                     >
@@ -1818,9 +1850,14 @@ export default function MyPage() {
                                                     {selectedItems.length === 0
                                                         ? 0
                                                         : infiniteCart
-                                                            .filter(item => selectedItems.includes(item.cartId))
-                                                            .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
-                                                            .toLocaleString()}원
+                                                              .filter((item) => selectedItems.includes(item.cartId))
+                                                              .reduce(
+                                                                  (sum, item) =>
+                                                                      sum + (item.price || 0) * item.quantity,
+                                                                  0,
+                                                              )
+                                                              .toLocaleString()}
+                                                    원
                                                 </span>
                                             </div>
                                             <div className="summary-row">
@@ -1833,9 +1870,14 @@ export default function MyPage() {
                                                     {selectedItems.length === 0
                                                         ? 0
                                                         : infiniteCart
-                                                            .filter(item => selectedItems.includes(item.cartId))
-                                                            .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
-                                                            .toLocaleString()}원
+                                                              .filter((item) => selectedItems.includes(item.cartId))
+                                                              .reduce(
+                                                                  (sum, item) =>
+                                                                      sum + (item.price || 0) * item.quantity,
+                                                                  0,
+                                                              )
+                                                              .toLocaleString()}
+                                                    원
                                                 </span>
                                             </div>
                                         </div>
@@ -1850,7 +1892,9 @@ export default function MyPage() {
                                 </>
                             )}
                             {infiniteCartLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteCartHasMore && infiniteCart.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
+                            {!infiniteCartHasMore && infiniteCart.length > 0 && (
+                                <p style={{ textAlign: 'center', color: '#999' }}>---</p>
+                            )}
                         </div>
                     )}
 
@@ -1860,17 +1904,20 @@ export default function MyPage() {
                             {!isAuthenticated ? (
                                 <div className="auth-banner">
                                     <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
-                                    <div className='auth-banner-input'>
+                                    <div className="auth-banner-input">
                                         <input
                                             type="password"
                                             placeholder="현재 비밀번호 입력"
                                             value={passwordInput}
                                             onChange={(e) => setPasswordInput(e.target.value)}
-                                            onKeyDown={(e) => {if (e.key === "Enter") handleVerifyPassword()}}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleVerifyPassword()
+                                            }}
                                         />
-                                        <div className='auth-banner-btn' onClick={handleVerifyPassword}>인증 확인</div>
+                                        <div className="auth-banner-btn" onClick={handleVerifyPassword}>
+                                            인증 확인
+                                        </div>
                                     </div>
-                                    
                                 </div>
                             ) : (
                                 <div className="auth-banner success">인증 완료</div>
@@ -1903,7 +1950,7 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>닉네임</label>
                                     {editMode.profile ? (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="text"
                                                 value={tempData.nickName || ''}
@@ -1920,7 +1967,7 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>비밀번호</label>
                                     {editMode.profile ? (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="password"
                                                 placeholder="새 비밀번호 입력"
@@ -1938,14 +1985,16 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>비밀번호 확인</label>
                                     {editMode.profile && (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="password"
                                                 placeholder="비밀번호 재입력"
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                             />
-                                            {errors.confirmPassword && <p className="error-msg">{errors.confirmPassword}</p>}
+                                            {errors.confirmPassword && (
+                                                <p className="error-msg">{errors.confirmPassword}</p>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -1953,7 +2002,7 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>이메일</label>
                                     {editMode.profile ? (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="email"
                                                 value={tempData.email || ''}
@@ -1970,11 +2019,13 @@ export default function MyPage() {
                                 <div className="form-group">
                                     <label>휴대폰</label>
                                     {editMode.profile ? (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="tel"
                                                 value={tempData.mobilePhone || ''}
-                                                onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
+                                                onChange={(e) =>
+                                                    setTempData({ ...tempData, mobilePhone: e.target.value })
+                                                }
                                                 className="editable"
                                             />
                                             {errors.mobilePhone && <p className="error-msg">{errors.mobilePhone}</p>}
@@ -2057,36 +2108,48 @@ export default function MyPage() {
                                 <div className="empty-state">등록된 결제수단이 없습니다.</div>
                             ) : (
                                 <div className="payment-list">
-                                {paymentMethods.map((pm) => (
-                                    <div key={pm.paymentId} className="payment-card">
-                                    <div className="payment-card-info">
-                                        <div className="card-header">
-                                            {pm.type === "CARD" ? "신용/체크카드" : "계좌이체"}
-                                            {pm.defaultPayment && <span className="badge">기본</span>}
-                                        </div>
-                                        <div className="card-content">
-                                            {pm.type === "CARD" ? (
-                                            <>
-                                                <p>{pm.cardCompany}</p>
-                                                <p>카드번호 {maskCard(pm.cardNumber)}</p>
-                                                <p>유효기간 {pm.cardExpire}</p>
-                                            </>
-                                            ) : (
-                                            <>
-                                                <p>{pm.bankName}</p>
-                                                <p>계좌번호 {pm.accountNumber}</p>
-                                                <p>예금주 {pm.accountHolder}</p>
-                                            </>
-                                            )}
-                                        </div>
+                                    {paymentMethods.map((pm) => (
+                                        <div key={pm.paymentId} className="payment-card">
+                                            <div className="payment-card-info">
+                                                <div className="card-header">
+                                                    {pm.type === 'CARD' ? '신용/체크카드' : '계좌이체'}
+                                                    {pm.defaultPayment && <span className="badge">기본</span>}
+                                                </div>
+                                                <div className="card-content">
+                                                    {pm.type === 'CARD' ? (
+                                                        <>
+                                                            <p>{pm.cardCompany}</p>
+                                                            <p>카드번호 {maskCard(pm.cardNumber)}</p>
+                                                            <p>유효기간 {pm.cardExpire}</p>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <p>{pm.bankName}</p>
+                                                            <p>계좌번호 {pm.accountNumber}</p>
+                                                            <p>예금주 {pm.accountHolder}</p>
+                                                        </>
+                                                    )}
+                                                </div>
 
-                                        <div className="card-actions">
-                                            {!pm.defaultPayment && <button className='link-btn' onClick={() => handleSetDefault(pm.paymentId)}>기본설정</button>}
-                                            <button className="link-btn delete" onClick={() => handleDeletePayment(pm.paymentId)}>삭제</button>
+                                                <div className="card-actions">
+                                                    {!pm.defaultPayment && (
+                                                        <button
+                                                            className="link-btn"
+                                                            onClick={() => handleSetDefault(pm.paymentId)}
+                                                        >
+                                                            기본설정
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className="link-btn delete"
+                                                        onClick={() => handleDeletePayment(pm.paymentId)}
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    </div>
-                                ))}
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -2124,17 +2187,21 @@ export default function MyPage() {
                                                 <div
                                                     key={item.wishlistId}
                                                     className="wishlist-item"
-                                                    onClick={() => router.push(`/product/list/detail?productId=${item.productId}`)}
+                                                    onClick={() =>
+                                                        router.push(`/product/list/detail?productId=${item.productId}`)
+                                                    }
                                                 >
                                                     <div className="wishlist-image">
-                                                        <img 
+                                                        <img
                                                             src={`http://localhost:8090${item.imageUrl}`}
                                                             alt={item.productName}
                                                         />
                                                     </div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
-                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                                        <p className="price">
+                                                            {item.price ? `${item.price}원` : '가격 정보 없음'}
+                                                        </p>
                                                         <div className="wishlist-btn-box">
                                                             <button
                                                                 className="link-btn delete"
@@ -2149,7 +2216,9 @@ export default function MyPage() {
                                         </div>
                                     )}
                                     {infiniteWishLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
+                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && (
+                                        <p style={{ textAlign: 'center', color: '#999' }}>---</p>
+                                    )}
                                 </div>
                             )}
 
@@ -2163,7 +2232,7 @@ export default function MyPage() {
                                                 <li key={follow.studioId} className="follow-card">
                                                     <div className="studio-info">
                                                         {follow.studioImageUrl ? (
-                                                            <img 
+                                                            <img
                                                                 src={`http://localhost:8090${follow.studioImageUrl}`}
                                                                 alt={follow.studioName}
                                                                 className="studio-image"
@@ -2171,14 +2240,17 @@ export default function MyPage() {
                                                         ) : (
                                                             <div className="studio-image-placeholder">🏪</div>
                                                         )}
-                                                        <div className='studio-txt-box'>
+                                                        <div className="studio-txt-box">
                                                             <Link href={`/seller/studio/${follow.studioId}`}>
-                                                                <h4 className='shortcut-btn'>{follow.studioName}</h4>
+                                                                <h4 className="shortcut-btn">{follow.studioName}</h4>
                                                             </Link>
                                                             <p>{follow.studioDescription}</p>
                                                         </div>
                                                     </div>
-                                                    <div className='link-btn delete' onClick={() => handleUnfollow(follow.studioId)}>
+                                                    <div
+                                                        className="link-btn delete"
+                                                        onClick={() => handleUnfollow(follow.studioId)}
+                                                    >
                                                         언팔로우
                                                     </div>
                                                 </li>
@@ -2204,7 +2276,10 @@ export default function MyPage() {
                                     {myReviews.map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
-                                                <Link href={`http://localhost:3000/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
+                                                <Link
+                                                    href={`http://localhost:3000/product/list/detail?productId=${review.productId}`}
+                                                    className="my-review-product-name"
+                                                >
                                                     {review.productName}
                                                 </Link>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
@@ -2229,10 +2304,7 @@ export default function MyPage() {
                                                 <span>작성일: {review.createdDate}</span>
                                                 {review.modifiedDate && <span> · 수정일: {review.modifiedDate}</span>}
                                                 <span className="my-review-like-count">👍 {review.reviewLike}</span>
-                                                <button
-                                                    onClick={() => handleEditClick(review)}
-                                                    className="link-btn"
-                                                >
+                                                <button onClick={() => handleEditClick(review)} className="link-btn">
                                                     수정
                                                 </button>
                                                 <button
@@ -2261,8 +2333,10 @@ export default function MyPage() {
                             ) : (
                                 <div className="qna-list">
                                     {qna.map((item) => (
-                                        <div key={item.qnaId} className="qna-card"
-                                        onClick={() => toggleQna(item.qnaId)}
+                                        <div
+                                            key={item.qnaId}
+                                            className="qna-card"
+                                            onClick={() => toggleQna(item.qnaId)}
                                         >
                                             <div className="qna-header">
                                                 <div className="qna-title">{item.title}</div>
@@ -2280,7 +2354,8 @@ export default function MyPage() {
                                             <div className="qna-content">{item.content}</div>
 
                                             <div className="qna-footer">
-                                                <span>작성일: {' '}
+                                                <span>
+                                                    작성일:{' '}
                                                     {new Date(item.createdAt).toLocaleDateString('ko-KR', {
                                                         year: 'numeric',
                                                         month: '2-digit',
@@ -2327,17 +2402,19 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-body">
-                            {orders.filter(o =>
-                                o.deliveryStatus === selectedStatus &&
-                                (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
+                            {orders.filter(
+                                (o) =>
+                                    o.deliveryStatus === selectedStatus &&
+                                    (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)),
                             ).length === 0 ? (
-                                <p className='empty-state'>주문 내역이 없습니다.</p>
+                                <p className="empty-state">주문 내역이 없습니다.</p>
                             ) : (
                                 <div className="modal-orders-list">
                                     {orders
-                                        .filter(o =>
-                                            o.deliveryStatus === selectedStatus &&
-                                            (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
+                                        .filter(
+                                            (o) =>
+                                                o.deliveryStatus === selectedStatus &&
+                                                (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt)),
                                         )
                                         .map((order) => (
                                             <div key={order.orderId} className="modal-order-card">
@@ -2346,7 +2423,9 @@ export default function MyPage() {
                                                     <span className="order-code">주문번호: {order.orderCode}</span>
                                                 </div>
                                                 <div className="modal-order-info">
-                                                    <span className="product-name">{order.items?.[0]?.productName || "상품 없음"}</span>
+                                                    <span className="product-name">
+                                                        {order.items?.[0]?.productName || '상품 없음'}
+                                                    </span>
                                                     <span className={`status-badge ${order.deliveryStatus}`}>
                                                         {order.deliveryStatus}
                                                     </span>
@@ -2390,12 +2469,7 @@ export default function MyPage() {
                             <div className="form-field">
                                 <label>우편번호</label>
                                 <div className="input-group">
-                                    <input
-                                        type="text"
-                                        placeholder="우편번호"
-                                        value={newAddress.zipcode}
-                                        readOnly
-                                    />
+                                    <input type="text" placeholder="우편번호" value={newAddress.zipcode} readOnly />
                                     <button className="btn-primary" onClick={sample6_execDaumPostcode}>
                                         우편번호 찾기
                                     </button>
@@ -2404,12 +2478,7 @@ export default function MyPage() {
 
                             <div className="form-field">
                                 <label>주소</label>
-                                <input
-                                    type="text"
-                                    placeholder="주소"
-                                    value={newAddress.baseAddress}
-                                    readOnly
-                                />
+                                <input type="text" placeholder="주소" value={newAddress.baseAddress} readOnly />
                             </div>
 
                             <div className="form-field">
@@ -2424,12 +2493,7 @@ export default function MyPage() {
 
                             <div className="form-field">
                                 <label>참고항목</label>
-                                <input
-                                    type="text"
-                                    placeholder="참고항목"
-                                    value={newAddress.extraAddress}
-                                    readOnly
-                                />
+                                <input type="text" placeholder="참고항목" value={newAddress.extraAddress} readOnly />
                             </div>
 
                             <div className="form-field">
@@ -2474,7 +2538,9 @@ export default function MyPage() {
                                     type="text"
                                     placeholder="수령인 이름"
                                     value={editAddressData.recipientName}
-                                    onChange={(e) => setEditAddressData({ ...editAddressData, recipientName: e.target.value })}
+                                    onChange={(e) =>
+                                        setEditAddressData({ ...editAddressData, recipientName: e.target.value })
+                                    }
                                 />
                             </div>
 
@@ -2495,12 +2561,7 @@ export default function MyPage() {
 
                             <div className="form-field">
                                 <label>주소</label>
-                                <input
-                                    type="text"
-                                    placeholder="주소"
-                                    value={editAddressData.baseAddress}
-                                    readOnly
-                                />
+                                <input type="text" placeholder="주소" value={editAddressData.baseAddress} readOnly />
                             </div>
 
                             <div className="form-field">
@@ -2509,7 +2570,9 @@ export default function MyPage() {
                                     type="text"
                                     placeholder="상세주소"
                                     value={editAddressData.detailAddress}
-                                    onChange={(e) => setEditAddressData({ ...editAddressData, detailAddress: e.target.value })}
+                                    onChange={(e) =>
+                                        setEditAddressData({ ...editAddressData, detailAddress: e.target.value })
+                                    }
                                 />
                             </div>
 
@@ -2519,7 +2582,9 @@ export default function MyPage() {
                                     type="text"
                                     placeholder="참고항목"
                                     value={editAddressData.extraAddress}
-                                    onChange={(e) => setEditAddressData({ ...editAddressData, extraAddress: e.target.value })}
+                                    onChange={(e) =>
+                                        setEditAddressData({ ...editAddressData, extraAddress: e.target.value })
+                                    }
                                 />
                             </div>
 
@@ -2561,8 +2626,8 @@ export default function MyPage() {
                         <div className="modal-body">
                             <div className="form-field">
                                 <label>결제수단</label>
-                                <select 
-                                    value={paymentType} 
+                                <select
+                                    value={paymentType}
                                     onChange={(e) => setPaymentType(e.target.value as any)}
                                     className="select-input"
                                 >
@@ -2571,69 +2636,68 @@ export default function MyPage() {
                                 </select>
                             </div>
 
-                            {paymentType === "BANK" && (
+                            {paymentType === 'BANK' && (
                                 <>
                                     <div className="form-field">
                                         <label>은행명</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="은행명을 입력하세요"
-                                            value={bankName} 
-                                            onChange={(e) => setBankName(e.target.value)} 
+                                            value={bankName}
+                                            onChange={(e) => setBankName(e.target.value)}
                                         />
                                         {errors.bankName && <p className="error-msg">{errors.bankName}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>계좌번호</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="계좌번호를 입력하세요"
-                                            value={accountNumber} 
-                                            onChange={(e) => setAccountNumber(e.target.value)} 
+                                            value={accountNumber}
+                                            onChange={(e) => setAccountNumber(e.target.value)}
                                         />
                                         {errors.accountNumber && <p className="error-msg">{errors.accountNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>예금주</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="예금주명을 입력하세요"
-                                            value={accountHolder} 
-                                            onChange={(e) => setAccountHolder(e.target.value)} 
+                                            value={accountHolder}
+                                            onChange={(e) => setAccountHolder(e.target.value)}
                                         />
-                                        
                                     </div>
                                 </>
                             )}
 
-                            {paymentType === "CARD" && (
+                            {paymentType === 'CARD' && (
                                 <>
                                     <div className="form-field">
                                         <label>카드사</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="카드사를 입력하세요"
-                                            value={cardCompany} 
-                                            onChange={(e) => setCardCompany(e.target.value)} 
+                                            value={cardCompany}
+                                            onChange={(e) => setCardCompany(e.target.value)}
                                         />
                                     </div>
                                     <div className="form-field">
                                         <label>카드번호</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="카드번호를 입력하세요"
-                                            value={cardNumber} 
-                                            onChange={(e) => setCardNumber(e.target.value)} 
+                                            value={cardNumber}
+                                            onChange={(e) => setCardNumber(e.target.value)}
                                         />
                                         {errors.cardNumber && <p className="error-msg">{errors.cardNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>유효기간</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="MM/YY"
-                                            value={cardExpire} 
-                                            onChange={(e) => setCardExpire(e.target.value)} 
+                                            value={cardExpire}
+                                            onChange={(e) => setCardExpire(e.target.value)}
                                         />
                                         {errors.cardExpire && <p className="error-msg">{errors.cardExpire}</p>}
                                     </div>
@@ -2642,10 +2706,10 @@ export default function MyPage() {
 
                             <div className="form-field">
                                 <label className="checkbox-label">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={defaultPayment} 
-                                        onChange={(e) => setDefaultPayment(e.target.checked)} 
+                                    <input
+                                        type="checkbox"
+                                        checked={defaultPayment}
+                                        onChange={(e) => setDefaultPayment(e.target.checked)}
                                     />
                                     <span>기본 결제수단으로 설정</span>
                                 </label>
@@ -2782,12 +2846,12 @@ export default function MyPage() {
                                 className="btn btn-primary"
                                 onClick={() => {
                                     if (!reasonText.trim()) {
-                                        alert("사유를 입력해주세요.")
+                                        alert('사유를 입력해주세요.')
                                         return
                                     }
                                     reasonModalOnSubmit(reasonText)
                                     setIsReasonModal(false)
-                                    setReasonText("")
+                                    setReasonText('')
                                 }}
                             >
                                 제출
@@ -2825,15 +2889,13 @@ export default function MyPage() {
 
                             <div className="form-field">
                                 <label className="file-input-label">
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
+                                    <input
+                                        type="file"
+                                        accept="image/*"
                                         onChange={handleProfileFileChange}
                                         className="file-input"
                                     />
-                                    <span className="file-input-button">
-                                        📁 이미지 선택
-                                    </span>
+                                    <span className="file-input-button">📁 이미지 선택</span>
                                 </label>
                             </div>
                         </div>
@@ -2857,33 +2919,29 @@ export default function MyPage() {
             {isModalOpen && (
                 <div className="modalOverlay">
                     <div className="modalContainer">
-                        
                         {/* 헤더 */}
                         <div className="modalHeader">
                             <h2 className="modalTitle">결제하기</h2>
 
-                            <button
-                                type="button"
-                                onClick={handleClosePaymentModal}
-                                className="modalCloseBtn"
-                            >
+                            <button type="button" onClick={handleClosePaymentModal} className="modalCloseBtn">
                                 ✕
                             </button>
                         </div>
 
                         {/* === 한 섹션 카드 === */}
                         <div className="modalSection">
-
                             {/* 상품 요약 */}
                             <div className="modalProductSummary">
-
                                 {/* 대표 이미지 */}
                                 <div className="summaryThumb">
                                     <img
                                         src={
-                                            infiniteCart.find(item => selectedItems.includes(item.cartId))?.imageUrl
-                                                ? `http://localhost:8090${infiniteCart.find(item => selectedItems.includes(item.cartId))?.imageUrl}`
-                                                : "/default-product.png"
+                                            infiniteCart.find((item) => selectedItems.includes(item.cartId))?.imageUrl
+                                                ? `http://localhost:8090${
+                                                      infiniteCart.find((item) => selectedItems.includes(item.cartId))
+                                                          ?.imageUrl
+                                                  }`
+                                                : '/default-product.png'
                                         }
                                         alt="장바구니 대표 이미지"
                                     />
@@ -2891,13 +2949,9 @@ export default function MyPage() {
 
                                 {/* 텍스트 */}
                                 <div className="summaryText">
-                                    <div className="summaryTitle">
-                                        장바구니 상품 {selectedItems.length}개
-                                    </div>
+                                    <div className="summaryTitle">장바구니 상품 {selectedItems.length}개</div>
 
-                                    <div className="summaryDesc">
-                                        여러 상품을 함께 결제합니다.
-                                    </div>
+                                    <div className="summaryDesc">여러 상품을 함께 결제합니다.</div>
 
                                     <div className="summaryRow">
                                         <span className="summaryLabel">총 상품 수</span>
@@ -2906,9 +2960,7 @@ export default function MyPage() {
 
                                     <div className="summaryRow">
                                         <span className="summaryLabel">총 결제 금액</span>
-                                        <span className="summaryTotal">
-                                            {total.toLocaleString()}원
-                                        </span>
+                                        <span className="summaryTotal">{total.toLocaleString()}원</span>
                                     </div>
                                 </div>
                             </div>
@@ -2931,12 +2983,12 @@ export default function MyPage() {
                                 className="paymentSubmitBtn"
                                 disabled={!widgetLoaded}
                             >
-                                {widgetLoaded ? "결제하기" : "결제 준비중…"}
+                                {widgetLoaded ? '결제하기' : '결제 준비중…'}
                             </button>
                         </div>
                     </div>
                 </div>
-            )}  
+            )}
         </div>
     )
 }

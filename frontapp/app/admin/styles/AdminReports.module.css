@@ -167,7 +167,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 5px 10px;
+    padding: 10px 20px;
     border-radius: 999px;
     font-size: 12px;
     cursor: pointer;
@@ -213,19 +213,6 @@
     color: #9ca3af;
     margin-top: 8px;
     text-align: right;
-}
-
-.btn {
-    all: unset;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    cursor: pointer;
-    border: 1px solid #e5e7eb;
-    background-color: #f9fafb;
 }
 
 .searchBox {

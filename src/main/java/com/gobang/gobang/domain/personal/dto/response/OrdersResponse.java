@@ -28,6 +28,7 @@ public class OrdersResponse {
     private String completedAt; // String으로 변경
     private String status;
     private String reason;
+    private String buyerNickname;   // 셀러 페이지에서 볼 구매자 닉네임 - 상진 추가
     private List<OrderItemResponse> items;
     private List<DeliveryResponse> deliveries;
 
@@ -69,6 +70,11 @@ public class OrdersResponse {
                 .completedAt(completedAt)
                 .status(orders.getStatus())
                 .reason(orders.getReason())
+                .buyerNickname(
+                        orders.getSiteUser() != null
+                                ? orders.getSiteUser().getNickName()
+                                : null
+                )
                 .items(items)
                 .deliveries(deliveries)
                 .build();

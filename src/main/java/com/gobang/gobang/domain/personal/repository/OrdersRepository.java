@@ -27,13 +27,24 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
 
     //hj - 주문코드 조회하기
     Optional<Orders> findByOrderCode(String orderCode);
+
     @Query("""
-        SELECT o
-        FROM Orders o
-        WHERE o.siteUser.id = :userId
-          AND (:lastOrderId IS NULL OR o.orderId < :lastOrderId)
-        ORDER BY o.orderId DESC
-        """)
+            SELECT o
+            FROM Orders o
+            WHERE o.siteUser.id = :userId
+              AND (:lastOrderId IS NULL OR o.orderId < :lastOrderId)
+            ORDER BY o.orderId DESC
+            """)
     List<Orders> findInfiniteOrders(Long userId, Long lastOrderId, int size);
 
+    // 셀러 기준으로 받은 주문 조회 - 상진
+    @Query("""
+                SELECT DISTINCT o
+                FROM Orders o
+                JOIN o.orderItems oi
+                JOIN oi.product p
+                WHERE p.studioId = :studioId
+                ORDER BY o.orderId DESC
+            """)
+    List<Orders> findReceivedOrdersByStudioId(@Param("studioId") Long studioId);
 }
