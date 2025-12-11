@@ -16,7 +16,7 @@ public class GeminiClient {
     @Value("${gemini.api-key}")
     private String apiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public String requestSummary(String prompt) {
         String url =

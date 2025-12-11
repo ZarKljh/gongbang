@@ -627,6 +627,7 @@ export default function Review() {
                         <hr style={{ marginBottom: '20px' }} />
                         <h3 className="review-title">리뷰</h3>
                     </div>
+
                      <ReviewSummary productId={productId} />
 
                     {/* 평균 별점 */}

@@ -11,6 +11,8 @@ export default function ReviewSummary({ productId }) {
         setLoading(true)
         setSummary("")
 
+        if (loading) return;
+
         try {
             const res = await api.get('/reviews/summary', {
                 params: { productId },
@@ -30,7 +32,7 @@ export default function ReviewSummary({ productId }) {
     }
 
     return (
-        <div style={{ marginTop: "20px" }}>
+        <div style={{ marginTop: "20px",  }}>
             <button
                 onClick={handleSummaryClick}
                 disabled={loading}
@@ -41,6 +43,9 @@ export default function ReviewSummary({ productId }) {
                     border: "none",
                     borderRadius: "8px",
                     cursor: "pointer",
+                    marginBottom: "10px",
+                    marginRight: 0,
+
                 }}
             >
                 {loading ? "요약 생성 중..." : "AI 리뷰 요약 보기"}
@@ -56,6 +61,7 @@ export default function ReviewSummary({ productId }) {
                         border: "1px solid #ddd",
                         whiteSpace: "pre-wrap",
                         lineHeight: "1.6",
+                        marginBottom: "10px",
                     }}
                 >
                     <strong>요약 결과</strong>

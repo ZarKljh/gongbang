@@ -13,6 +13,7 @@ public class AiService {
     public String summarizeReviews(String reviewText) {
 
         String prompt = """
+                요약 요청 (session=%d):
                 당신은 쇼핑몰 리뷰 전문가입니다.
 
                 아래는 동일한 상품을 구매한 고객들의 리뷰입니다.
@@ -24,7 +25,9 @@ public class AiService {
 
                 리뷰 내용:
                 %s
-                """.formatted(reviewText);
+                """.formatted(System.currentTimeMillis(), reviewText);
+
+
 
         return geminiClient.requestSummary(prompt);
     }
