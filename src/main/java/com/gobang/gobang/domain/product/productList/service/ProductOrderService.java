@@ -36,6 +36,7 @@ public class ProductOrderService {
 
     //@Value("${custom.payment.secret-key}")
     private String secretKey = "test_sk_docs_3j6nNJE6A6EQ5vPBQ2Xr3e9b";
+
     /**
      * 임시 주문 생성 (PENDING 상태)
      * - 프론트에서 Toss 결제 호출 전에 호출
@@ -86,10 +87,6 @@ public class ProductOrderService {
         // 8. 프론트/토스로 넘길 값 반환
         return new PrepareOrderResponse(orderCode, totalPrice);
     }
-
-
-
-
 
 
     @Transactional
@@ -158,24 +155,25 @@ public class ProductOrderService {
         System.out.println(orderId);
 
         Orders order = findByOrderCode(orderId);
-        markPaid(order, paymentKey, "CARD");
 
-
-
-        if (order.getStatus().equals("paid")) { // 혹은 order.getStatus() == OrderStatus.PAID
-            // 중복 승인 요청 들어온 상황
-            throw new IllegalStateException("이미 결제가 완료된 주문입니다. orderId=" + orderId);
+        // 1. 먼저 상태 확인
+        if (order.getStatus().equals("PAID")) {
+            throw new CustomException(ErrorCode.CONFLICT);
+            //throw new IllegalStateException("이미 결제가 완료된 주문입니다. orderId=" + orderId);
         }
 
-        BigDecimal orderPrice = order.getTotalPrice();      // ex) 76000.00
-        BigDecimal requestPrice = BigDecimal.valueOf(amount); // ex) 76000
+        // 2. 금액 검증
+        BigDecimal orderPrice = order.getTotalPrice();
+        BigDecimal requestPrice = BigDecimal.valueOf(amount);
 
-        // scale 무시하고 순수 금액 비교
         if (orderPrice.compareTo(requestPrice) != 0) {
             throw new IllegalStateException(
                     "금액 불일치: 주문=" + orderPrice + ", 요청=" + requestPrice
             );
         }
+
+        // 3. 통과하면 결제 완료 처리
+        markPaid(order, paymentKey, "CARD");
 
 
         for (OrderItem item : order.getOrderItems()) {

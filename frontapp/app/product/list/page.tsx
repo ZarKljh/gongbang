@@ -308,7 +308,7 @@ export default function Product() {
         if (selectedCategoryId == null || selectedSubCategoryId == null) return
 
         const extra = buildExtra(selectedBtn)
-        submitFilter(extra)
+        submitFilter(extra) //필터 조회 동작
     }, [selectedBtn, selectedCategoryId, selectedSubCategoryId, submitFilter])
 
     const handleToggleLike = (productId: number) => {

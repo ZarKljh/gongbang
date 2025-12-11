@@ -54,4 +54,8 @@ public class Delivery {
     protected void onUpdate() {
         modifiedDate = LocalDateTime.now();
     }
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }
