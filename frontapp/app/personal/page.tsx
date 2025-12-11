@@ -1,7 +1,7 @@
 'use client'
 
 import axios from 'axios'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -9,1520 +9,726 @@ import { useRouter } from 'next/navigation'
 import { loadPaymentWidget } from "@tosspayments/payment-widget-sdk"
 import api from '@/app/utils/api'
 
+// 커스텀 훅
+import { useOrders } from '@/app/personal/hooks/useOrders'
+import { useCart } from '@/app/personal/hooks/useCart'
+import { useAddress } from '@/app/personal/hooks/useAddress'
+import { usePayment } from '@/app/personal/hooks/usePayment'
+import { useProfile } from '@/app/personal/hooks/useProfile'
+import { useQna } from '@/app/personal/hooks/useQna'
+import { useReviews } from '@/app/personal/hooks/useReviews'
+import { useWishlist } from '@/app/personal/hooks/useWishlist'
+
 const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 export const IMAGE_BASE_URL = 'http://localhost:8090'
 
-interface Post {
-  id: number
-  title: string
-  content: string
-  imageUrl?: string
+interface Stats {
+  totalQna: number
+  totalReviews: number
+  preparing: number
+  shipping: number
+  completed: number
 }
 
-interface Order {
-  orderId: number
-  orderCode: string
-  createdDate: string
-  deliveryStatus: string
-  totalPrice: number
-  completedAt?: string
-  items?: any[]
-  deliveries?: any[]
-}
-
-interface WishItem {
-  wishlistId: number
-  productName: string
-  price: number
-  imageUrl?: string
-}
-
-interface CartItem {
-  cartId: number
-  productName: string
-  price: number
-  quantity: number
-  imageUrl?: string
+type PendingOrderItem = {
   productId: number
-}
-
-interface ReviewItem {
-  reviewId: number
-  content: string
-  rating: number
-  images: string[]
-  productName: string
-  createdDate: string
+  quantity: number
 }
 
 export default function MyPage() {
-    const searchParams = useSearchParams()
-    const router = useRouter()
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
-    // =============== State 관리 ===============
-    // 사용자 정보
-    const [userData, setUserData] = useState<any>(null)
-    const [tempData, setTempData] = useState<any>(null)
-    const [stats, setStats] = useState<any>({
+  // =============== 전역 UI 상태 ===============
+  const [pageLoading, setPageLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('orders')
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+
+  // 통계 (QnA 수, 리뷰 수, 배송 상태)
+  const [stats, setStats] = useState<Stats>({
     totalQna: 0,
     totalReviews: 0,
-    preparing: 0,   // 배송준비중
-    shipping: 0,    // 배송중
-    completed: 0,   // 배송완료(7일 이내)
-    profileImageUrl: null,
-})
-    const [errors, setErrors] = useState<any>({})
+    preparing: 0,
+    shipping: 0,
+    completed: 0,
+  })
 
-    // UI 상태
-    const [pageLoading, setPageLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState("orders")
-    const [activeSubTab, setActiveSubTab] = useState('product')
-    const [editMode, setEditMode] = useState({})
-    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-    const EditModal = ({
-        open,
-        title,
-        children,
-        onClose,
-        onSave,
-        saveText = "저장",
-        cancelText = "취소"
-    }) => {
-        if (!open) return null;
-    }
+  // 삭제/확인 모달
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean
+    title: string
+    message: string
+    warning: string
+    onConfirm: () => void
+    onCancel: () => void
+  }>({
+    open: false,
+    title: '',
+    message: '',
+    warning: '',
+    onConfirm: () => {},
+    onCancel: () => {},
+  })
 
-    //무한스크롤
-    const [infiniteOrders, setInfiniteOrders] = useState<Order[]>([])
-    const [infiniteOrdersLoading, setInfiniteOrdersLoading] = useState(false)
-    const [infiniteOrdersHasMore, setInfiniteOrdersHasMore] = useState(true)
-    const [infiniteOrdersLastId, setInfiniteOrdersLastId] = useState<number | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean
+    message: string
+    onConfirm: null | (() => void)
+    onCancel: null | (() => void)
+  }>({
+    open: false,
+    message: '',
+    onConfirm: null,
+    onCancel: null,
+  })
 
-    const [infiniteWishList, setInfiniteWishList] = useState<WishItem[]>([])
-    const [infiniteWishLoading, setInfiniteWishLoading] = useState(false)
-    const [infiniteWishHasMore, setInfiniteWishHasMore] = useState(true)
-    const [infiniteWishLastId, setInfiniteWishLastId] = useState<number | null>(null)
+  // 사용자 정보
+  const [userData, setUserData] = useState<any>(null)
 
-    const [infiniteReviews, setInfiniteReviews] = useState<ReviewItem[]>([])
-    const [infiniteReviewLoading, setInfiniteReviewLoading] = useState(false)
-    const [infiniteReviewHasMore, setInfiniteReviewHasMore] = useState(true)
-    const [infiniteReviewLastId, setInfiniteReviewLastId] = useState<number | null>(null)
+  // =============== 커스텀 훅 연결 ===============
 
-    const SIZE = 10
+  // 주문 / 주문관리
+    const {
+        // 리스트
+        orders,
+        infiniteOrders,
+        infiniteOrdersLoading,
+        infiniteOrdersHasMore,
+        infiniteOrdersLastId,
+        filteredOrders,
 
-    // 인증
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [passwordInput, setPasswordInput] = useState('')
-    const [newPassword, setNewPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [showAuthBox, setShowAuthBox] = useState(false)
+        // 상태
+        selectedStatus,
+        activeFilter,
+        isStatusModal,
+        openOrderId,
 
-    // 주문/배송
-    const [orders, setOrders] = useState<any[]>([])
-    const [selectedStatus, setSelectedStatus] = useState(null)
-    const [isStatusModal, setIsStatusModal] = useState(false)
-    const [activeFilter, setActiveFilter] = useState('전체')
-    const [isReasonModal, setIsReasonModal] = useState(false)
-    const [reasonModalTitle, setReasonModalTitle] = useState("")
-    const [reasonModalOnSubmit, setReasonModalOnSubmit] = useState<(reason: string) => void>(() => {})
-    const [reasonText, setReasonText] = useState("")
+        // 사유 입력 모달
+        isReasonModal,
+        reasonModalTitle,
+        reasonText,
 
-    // 배송지
-    const [addresses, setAddresses] = useState<any[]>([])
-    const [isAddressModal, setIsAddressModal] = useState(false)
-    const [editAddressModal, setEditAddressModal] = useState(false)
-    const [editAddressData, setEditAddressData] = useState<any>(null)
-    const [defaultAddress, setDefaultAddress] = useState(false)
-    const [newAddress, setNewAddress] = useState({
-        recipientName: '',
-        zipcode: '',
-        baseAddress: '',
-        detailAddress: '',
-        extraAddress: '',
-    })
+        // setters
+        setIsStatusModal,
+        setActiveFilter,
+        setIsReasonModal,
+        setReasonModalTitle,
+        setReasonModalOnSubmit,
+        setReasonText,
 
-    // 결제수단
-    const [paymentMethods, setPaymentMethods] = useState<any[]>([])
-    const [isPaymentModal, setIsPaymentModal] = useState(false)
-    const [paymentType, setPaymentType] = useState<"CARD" | "BANK">("BANK")
-    const [bankName, setBankName] = useState("")
-    const [accountNumber, setAccountNumber] = useState("")
-    const [accountHolder, setAccountHolder] = useState("")
-    const [cardCompany, setCardCompany] = useState("")
-    const [cardNumber, setCardNumber] = useState("")
-    const [cardExpire, setCardExpire] = useState("")
-    const [defaultPayment, setDefaultPayment] = useState(false)
+        // 기능
+        fetchOrders,
+        fetchInfiniteOrders,
+        resetInfiniteOrders,
+        handleStatusClick,
+        toggleOrderDetail,
+        submitReason,
+        filterOrdersByStatus,
+    } = useOrders()
 
-    // 리뷰
-    const [isEditReviewModal, setIsEditReviewModal] = useState(false)
-    const [isDeleteReviewModal, setIsDeleteReviewModal] = useState(false)
-    const [editReview, setEditReview] = useState<any>(null)
-    const [reviewToDelete, setReviewToDelete] = useState<any>(null)
-    const [editReviewContent, setEditReviewContent] = useState('')
-    const [editReviewRating, setEditReviewRating] = useState(0)
+  // 장바구니
+    const {
+        cart,
+        selectedItems,
+        selectedProducts,
+        setCart,
+        setSelectedItems,
+        fetchCart,
+        handleUpdateCart,
+        handleDeleteCart,
+        handleSelectItem,
+        handleToggleSelectAll,
+        handleClearSelection,
+    } = useCart()
 
-    // 위시리스트/팔로우
-    const [followList, setFollowList] = useState<any[]>([])
+  // 배송지
+    const {
+        addresses,
+        isAddressModal,
+        editAddressModal,
+        editAddressData,
+        defaultAddress,
+        newAddress,
+        isAddressSelectModalOpen,
+        selectedAddress,
+        setIsAddressModal,
+        setEditAddressModal,
+        setEditAddressData,
+        setDefaultAddress,
+        setNewAddress,
+        setIsAddressSelectModalOpen,
+        setSelectedAddress,
+        fetchAddresses,
+        handleSaveAddress,
+        handleUpdateAddress,
+        handleDeleteAddress,
+        sample6_execDaumPostcode,
+        sample6_execDaumPostcodeForEdit,
+    } = useAddress(userData?.id)
 
-    // 장바구니
-    const [cart, setCart] = useState<any[]>([])
-    const [selectedItems, setSelectedItems] = useState<number[]>([])
+  // 결제수단
+    const {
+        paymentMethods,
+        isPaymentModal,
+        paymentType,
+        bankName,
+        accountNumber,
+        accountHolder,
+        cardCompany,
+        cardNumber,
+        cardExpire,
+        defaultPayment,
+        errors: paymentErrors,
+        setIsPaymentModal,
+        setPaymentType,
+        setBankName,
+        setAccountNumber,
+        setAccountHolder,
+        setCardCompany,
+        setCardNumber,
+        setCardExpire,
+        setDefaultPayment,
+        fetchPaymentMethods,
+        handleSavePayment,
+        handleSetDefault,
+        handleDeletePayment,
+        maskCard,
+    } = usePayment()
 
-    //문의
-    const [qna, setQna] = useState<any[]>([])
-    const [openQnaId, setOpenQnaId] = useState(null)
+  // 프로필 / 계정정보
+    const {
+        tempData,
+        errors: profileErrors,
+        editMode,
+        isAuthenticated,
+        passwordInput,
+        newPassword,
+        confirmPassword,
+        showAuthBox,
+        isProfileModalOpen,
+        previewProfileImage,
+        profileFile,
+        setPasswordInput,
+        setNewPassword,
+        setConfirmPassword,
+        setShowAuthBox,
+        setIsProfileModalOpen,
+        setTempData,
+        handleVerifyPassword,
+        handleEdit,
+        handleSave,
+        handleCancel,
+        handleProfileClick,
+        handleProfileFileChange,
+        handleProfileUpload,
+        handleProfileDelete,
+        fetchProfileImage,
+    } = useProfile(userData, setUserData)
 
-    //이미지
-    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-    const [previewProfileImage, setPreviewProfileImage] = useState<string | null>(stats.profileImageUrl)
-    const [profileFile, setProfileFile] = useState<File | null>(null)
+  // QnA
+    const {
+        qna,
+        openQnaId,
+        setQna,
+        fetchQna,
+        handleDeleteQna,
+        toggleQna,
+    } = useQna()
 
-    //결제
+  // 리뷰
+    const {
+        infiniteReviews,
+        infiniteReviewLoading,
+        infiniteReviewHasMore,
+        infiniteReviewLastId,
+        isEditReviewModal,
+        editReviewContent,
+        editReviewRating,
+        setInfiniteReviews,
+        setInfiniteReviewHasMore,
+        setInfiniteReviewLastId,
+        setEditReviewContent,
+        setEditReviewRating,
+        fetchInfiniteReviews,
+        handleEditClick,
+        handleCloseModal,
+        handleSaveEdit,
+        handleDeleteReview,
+    } = useReviews()
+
+  // 위시리스트 / 팔로우 / 추천
+    const {
+        infiniteWishList,
+        infiniteWishLoading,
+        infiniteWishHasMore,
+        infiniteWishLastId,
+        followList,
+        activeSubTab,
+        setActiveSubTab,
+        fetchInfiniteWishList,
+        resetInfiniteWishList,
+        fetchFollowList,
+        handleRemoveWish,
+        handleUnfollow,
+        recommendItems,
+        recommendMessage,
+        fetchRecommendList,
+    } = useWishlist()
+
+  // =============== 결제 관련 상태 (토스 위젯) ===============
     const [orderCode, setOrderCode] = useState<string | null>(null)
     const [total, setTotal] = useState<number>(0)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [paymentWidget, setPaymentWidget] = useState<any>(null)
     const [widgetLoaded, setWidgetLoaded] = useState(false)
+    const [pendingOrderItems, setPendingOrderItems] = useState<PendingOrderItem[]>([])
+
     const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
     const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
-    
-    // =============== Effects ===============
-    useEffect(() => {
-        const init = async () => {
-            setPageLoading(true)
-            try {
-                const user = await fetchUser()
-                if (!user || !user.id) return
 
-                await loadAllData(user.id)
-            } catch (error) {
-                console.error('초기 데이터 로딩 실패:', error)
-            } finally {
-                setPageLoading(false)
-            }
-        }
-
-        init()
-    }, [])
-
-    useEffect(() => {
-        if (isAddressModal && !window.daum) {
-            const script = document.createElement('script')
-            script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
-            script.async = true
-            document.body.appendChild(script)
-        }
-    }, [isAddressModal])
-
-    useEffect(() => {
-        const tab = searchParams.get('tab')
-        if (tab) setActiveTab(tab)
-    }, [searchParams])
-
-    // =============== API 호출 함수 ===============
-    const loadAllData = async (userId: number) => {
-        try {
-            await Promise.all([
-                fetchOrders(userId),
-                fetchAddresses(userId),
-                fetchPaymentMethods(),
-                fetchFollowList(userId),
-                fetchStatsData(userId),
-                fetchCart(userId),
-                fetchQna(userId),
-                fetchProfileImage(userId),
-            ])
-        } catch (error) {
-            console.error('데이터 로드 실패:', error)
-        }
-    }
-
-    const fetchUser = async () => {
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/me`, { withCredentials: true })
-            if (data.code === '401') {
-                window.location.href = '/auth/login'
-                return null
-            }
-            setUserData(data.data)
-            return data.data
-        } catch (error) {
-            console.error('사용자 정보 조회 실패:', error)
-            return null
-        }
-    }
-
-    const fetchOrders = async (id?: number) => {
-        try {
-            const res = await axios.get(`${API_BASE_URL}/orders`, {
-                withCredentials: true,
-            })
-            setOrders(res.data.data)
-        } catch (e) {
-            console.error("전체 주문 조회 실패:", e)
-        }
-    }
-
-    const fetchCart = async (id?: number) => {
-        if (!id) return
-
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/cart`, {
-                withCredentials: true,
-            })
-
-            const list = Array.isArray(data.data) ? data.data : []
-
-            // 기존 cart 저장
-            setCart(list)
-
-        } catch (error) {
-            console.error('장바구니 목록 조회 실패:', error)
-            setCart([])
-        }
-    }
-
-    const fetchAddresses = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-
-        try {
-            const response = await axios.get(`${API_BASE_URL}/addresses?userId=${userId}`, {
-                withCredentials: true,
-            })
-            const addressesData = response.data?.data || []
-            const cleaned = flattenAddresses(addressesData)
-            setAddresses(cleaned)
-        } catch (error) {
-            console.error('배송지 조회 실패:', error)
-            setAddresses([])
-        }
-    }
-
-    const fetchPaymentMethods = async () => {
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                setPaymentMethods(data.data)
-            } else {
-                alert(`결제수단 조회 실패: ${data.msg}`)
-            }
-        } catch (error: any) {
-            console.error('결제수단 조회 실패:', error)
-            alert(error?.response?.data?.msg ?? '결제수단 조회 중 오류가 발생했습니다.')
-        }
-    }
-
-    const fetchFollowList = async (id?: number) => {
-        if (!id) return
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${id}`, {
-                withCredentials: true,
-            })
-            setFollowList(Array.isArray(data.data) ? data.data : [])
-        } catch (error) {
-            console.error('팔로우 목록 조회 실패:', error)
-            setFollowList([])
-        }
-    }
-
-    const fetchStatsData = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/stats?userId=${userId}`, {
-                withCredentials: true,
-            })
-            setStats({
-                totalQna: data.totalQna ?? 0,
-                totalReviews: data.totalReviews ?? 0,
-                preparing: data.preparing ?? 0,
-                shipping: data.shipping ?? 0,
-                completed: data.completed ?? 0,
-            })
-        } catch (error) {
-            console.error('통계 조회 실패:', error)
-            setStats({
-                totalQna: 0,
-                totalReviews: 0,
-                preparing: 0,
-                shipping: 0,
-                completed: 0,
-                profileImageUrl: stats.profileImageUrl,
-            })
-        }
-    }
-
-    const fetchQna = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-        
-        try {
-            const response = await axios.get(`${API_BASE_URL}/qna`, {
-                params: { userId },
-                withCredentials: true,
-            })
-            const list = Array.isArray(response.data.data) ? response.data.data : []
-            setQna(list)
-            setStats((prev) => ({
-                ...prev,
-                totalQna: list.length,
-            }))
-        } catch (error) {
-            console.error('문의 목록 조회 실패:', error)
-            setQna([])
-        }
-    }
-
-    const fetchProfileImage = async (id?: number) => {
-        const userId = id || userData?.id
-        if (!userId) return
-        
-        try {
-            const response = await axios.get(`${api.defaults.baseURL}/image/profile/${userId}`, {
-            responseType: 'blob',
-            withCredentials: true,
-            })
-            const blob = new Blob([response.data], { type: response.headers['content-type'] })
-            const url = URL.createObjectURL(blob)
-            setPreviewProfileImage(url)
-            setStats(prev => ({ ...prev, profileImageUrl: url }))
-        } catch (err) {
-            console.error(err)
-        }
-    }
-
-    // =============== 기본설정 모달 ===============
-    const handleAskDefaultAddress = () => {
-        if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
-            alert('이름과 주소를 모두 입력해주세요.')
-            return
-        }
-
-        setConfirmModal({
-            open: true,
-            message: "이 배송지를 기본 배송지로 설정하시겠습니까?",
-            onConfirm: () => handleSaveAddress(true),
-            onCancel: () => handleSaveAddress(false),
-        })
-    }
-
-    const handleAskDefaultPayment = () => {
-        if (!validatePayment()) return
-
-        setConfirmModal({
-            open: true,
-            message: "이 결제수단을 기본 결제수단으로 설정하시겠습니까?",
-            onConfirm: () => handleSavePayment(true),
-            onCancel: () => handleSavePayment(false),
-        })
-    }
-
-    // =============== 유틸리티 함수 ===============
-    const flattenAddresses = (data: any[]): any[] => {
-        return data.map((addr) => ({
-            userAddressId: addr.userAddressId,
-            userId: addr.siteUser?.userId,
-            userName: addr.siteUser?.userName,
-            recipientName: addr.recipientName,
-            zipcode: addr.zipcode,
-            baseAddress: addr.baseAddress,
-            detailAddress: addr.detailAddress,
-            extraAddress: addr.extraAddress,
-            isDefault: addr.isDefault,
-        }))
-    }
-
-    const resetAddressForm = () => {
-        setNewAddress({
-            recipientName: '',
-            zipcode: '',
-            baseAddress: '',
-            detailAddress: '',
-            extraAddress: '',
-        })
-    }
-
-    const resetPaymentForm = () => {
-        setPaymentType('BANK')
-        setBankName('')
-        setAccountNumber('')
-        setCardCompany('')
-        setCardNumber('')
-        setDefaultPayment(false)
-    }
-
-    const sample6_execDaumPostcode = () => {
-        if (!window.daum || !window.daum.Postcode) {
-            alert('카카오 우편번호 API가 아직 로드되지 않았습니다.')
-            return
-        }
-
-        new window.daum.Postcode({
-            oncomplete: (data) => {
-                const addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress
-                let extraAddr = ''
-
-                if (data.userSelectedType === 'R') {
-                    if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
-                        extraAddr += data.bname
-                    }
-                    if (data.buildingName !== '' && data.apartment === 'Y') {
-                        extraAddr += extraAddr !== '' ? ', ' + data.buildingName : data.buildingName
-                    }
-                    if (extraAddr !== '') {
-                        extraAddr = ' (' + extraAddr + ')'
-                    }
-                }
-
-                setNewAddress((prev) => ({
-                    ...prev,
-                    zipcode: data.zonecode,
-                    baseAddress: addr,
-                    extraAddress: extraAddr,
-                }))
-            },
-        }).open()
-    }
-
-    // =============== 프로필 이미지 ===============
-    const handleProfileClick = () => {
-        setPreviewProfileImage(stats.profileImageUrl)
-        setIsProfileModalOpen(true)
-    }
-
-    const handleProfileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setProfileFile(file)
-        setPreviewProfileImage(URL.createObjectURL(file))
-    }
-
-    const handleProfileUpload = async () => {
-        if (!profileFile) return alert('이미지를 선택해주세요.')
-
-        const formData = new FormData()
-        formData.append('file', profileFile)
-
-        try {
-            const { data } = await axios.patch(
-                `${api.defaults.baseURL}/image/profile`,
-                formData,
-                {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    withCredentials: true,
-                }
-            )
-
-            if (data.resultCode === '200') {
-                alert('프로필 이미지가 업데이트되었습니다.')
-                setIsProfileModalOpen(false)
-                setProfileFile(null)
-
-                // 서버에서 받은 새 URL
-                let uploadedUrl = `${IMAGE_BASE_URL}${data.data}`
-                // 캐시 무효화
-                uploadedUrl = `${uploadedUrl}?t=${Date.now()}`
-
-                // preview 초기화
-                setPreviewProfileImage(null)
-
-                // stats 갱신 (즉시 렌더링 반영)
-                setStats(prev => ({
-                    ...prev,
-                    profileImageUrl: uploadedUrl,
-                }))
-
-            } else {
-                alert('업로드 실패')
-            }
-        } catch (error) {
-            console.error(error)
-            alert('업로드 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleProfileDelete = async () => {
-        if (!confirm('프로필 이미지를 삭제하시겠습니까?')) return
-
-        try {
-            const { data } = await axios.delete(`http://localhost:8090/api/v1/image/profile`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === 'S-3' || data.resultCode === '200') {
-                alert('삭제 성공')
-                setPreviewProfileImage(null)
-                setProfileFile(null)
-                setStats(prev => ({ ...prev, profileImageUrl: null }))
-                setIsProfileModalOpen(false)
-            } else {
-                alert('삭제 실패')
-            }
-        } catch (error) {
-            console.error(error)
-            alert('삭제 중 오류가 발생했습니다.')
-        }
-    }
-
-    // =============== 주문, 배송정보 ===============
-    const isWithinSevenDays = (dateString?: string) => {
-        if (!dateString) return false
-        const completedDate = new Date(dateString)
-        const now = new Date()
-        const diffTime = Math.abs(now.getTime() - completedDate.getTime())
-        const diffDays = diffTime / (1000 * 60 * 60 * 24)
-        return diffDays <= 7
-    }
-
-    useEffect(() => {
-        if (!orders.length) return
-
-        const preparing = orders.filter(o => o.deliveryStatus === "배송준비중").length
-        const shipping = orders.filter(o => o.deliveryStatus === "배송중").length
-        const completed = orders.filter(o =>
-            o.deliveryStatus === "배송완료" &&
-            isWithinSevenDays(o.completedAt)
-        ).length
-
-        setStats(prev => ({
-            ...prev,
-            preparing,
-            shipping,
-            completed
-        }))
-    }, [orders])
-
-    // ================= 주문 취소 / 반품 / 교환 =================
-    const filteredOrders = orders.filter((order) => {
-        if (activeFilter === "전체") return ["취소", "반품", "교환"].includes(order.deliveryStatus)
-        if (activeFilter === "취소") return order.deliveryStatus === "취소"
-        if (activeFilter === "반품") return order.deliveryStatus === "반품"
-        if (activeFilter === "교환") return order.deliveryStatus === "교환"
-        return true
-    })
-
-    // =============== 회원정보 ===============
-    const handleVerifyPassword = async () => {
-        if (!passwordInput) {
-            alert('비밀번호를 입력해주세요.')
-            return
-        }
-
-        try {
-            const { data } = await axios.post(
-                `${API_BASE_URL}/me/verify-password`,
-                {
-                    userId: userData.id,
-                    password: passwordInput,
-                },
-                { withCredentials: true },
-            )
-
-            if (data.resultCode === '200') {
-                setIsAuthenticated(true)
-                setShowAuthBox(false)                     // 인증박스 닫기
-                setEditMode(prev => ({ ...prev, profile: true }))  // 수정모드 켜기
-                alert('비밀번호 인증 완료!')
-            } else {
-                alert('비밀번호가 올바르지 않습니다.')
-            }
-        } catch (error) {
-            console.error('비밀번호 인증 실패:', error)
-            alert('인증 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleEdit = (section: string) => {
-        if (!isAuthenticated) {
-            alert('정보 수정을 위해 비밀번호 인증이 필요합니다.')
-            return
-        }
-        setEditMode({ ...editMode, [section]: true })
-        setTempData({ ...userData })
-    }
-
-    const handleSave = async (section: string) => {
-        if (!userData?.id) return
-
-        const newErrors = { nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' }
-        let hasError = false
-
-        // 닉네임 검증
-        if (tempData.nickName?.trim()) {
-            const nicknameRegex = /^[a-zA-Z0-9가-힣ㄱ-ㅎ]{2,12}$/
-            if (!nicknameRegex.test(tempData.nickName)) {
-                newErrors.nickName = '닉네임은 2~12자, 특수문자 없이 입력해주세요.'
-                hasError = true
-            }
-        }
-
-        // 새 비밀번호 검증
-        if (newPassword?.trim()) {
-            const pwRegex = /^(?=.*[A-Za-z]{4,})(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{5,}$/;
-            if (!pwRegex.test(newPassword)) {
-                newErrors.newPassword = '비밀번호는 영문 4자 이상, 특수기호 1개 이상, 총 5자 이상이어야 합니다.';
-                hasError = true;
-            }
-            if (newPassword !== confirmPassword) {
-                newErrors.confirmPassword = '비밀번호 확인이 일치하지 않습니다.'
-                hasError = true
-            }
-        }
-
-        // 이메일 검증
-        if (tempData.email?.trim()) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            if (!emailRegex.test(tempData.email)) {
-                newErrors.email = '올바른 이메일 형식을 입력해주세요.'
-                hasError = true
-            }
-        }
-
-        // 휴대폰 검증
-        if (tempData.mobilePhone?.trim()) {
-            const phoneRegex = /^010\d{7,8}$/
-            if (!phoneRegex.test(tempData.mobilePhone)) {
-                newErrors.mobilePhone = '휴대폰 번호 형식이 올바르지 않습니다.'
-                hasError = true
-            }
-        }
-
-        setErrors(newErrors)
-
-        if (hasError) return // 오류가 있으면 서버 호출 안함
-
-        // 서버 호출
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/me/${userData.id}`,
-                {
-                    nickName: tempData.nickName,
-                    email: tempData.email,
-                    mobilePhone: tempData.mobilePhone,
-                    ...(newPassword ? { password: newPassword } : {}),
-                },
-                { withCredentials: true },
-            )
-
-            if (data.resultCode === '200' && data.data) {
-                setUserData(data.data)
-                setEditMode({ ...editMode, [section]: false })
-                setNewPassword('')
-                setConfirmPassword('')
-                setErrors({ nickName: '', newPassword: '', confirmPassword: '', email: '', mobilePhone: '' })
-            }
-        } catch (error: any) {
-            console.error('정보 수정 실패:', error.response?.data || error.message)
-        }
-    }
-
-    const handleCancel = (section: string) => {
-        setTempData({ ...userData })
-        setEditMode({ ...editMode, [section]: false })
-    }
-
-    // =============== 배송지 ===============
-    const handleSaveAddress = async (isDefaultFlag: boolean) => {
-        if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
-            alert('이름과 주소를 모두 입력해주세요.')
-            return
-        }
-
-        const addressToSave = { 
-            ...newAddress, 
-            isDefault: isDefaultFlag, 
-        }
-
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/addresses`, addressToSave, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                alert('배송지 등록 성공')
-                await fetchAddresses(userData.id)
-                setIsAddressModal(false)
-                resetAddressForm()
-            } else {
-                alert(`등록 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('배송지 등록 실패:', error)
-            alert('배송지 등록 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleUpdateAddress = async () => {
-        if (!editAddressData) return
-
-        const addressToSave = { ...editAddressData, isDefault: defaultAddress }
-
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/addresses/${editAddressData.userAddressId}`,
-                addressToSave,
-                { withCredentials: true },
-            )
-
-            if (data.resultCode === '200') {
-                alert('배송지 수정 성공')
-                await fetchAddresses(userData.id)
-                setEditAddressModal(false)
-            } else {
-                alert(`수정 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('배송지 수정 실패:', error)
-            alert('배송지 수정 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleDeleteAddress = async (addressId: number) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return
-
-        try {
-            const { data } = await axios.delete(`${API_BASE_URL}/addresses/${addressId}`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                alert('배송지 삭제 성공')
-                setAddresses((prev) => prev.filter((addr) => addr.userAddressId !== addressId))
-            } else {
-                alert(`삭제 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('배송지 삭제 실패:', error)
-            alert('배송지 삭제 중 오류가 발생했습니다.')
-        }
-    }
-
-    const sample6_execDaumPostcodeForEdit = () => {
-        new window.daum.Postcode({
-            oncomplete: function (data: any) {
-                setEditAddressData(prev => ({
-                    ...prev,
-                    zipcode: data.zonecode,
-                    baseAddress: data.address,
-                    extraAddress: data.buildingName || '',
-                }))
-            },
-        }).open()
-    }
-
-    // =============== 결제수단 ===============
-    const handleSavePayment = async (isDefaultFlag: boolean) => {
-        if (paymentType === 'BANK' && (!bankName || !accountNumber || !accountHolder)) {
-            alert('은행명과 계좌번호를 입력해주세요.')
-            return
-        }
-
-        if (paymentType === 'CARD' && (!cardCompany || !cardNumber || !cardExpire)) {
-            alert('카드사와 카드번호를 입력해주세요.')
-            return
-        }
-
-        const payload: any = {
-            type: paymentType,
-            defaultPayment: isDefaultFlag,
-        }
-
-        if (paymentType === "BANK") {
-            payload.bankName = bankName
-            payload.accountNumber = accountNumber
-            payload.accountHolder = accountHolder
-        } else {
-            payload.cardCompany = cardCompany
-            payload.cardNumber = cardNumber
-            payload.cardExpire = cardExpire
-        }
-
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, payload, { withCredentials: true })
-
-            if (data.resultCode === '200') {
-                alert('결제수단 등록 성공')
-                fetchPaymentMethods()
-                setIsPaymentModal(false)
-                resetPaymentForm()
-            } else {
-                alert(`등록 실패: ${data.msg}`)
-            }
-        } catch (error: any) {
-            console.error('결제수단 등록 실패:', error)
-            alert(error?.response?.data?.msg ?? '결제수단 등록 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleSetDefault = async (paymentId: number) => {
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/payment-methods/${paymentId}/default`,
-                {},
-                { withCredentials: true },
-            )
-
-            if (data.resultCode === '200') {
-                await fetchPaymentMethods()
-            } else {
-                alert(`실패: ${data.msg}`)
-            }
-        } catch (error: any) {
-            console.error('기본 결제수단 설정 실패:', error)
-            alert(error?.response?.data?.msg ?? '기본 결제수단 설정 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleDeletePayment = async (paymentId: number) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return
-
-        try {
-            await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
-                withCredentials: true,
-            })
-            fetchPaymentMethods()
-        } catch (error: any) {
-            console.error('결제수단 삭제 실패:', error)
-            alert(error?.response?.data?.msg ?? '삭제 중 오류가 발생했습니다.')
-        }
-    }
-
-    const maskCard = (num: string | undefined) => {
-        if (!num) return ""
-        return num.replace(/\d(?=\d{4})/g, "*")
-    }
-
-    const validatePayment = () => {
-        const newErrors: any = {}
-
-        // 공통: BANK or CARD
-        if (paymentType === "BANK") {
-            if (!bankName.trim()) newErrors.bankName = "은행명을 입력해주세요."
-            if (!accountNumber.trim()) {
-                newErrors.accountNumber = "계좌번호를 입력해주세요."
-            } else if (!/^[0-9]{6,20}$/.test(accountNumber)) {
-                newErrors.accountNumber = "계좌번호는 숫자 6~20자리여야 합니다."
-            }
-
-            if (!accountHolder.trim()) newErrors.accountHolder = "예금주명을 입력해주세요."
-        }
-
-        if (paymentType === "CARD") {
-            if (!cardCompany.trim()) newErrors.cardCompany = "카드사를 입력해주세요."
-
-            if (!cardNumber.trim()) {
-                newErrors.cardNumber = "카드번호를 입력해주세요."
-            } else if (!/^[0-9]{14,16}$/.test(cardNumber.replace(/-/g, ""))) {
-                newErrors.cardNumber = "카드번호는 숫자 14~16자리여야 합니다."
-            }
-
-            if (!cardExpire.trim()) {
-                newErrors.cardExpire = "유효기간을 입력해주세요."
-            } else if (!/^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(cardExpire)) {
-                newErrors.cardExpire = "유효기간은 MM/YY 형식이어야 합니다."
-            }
-        }
-
-        setErrors(newErrors)
-
-        return Object.keys(newErrors).length === 0 // 에러 없으면 true
-    }
-
-    // =============== 리뷰 ===============
-    const handleEditClick = (review: any) => {
-        setEditReview(review)
-        setEditReviewContent(review.content)
-        setEditReviewRating(review.rating)
-        setIsEditReviewModal(true)
-    }
-
-    const handleDeleteClick = (review: any) => {
-        setReviewToDelete(review)
-        setIsDeleteReviewModal(true)
-    }
-
-    const handleCloseModal = () => {
-        setIsEditReviewModal(false)
-        setIsDeleteReviewModal(false)
-        setEditReview(null)
-        setReviewToDelete(null)
-        setEditReviewContent('')
-        setEditReviewRating(0)
-    }
-
-    const handleSaveEdit = async () => {
-        if (!editReview) return
-
-        try {
-            const { data } = await axios.patch(
-                `http://localhost:8090/api/v1/reviews/${editReview.reviewId}`,
-                { rating: editReviewRating, content: editReviewContent },
-                { withCredentials: true },
-            )
-
-            if (data.resultCode === '200') {
-                alert('리뷰가 수정되었습니다.')
-                setInfiniteReviews(prev =>
-                    prev.map(r =>
-                        r.reviewId === editReview.reviewId
-                            ? {
-                                ...r,
-                                rating: editReviewRating,
-                                content: editReviewContent,
-                                modifiedDate: new Date().toISOString(),
-                            }
-                            : r
-                    )
-                )
-                handleCloseModal()
-            } else {
-                alert(`수정 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('리뷰 수정 실패:', error)
-            alert('리뷰 수정 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleDeleteReview = async () => {
-        if (!reviewToDelete) return
-
-        try {
-            const { data } = await axios.delete(`http://localhost:8090/api/v1/reviews/${reviewToDelete.reviewId}`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                alert('리뷰가 삭제되었습니다.')
-                setInfiniteReviews(prev =>
-                    prev.filter(r => r.reviewId !== reviewToDelete.reviewId)
-                )
-                handleCloseModal()
-            } else {
-                alert(`삭제 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('리뷰 삭제 실패:', error)
-            alert('리뷰 삭제 중 오류가 발생했습니다.')
-        }
-    }
-
-    // ================= Q&A 기능 =================
-    // 문의 삭제
-    const handleDeleteQna = async (qnaId: number) => {
-        if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return
-
-        try {
-            const { data } = await axios.delete(`${API_BASE_URL}/qna/${qnaId}`, {
-                params: { userId: userData.id },
-                withCredentials: true,
-            })
-
-            if (data.resultCode === "200") {
-                alert("문의가 삭제되었습니다.")
-                await fetchQna(userData.id)
-            } else {
-                alert(`삭제 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error("문의 삭제 실패:", error)
-            alert("문의 삭제 중 오류가 발생했습니다.")
-        }
-    }
-
-    const toggleQna = (id) => {
-        setOpenQnaId(prev => (prev === id ? null : id))
-    }
-
-    // =============== 팔로우 ===============
-    const handleUnfollow = async (studioId: number) => {
-        try {
-            const { data } = await axios.delete(`${API_BASE_URL}/follow`, {
-                params: { studioId },
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                alert('공방을 언팔로우 했습니다.')
-                await fetchFollowList(userData.id)
-            } else {
-                alert(`언팔로우 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('언팔로우 실패:', error)
-            alert('언팔로우 중 오류가 발생했습니다.')
-        }
-    }
-
-    const handleRemoveWish = async (wishlistId: number) => {
-        try {
-            const { data } = await axios.delete(`${API_BASE_URL}/wishlist/${wishlistId}`, {
-                withCredentials: true,
-            })
-
-            if (data.resultCode === '200') {
-                alert('위시리스트에서 삭제되었습니다.')
-                setInfiniteWishList(prev =>
-                    prev.filter(item => item.wishlistId !== wishlistId)
-                )
-            } else {
-                alert(`삭제 실패: ${data.msg}`)
-            }
-        } catch (error) {
-            console.error('위시리스트 삭제 실패:', error)
-            alert('삭제 중 오류가 발생했습니다.')
-        }
-    }
-
-    // =============== 장바구니 ===============
-    const handleUpdateCart = async (cartId: number, quantity: number) => {
-        try {
-            const { data } = await axios.patch(
-                `${API_BASE_URL}/cart/${cartId}?quantity=${quantity}`,
-                {},
-                { withCredentials: true }
-            )
-
-            const newQty = data.data.quantity
-
-            setCart(prev =>
-                prev.map(item =>
-                    item.cartId === cartId
-                        ? { ...item, quantity: newQty }
-                        : item
-                )
-            )
-
-        } catch (error) {
-            console.error('장바구니 수량 수정 실패:', error)
-            alert('수량 수정에 실패했습니다.')
-        }
-    }
-
-    const handleDeleteCart = async (cartId: number) => {
-        try {
-            const { data } = await axios.delete(`${API_BASE_URL}/cart/${cartId}`, { withCredentials: true, })
-
-            setSelectedItems(prev => prev.filter(id => id !== cartId))
-        } catch (error) {
-            console.error('장바구니 삭제 실패:', error)
-            alert('삭제에 실패했습니다.')
-        }
-    }
-
-    const handleSelectItem = (cartId: number, isChecked: boolean) => {
-        setSelectedItems(prev => 
-            isChecked ? [...prev, cartId] : prev.filter(id => id !== cartId)
-        )
-    }
-
-    // 전체 선택
-    const handleToggleSelectAll = () => {
-        if (selectedItems.length === cart.length) {
-            setSelectedItems([]) // 전체 해제
-        } else {
-            setSelectedItems(cart.map(item => item.cartId)) // 전체 선택
-        }
-    }
-
-    // 전체 선택 해제 버튼
-    const handleClearSelection = () => {
-        setSelectedItems([])
-    }
-
-    // =============== UI ===============
+  // =============== 공통 유틸 ===============
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
-        setEditMode({})
-        setTempData({ ...userData })
         setIsMobileSidebarOpen(false)
     }
 
-    const handleStatusClick = (status: string) => {
-        setSelectedStatus(status)
-        setIsStatusModal(true)
+  // =============== 사용자 정보 조회 ===============
+  const fetchUser = async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE_URL}/me`, {
+        withCredentials: true,
+      })
+
+      if (data.code === '401') {
+        window.location.href = '/auth/login'
+        return null
+      }
+
+      setUserData(data.data)
+      return data.data
+    } catch (error) {
+      console.error('사용자 정보 조회 실패:', error)
+      return null
+    }
+  }
+
+  // =============== 초기 로딩 ===============
+  useEffect(() => {
+    const init = async () => {
+      setPageLoading(true)
+      try {
+        const user = await fetchUser()
+        if (!user || !user.id) return
+
+        await Promise.all([
+          fetchOrders(),
+          fetchCart(user.id),
+          fetchAddresses(user.id),
+          fetchPaymentMethods(),
+          fetchFollowList(user.id),
+          fetchQna(user.id),
+          fetchProfileImage(user.id),
+          fetchInfiniteWishList(null),
+          fetchInfiniteReviews(null),
+          fetchRecommendList(),
+          fetchStats(user.id),
+        ])
+      } catch (e) {
+        console.error('초기 데이터 로딩 실패:', e)
+      } finally {
+        setPageLoading(false)
+      }
     }
 
-    const [confirmModal, setConfirmModal] = useState({
-        open: false,
-        message: "",
-        onConfirm: null as null | (() => void),
-        onCancel: null as null | (() => void),
+    init()
+  }, [])
+
+  // =============== tab query 동기화 ===============
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab) setActiveTab(tab)
+  }, [searchParams])
+
+  // =============== 카카오 우편번호 스크립트 로드 ===============
+  useEffect(() => {
+    if (isAddressModal && !window.daum) {
+      const script = document.createElement('script')
+      script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
+      script.async = true
+      document.body.appendChild(script)
+    }
+  }, [isAddressModal])
+
+  // =============== 통계 계산 ===============
+    const fetchStats = async (userId: number) => {
+        const res = await axios.get(`${API_BASE_URL}/stats`, {
+            params: { userId },
+            withCredentials: true,
+        })
+        setStats(res.data.data)
+    }
+
+  // =============== 삭제 모달 핸들러 ===============
+  const handleReviewDeleteClick = (review: any) => {
+    setDeleteModal({
+      open: true,
+      title: '리뷰 삭제',
+      message: '정말로 이 리뷰를 삭제하시겠습니까?',
+      warning: '삭제된 리뷰는 복구할 수 없습니다.',
+      onConfirm: () => {
+        handleDeleteReview(review.reviewId)
+        setDeleteModal(prev => ({ ...prev, open: false }))
+      },
+      onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
     })
+  }
 
-    // =============== 무한 스크롤 ===============
-    const fetchInfiniteOrders = async (lastId: number | null) => {
-        setInfiniteOrdersLoading(true)
-        try {
-            const res = await axios.get(`${API_BASE_URL}/orders/infinite`, {
-                params: {
-                    lastOrderId: lastId || undefined,
-                    size: SIZE,
-                },
-                withCredentials: true,
-            })
-            
-            const newOrders = res.data.data
+  const askDeleteCart = (cartId: number) => {
+    setDeleteModal({
+      open: true,
+      title: '장바구니 삭제',
+      message: '이 상품을 장바구니에서 삭제하시겠습니까?',
+      warning: '',
+      onConfirm: () => {
+        handleDeleteCart(cartId)
+        setDeleteModal(prev => ({ ...prev, open: false }))
+      },
+      onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
+    })
+  }
 
-            setOrders(prev => {
-                const merged = [...prev, ...newOrders]
-                const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(t => t.orderId === item.orderId)
-                )
-                return unique
-            })
+  // =============== 기본 설정 모달 (배송지/결제수단) ===============
+  const handleAskDefaultAddress = () => {
+    if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
+      alert('이름과 주소를 모두 입력해주세요.')
+      return
+    }
 
-            setInfiniteOrders(prev => {
-                const merged = [...prev, ...newOrders]
-                const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(t => t.orderId === item.orderId)
-                )
-                return unique
-            })
+    setConfirmModal({
+      open: true,
+      message: '이 배송지를 기본 배송지로 설정하시겠습니까?',
+      onConfirm: () => handleSaveAddress(true),
+      onCancel: () => handleSaveAddress(false),
+    })
+  }
 
-            if (newOrders.length < SIZE) {
-                setInfiniteOrdersHasMore(false)
-            }
+  const handleAskDefaultPayment = () => {
+    setConfirmModal({
+      open: true,
+      message: '이 결제수단을 기본 결제수단으로 설정하시겠습니까?',
+      onConfirm: () => handleSavePayment(true),
+      onCancel: () => handleSavePayment(false),
+    })
+  }
 
-            if (newOrders.length > 0) {
-                setInfiniteOrdersLastId(newOrders[newOrders.length - 1].orderId)
-            }
-        } catch (error) {
-            console.error('주문 로드 실패:', error)
-        } finally {
-            setInfiniteOrdersLoading(false)
+  // =============== 무한 스크롤 ===============
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY
+      const viewportHeight = window.innerHeight
+      const fullHeight = document.documentElement.scrollHeight
+
+      if (scrollTop + viewportHeight >= fullHeight - 50) {
+        if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
+          fetchInfiniteOrders(infiniteOrdersLastId)
+        } else if (
+          activeTab === 'like' &&
+          activeSubTab === 'product' &&
+          !infiniteWishLoading &&
+          infiniteWishHasMore
+        ) {
+          fetchInfiniteWishList(infiniteWishLastId)
+        } else if (activeTab === 'reviews' && !infiniteReviewLoading && infiniteReviewHasMore) {
+          fetchInfiniteReviews(infiniteReviewLastId)
         }
+      }
     }
 
-    const resetInfiniteOrders = () => {
-        setInfiniteOrders([])
-        setInfiniteOrdersHasMore(true)
-        setInfiniteOrdersLastId(null)
+    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('touchmove', handleScroll)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('touchmove', handleScroll)
+    }
+  }, [
+    activeTab,
+    activeSubTab,
+    infiniteOrdersLoading,
+    infiniteOrdersHasMore,
+    infiniteOrdersLastId,
+    infiniteWishLoading,
+    infiniteWishHasMore,
+    infiniteWishLastId,
+    infiniteReviewLoading,
+    infiniteReviewHasMore,
+    infiniteReviewLastId,
+    fetchInfiniteOrders,
+    fetchInfiniteWishList,
+    fetchInfiniteReviews,
+  ])
+
+  useEffect(() => {
+    if (activeTab === 'orders' && infiniteOrders.length === 0) {
+      resetInfiniteOrders()
+      fetchInfiniteOrders(null)
+    } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
+      resetInfiniteWishList()
+      fetchInfiniteWishList(null)
+    } else if (activeTab === 'reviews' && infiniteReviews.length === 0) {
+      setInfiniteReviews([])
+      setInfiniteReviewHasMore(true)
+      setInfiniteReviewLastId(null)
+      fetchInfiniteReviews(null)
+    }
+  }, [activeTab, activeSubTab])
+
+  // =============== 장바구니 → 배송지 선택 → 결제 흐름 ===============
+
+  // 선택 상품 구매 버튼
+  const handlePurchaseSelected = () => {
+    if (selectedItems.length === 0) {
+      alert('선택된 상품이 없습니다.')
+      return
     }
 
-    const fetchInfiniteWishList = async (lastId: number | null) => {
-        if (infiniteWishLoading) return
-        if (!infiniteWishHasMore && lastId !== null) return
+    const selected = cart
+      .filter(item => selectedItems.includes(item.cartId))
+      .map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      }))
 
-        setInfiniteWishLoading(true)
+    setPendingOrderItems(selected)
+    setIsAddressSelectModalOpen(true)
+  }
 
-        try {
-            const res = await axios.get(
-                `${API_BASE_URL}/wishlist/infinite`,
-                {
-                    params: { lastWishId: lastId, size: 10 },
-                    withCredentials: true
-                }
-            )
+  // 배송지 선택 후 "다음" 버튼
+  const handleAddressNext = async () => {
+    if (!selectedAddress) {
+      alert('배송지를 선택해주세요.')
+      return
+    }
 
-            const newItems = res.data.data || []
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/cart/prepare`,
+        {
+          items: pendingOrderItems,
+          addressId: selectedAddress.userAddressId,
+        },
+        { withCredentials: true },
+      )
 
-            // 뒤에 이어붙이기
-            setInfiniteWishList(prev => [...prev, ...newItems])
+      const { orderCode, totalPrice } = res.data.data
 
-            if (newItems.length > 0) {
-                setInfiniteWishLastId(newItems[newItems.length - 1].wishlistId)
+      setOrderCode(orderCode)
+      setTotal(totalPrice)
+
+      // 장바구니에서 구매한 cartId 기록 → 결제 성공 후 삭제용
+      localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
+      localStorage.setItem('PAY_PENDING', '1')
+
+      setIsAddressSelectModalOpen(false)
+      setIsModalOpen(true)
+    } catch (error) {
+      console.error('결제 준비 실패:', error)
+      alert('결제 준비 중 오류가 발생했습니다.')
+    }
+  }
+
+  // 토스 결제 위젯 초기화
+  const handleInitPaymentWidget = async (amount: number) => {
+    try {
+      let widget = paymentWidget
+
+      if (!widget) {
+        widget = await loadPaymentWidget(clientKey, customerKey)
+        setPaymentWidget(widget)
+      }
+
+      await widget.renderPaymentMethods('#payment-method', {
+        value: amount,
+      })
+
+      await widget.renderAgreement('#agreement')
+
+      setWidgetLoaded(true)
+    } catch (e) {
+      console.error('장바구니 위젯 초기화 실패', e)
+      setWidgetLoaded(false)
+    }
+  }
+
+  // 결제 모달 열릴 때 위젯 렌더
+  useEffect(() => {
+    if (!isModalOpen) return
+    handleInitPaymentWidget(total)
+  }, [isModalOpen, total])
+
+  // 결제 요청
+  const handleRequestPayment = async () => {
+    if (!paymentWidget) {
+      console.warn('[PAY] paymentWidget 없음')
+      return
+    }
+
+    if (!orderCode) {
+      console.warn('[PAY] orderCode 없음')
+      return
+    }
+
+    try {
+      await paymentWidget.requestPayment({
+        amount: total,
+        orderId: orderCode,
+        orderName: '장바구니 상품 결제',
+        successUrl: `${window.location.origin}/pay/success`,
+        failUrl: `${window.location.origin}/pay/fail`,
+      })
+    } catch (e: any) {
+      try {
+        await axios.post(
+          `${API_BASE_URL}/orders/cancel-before-payment`,
+          { orderCode },
+          { withCredentials: true },
+        )
+      } catch (cancelErr) {
+        console.error('[PAY] cancel-before-payment API 호출 실패', cancelErr)
+      }
+
+      if (e?.code === 'USER_CANCEL') {
+        alert('결제가 취소되었습니다.')
+      } else {
+        alert('결제 요청 중 오류가 발생했습니다.')
+      }
+    }
+  }
+
+  // 결제 성공 후 후처리 (장바구니 삭제 등)
+  useEffect(() => {
+    const payPending = localStorage.getItem('PAY_PENDING')
+    if (!payPending) return
+
+    const cameFromSuccess = document.referrer.includes('/pay/success')
+
+    if (cameFromSuccess) {
+      const stored = localStorage.getItem('ORDER_CART_IDS')
+      if (stored) {
+        const cartIds = JSON.parse(stored)
+
+        axios
+          .delete(`${API_BASE_URL}/cart/after-order`, {
+            data: { cartIds },
+            withCredentials: true,
+          })
+          .then(() => {
+            localStorage.removeItem('ORDER_CART_IDS')
+            if (userData?.id) {
+              fetchCart(userData.id)
             }
+          })
+          .catch(e => console.error('장바구니 항목 삭제 실패:', e))
+      }
 
-            // 다음 요청이 필요한지 체크
-            setInfiniteWishHasMore(newItems.length === 10)
-            
-        } catch (e) {
-            console.error("무한스크롤 위시 실패:", e)
-        } finally {
-            setInfiniteWishLoading(false)
-        }
+      setIsModalOpen(false)
+      setPaymentWidget(null)
+      setTotal(0)
+      setOrderCode(null)
+      setSelectedItems([])
+      localStorage.removeItem('PAY_PENDING')
     }
+  }, [])
 
-    const resetInfiniteWishList = () => {
-        setInfiniteWishList([])
-        setInfiniteWishHasMore(true)
-        setInfiniteWishLastId(null)
-    }
+  const handleClosePaymentModal = () => {
+    setIsModalOpen(false)
+    setWidgetLoaded(false)
+    setPaymentWidget(null)
+    setOrderCode(null)
+    setTotal(0)
+    setSelectedItems([])
+  }
 
-    const fetchInfiniteReviews = async (lastId: number | null) => {
-        if (infiniteReviewLoading) return
-        if (!infiniteReviewHasMore && lastId !== null) return
+  // 선택된 첫 번째 장바구니 아이템 (UI에 표시용)
+  const firstSelectedCartId = selectedItems[0]
+  const firstSelectedItem = cart.find(item => item.cartId === firstSelectedCartId)
 
-        setInfiniteReviewLoading(true)
-
-        try {
-            const res = await axios.get(`${API_BASE_URL}/reviews/infinite`, {
-                params: { lastReviewId: lastId, size: 10 },
-                withCredentials: true
-            })
-
-            const newItems = res.data.data || []
-
-            // 1) 더 이상 데이터 없음 → 종료
-            if (newItems.length === 0) {
-                setInfiniteReviewHasMore(false)
-                return
-            }
-
-            // 2) 마지막 ID 동일하면 종료
-            const newLastId = newItems[newItems.length - 1].reviewId
-            if (newLastId === infiniteReviewLastId) {
-                setInfiniteReviewHasMore(false)
-                return
-            }
-
-            // 3) 중복 제거 후 append
-            setInfiniteReviews(prev => {
-                const merged = [...prev, ...newItems]
-
-                // reviewId 기준 unique
-                const unique = merged.filter(
-                    (item, index, self) =>
-                        index === self.findIndex(r => r.reviewId === item.reviewId)
-                )
-
-                return unique
-            })
-
-            // 4) lastId 업데이트
-            setInfiniteReviewLastId(newLastId)
-
-            // 5) 다음 페이지 필요 여부
-            setInfiniteReviewHasMore(newItems.length === 10)
-
-        } catch (e) {
-            console.error("리뷰 무한스크롤 실패:", e)
-        } finally {
-            setInfiniteReviewLoading(false)
-        }
-    }
+  // ================= 세로 스크롤 막고 가로 드래그 작동 =================
+    const sliderRef = useRef<HTMLDivElement | null>(null)
+    const isDraggingRef = useRef(false)   // ← 드래그 중인지 체크용
 
     useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = window.scrollY
-            const viewportHeight = window.innerHeight
-            const fullHeight = document.documentElement.scrollHeight
+    const slider = sliderRef.current
+    if (!slider) return
 
-            if (scrollTop + viewportHeight >= fullHeight - 50) {
-                // 탭에 따라 다른 fetch 함수 실행
-                if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
-                    fetchInfiniteOrders(infiniteOrdersLastId)
-                } else if (activeTab === 'like' && activeSubTab === 'product' && !infiniteWishLoading && infiniteWishHasMore) {
-                    fetchInfiniteWishList(infiniteWishLastId)
-                } else if (activeTab === 'reviews' && !infiniteReviewLoading && infiniteReviewHasMore) {
-                    fetchInfiniteReviews(infiniteReviewLastId)
-                }
-            }
-        }
+    let isDown = false
+    let startX = 0
+    let scrollLeft = 0
 
-        window.addEventListener('scroll', handleScroll)
-        window.addEventListener('touchmove', handleScroll)
+    const handlePointerDown = (e: PointerEvent) => {
+        // 마우스 오른쪽/휠 클릭 무시
+        if (e.pointerType === 'mouse' && e.button !== 0) return
+console.log('pointer down', e.pointerType)
+        isDown = true
+        isDraggingRef.current = false
 
-        return () => {
-            window.removeEventListener('scroll', handleScroll)
-            window.removeEventListener('touchmove', handleScroll)
-        }
-    }, [
-        activeTab, 
-        activeSubTab,
-        infiniteOrdersLoading, 
-        infiniteOrdersHasMore, 
-        infiniteOrdersLastId,
-        infiniteWishLoading,
-        infiniteWishHasMore,
-        infiniteWishLastId,
-        infiniteReviewLoading,
-        infiniteReviewHasMore,
-        infiniteReviewLastId,
-    ])
+        slider.classList.add('active')
+        slider.setPointerCapture(e.pointerId)
 
-    useEffect(() => {
-        if (activeTab === 'orders' && infiniteOrders.length === 0) {
-            resetInfiniteOrders()
-            fetchInfiniteOrders(null)
-        } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
-            resetInfiniteWishList()
-            fetchInfiniteWishList(null)
-        } else if (activeTab === 'reviews' && infiniteReviews.length === 0) {
-            setInfiniteReviews([])
-            setInfiniteReviewHasMore(true)
-            setInfiniteReviewLastId(null)
-            fetchInfiniteReviews(null)
-        }
-    }, [activeTab, activeSubTab])
-
-    // =============== 결제 ===============
-    //선택 상품 구매하기
-    const handlePurchaseSelected = async () => {
-        if (selectedItems.length === 0) {
-            alert("선택된 상품이 없습니다.")
-            return
-        }
-
-        // 선택된 cartId → productId + quantity 로 변환
-        const selected = cart
-            .filter(item => selectedItems.includes(item.cartId))
-            .map(item => ({
-                productId: item.productId,
-                quantity: item.quantity,
-            }))
-
-        try {
-            const res = await axios.post(
-                `${API_BASE_URL}/cart/prepare`,
-                { items: selected },
-                { withCredentials: true }
-            )
-
-            const { orderCode, totalPrice } = res.data.data
-
-            localStorage.setItem("ORDER_CART_IDS", JSON.stringify(selectedItems))
-            localStorage.setItem("PAY_PENDING", "1")
-
-            // 모달을 띄우기 전에 결제 정보 저장
-            setOrderCode(orderCode)
-            setTotal(totalPrice)
-            setTimeout(() => setIsModalOpen(true), 0)  // 토스 결제 위젯 모달 열기
-
-        } catch (e: any) {
-            console.error("장바구니 결제 준비 실패:", e)
-
-            const err = e?.response?.data
-
-            if (e?.response?.status === 401) {
-                alert("로그인이 필요합니다.")
-                router.push("/auth/login")
-                return
-            }
-
-            alert(err?.message || "장바구니 주문 준비 중 오류가 발생했습니다.")
-        }
+        // 시작 시점 기준값 저장
+        startX = e.clientX
+        scrollLeft = slider.scrollLeft
     }
 
-    useEffect(() => {
-        if (!isModalOpen) return
-        handleInitPaymentWidget(total) // 토스 위젯 초기화
-    }, [isModalOpen, total])
+    const handlePointerMove = (e: PointerEvent) => {
+        if (!isDown) return
+console.log('pointer move')
+        // 세로 스크롤 방지 (특히 모바일)
+        e.preventDefault()
 
-    //장바구니 상품 결제
-    const handleRequestPayment = async () => {
-        if (!paymentWidget) {
-            console.warn("[PAY] paymentWidget 없음")
-            return
+        const dx = e.clientX - startX
+        const walk = dx * 1.3
+
+        if (Math.abs(walk) > 5) {
+        isDraggingRef.current = true
         }
 
-        if (!orderCode) {
-            console.warn("[PAY] orderCode 없음")
-            return
-        }
-
-        try {
-            await paymentWidget.requestPayment({
-                amount: total,
-                orderId: orderCode, // 준비 API에서 받은 orderCode
-                orderName: "장바구니 상품 결제",
-                successUrl: `${window.location.origin}/pay/success`,
-                failUrl: `${window.location.origin}/pay/fail`,
-            })
-
-        } catch (e: any) {
-            try {
-                await axios.post(
-                    `${API_BASE_URL}/orders/cancel-before-payment`,
-                    { orderCode },
-                    { withCredentials: true }
-                )
-            } catch (cancelErr) {
-                console.error("[PAY] cancel-before-payment API 호출 실패", cancelErr)
-            }
-
-            if (e?.code === "USER_CANCEL") {
-                alert("결제가 취소되었습니다.")
-            } else {
-                alert("결제 요청 중 오류가 발생했습니다.")
-            }
-        }
+        slider.scrollLeft = scrollLeft - walk
     }
 
-    // 결제 성공 후 후처리
-    useEffect(() => {
-        const payPending = localStorage.getItem("PAY_PENDING")
-        if (!payPending) return
+    const endDrag = (e: PointerEvent) => {
+        if (!isDown) return
 
-        // 성공 페이지를 거쳐 되돌아온 경우
-        const cameFromSuccess = document.referrer.includes("/pay/success")
+        isDown = false
+        slider.classList.remove('active')
 
-        if (cameFromSuccess) {
-            console.log("결제 성공 후 MyPage 진입 — 후처리 시작")
-
-            const stored = localStorage.getItem("ORDER_CART_IDS")
-            if (stored) {
-                const cartIds = JSON.parse(stored)
-
-                axios.delete(`${API_BASE_URL}/cart/after-order`, {
-                    data: { cartIds },
-                    withCredentials: true,
-                }).then(() => {
-                    console.log("장바구니 삭제 완료")
-                    localStorage.removeItem("ORDER_CART_IDS")
-                    fetchCart(userData?.id) // 장바구니 UI 즉시 갱신
-                })
-            }
-
-            // 모달·결제 관련 상태 초기화
-            setIsModalOpen(false)
-            setPaymentWidget(null)
-            setTotal(0)
-            setOrderCode(null)
-            setSelectedItems([])
-
-            // 결제 플래그 제거
-            localStorage.removeItem("PAY_PENDING")
+        try {
+        slider.releasePointerCapture(e.pointerId)
+        } catch {
+        // 이미 해제된 경우 무시
         }
+
+        // click 이벤트와 구분하기 위해 한 틱 뒤에 false로
+        setTimeout(() => {
+        isDraggingRef.current = false
+        }, 0)
+    }
+
+    // passive 옵션 명시 (모바일에서 preventDefault 허용)
+    slider.addEventListener('pointerdown', handlePointerDown, { passive: true })
+    slider.addEventListener('pointermove', handlePointerMove, { passive: false })
+    slider.addEventListener('pointerup', endDrag)
+    slider.addEventListener('pointercancel', endDrag)
+    slider.addEventListener('pointerleave', endDrag)
+
+    return () => {
+        slider.removeEventListener('pointerdown', handlePointerDown)
+        slider.removeEventListener('pointermove', handlePointerMove)
+        slider.removeEventListener('pointerup', endDrag)
+        slider.removeEventListener('pointercancel', endDrag)
+        slider.removeEventListener('pointerleave', endDrag)
+    }
     }, [])
-
-    //장바구니 위젯 초기화
-    const handleInitPaymentWidget = async (amount: number) => {
-        try {
-            let widget = paymentWidget
-
-            if (!widget) {
-                widget = await loadPaymentWidget(clientKey, customerKey)
-                setPaymentWidget(widget)
-            }
-
-            await widget.renderPaymentMethods("#payment-method", {
-                value: amount,
-            })
-
-            await widget.renderAgreement("#agreement")
-
-            setWidgetLoaded(true)
-        } catch (e) {
-            console.error("장바구니 위젯 초기화 실패", e)
-            setWidgetLoaded(false)
-        }
-    }
-
-    //취소 시 초기화
-    const handleClosePaymentModal = () => {
-        setIsModalOpen(false)
-        setWidgetLoaded(false)
-        setPaymentWidget(null)
-        setOrderCode(null)
-        setTotal(0)
-        setSelectedItems([])  // 선택된 상품 초기화 (선택 구매한 경우)
-    }
-
-    // 선택된 목록에서 첫 번째 cartId
-    const firstSelectedCartId = selectedItems[0]
-
-    // 첫번째 상품 데이터
-    const firstSelectedItem = cart.find(
-        item => item.cartId === firstSelectedCartId
-    )
 
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
@@ -1633,7 +839,7 @@ export default function MyPage() {
                                     className={`nav-btn ${activeTab === 'like' ? 'active' : ''}`}
                                     onClick={() => handleTabClick('like')}
                                 >
-                                    위시리스트
+                                    나의 좋아요
                                 </button>
                             </li>
                         </ul>
@@ -1877,7 +1083,13 @@ export default function MyPage() {
                                             </label>
                                             {selectedItems.length > 0 && (
                                                 <span className="selection-info">
-                                                    <span className="selection-count">{selectedItems.length}</span>개 상품 선택됨
+                                                    <span className="selection-count">
+                                                        {
+                                                            cart
+                                                                .filter(item => selectedItems.includes(item.cartId))
+                                                                .reduce((sum, item) => sum + item.quantity, 0)
+                                                        }
+                                                    </span>개 상품 선택됨
                                                 </span>
                                             )}
                                         </div>
@@ -1939,7 +1151,7 @@ export default function MyPage() {
                                                 <div className="cart-delete">
                                                     <button
                                                         className="link-btn delete cart-btn"
-                                                        onClick={() => handleDeleteCart(item.cartId)}
+                                                        onClick={() => askDeleteCart(item.cartId)}
                                                     >
                                                         삭제
                                                     </button>
@@ -2235,11 +1447,11 @@ export default function MyPage() {
                         </div>
                     )}
 
-                    {/* 위시리스트 */}
+                    {/* 나의 좋아요 */}
                     {activeTab === 'like' && (
                         <div className="tab-content">
                             <div className="section-header">
-                                <h2>위시리스트</h2>
+                                <h2>나의 좋아요</h2>
                             </div>
 
                             <div className="tab-nav">
@@ -2259,6 +1471,46 @@ export default function MyPage() {
 
                             {activeSubTab === 'product' && (
                                 <div className="subtab-content">
+                                    <div className="rs-wrapper">
+                                        <div className="rs-header">
+                                            <h3>AI 추천 상품</h3>
+                                        </div>
+
+                                        {recommendMessage && (
+                                            <div className="rs-message">{recommendMessage}</div>
+                                        )}
+
+                                        <div className="rs-slider" ref={sliderRef}>
+                                            {recommendItems.map((item) => (
+                                                <div
+                                                    key={item.productId}
+                                                    className="rs-card"
+                                                    onClick={(e) => {
+                                                        if (isDraggingRef.current) {
+                                                            e.preventDefault()
+                                                            return
+                                                        }
+                                                        router.push(`/product/list/detail?productId=${item.productId}`)
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={item.imageUrl ? `http://localhost:8090${item.imageUrl}` : ""}
+                                                        className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
+                                                        alt={item.productName}
+                                                    />
+
+                                                    <div className="rs-name">{item.productName}</div>
+                                                    <div className="rs-price">
+                                                        {item.price ? `${item.price.toLocaleString()}원` : "가격 없음"}
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* 오른쪽 끝 공백 패딩 */}
+                                            <div className="rs-slider-padding" />
+                                        </div>
+                                    </div>
+
                                     {infiniteWishList.length === 0 ? (
                                         <div className="empty-state">좋아요한 상품이 없습니다.</div>
                                     ) : (
@@ -2475,37 +1727,33 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-body">
-                            {orders.filter(o =>
-                                o.deliveryStatus === selectedStatus &&
-                                (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
-                            ).length === 0 ? (
+                            {filterOrdersByStatus(selectedStatus).length === 0 ? (
                                 <p className='empty-state'>주문 내역이 없습니다.</p>
                             ) : (
                                 <div className="modal-orders-list">
-                                    {orders
-                                        .filter(o =>
-                                            o.deliveryStatus === selectedStatus &&
-                                            (selectedStatus !== '배송완료' || isWithinSevenDays(o.completedAt))
-                                        )
-                                        .map((order) => (
-                                            <div key={order.orderId} className="modal-order-card">
-                                                <div className="modal-order-header">
-                                                    <span className="order-date">{order.createdDate}</span>
-                                                    <span className="order-code">주문번호: {order.orderCode}</span>
-                                                </div>
-                                                <div className="modal-order-info">
-                                                    <span className="product-name">{order.items?.[0]?.productName || "상품 없음"}</span>
-                                                    <span className={`badge ${order.deliveryStatus}`}>
-                                                        {order.deliveryStatus}
-                                                    </span>
-                                                </div>
-                                                <div className="modal-order-footer">
-                                                    <span className="order-price">
-                                                        {order.totalPrice?.toLocaleString()}원
-                                                    </span>
-                                                </div>
+                                    {filterOrdersByStatus(selectedStatus).map((order) => (
+                                        <div key={order.orderId} className="modal-order-card">
+                                            <div className="modal-order-header">
+                                                <span className="order-date">{order.createdDate}</span>
+                                                <span className="order-code">주문번호: {order.orderCode}</span>
                                             </div>
-                                        ))}
+
+                                            <div className="modal-order-info">
+                                                <span className="product-name">
+                                                    {order.items?.[0]?.productName || "상품 없음"}
+                                                </span>
+                                                <span className={`badge ${order.deliveryStatus}`}>
+                                                    {order.deliveryStatus}
+                                                </span>
+                                            </div>
+
+                                            <div className="modal-order-footer">
+                                                <span className="order-price">
+                                                    {order.totalPrice?.toLocaleString()}원
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -2806,16 +2054,7 @@ export default function MyPage() {
                             </button>
                             <button
                                 className="btn-primary"
-                                onClick={() => {
-                                    if (!validatePayment()) return
-
-                                    setConfirmModal({
-                                        open: true,
-                                        message: "이 결제수단을 기본 결제수단으로 설정하시겠습니까?",
-                                        onConfirm: () => handleSavePayment(true),   // 기본 결제수단 설정
-                                        onCancel: () => handleSavePayment(false),   // 기본 미설정
-                                    })
-                                }}
+                                onClick={() => handleAskDefaultPayment()}
                             >
                                 등록
                             </button>
@@ -2874,29 +2113,28 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/*  리뷰 삭제 모달  */}
-            {isDeleteReviewModal && (
-                <div className="modal-overlay" onClick={() => setIsDeleteReviewModal(false)}>
+            {/*  삭제 모달  */}
+            {deleteModal.open && (
+                <div className="modal-overlay" onClick={deleteModal.onCancel}>
                     <div className="modal-container modal-sm" onClick={(e) => e.stopPropagation()}>
+                        
                         <div className="modal-header">
-                            <h2>리뷰 삭제</h2>
-                            <button className="modal-close" onClick={() => setIsDeleteReviewModal(false)}>
-                                ✕
-                            </button>
+                            <h2>{deleteModal.title || "삭제"}</h2>
+                            <button className="modal-close" onClick={deleteModal.onCancel}>✕</button>
                         </div>
 
                         <div className="modal-body">
-                            <div className="modal-confirm-message">
-                                <p>정말로 이 리뷰를 삭제하시겠습니까?</p>
-                                <p className="modal-warning">삭제된 리뷰는 복구할 수 없습니다.</p>
-                            </div>
+                            <p>{deleteModal.message || "정말 삭제하시겠습니까?"}</p>
+                            {deleteModal.warning && (
+                                <p className="modal-warning">{deleteModal.warning}</p>
+                            )}
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={handleCloseModal}>
+                            <button className="btn-primary" onClick={deleteModal.onCancel}>
                                 취소
                             </button>
-                            <button className="btn btn-danger" onClick={handleDeleteReview}>
+                            <button className="btn-primary delete" onClick={deleteModal.onConfirm}>
                                 삭제
                             </button>
                         </div>
@@ -2928,11 +2166,11 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setIsReasonModal(false)}>
+                            <button className="btn-primary" onClick={() => setIsReasonModal(false)}>
                                 취소
                             </button>
                             <button
-                                className="btn btn-primary"
+                                className="btn-primary"
                                 onClick={() => {
                                     if (!reasonText.trim()) {
                                         alert("사유를 입력해주세요.")
@@ -3006,6 +2244,72 @@ export default function MyPage() {
                 </div>
             )}
 
+            {/* 배송지 선택 모달 */}
+            {isAddressSelectModalOpen && (
+                <div className="modalOverlay">
+                    <div className="modalContainer addressSelectModal">
+
+                        <div className="modalHeader">
+                            <h2 className="modalTitle">배송지 선택</h2>
+                            <button
+                                className="modalCloseBtn"
+                                onClick={() => setIsAddressSelectModalOpen(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="addressList">
+                            {addresses.map(addr => (
+                                <div
+                                    key={addr.userAddressId}
+                                    className={`
+                                        addressItem
+                                        ${addr.isDefault ? "defaultAddress" : ""}
+                                        ${selectedAddress?.userAddressId === addr.userAddressId ? "selectedAddress" : ""}
+                                    `}
+                                    onClick={() => {
+                                        setSelectedAddress(addr)
+                                    }}
+                                >
+                                    <div className="addrName">{addr.recipientName}</div>
+                                    <div className="addrDetail">
+                                        [{addr.zipcode}] {addr.baseAddress} {addr.detailAddress}
+                                    </div>
+
+                                    {addr.isDefault && <span className="defaultBadge">기본 배송지</span>}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="modalFooter">
+                            <button
+                                className="btn-primary"
+                                onClick={() => {
+                                    setIsAddressSelectModalOpen(false)
+                                    setActiveTab("address")  // 배송지 탭으로 이동
+                                }}
+                            >
+                                + 배송지 추가하기
+                            </button>
+                            <button
+                                className="btn-primary"
+                                onClick={async () => {
+                                    if (!selectedAddress) {
+                                        alert("배송지를 먼저 선택해주세요.")
+                                        return
+                                    }
+                                    await handleAddressNext()
+                                }}
+                            >
+                                다음으로
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
             {/* 결제 모달 */}
             {isModalOpen && (
                 <div className="modalOverlay">
@@ -3045,7 +2349,11 @@ export default function MyPage() {
                                 {/* 텍스트 */}
                                 <div className="summaryText">
                                     <div className="summaryTitle">
-                                        장바구니 상품 {selectedItems.length}개
+                                        장바구니 상품 {
+                                            cart
+                                                .filter(item => selectedItems.includes(item.cartId))
+                                                .reduce((sum, item) => sum + item.quantity, 0)
+                                        }개
                                     </div>
 
                                     <div className="summaryDesc">
@@ -3054,7 +2362,11 @@ export default function MyPage() {
 
                                     <div className="summaryRow">
                                         <span className="summaryLabel">총 상품 수</span>
-                                        <span className="summaryValue">{selectedItems.length}개</span>
+                                        {
+                                            cart
+                                                .filter(item => selectedItems.includes(item.cartId))
+                                                .reduce((sum, item) => sum + item.quantity, 0)
+                                        }개
                                     </div>
 
                                     <div className="summaryRow">

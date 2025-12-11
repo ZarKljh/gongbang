@@ -61,4 +61,12 @@ public class Delivery {
     protected void onUpdate() {
         modifiedDate = LocalDateTime.now();
     }
+
+    public static Delivery create(Orders order, UserAddress address) {
+        return Delivery.builder()
+                .order(order)
+                .address(address)
+                .deliveryStatus("배송준비중")  // 기본값
+                .build();
+    }
 }
