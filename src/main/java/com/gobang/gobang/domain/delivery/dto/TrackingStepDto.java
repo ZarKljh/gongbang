@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 @Builder
 public class TrackingStepDto {
 
-    private final String location;
-    private final String status;
-    private final LocalDateTime time;
+    private String location;
+    private String status;
+    private String statusCode;
+    private String driverPhone;
+    private LocalDateTime time;
 }

@@ -3,8 +3,6 @@ package com.gobang.gobang.domain.delivery.service;
 import com.gobang.gobang.domain.delivery.dto.OrderTrackingDetailResponse;
 import com.gobang.gobang.domain.delivery.dto.TrackingStepDto;
 import com.gobang.gobang.domain.delivery.entity.DeliveryTracking;
-import com.gobang.gobang.domain.delivery.infrastructure.CarrierCodeMapper;
-import com.gobang.gobang.domain.delivery.infrastructure.TrackerDeliveryClient;
 import com.gobang.gobang.domain.delivery.repository.DeliveryTrackingRepository;
 import com.gobang.gobang.domain.personal.entity.Delivery;
 import com.gobang.gobang.domain.personal.entity.OrderItem;
@@ -12,8 +10,9 @@ import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.infra.DeliveryTrackerClient;
+import com.gobang.gobang.domain.delivery.infrastructure.CarrierCodeMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,65 +26,102 @@ public class DeliveryTrackingService {
 
     private final OrdersRepository ordersRepository;
     private final DeliveryTrackingRepository deliveryTrackingRepository;
-    private final TrackerDeliveryClient trackerDeliveryClient;
+    private final DeliveryTrackerClient deliveryTrackerClient;
     private final CarrierCodeMapper carrierCodeMapper;
 
-
+    /**
+     * 마이페이지(일반 유저)용 배송 추적
+     */
     public RsData<OrderTrackingDetailResponse> getOrderTrackingForUser(Long userId, Long orderId) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+        Orders order = ordersRepository.findById(orderId).orElse(null);
+        if (order == null) {
+            return RsData.of("404", "존재하지 않는 주문입니다.", null);
+        }
 
         if (!order.getSiteUser().getId().equals(userId)) {
-            throw new AccessDeniedException("본인의 주문만 조회할 수 있습니다.");
+            return RsData.of("403", "본인의 주문만 조회할 수 있습니다.", null);
         }
 
         return buildOrderTrackingResponse(order);
     }
 
-
+    /**
+     * 관리자용 배송 추적
+     */
     public RsData<OrderTrackingDetailResponse> getOrderTrackingForAdmin(Long orderId) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+        Orders order = ordersRepository.findById(orderId).orElse(null);
+        if (order == null) {
+            return RsData.of("404", "존재하지 않는 주문입니다.", null);
+        }
         return buildOrderTrackingResponse(order);
     }
 
+    /**
+     * 공통 응답 빌더
+     */
     private RsData<OrderTrackingDetailResponse> buildOrderTrackingResponse(Orders order) {
 
-        // 주문 내 첫 번째 배송 정보 기준
+        // 1) 배송 정보
         Delivery delivery = order.getDeliveries().stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("배송 정보가 없습니다."));
+                .orElse(null);
 
-        // 주문 상품 1개만 노출
+        if (delivery == null) {
+            return RsData.of("404", "배송 정보가 없습니다.", null);
+        }
+
+        // 2) 주문 상품 1개 (대표 상품)
         OrderItem firstItem = order.getOrderItems().stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("주문 상품 정보가 없습니다."));
+                .orElse(null);
+
+        if (firstItem == null) {
+            return RsData.of("404", "주문 상품 정보가 없습니다.", null);
+        }
 
         Product product = firstItem.getProduct();
 
-        String carrierCode = carrierCodeMapper.toCarrierCode(delivery.getCourierName());
-        List<TrackingStepDto> trackingSteps = List.of();
 
-        if (carrierCode != null && delivery.getTrackingNumber() != null) {
-            trackingSteps = trackerDeliveryClient.getTrackingSteps(
+        // 3) 택배사 코드 매핑
+        String carrierCode = carrierCodeMapper.toCarrierCode(delivery.getCourierName());
+        System.out.println("mapped carrierCode = " + carrierCode);
+
+        // 4) Delivery Tracker API 호출 → 실시간 이벤트 목록
+        List<TrackingStepDto> steps = List.of();
+
+        if (carrierCode != null &&
+                delivery.getTrackingNumber() != null &&
+                !delivery.getTrackingNumber().isBlank()) {
+
+            steps = deliveryTrackerClient.getTrackingSteps(
                     carrierCode,
                     delivery.getTrackingNumber()
             );
+            System.out.println("steps from DeliveryTrackerClient size = " + steps.size());
+        } else {
+            System.out.println("carrierCode or trackingNumber is null/blank, skip external call");
         }
 
-        List<DeliveryTracking> trackingList =
-                deliveryTrackingRepository.findByDeliveryOrderByEventTimeDesc(delivery);
+        // 5) 만약 외부 API에서 아무 이벤트도 못 받았으면,
+        //    (선택) DB에 저장된 DeliveryTracking 이력을 fallback 으로 사용할 수도 있음
+        if (steps == null || steps.isEmpty()) {
+            List<DeliveryTracking> trackingList =
+                    deliveryTrackingRepository.findByDeliveryOrderByEventTimeDesc(delivery);
 
-        // 시간 역순 → 프론트에서 최근 단계가 맨 위에 보이도록
-        List<TrackingStepDto> steps = trackingList.stream()
-                .sorted(Comparator.comparing(DeliveryTracking::getEventTime).reversed())
-                .map(t -> TrackingStepDto.builder()
-                        .location(t.getLocation())
-                        .status(t.getStatus())
-                        .time(t.getEventTime())
-                        .build())
-                .toList();
+            steps = trackingList.stream()
+                    .sorted(Comparator.comparing(DeliveryTracking::getEventTime).reversed())
+                    .map(t -> TrackingStepDto.builder()
+                            .location(t.getLocation())
+                            .status(t.getStatus())
+                            // statusCode, driverPhone 등 필드 추가했다면 여기에 같이 매핑
+                            .time(t.getEventTime())
+                            .build())
+                    .toList();
 
+            System.out.println("steps from DB fallback size = " + steps.size());
+        }
+
+        // 6) 상품 부가 정보(브랜드/옵션/이미지)는 추후 필요시 채우기
         String productBrand = "";
         String productOption = "";
         String productImageUrl = null;

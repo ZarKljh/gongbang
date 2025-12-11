@@ -203,19 +203,6 @@ export default function SellerDeliveryEditPage() {
                             </p>
                         </div>
 
-                        <div className={styles.formRow}>
-                            <label className={styles.formLabel}>배송 상태</label>
-                            <select
-                                className={styles.select}
-                                value={deliveryStatus}
-                                onChange={(e) => setDeliveryStatus(e.target.value)}
-                            >
-                                <option value="배송준비중">배송준비중</option>
-                                <option value="DELIVERING">배송중</option>
-                                <option value="DELIVERED">배송완료</option>
-                            </select>
-                        </div>
-
                         <div className={styles.actions}>
                             <button
                                 type="button"
