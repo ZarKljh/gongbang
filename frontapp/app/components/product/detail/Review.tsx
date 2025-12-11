@@ -11,6 +11,7 @@ import 'swiper/css/navigation'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
 import api from '@/app/utils/api'
+import ReviewSummary from '@/app/components/product/detail/ReviewSummary'
 
 export default function Review() {
     // ================= 리뷰 =================
@@ -537,6 +538,7 @@ export default function Review() {
                         <img className="review-banner-img" src="/images/리뷰_배너2.png" alt="배너 이미지" />
                     </div>
 
+
                     {/* 제목 + 버튼 */}
                     <div className="review-list-title">
                         <h2 className='reviews-title'>리뷰 목록</h2>
@@ -625,6 +627,7 @@ export default function Review() {
                         <hr style={{ marginBottom: '20px' }} />
                         <h3 className="review-title">리뷰</h3>
                     </div>
+                     <ReviewSummary productId={productId} />
 
                     {/* 평균 별점 */}
                     <div className="review-average-container">

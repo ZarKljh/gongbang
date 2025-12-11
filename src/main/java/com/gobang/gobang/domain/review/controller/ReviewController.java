@@ -11,6 +11,7 @@ import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.util.GeminiClient;
 import jakarta.validation.Valid;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final SiteUserService siteUserService;
     private final ReviewImageService reviewImageService;
+    private GeminiClient geminiClient;
 
 
 
@@ -199,10 +201,12 @@ public class ReviewController {
 
     // ai 리뷰 요약
     @GetMapping("/summary")
-    public RsData<String> getReviewSummary(@RequestParam Long productId) {
+    public RsData<String> summarizeReviews(@RequestParam Long productId) {
 
         String summary = reviewService.generateReviewSummary(productId);
 
         return RsData.of("200", "리뷰 요약 완료", summary);
     }
+
+
 }

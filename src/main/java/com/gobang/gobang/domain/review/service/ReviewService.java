@@ -13,7 +13,6 @@ import com.gobang.gobang.domain.review.entity.Review;
 import com.gobang.gobang.domain.review.repository.ReviewImageRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
-import com.gobang.gobang.global.util.OpenAIClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,8 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -37,7 +36,8 @@ public class ReviewService {
     private final SiteUserRepository siteUserRepository;
     private final ReviewImageService reviewImageService ;
     private final ReviewImageRepository reviewImageRepository;
-    private final ImageRepository imageRepository;]
+    private final ImageRepository imageRepository;
+    private final AiService aiService;
 
     // 리뷰 목록 조회
     public Page<Review> getReviews(
@@ -392,6 +392,7 @@ public class ReviewService {
     }
 
     public String generateReviewSummary(Long productId) {
+
         List<Review> reviews = reviewRepository.findByProductIdAndIsActiveTrue(productId);
 
         if (reviews.isEmpty()) {
@@ -407,4 +408,5 @@ public class ReviewService {
 
         return aiService.summarizeReviews(joinedText);
     }
+
 }

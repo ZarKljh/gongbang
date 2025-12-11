@@ -27,6 +27,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
 
+    // ai 요약용 전체 조회
+    List<Review> findByProductIdAndIsActiveTrue(Long productId);
+
     Page<Review> findByIsActiveTrue(Pageable pageable);
 
     // 물품 상세페이지 만들어지면 사용(v평균)
