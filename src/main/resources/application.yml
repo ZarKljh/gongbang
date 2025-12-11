@@ -23,3 +23,5 @@ logging:
       enabled: true
       max-file-size: 10MB
       max-request-size: 20MB
+gemini:
+  api-key: ${GEMINI_API_KEY:dummy}

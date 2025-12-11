@@ -53,8 +53,14 @@ export default function MainNav() {
                 return
             }
 
-            const data = await res.json()
-            setUser(data?.data ?? null)
+            const data = (await res.json()) as { resultCode: string; data?: MeUser }
+
+            // 🔹 성공 응답인 경우에만 user 세팅
+            if (data.resultCode === '200' && data.data) {
+                setUser(data.data)
+            } else {
+                setUser(null)
+            }
         } catch (e) {
             console.error('로그인 상태 확인 실패:', e)
             setUser(null)

@@ -175,4 +175,16 @@ public class OrdersService {
 
         ordersRepository.delete(order);
     }
+
+    // 셀러용 받은 주문 조회 - 상진
+    @Transactional(readOnly = true)
+    public List<OrdersResponse> getReceivedOrdersByStudio(Long studioId) {
+        List<Orders> orders = ordersRepository.findReceivedOrdersByStudioId(studioId);
+
+        return orders.stream()
+                .map(order -> OrdersResponse.from(order, imageRepository))
+                .toList();
+    }
+
+
 }

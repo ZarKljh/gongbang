@@ -188,9 +188,15 @@ public class SiteUserController {
     }
     @GetMapping("/me")
     public RsData<LoginUserResponse> me() {
-        //System.out.println("me 시작");
         SiteUser siteUser = rq.getSiteUser();
-        //System.out.println("rq.getSiteuser동작" + siteUser.getUserName());
+
+        if (siteUser == null) {
+            return RsData.of(
+                    "401",
+                    "로그인이 필요합니다.",
+                    null
+            );
+        }
         return RsData.of(
                 "200",
                 "내 정보 조회 성공",

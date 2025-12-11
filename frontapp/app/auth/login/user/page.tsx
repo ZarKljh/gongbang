@@ -76,9 +76,6 @@ export default function LoginUser() {
                     <div className="button-group">
                         <input type="submit" value="로그인" className="btn btn-primary" />
                         {/* <button type="submit">등록</button> */}
-                        <button type="button" className="btn" onClick={handleLogout}>
-                            로그아웃
-                        </button>
                     </div>
                 </form>
             </section>

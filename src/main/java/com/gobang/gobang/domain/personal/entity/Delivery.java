@@ -50,6 +50,13 @@ public class Delivery {
         modifiedDate = LocalDateTime.now();
     }
 
+    // 택배사 이름 (예: CJ대한통운)
+    @Column(name = "courier_name", length = 50)
+    private String courierName;
+
+
+
+
     @PreUpdate
     protected void onUpdate() {
         modifiedDate = LocalDateTime.now();

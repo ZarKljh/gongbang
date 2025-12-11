@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,4 +24,7 @@ public interface StudioRepository extends JpaRepository<Studio, Long> {
 
     // 미처리 건 수 메소드 추가 - 상진
     long countByStatus(StudioStatus st);
+
+    // 판매자의 스튜디오들 조회
+    List<Studio> findBySiteUser_Id(Long siteUserId);
 }

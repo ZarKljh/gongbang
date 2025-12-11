@@ -81,7 +81,8 @@ export default function ReviewRank() {
                             1200: { slidesPerView: 4, slidesPerGroup: 4 },
                             992: { slidesPerView: 3, slidesPerGroup: 3 },
                             768: { slidesPerView: 3, slidesPerGroup: 3 },
-                            0: { slidesPerView: 3, slidesPerGroup: 3 },
+                            460: { slidesPerView: 2, slidesPerGroup: 2 },
+                            0: { slidesPerView: 2, slidesPerGroup: 2 },
                         }}
                     >
                         {products.map((p) => (
