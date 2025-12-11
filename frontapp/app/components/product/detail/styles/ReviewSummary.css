@@ -1,0 +1,45 @@
+.review-summary-container {
+    margin-top: 20px;
+}
+
+.review-summary-btn {
+    padding: 8px 16px;
+    background-color: #dac0a3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.review-summary-btn:hover {
+    background-color: rgba(173, 134, 116, 0.63);
+}
+
+.review-summary-box {
+    margin-top: 10px;
+    padding: 15px;
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+@media (max-width: 460px) {
+    .review-summary-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+    .review-summary-box {
+
+        padding: 12px;
+        flex-direction: row;
+        gap: 10px;
+        font-size: 13px ;
+    }
+}

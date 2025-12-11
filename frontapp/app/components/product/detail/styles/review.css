@@ -796,6 +796,7 @@
     .review-rating-select {
         font-size: 14px;
         padding: 6px 12px;
+        border-radius: 6px;
     }
 
     .review-rating-select:hover {
