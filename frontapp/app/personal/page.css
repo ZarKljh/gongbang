@@ -67,7 +67,7 @@ body {
 /* 메인 콘텐츠 */
 .main-content {
     max-width: 100%;
-    overflow: hidden;
+    min-width: 0;
     flex-grow: 1;
     padding: 32px;
 }
@@ -1144,7 +1144,6 @@ body {
 /* 서브탭 콘텐츠 */
 .subtab-content {
     margin-top: 20px;
-    overflow: visible;
 }
 
 /* 모달 */
@@ -2582,9 +2581,9 @@ button.link-btn:disabled:hover {
 /* ===================== AI 추천 전체 영역 ===================== */
 .rs-wrapper {
     width: 100%;
-    overflow: hidden;
     margin: 32px 0 24px;
-    padding: 0;
+    padding: 0 0px;
+    position: relative;
 }
 
 /* 헤더 */
@@ -2610,21 +2609,19 @@ button.link-btn:disabled:hover {
 
 /* ===================== 슬라이더 ===================== */
 .rs-slider {
-    display: block;
-    white-space: nowrap;
+    display: flex;
     overflow-x: auto;
-    overflow-y: hidden;
-    touch-action: pan-y;
+    scroll-behavior: smooth;
+    gap: 12px;
+    padding-bottom: 10px;
+    white-space: nowrap;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    min-width: 100%;
 }
 
 .rs-slider::-webkit-scrollbar {
     display: none;
-}
-
-.rs-slider.active {
-    cursor: grabbing;
 }
 
 .rs-slider.active .rs-card:hover {
@@ -2634,7 +2631,7 @@ button.link-btn:disabled:hover {
 /* ===================== 상품 카드 ===================== */
 .rs-card {
     min-width: 160px;
-    display: inline-block; 
+    display: inline-block;
     border-radius: 12px;
     background: #fff;
     padding: 12px;
@@ -2677,4 +2674,39 @@ button.link-btn:disabled:hover {
     font-weight: bold;
     font-size: 15px;
     color: #222;
+}
+
+/* 버튼 기본 숨김 (모바일) */
+.rs-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 24px;
+    cursor: pointer;
+
+    display: none; /* 모바일에서 기본 숨김 */
+}
+
+.rs-btn.left {
+    left: -5px;
+}
+.rs-btn.right {
+    right: -5px;
+}
+
+/* PC에서만 버튼 노출 */
+@media (min-width: 461px) {
+    .rs-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
