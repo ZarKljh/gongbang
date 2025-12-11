@@ -63,4 +63,14 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
           AND d.completedAt >= :sevenDaysAgo
     """)
     long countCompletedWithin7Days(Long userId, LocalDateTime sevenDaysAgo);
+    // 셀러 기준으로 받은 주문 조회 - 상진
+    @Query("""
+                SELECT DISTINCT o
+                FROM Orders o
+                JOIN o.orderItems oi
+                JOIN oi.product p
+                WHERE p.studioId = :studioId
+                ORDER BY o.orderId DESC
+            """)
+    List<Orders> findReceivedOrdersByStudioId(@Param("studioId") Long studioId);
 }

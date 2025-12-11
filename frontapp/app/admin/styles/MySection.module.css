@@ -78,6 +78,16 @@ body {
     height: 20px;
 }
 
+.navItemActive {
+    background-color: #111827;
+    color: #f9fafb;
+    font-weight: 600;
+}
+
+.navItemActive .navIcon {
+    filter: brightness(2);
+}
+
 /* === 메인 === */
 .mainArea {
     padding: 32px 72px;

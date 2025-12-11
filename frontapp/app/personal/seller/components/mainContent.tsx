@@ -65,6 +65,7 @@ export default function MainContent(props: MainContentProps) {
                         <thead>
                             <tr>
                                 <th>프로필</th>
+                                <th>등록공방수</th>
                                 <th>등록상품수</th>
                                 <th>팔로우</th>
                             </tr>

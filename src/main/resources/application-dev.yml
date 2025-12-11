@@ -35,5 +35,10 @@ spring:
             required: true
         debug: false
 
+delivery-tracker:
+  client-id: AA4fGkp0h7yLK3udnIddEUZl
+  client-secret: h3I9iVbQ0gOubcebHyL2cEMRZOnT73xVFx7kia7phvw
+
+
 custom:
   genFileDirPath: C://work//gongbangImg

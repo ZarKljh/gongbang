@@ -7,6 +7,7 @@ import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
 import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
 import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
+import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -168,4 +169,16 @@ public class OrdersService {
 
         ordersRepository.delete(order);
     }
+
+    // 셀러용 받은 주문 조회 - 상진
+    @Transactional(readOnly = true)
+    public List<OrdersResponse> getReceivedOrdersByStudio(Long studioId) {
+        List<Orders> orders = ordersRepository.findReceivedOrdersByStudioId(studioId);
+
+        return orders.stream()
+                .map(order -> OrdersResponse.from(order, imageRepository))
+                .toList();
+    }
+
+
 }

@@ -1,0 +1,168 @@
+.page {
+    min-height: 100vh;
+    background-color: #faf7f0;
+    padding: 32px 16px;
+    box-sizing: border-box;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.backButton {
+    all: unset;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    font-size: 13px;
+}
+
+.backButton:hover {
+    background-color: #f3f3f3;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #4b3a2b;
+}
+
+/* 카드 공통 */
+.card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px 18px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    margin-bottom: 16px;
+}
+
+.sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: #4b3a2b;
+}
+
+/* 주문 요약 */
+.orderSummary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    font-size: 14px;
+}
+
+.orderRow {
+    display: flex;
+    gap: 6px;
+}
+
+.label {
+    min-width: 80px;
+    color: #7a6a5a;
+}
+
+.value {
+    color: #333;
+}
+
+/* 폼 */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.formRow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #7a6a5a;
+}
+
+.input,
+.select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    outline: none;
+    background-color: #fff;
+}
+
+.input:focus,
+.select:focus {
+    border-color: #6b8cff;
+    box-shadow: 0 0 0 1px rgba(107, 140, 255, 0.2);
+}
+
+.helperText {
+    font-size: 12px;
+    color: #999;
+}
+
+/* 버튼들 */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.primaryBtn,
+.secondaryBtn {
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+}
+
+.primaryBtn {
+    background-color: #6b8cff;
+    color: #fff;
+}
+
+.primaryBtn:hover {
+    background-color: #5873d6;
+}
+
+.secondaryBtn {
+    background-color: #ffffff;
+    color: #444;
+    border: 1px solid #ddd;
+}
+
+.secondaryBtn:hover {
+    background-color: #f6f6f6;
+}
+
+.errorText {
+    color: #d9534f;
+    margin-bottom: 12px;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+    .page {
+        padding: 20px 10px;
+    }
+
+    .orderSummary {
+        grid-template-columns: 1fr;
+    }
+}
