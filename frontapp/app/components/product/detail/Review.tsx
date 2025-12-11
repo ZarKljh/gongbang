@@ -636,7 +636,7 @@ const handleLikeClick = async (reviewId: number) => {
 
                     {/* 📜 리뷰 목록 */}
                     <div ref={reviewTopRef} aria-hidden>
-                        <hr style={{ marginBottom: '20px' }} />
+                        <hr style={{ marginBottom: '20px',  border: '1px solid #E9DCC4' }} />
                         <h3 className="review-title">리뷰</h3>
                     </div>
 
