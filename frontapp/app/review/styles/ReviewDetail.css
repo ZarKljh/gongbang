@@ -291,7 +291,7 @@ transform: scale(0.7);
 }
 
 /* ---- 모바일 (max-width: 600px) ---- */
-@media (max-width: 600px) {
+@media (max-width: 460px) {
     .review-detail-container {
         padding: 0 10px 50px;
     }

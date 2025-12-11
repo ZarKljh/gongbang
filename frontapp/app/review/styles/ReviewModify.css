@@ -215,7 +215,7 @@ max-width: 1280px;
 }
 
 /* ---- 모바일 (max-width: 600px) ---- */
-@media (max-width: 600px) {
+@media (max-width: 460px) {
     .review-modify-container {
         padding: 0 10px 50px;
     }
