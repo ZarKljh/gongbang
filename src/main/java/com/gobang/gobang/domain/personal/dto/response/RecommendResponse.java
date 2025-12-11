@@ -6,31 +6,25 @@ import com.gobang.gobang.domain.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
 public class RecommendResponse {
 
-    private List<Item> items;
+    private List<Map<String, Object>> items;
     private String aiMessage;
 
-    @Data
-    @AllArgsConstructor
-    public static class Item {
-        private Long productId;
-        private String productName;
-        private String imageUrl;
-        private int price;
-    }
-
-    public static RecommendResponse from(List<Product> products, String aiMessage, ImageRepository imageRepository) {
-
-        List<Item> itemList = products.stream()
+    public static RecommendResponse from(
+            List<Product> products,
+            String message,
+            ImageRepository imageRepository
+    ) {
+        List<Map<String, Object>> items = products.stream()
                 .map(p -> {
-
-                    // 각 상품마다 이미지 1개씩 가져오기
                     String imageUrl = imageRepository
                             .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, p.getId())
                             .stream()
@@ -38,15 +32,16 @@ public class RecommendResponse {
                             .map(img -> "/images/" + img.getImageFileName())
                             .orElse(null);
 
-                    return new Item(
-                            p.getId(),
-                            p.getName(),
-                            imageUrl,
-                            p.getBasePrice()
-                    );
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("productId", p.getId());
+                    map.put("productName", p.getName());
+                    map.put("price", p.getBasePrice());
+                    map.put("imageUrl", imageUrl);
+
+                    return map;
                 })
                 .collect(Collectors.toList());
 
-        return new RecommendResponse(itemList, aiMessage);
+        return new RecommendResponse(items, message);
     }
 }

@@ -111,9 +111,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("size") int size
     );
 
-    List<Product> findTop20ByActiveIsTrueOrderByCreatedDateDesc();
-
-
     public interface HotProductProjection {
 
         Long getProductId();
@@ -134,4 +131,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findTop12ByCategoryIdAndActiveIsTrueOrderByCreatedDateDesc(Long categoryId);
 
     List<Product> findTop12ByCategory_CodeAndActiveIsTrueOrderByCreatedDateDesc(String categoryCode);
+
+    List<Product> findTop20ByActiveIsTrueOrderByCreatedDateDesc();
+
+    @Query("""
+        SELECT p
+        FROM Product p
+        LEFT JOIN WishList w ON w.product.id = p.id
+        WHERE p.active = true
+        GROUP BY p.id
+        ORDER BY COUNT(w) DESC
+    """)
+    List<Product> findPopularProductsTop20(Pageable pageable);
 }

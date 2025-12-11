@@ -1419,7 +1419,7 @@ export default function MyPage() {
                                             <div className="rs-message">{recommendMessage}</div>
                                         )}
 
-                                        <div className="rs-slider">
+                                        <div className="rs-slider" ref={sliderRef}>
                                             {recommendItems.map((item) => (
                                                 <div
                                                     key={item.productId}
@@ -1429,7 +1429,7 @@ export default function MyPage() {
                                                     }}
                                                 >
                                                     <img
-                                                        src={item.imageUrl ? `http://localhost:8090${item.imageUrl}` : ""}
+                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : 'null'}
                                                         className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
                                                         alt={item.productName}
                                                         draggable={false}
@@ -1459,7 +1459,9 @@ export default function MyPage() {
                                                 >
                                                     <div className="wishlist-image">
                                                         <img 
-                                                            src={`http://localhost:8090${item.imageUrl}`}
+                                                            src={item.imageUrl
+                                                                ? `${IMAGE_BASE_URL}${item.imageUrl}`
+                                                                : "/no-image.png"}
                                                             alt={item.productName}
                                                         />
                                                     </div>

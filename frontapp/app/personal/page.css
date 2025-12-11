@@ -7,7 +7,7 @@ body {
     min-height: 100vh;
     max-width: 1280px;
     margin: 0 auto;
-    overflow-x: hidden;
+    /* overflow-x: hidden; */
     overflow-y: auto;
 }
 
@@ -2614,7 +2614,6 @@ button.link-btn:disabled:hover {
     white-space: nowrap;
     -ms-overflow-style: none;
     scrollbar-width: none;
-    min-width: 100%;
 }
 
 .rs-slider::-webkit-scrollbar {
@@ -2699,10 +2698,12 @@ button.link-btn:disabled:hover {
 }
 
 .rs-btn.left {
-    left: -25px;
+    left: 0;
+    transform: translateX(-60%);
 }
 .rs-btn.right {
-    right: -25px;
+    right: 0;
+    transform: translateX(60%);
 }
 
 /* PC에서만 버튼 노출 */
