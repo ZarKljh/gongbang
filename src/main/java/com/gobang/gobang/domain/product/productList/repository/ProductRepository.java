@@ -111,6 +111,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("size") int size
     );
 
+    List<Product> findTop20ByActiveIsTrueOrderByCreatedDateDesc();
+
 
     public interface HotProductProjection {
 
@@ -126,4 +128,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     }
 
     List<Product> findTop3ByStudioIdOrderByCreatedDateDesc(Long studioId);
+
+    List<Product> findTop12BySubcategory_IdAndActiveIsTrueOrderByCreatedDateDesc(Long subId);
+
+    List<Product> findTop12ByCategoryIdAndActiveIsTrueOrderByCreatedDateDesc(Long categoryId);
+
+    List<Product> findTop12ByCategory_CodeAndActiveIsTrueOrderByCreatedDateDesc(String categoryCode);
 }

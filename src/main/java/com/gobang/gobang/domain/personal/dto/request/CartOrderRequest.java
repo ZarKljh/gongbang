@@ -10,4 +10,5 @@ import java.util.List;
 @Setter
 public class CartOrderRequest {
     private List<CartOrderItemDto> items;
+    private Long addressId;
 }

@@ -5,8 +5,10 @@ import { useParams, useRouter } from 'next/navigation'
 import axios from 'axios'
 import '@/app/personal/[orderId]/page.css'
 import Link from 'next/link'
+import api from '@/app/utils/api'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
+const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 export default function OrderDetailPage() {
     const { orderId } = useParams()
@@ -158,7 +160,7 @@ export default function OrderDetailPage() {
                 <div className="order-items-list">
                     {order.items?.map((item: any) => (
                         <div key={item.orderItemId} className="order-detail-item">
-                            <img src={`http://localhost:8090${item.imageUrl}`} alt={item.productName} />
+                            <img src={`${IMAGE_BASE_URL}${item.imageUrl}`} alt={item.productName} />
                             <div>
                                 <Link href={`http://localhost:3000/product/list/detail?productId=${item.productId}`} className="my-review-product-name">
                                     <p className="item-name">{item.productName}</p>
