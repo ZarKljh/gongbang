@@ -110,19 +110,27 @@ export default function ReviewModify() {
         }
 
         // 1) 리뷰 본문 먼저 PATCH
-        const res = await fetch(`http://localhost:8090/api/v1/reviews/${params.id}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-            },
-            credentials: 'include',
-            body: JSON.stringify(reviewToSend),
-        })
+        let patchRes
+        try {
+            patchRes = await api.patch(`/reviews/${params.id}`, reviewToSend, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                },
+                withCredentials: true,
+            })
+        } catch (err) {
+            console.error(err)
+            return alert('리뷰 수정 중 오류가 발생했습니다.')
+        }
 
-        if (!res.ok) return alert('리뷰 수정 실패')
+        if (!patchRes.data?.resultCode?.startsWith('200')) {
+            return alert(patchRes.data?.msg || '리뷰 수정 실패')
+        }
 
         // 2) 새로 추가된 파일만 업로드
+        let failedCount = 0
+
         for (let i = 0; i < imageFiles.length; i++) {
             const formData = new FormData()
             formData.append('file', imageFiles[i])
@@ -130,12 +138,24 @@ export default function ReviewModify() {
             formData.append('refType', 'REVIEW')
             formData.append('sortOrder', i.toString())
 
-            await api.post('/images/upload', {
-                body: formData,
-            })
+            try {
+                await api.post('/images/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    withCredentials: true,
+                })
+            } catch (err) {
+                console.error('이미지 업로드 실패:', err)
+                failedCount++
+            }
+        }
+        if (failedCount > 0) {
+            alert(`리뷰는 수정되었지만 이미지 ${failedCount}장은 업로드에 실패했습니다.`)
+        } else {
+            alert('리뷰가 수정되었습니다.')
         }
 
-        alert('리뷰가 수정되었습니다.')
         router.push(`/review/${params.id}`)
     }
 

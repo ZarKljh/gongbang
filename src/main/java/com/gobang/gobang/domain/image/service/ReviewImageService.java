@@ -11,6 +11,7 @@ import com.gobang.gobang.domain.review.repository.ReviewRepository;
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -111,30 +112,34 @@ public class ReviewImageService {
 
         // 2) 해당 리뷰들의 이미지 한 번에 조회
         List<Image> images = reviewImageRepository
-                .findByRefTypeAndRefIdInOrderBySortOrderAsc(
+                .findByRefTypeAndRefIdIn(
                         Image.RefType.REVIEW,
-                        reviewIds
+                        reviewIds,
+                        Sort.by(Sort.Direction.ASC, "sortOrder")
                 );
 
         if (images.isEmpty()) return List.of();
 
         // 3) 리뷰ID → 대표 이미지 매핑 (sortOrder ASC라 첫 이미지가 대표)
-        Map<Long, Image> representativeImageMap =
-                images.stream().collect(Collectors.toMap(
-                        Image::getRefId,
-                        img -> img,
-                        (existing, duplicate) -> existing // 기존(first)의 순서를 유지
-                ));
+        Map<Long, List<Image>> groupedImages =
+                images.stream()
+                        .collect(Collectors.groupingBy(Image::getRefId));
 
         // 4) 이미지가 있는 리뷰만 필터링해서 DTO 변환
         return reviews.stream()
                 .sorted(Comparator.comparing(Review::getCreatedDate).reversed())
-                .filter(r -> representativeImageMap.containsKey(r.getReviewId()))
+                .filter(r -> groupedImages.containsKey(r.getReviewId()))
                 .map(r -> {
-                    Image img = representativeImageMap.get(r.getReviewId());
+
+                    // 리뷰 전체 이미지 리스트
+                    List<String> imageUrls = groupedImages.get(r.getReviewId())
+                            .stream()
+                            .map(Image::getImageUrl)
+                            .toList();
+
                     return new PhotoReviewResponse(
                             r.getReviewId(),
-                            img.getImageUrl(),
+                            imageUrls, // ★★ 모든 이미지 리스트
                             r.getContent()
                     );
                 })
