@@ -1769,6 +1769,18 @@ export default function MyPage() {
                                                 ))}
                                             </div>
                                         </div>
+                                        <div className="order-footer">
+                                            <button
+                                                type="button"
+                                                className="order-btn shipping-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation() // 상단 onClick 안 타게 방지
+                                                    router.push(`/personal/delivery/${order.orderId}`)
+                                                }}
+                                            >
+                                                배송 조회
+                                            </button>
+                                        </div>
                                     </div>
                                 ))
                             )}
