@@ -1,5 +1,6 @@
 # 첫 번째 스테이지: 빌드 스테이지
-FROM gradle:jdk21-graal-jammy as builder
+# [수정] gradle:jdk21-graal-jammy 대신 gradle:jdk17-jammy 사용
+FROM gradle:jdk17-jammy as builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -23,7 +24,8 @@ COPY src src
 RUN ./gradlew build -x test --no-daemon
 
 # 두 번째 스테이지: 실행 스테이지
-FROM ghcr.io/graalvm/jdk-community:21
+# [수정] ghcr.io/graalvm/jdk-community:21 대신 ghcr.io/graalvm/jdk-community:17 사용
+FROM ghcr.io/graalvm/jdk-community:17
 
 # 작업 디렉토리 설정
 WORKDIR /app
