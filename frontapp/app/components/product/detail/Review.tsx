@@ -354,50 +354,62 @@ export default function Review() {
     }
 
     // 리뷰 좋아요 버튼
-    const handleLikeClick = async (reviewId: number) => {
-        try {
-            const res = await api.post(`/reviews/${reviewId}/like`)
-            const data = res.data
-
-            if (!isLoggedIn) {
-                if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
-                    window.location.href = '/auth/login'
-                }
-            }
-
-            // 요청 실패 시 (서버 오류등)
-            if (!data || !data.msg) {
-                console.error('좋아요 요청 실패:', data)
-                return
-            }
-
-            // 좋아요 추가 201
-            if (data.resultCode === '201') {
-                setLikeCounts((prev) => ({
-                    ...prev,
-                    [reviewId]: (prev[reviewId] ?? 0) + 1,
-                }))
-                setLiked((prev) => ({
-                    ...prev,
-                    [reviewId]: true,
-                }))
-            }
-
-            // 좋아요 취소 202
-            else if (data.resultCode === '202') {
-                setLikeCounts((prev) => ({
-                    ...prev,
-                    [reviewId]: Math.max(0, (prev[reviewId] ?? 1) - 1),
-                }))
-                setLiked((prev) => ({
-                    ...prev,
-                    [reviewId]: false,
-                }))
-            }
-        } catch (err) {
-            console.error('좋아요 요청 실패:', err)
+    // 좋아요 클릭
+const handleLikeClick = async (reviewId: number) => {
+    // 1️⃣ 비로그인 먼저 체크하고 서버 요청 보내지 않기
+    if (!isLoggedIn) {
+        const goLogin = confirm('로그인이 필요합니다. 로그인 하시겠습니까?')
+        if (goLogin) {
+            window.location.href = '/auth/login'
         }
+        return
     }
+
+    try {
+        // 2️⃣ 로그인 상태일 때만 요청 전송
+        const res = await api.post(`/reviews/${reviewId}/like`)
+        const data = res.data
+
+        if (!data || !data.resultCode) {
+            console.error('좋아요 요청 실패:', data)
+            return
+        }
+
+        // 좋아요 추가 (201)
+        if (data.resultCode === '201') {
+            setLikeCounts(prev => ({
+                ...prev,
+                [reviewId]: (prev[reviewId] ?? 0) + 1,
+            }))
+            setLiked(prev => ({
+                ...prev,
+                [reviewId]: true,
+            }))
+        }
+
+        // 좋아요 취소 (202)
+        else if (data.resultCode === '202') {
+            setLikeCounts(prev => ({
+                ...prev,
+                [reviewId]: Math.max(0, (prev[reviewId] ?? 1) - 1),
+            }))
+            setLiked(prev => ({
+                ...prev,
+                [reviewId]: false,
+            }))
+        }
+    } catch (err: any) {
+        // 401이면 로그인 필요 안내
+        if (err.response?.status === 401) {
+            const goLogin = confirm('로그인이 필요합니다. 로그인 하시겠습니까?')
+            if (goLogin) window.location.href = '/auth/login'
+            return
+        }
+
+        console.error('좋아요 요청 실패:', err)
+    }
+}
+
 
     // 좋아요 상태 받아오기
     const fetchLikedReviews = async (productId: number) => {
