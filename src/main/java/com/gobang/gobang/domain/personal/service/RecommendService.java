@@ -82,6 +82,12 @@ public class RecommendService {
         // AI 메시지 생성
         String aiMessage = aiMessageService.generateCategoryMessage(base, baseSub);
 
+        if (recommendedProducts.size() < 10) {
+            List<Product> fallback = productRepository.findTop20ByActiveIsTrueOrderByCreatedDateDesc();
+
+            mergeWithoutDup(recommendedProducts, fallback);
+        }
+
         return RecommendResponse.from(recommendedProducts, aiMessage, imageRepository);
     }
 

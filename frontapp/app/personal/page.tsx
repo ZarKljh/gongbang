@@ -1,7 +1,7 @@
 'use client'
 
 import axios from 'axios'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -653,6 +653,83 @@ export default function MyPage() {
   const firstSelectedCartId = selectedItems[0]
   const firstSelectedItem = cart.find(item => item.cartId === firstSelectedCartId)
 
+  // ================= 세로 스크롤 막고 가로 드래그 작동 =================
+    const sliderRef = useRef<HTMLDivElement | null>(null)
+    const isDraggingRef = useRef(false)   // ← 드래그 중인지 체크용
+
+    useEffect(() => {
+    const slider = sliderRef.current
+    if (!slider) return
+
+    let isDown = false
+    let startX = 0
+    let scrollLeft = 0
+
+    const handlePointerDown = (e: PointerEvent) => {
+        // 마우스 오른쪽/휠 클릭 무시
+        if (e.pointerType === 'mouse' && e.button !== 0) return
+console.log('pointer down', e.pointerType)
+        isDown = true
+        isDraggingRef.current = false
+
+        slider.classList.add('active')
+        slider.setPointerCapture(e.pointerId)
+
+        // 시작 시점 기준값 저장
+        startX = e.clientX
+        scrollLeft = slider.scrollLeft
+    }
+
+    const handlePointerMove = (e: PointerEvent) => {
+        if (!isDown) return
+console.log('pointer move')
+        // 세로 스크롤 방지 (특히 모바일)
+        e.preventDefault()
+
+        const dx = e.clientX - startX
+        const walk = dx * 1.3
+
+        if (Math.abs(walk) > 5) {
+        isDraggingRef.current = true
+        }
+
+        slider.scrollLeft = scrollLeft - walk
+    }
+
+    const endDrag = (e: PointerEvent) => {
+        if (!isDown) return
+
+        isDown = false
+        slider.classList.remove('active')
+
+        try {
+        slider.releasePointerCapture(e.pointerId)
+        } catch {
+        // 이미 해제된 경우 무시
+        }
+
+        // click 이벤트와 구분하기 위해 한 틱 뒤에 false로
+        setTimeout(() => {
+        isDraggingRef.current = false
+        }, 0)
+    }
+
+    // passive 옵션 명시 (모바일에서 preventDefault 허용)
+    slider.addEventListener('pointerdown', handlePointerDown, { passive: true })
+    slider.addEventListener('pointermove', handlePointerMove, { passive: false })
+    slider.addEventListener('pointerup', endDrag)
+    slider.addEventListener('pointercancel', endDrag)
+    slider.addEventListener('pointerleave', endDrag)
+
+    return () => {
+        slider.removeEventListener('pointerdown', handlePointerDown)
+        slider.removeEventListener('pointermove', handlePointerMove)
+        slider.removeEventListener('pointerup', endDrag)
+        slider.removeEventListener('pointercancel', endDrag)
+        slider.removeEventListener('pointerleave', endDrag)
+    }
+    }, [])
+
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
         return <div>로딩중...</div>
@@ -762,7 +839,7 @@ export default function MyPage() {
                                     className={`nav-btn ${activeTab === 'like' ? 'active' : ''}`}
                                     onClick={() => handleTabClick('like')}
                                 >
-                                    위시리스트
+                                    나의 좋아요
                                 </button>
                             </li>
                         </ul>
@@ -1358,11 +1435,11 @@ export default function MyPage() {
                         </div>
                     )}
 
-                    {/* 위시리스트 */}
+                    {/* 나의 좋아요 */}
                     {activeTab === 'like' && (
                         <div className="tab-content">
                             <div className="section-header">
-                                <h2>위시리스트</h2>
+                                <h2>나의 좋아요</h2>
                             </div>
 
                             <div className="tab-nav">
@@ -1382,6 +1459,46 @@ export default function MyPage() {
 
                             {activeSubTab === 'product' && (
                                 <div className="subtab-content">
+                                    <div className="rs-wrapper">
+                                        <div className="rs-header">
+                                            <h3>AI 추천 상품</h3>
+                                        </div>
+
+                                        {recommendMessage && (
+                                            <div className="rs-message">{recommendMessage}</div>
+                                        )}
+
+                                        <div className="rs-slider" ref={sliderRef}>
+                                            {recommendItems.map((item) => (
+                                                <div
+                                                    key={item.productId}
+                                                    className="rs-card"
+                                                    onClick={(e) => {
+                                                        if (isDraggingRef.current) {
+                                                            e.preventDefault()
+                                                            return
+                                                        }
+                                                        router.push(`/product/list/detail?productId=${item.productId}`)
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={item.imageUrl ? `http://localhost:8090${item.imageUrl}` : ""}
+                                                        className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
+                                                        alt={item.productName}
+                                                    />
+
+                                                    <div className="rs-name">{item.productName}</div>
+                                                    <div className="rs-price">
+                                                        {item.price ? `${item.price.toLocaleString()}원` : "가격 없음"}
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* 오른쪽 끝 공백 패딩 */}
+                                            <div className="rs-slider-padding" />
+                                        </div>
+                                    </div>
+
                                     {infiniteWishList.length === 0 ? (
                                         <div className="empty-state">좋아요한 상품이 없습니다.</div>
                                     ) : (

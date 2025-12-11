@@ -1,9 +1,12 @@
 package com.gobang.gobang.domain.personal.controller;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.response.RecommendResponse;
 import com.gobang.gobang.domain.personal.service.RecommendService;
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,14 +17,24 @@ import org.springframework.web.bind.annotation.RestController;
 public class RecommendController {
 
     private final RecommendService recommendService;
+    private final SiteUserService siteUserService;
 
     @GetMapping("/wishlist")
-    public RsData<?> getWishlistRecommend() {
+    public ResponseEntity<RsData<RecommendResponse>> getWishlistRecommend() {
 
-        Long userId = 1L; // 임시 — 나중에 JWT에서 가져오는 코드로 교체
+        SiteUser user = siteUserService.getCurrentUser();
+        if (user == null) {
+            return ResponseEntity
+                    .status(401)
+                    .body(RsData.of("401", "로그인이 필요합니다.", null));
+        }
 
-        RecommendResponse response = recommendService.getWishlistRecommend(userId);
+        RecommendResponse response = recommendService.getWishlistRecommend(user.getId());
 
-        return RsData.of("200", "추천 상품 조회 성공", response);
+        return ResponseEntity.ok(RsData.of(
+                "200",
+                "추천 상품 조회 성공",
+                response
+        ));
     }
 }

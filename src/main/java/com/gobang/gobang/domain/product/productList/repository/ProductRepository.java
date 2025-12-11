@@ -111,6 +111,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("size") int size
     );
 
+    List<Product> findTop20ByActiveIsTrueOrderByCreatedDateDesc();
+
 
     public interface HotProductProjection {
 
