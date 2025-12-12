@@ -1,47 +1,53 @@
 package com.gobang.gobang.domain.personal.dto.response;
 
-import com.gobang.gobang.domain.image.entity.Image;
-import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.product.entity.Product;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
+@Builder
 public class RecommendResponse {
 
-    private List<Map<String, Object>> items;
+    private List<Item> items;
     private String aiMessage;
+
+    @Getter
+    @AllArgsConstructor
+    public static class Item {
+        private Long productId;
+        private String name;
+        private Integer price;
+        private String imageUrl;
+    }
 
     public static RecommendResponse from(
             List<Product> products,
-            String message,
-            ImageRepository imageRepository
+            String aiMessage,
+            Map<Long, String> imageMap
     ) {
-        List<Map<String, Object>> items = products.stream()
-                .map(p -> {
-                    String imageUrl = imageRepository
-                            .findByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, p.getId())
-                            .stream()
-                            .findFirst()
-                            .map(img -> "/images/" + img.getImageFileName())
-                            .orElse(null);
+        List<Item> items = products.stream()
+                .map(product -> {
+                    String fileName = imageMap.get(product.getId());
 
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("productId", p.getId());
-                    map.put("productName", p.getName());
-                    map.put("price", p.getBasePrice());
-                    map.put("imageUrl", imageUrl);
+                    String imageUrl = (fileName != null)
+                            ? "/images/" + fileName    // ⇒ 여기서만 URL 조립
+                            : "/images/default-product.png";
 
-                    return map;
+                    return new Item(
+                            product.getId(),
+                            product.getName(),
+                            product.getBasePrice(),
+                            imageUrl
+                    );
                 })
-                .collect(Collectors.toList());
+                .toList();
 
-        return new RecommendResponse(items, message);
+        return new RecommendResponse(items, aiMessage);
     }
 }

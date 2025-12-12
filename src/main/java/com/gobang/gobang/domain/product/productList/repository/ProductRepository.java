@@ -126,5 +126,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findTop3ByStudioIdOrderByCreatedDateDesc(Long studioId);
 
-    List<Product> findTop30ByCategoryIdInAndActiveIsTrueOrderByCreatedDateDesc(List<Long> categoryIds);
+    @Query("""
+        SELECT p
+        FROM Product p
+        WHERE p.active = TRUE
+          AND p.categoryId IN :categoryIds
+        ORDER BY p.createdDate DESC
+    """)
+    List<Product> findRecommendProducts(
+            @Param("categoryIds") List<Long> categoryIds,
+            Pageable pageable
+    );
+
 }

@@ -1429,13 +1429,13 @@ export default function MyPage() {
                                                     }}
                                                 >
                                                     <img
-                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : 'null'}
+                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : "/no-image.png"}
                                                         className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
                                                         alt={item.productName}
                                                         draggable={false}
                                                     />
 
-                                                    <div className="rs-name">{item.productName}</div>
+                                                    <div className="rs-name">{item.name}</div>
                                                     <div className="rs-price">
                                                         {item.price ? `${item.price.toLocaleString()}원` : "가격 없음"}
                                                     </div>

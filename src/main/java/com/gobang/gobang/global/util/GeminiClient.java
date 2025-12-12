@@ -1,6 +1,5 @@
 package com.gobang.gobang.global.util;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -66,40 +65,61 @@ public class GeminiClient {
     }
 
     public String generateText(String prompt) {
-
         String url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
         Map<String, Object> body = Map.of(
                 "contents", List.of(
-                        Map.of("parts", List.of(Map.of("text", prompt)))
+                        Map.of(
+                                "role", "user",
+                                "parts", List.of(
+                                        Map.of("text", prompt)
+                                )
+                        )
                 )
         );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        HttpEntity<Map<String, Object>> request =
+                new HttpEntity<>(body, headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
-
-        return extractText(response.getBody());
-    }
-
-    private String extractText(Map<String, Object> response) {
         try {
-            List<?> candidates = (List<?>) response.get("candidates");
-            Map<?, ?> first = (Map<?, ?>) candidates.get(0);
-            Map<?, ?> content = (Map<?, ?>) first.get("content");
-            List<?> parts = (List<?>) content.get("parts");
-            Map<?, ?> part = (Map<?, ?>) parts.get(0);
-            return part.get("text").toString();
+            ResponseEntity<Map> response =
+                    restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
+
+            return extractText(response.getBody());
+
         } catch (Exception e) {
-            return "추천 사유를 불러오지 못했어요.";
+            System.out.println("===== GEMINI API ERROR =====");
+            System.out.println("Message = " + e.getMessage());
+            e.printStackTrace(); // ← 이거 꼭 추가!!!
+            System.out.println("=================================");
+            return "";  // 빈 문자열로 리턴해야 프론트에서 정상 처리됨
         }
     }
 
-    @PostConstruct
-    public void init() {
-        System.out.println("[GeminiClient] Loaded Key = " + apiKey);
+    private String extractText(Map response) {
+        if (response == null) return "";
+
+        try {
+            List candidates = (List) response.get("candidates");
+            if (candidates == null || candidates.isEmpty()) return "";
+
+            Map first = (Map) candidates.get(0);
+            Map content = (Map) first.get("content");
+            if (content == null) return "";
+
+            List parts = (List) content.get("parts");
+            if (parts == null || parts.isEmpty()) return "";
+
+            Map part = (Map) parts.get(0);
+            Object text = part.get("text");
+
+            return text != null ? text.toString() : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }
