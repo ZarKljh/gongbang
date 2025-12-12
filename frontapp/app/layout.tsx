@@ -6,6 +6,9 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import ReactQueryProviders from '@/app/utils/ReactQueryProviders'
 import Script from 'next/script'
 import NavWrapper from '@/app/components/NavWrapper'
+
+export const dynamic = 'force-dynamic'
+
 const geistSans = Geist({
     variable: '--font-geist-sans',
     subsets: ['latin'],
@@ -23,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <html lang="ko" >
+        <html lang="ko">
             <head>
                 {/* Daum 주소 검색 API 스크립트 추가  -  이승운 */}
                 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
