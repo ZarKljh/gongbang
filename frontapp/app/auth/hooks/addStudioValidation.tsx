@@ -17,6 +17,12 @@ interface StudioErrors {
     studioMainImageUrl?: string
     studioLogoImageUrl?: string
     studioGalleryImageUrls?: string
+    studioMainImageFile?: string // File 객체이지만 순회를 위해 추가 (오류 메시지는 string)
+    studioLogoImageFile?: string // File 객체이지만 순회를 위해 추가
+    studioGalleryImageFiles?: string // File[] 객체이지만 순회를 위해 추가
+    studioMainImageName?: string
+    studioLogoImageName?: string
+    studioGalleryImageNames?: string
 }
 
 export function useStudioAddValidation() {
