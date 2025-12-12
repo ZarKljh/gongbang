@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import './login_user.css'
 import { loginUserValidation } from '@/app/auth/hooks/loginUserValidation'
 import ErrorMessage from '@/app/auth/common/errorMessage'
-import axios from 'axios'
 import { api } from '@/app/utils/api'
 
 export default function LoginUser() {

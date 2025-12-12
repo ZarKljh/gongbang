@@ -44,6 +44,7 @@ body {
 /* 입력창 – personal 입력 창과 동일한 디자인 */
 .login-container .form-input {
     width: 100%;
+    max-width: 356px;
     height: 44px;
     padding: 0 14px;
     border: 1px solid #d1d5db;
