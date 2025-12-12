@@ -7,6 +7,12 @@ import ErrorMessage from '@/app/auth/common/errorMessage'
 import axios from 'axios'
 import { api } from '@/app/utils/api'
 
+// 💡 1. handleSubmit을 위한 타입 선언
+type FormSubmitEvent = React.FormEvent<HTMLFormElement>
+
+// 💡 2. handleChange를 위한 타입 선언
+type InputChangeEvent = React.ChangeEvent<HTMLInputElement>
+
 export default function LoginSeller() {
     const router = useRouter()
 
@@ -18,7 +24,7 @@ export default function LoginSeller() {
 
     const { errors, validate, validateField } = loginUserValidation()
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormSubmitEvent) => {
         e.preventDefault()
 
         //아이디와 password검증
