@@ -16,7 +16,7 @@
 
 .review-rank-sub {
     font-size: 14px;
-    color: #7e7e7e;
+    color: #8a7661;
     margin-bottom: 20px;
 }
 
@@ -37,6 +37,11 @@
 }
 
 /* ============================= Swiper ============================= */
+.review-rank-slider-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 .review-rank-swiper {
     width: 100%;
     overflow: hidden;
@@ -51,12 +56,9 @@
 
 /* 슬라이드는 가로로 4개씩 정렬됨 */
 .review-rank-swiper .swiper-slide {
-    /* width: auto !important;  */
     width: calc((100% - 60px) / 4);
     display: flex;
     justify-content: center;
-    /* align-items: flex-start; */
-    /* flex-direction: row; */
     flex-shrink: 0;
 }
 
@@ -97,9 +99,8 @@
 /* 텍스트 */
 .review-rank-title {
     font-size: 15px;
-    font-weight: 600;
     color: #8a7661;
-    margin: 10px;
+    margin: 10px 12px 0;
 }
 
 .review-rank-price {
@@ -150,24 +151,23 @@
 }
 
 /* 반응형 */
-
-/* @media (max-width: 992px) {
-    .review-rank-card {
-    width: 220px !important;
-  }
-} */
-
-/* @media (max-width: 768px) {
-  .review-rank-card {
-    width: 180px !important;
-  }
-} */
+/* 탭 */
+@media (max-width: 1040px)  {
+    .review-rank-swiper .swiper-slide {
+        width: calc((100% - 16px) / 3) !important;
+        flex-shrink: 0;
+    }
+}
 
 /* 모바일 */
 @media (max-width: 460px) {
     /* 컨테이너 패딩 */
     .review-rank-container {
         padding: 0 16px !important;
+    }
+    
+    .review-rank-header {
+        font-size: 20fpx;
     }
 
     /* 슬라이드 2개 배치 (gap 12px 적용) */
@@ -200,26 +200,51 @@
     /* 카드 안 텍스트 폰트/간격 */
     .review-rank-title {
         font-size: 13px;
-        margin: 10px 0 6px;
+        margin: 6px 8px 0;
     }
 
     .review-rank-price {
-        font-size: 16px;
-        margin: 0 0 6px;
+        font-size: 15px;
+       margin: 6px 8px 0;
     }
 
     .review-rank-rating {
-        font-size: 13px;
-        margin: 0 0 12px;
-    }
-
-    /* 카드와 다음 카드 사이 간격 */
-    .swiper-wrapper {
-        gap: 12px !important;
+        font-size: 12px;
+        margin: 6px 8px 0;
     }
 
     /* 섹션 타이틀과 카드 간격 */
     .review-rank-sub {
         margin-bottom: 16px !important;
+    }
+
+    /* 버튼 */
+    .review-rank-prev,
+    .review-rank-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: white;
+        color: #8a7661;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        size: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        z-index: 20;
+    }
+
+    .review-rank-prev {
+        left: 0;
+    }
+    .review-rank-next {
+        right: 0;
+    }
+
+    .review-rank-btn-icon {
+        width: 16px;
     }
 }

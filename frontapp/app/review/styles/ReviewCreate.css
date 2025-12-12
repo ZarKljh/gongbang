@@ -10,7 +10,7 @@
 
 .review-create-container {
     width: 100%;
-max-width: 1280px;
+    max-width: 1280px;
     margin: 0;
     /* padding: 0 20px 80px; */
 }
@@ -279,9 +279,21 @@ max-width: 1280px;
         font-size: 20px;
     }
 
+    .review-create-label {
+        font-size: 15px;
+    }
+
     .review-create-textarea {
         width: 100%;
         height: 160px;
+        font-size: 14px;
+    }
+
+    .review-image-list {
+        display: flex;
+        /* flex-wrap: wrap; */
+        gap: 10px;
+        margin-bottom: 0;
     }
 
     .review-image-card,
@@ -299,7 +311,7 @@ max-width: 1280px;
     .review-image-upload-wrapper {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 5px;
     }
 
     .review-image-guide {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import api from '@/app/utils/api'
+import { FcManager } from 'react-icons/fc'
 import '@/app/components/product/detail/styles/ReviewSummary.css'
 
 export default function ReviewSummary({ productId }) {
@@ -40,7 +41,9 @@ export default function ReviewSummary({ productId }) {
 
             {summary && (
                 <div className="review-summary-box">
-                    <strong>요약 결과</strong>
+                    <strong>
+                        <FcManager size={24} /> AI 요약 결과 (Google Gemini 기반)
+                    </strong>
                     <br />
                     {summary}
                 </div>
