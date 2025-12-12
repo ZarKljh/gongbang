@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useSearchParams } from 'next/navigation'
 import styles from '../PayResult.module.css'
 
