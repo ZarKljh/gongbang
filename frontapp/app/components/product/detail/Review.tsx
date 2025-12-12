@@ -87,7 +87,7 @@ export default function Review() {
         try {
             const res = await api.get('auth/me')
 
-            console.log('로그인 상태 : ', res.status, res.ok)
+            console.log('로그인 상태 : ', res.status)
 
             const data = res.data
 
@@ -538,10 +538,9 @@ export default function Review() {
                         <img className="review-banner-img" src="/images/리뷰_배너2.png" alt="배너 이미지" />
                     </div>
 
-
                     {/* 제목 + 버튼 */}
                     <div className="review-list-title">
-                        <h2 className='reviews-title'>리뷰 목록</h2>
+                        <h2 className="reviews-title">리뷰 목록</h2>
                         {roleType === 'USER' && (
                             <button className="review-write-btn" onClick={handleCreateClick}>
                                 리뷰 작성하기
@@ -582,9 +581,7 @@ export default function Review() {
 
                         {/* 포토 모달 */}
                         {showModal && (
-                            <div className='photo-modal'
-                                onClick={closePhotoModal}
-                            >
+                            <div className="photo-modal" onClick={closePhotoModal}>
                                 {/* 모달 내용 */}
                                 <div
                                     style={{
@@ -627,7 +624,7 @@ export default function Review() {
                         <hr style={{ marginBottom: '20px' }} />
                         <h3 className="review-title">리뷰</h3>
                     </div>
-                     <ReviewSummary productId={productId} />
+                    <ReviewSummary productId={productId} />
 
                     {/* 평균 별점 */}
                     <div className="review-average-container">
@@ -784,15 +781,9 @@ export default function Review() {
                                                     onClick={() => handleLikeClick(review.reviewId)}
                                                 >
                                                     {liked[review.reviewId] ? (
-                                                        <FaThumbsUp
-                                                            className="like-icon"
-                                                            
-                                                        />
+                                                        <FaThumbsUp className="like-icon" />
                                                     ) : (
-                                                        <FaRegThumbsUp
-                                                            className="like-icon"
-                                                            
-                                                        />
+                                                        <FaRegThumbsUp className="like-icon" />
                                                     )}
                                                     <span className="like-text">
                                                         도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
