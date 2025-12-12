@@ -93,10 +93,15 @@
   flex-direction: column;
   background: white;
   width: 100%;
+  transition: 0.2s ease;
   border: 1px solid #e5e5e5;
   overflow: hidden;
   cursor: pointer;
   border-radius: 8px;
+}
+
+.topProductCardSmall:hover {
+  transform: scale(1.03);
 }
 
 .topProductImgSmall {
@@ -164,6 +169,7 @@
     .sectionTitle {
         font-size: 20px;
         margin-bottom: 12px;
+        padding: 0;
     }
 
     .topStudioCard {
