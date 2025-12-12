@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,5 +70,5 @@ public interface WishListRepository extends JpaRepository<WishList, Long> {
     List<Long> findLikedProductIds(@Param("userId") Long userId,
                                    @Param("productIds") List<Long> productIds);
 
-    List<WishList> findTop10BySiteUser_IdOrderByCreatedAtDesc(Long userId);
+    List<WishList> findBySiteUser_IdAndCreatedAtAfter(Long userId, LocalDateTime createdAt);
 }

@@ -913,7 +913,7 @@ export default function MyPage() {
                                         <div className="order-footer">
                                             <button
                                                 type="button"
-                                                className="order-btn shipping-btn"
+                                                className="order-btn shipping-btn btn-primary"
                                                 onClick={(e) => {
                                                     e.stopPropagation() // 상단 onClick 안 타게 방지
                                                     router.push(`/personal/delivery/${order.orderId}`)
