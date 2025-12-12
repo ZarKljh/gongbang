@@ -1,5 +1,5 @@
 'use client'
-
+export const dynamic = 'force-dynamic'
 import { useCallback } from 'react'
 import { useRef } from 'react'
 import { useEffect, useState } from 'react'
