@@ -280,7 +280,7 @@
     }
 
     .review-create-label {
-        font-size: 15px;
+        font-size: 14px;
     }
 
     .review-create-textarea {
@@ -320,6 +320,10 @@
 
     .review-create-guide-box {
         padding: 12px 5px;
+        font-size: 12px;
+    }
+
+    .review-create-guide-text {
         font-size: 12px;
     }
 }

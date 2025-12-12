@@ -167,7 +167,7 @@
     }
     
     .review-rank-header {
-        font-size: 20fpx;
+        font-size: 20px;
     }
 
     /* 슬라이드 2개 배치 (gap 12px 적용) */
@@ -210,7 +210,7 @@
 
     .review-rank-rating {
         font-size: 12px;
-        margin: 6px 8px 0;
+        margin: 6px 8px 12px;
     }
 
     /* 섹션 타이틀과 카드 간격 */
