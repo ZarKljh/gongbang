@@ -16,6 +16,12 @@ interface StudioErrors {
     studioMainImageUrl?: string
     studioLogoImageUrl?: string
     studioGalleryImageUrls?: string
+    studioMainImageFile?: string
+    studioLogoImageFile?: string
+    studioGalleryImageFiles?: string
+    studioMainImageName?: string
+    studioLogoImageName?: string
+    studioGalleryImageNames?: string
 }
 
 export function signupSellerValidation() {
