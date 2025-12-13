@@ -16,23 +16,35 @@ import java.util.Optional;
 @Repository
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
 
-    // 사용자별 주문 목록 조회
-    List<Orders> findBySiteUser(SiteUser siteUser);
+    @Query("""
+        SELECT DISTINCT o
+        FROM Orders o
+        LEFT JOIN FETCH o.deliveries d
+        WHERE o.siteUser = :user
+          AND o.status <> 'TEMP'
+        ORDER BY o.id DESC
+    """)
+    List<Orders> findValidOrders(@Param("user") SiteUser user);
 
-    // 사용자별 주문 목록 (배송정보 포함)
-    @Query(" SELECT o FROM Orders o LEFT JOIN FETCH o.deliveries d WHERE o.siteUser = :siteUser ORDER BY o.orderId DESC ")
-    List<Orders> findBySiteUserWithDelivery(@Param("siteUser") SiteUser siteUser);
-
-    // 주문 상세 조회 (배송정보 포함)
-    @Query("SELECT o FROM Orders o LEFT JOIN FETCH o.deliveries d LEFT JOIN FETCH d.address WHERE o.orderId = :orderId")
-    Optional<Orders> findByIdWithDeliveries(@Param("orderId") Long orderId);
-
-    //hj - 주문코드 조회하기
-    Optional<Orders> findByOrderCode(String orderCode);
+    Optional<Orders> findByOrderIdAndSiteUser(Long orderId, SiteUser siteUser);
 
     @Query("""
-        SELECT o FROM Orders o
+        SELECT o
+        FROM Orders o
         LEFT JOIN FETCH o.deliveries d
+        WHERE o.id = :orderId
+          AND o.siteUser = :user
+    """)
+    Optional<Orders> findByIdAndSiteUserWithDeliveries(
+            @Param("orderId") Long orderId,
+            @Param("user") SiteUser user
+    );
+
+    Optional<Orders> findByOrderCodeAndSiteUser(String orderCode, SiteUser siteUser);
+
+    @Query("""
+        SELECT o
+        FROM Orders o
         WHERE o.siteUser.id = :userId
           AND (:lastOrderId IS NULL OR o.id < :lastOrderId)
           AND o.status <> 'TEMP'
@@ -44,8 +56,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             Pageable pageable
     );
 
+    /* ===== 통계 ===== */
 
-    // 배송 수량 카운트
     @Query("""
         SELECT COUNT(d)
         FROM Delivery d
@@ -58,28 +70,21 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             @Param("status") String status
     );
 
-    // 최근 7일 배송완료 카운트
     @Query("""
         SELECT COUNT(d)
         FROM Delivery d
         JOIN d.order o
         WHERE o.siteUser.id = :userId
           AND d.deliveryStatus = '배송완료'
-          AND d.completedAt >= :sevenDaysAgo
+          AND d.completedAt >= :from
     """)
     long countCompletedWithin7Days(
             @Param("userId") Long userId,
-            @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo
+            @Param("from") LocalDateTime from
     );
 
-    @Query("""
-        SELECT o FROM Orders o
-        LEFT JOIN FETCH o.deliveries d
-        WHERE o.siteUser = :user
-          AND o.status <> 'TEMP'
-    """)
-    List<Orders> findValidOrders(@Param("user") SiteUser user);
-
+    //hj - 주문코드 조회하기
+    Optional<Orders> findByOrderCode(String orderCode);
 
     // 셀러 기준으로 받은 주문 조회 - 상진
     @Query("""

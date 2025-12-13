@@ -65,15 +65,14 @@ public class GeminiClient {
     }
 
     public String generateText(String prompt) {
+
         String url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
         Map<String, Object> body = Map.of(
                 "contents", List.of(
                         Map.of(
                                 "role", "user",
-                                "parts", List.of(
-                                        Map.of("text", prompt)
-                                )
+                                "parts", List.of(Map.of("text", prompt))
                         )
                 )
         );
@@ -81,8 +80,7 @@ public class GeminiClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Map<String, Object>> request =
-                new HttpEntity<>(body, headers);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
             ResponseEntity<Map> response =
@@ -91,11 +89,8 @@ public class GeminiClient {
             return extractText(response.getBody());
 
         } catch (Exception e) {
-            System.out.println("===== GEMINI API ERROR =====");
-            System.out.println("Message = " + e.getMessage());
-            e.printStackTrace(); // ← 이거 꼭 추가!!!
-            System.out.println("=================================");
-            return "";  // 빈 문자열로 리턴해야 프론트에서 정상 처리됨
+            System.out.println("Gemini API Error: " + e.getMessage());
+            return null; // 실패 시 null 반환 → 기본 문구로 fallback 됨
         }
     }
 

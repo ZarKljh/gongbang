@@ -1,5 +1,6 @@
 package com.gobang.gobang.domain.personal.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.dto.request.DeliveryRequest;
 import com.gobang.gobang.domain.personal.dto.response.DeliveryResponse;
 import com.gobang.gobang.domain.personal.entity.Delivery;
@@ -17,11 +18,11 @@ public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
 
-    // 배송 정보 수정
     @Transactional
-    public DeliveryResponse updateDelivery(DeliveryRequest request) {
-        Delivery delivery = deliveryRepository.findById(request.getDeliveryId())
-                .orElseThrow(() -> new IllegalArgumentException("배송 정보를 찾을 수 없습니다."));
+    public DeliveryResponse updateDelivery(DeliveryRequest request, SiteUser user) {
+        Delivery delivery = deliveryRepository
+                .findByDeliveryIdAndOrder_SiteUser_Id(request.getDeliveryId(), user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
 
         if (request.getTrackingNumber() != null) {
             delivery.setTrackingNumber(request.getTrackingNumber());
@@ -29,8 +30,6 @@ public class DeliveryService {
 
         if (request.getDeliveryStatus() != null) {
             delivery.setDeliveryStatus(request.getDeliveryStatus());
-
-            // 배송 완료 시 완료일 설정
             if ("배송완료".equals(request.getDeliveryStatus())) {
                 delivery.setCompletedAt(LocalDateTime.now());
             }
@@ -39,10 +38,10 @@ public class DeliveryService {
         return DeliveryResponse.from(delivery);
     }
 
-    // 배송 정보 조회
-    public DeliveryResponse getDeliveryByOrderId(Long orderId) {
-        Delivery delivery = deliveryRepository.findByOrder_OrderId(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("배송 정보를 찾을 수 없습니다."));
+    public DeliveryResponse getDeliveryByOrderId(Long orderId, SiteUser user) {
+        Delivery delivery = deliveryRepository
+                .findByOrder_OrderIdAndOrder_SiteUser(orderId, user)
+                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
 
         return DeliveryResponse.from(delivery);
     }

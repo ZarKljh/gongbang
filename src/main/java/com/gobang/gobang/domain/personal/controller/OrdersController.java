@@ -3,7 +3,6 @@ package com.gobang.gobang.domain.personal.controller;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.request.CancelBeforePayRequest;
-import com.gobang.gobang.domain.personal.dto.request.DeliveryRequest;
 import com.gobang.gobang.domain.personal.dto.request.OrdersRequest;
 import com.gobang.gobang.domain.personal.dto.response.DeliveryResponse;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
@@ -26,51 +25,60 @@ public class OrdersController {
 
     @GetMapping
     public RsData<List<OrdersResponse>> ordersList() {
-        SiteUser siteUser = siteUserService.getCurrentUser();
-        List<OrdersResponse> orders = ordersService.getOrdersByUserId(siteUser);
-        return RsData.of("200", "주문 다건 조회 성공", orders);
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "주문 다건 조회 성공",
+                ordersService.getOrdersByUser(user));
     }
 
     @GetMapping("/{orderId}")
     public RsData<OrdersResponse> getOrderDetail(@PathVariable Long orderId) {
-        OrdersResponse orders = ordersService.getOrderDetail(orderId);
-        return RsData.of("200", "주문 상세 조회 성공", orders);
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "주문 상세 조회 성공",
+                ordersService.getOrderDetail(orderId, user));
     }
 
     @DeleteMapping("/{orderId}")
     public RsData<Void> deleteOrder(@PathVariable Long orderId) {
-        ordersService.deleteOrder(orderId);
+        SiteUser user = siteUserService.getCurrentUser();
+        ordersService.deleteOrder(orderId, user);
         return RsData.of("200", "삭제 성공");
     }
 
     @PatchMapping("/{orderId}/cancel")
-    public RsData<OrdersResponse> cancelOrder(@PathVariable Long orderId, @RequestBody OrdersRequest request) {
-        OrdersResponse orders = ordersService.cancelOrder(orderId, request.getReason());
-        return RsData.of("200", "주문 취소 완료", orders);
+    public RsData<OrdersResponse> cancelOrder(
+            @PathVariable Long orderId,
+            @RequestBody OrdersRequest request
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "주문 취소 완료",
+                ordersService.cancelOrder(orderId, user, request.getReason()));
     }
 
     @PatchMapping("/{orderId}/return")
-    public RsData<OrdersResponse> returnOrder(@PathVariable Long orderId, @RequestBody OrdersRequest request) {
-        OrdersResponse orders = ordersService.returnOrder(orderId, request.getReason());
-        return RsData.of("200", "반품 신청 완료", orders);
+    public RsData<OrdersResponse> returnOrder(
+            @PathVariable Long orderId,
+            @RequestBody OrdersRequest request
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "반품 신청 완료",
+                ordersService.returnOrder(orderId, user, request.getReason()));
     }
 
     @PatchMapping("/{orderId}/exchange")
-    public RsData<OrdersResponse> exchangeOrder(@PathVariable Long orderId, @RequestBody OrdersRequest request) {
-        OrdersResponse orders = ordersService.exchangeOrder(orderId, request.getReason());
-        return RsData.of("200", "교환 신청 완료", orders);
-    }
-
-    @PatchMapping("/delivery")
-    public RsData<DeliveryResponse> updateDelivery(@RequestBody DeliveryRequest request) {
-        DeliveryResponse response = deliveryService.updateDelivery(request);
-        return RsData.of("200", "배송 정보 수정 성공", response);
+    public RsData<OrdersResponse> exchangeOrder(
+            @PathVariable Long orderId,
+            @RequestBody OrdersRequest request
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "교환 신청 완료",
+                ordersService.exchangeOrder(orderId, user, request.getReason()));
     }
 
     @GetMapping("/{orderId}/delivery")
     public RsData<DeliveryResponse> getDeliveryDetail(@PathVariable Long orderId) {
-        DeliveryResponse delivery = deliveryService.getDeliveryByOrderId(orderId);
-        return RsData.of("200", "배송 상세 조회 성공", delivery);
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "배송 상세 조회 성공",
+                deliveryService.getDeliveryByOrderId(orderId, user));
     }
 
     @GetMapping("/infinite")
@@ -79,15 +87,14 @@ public class OrdersController {
             @RequestParam(defaultValue = "10") int size
     ) {
         SiteUser user = siteUserService.getCurrentUser();
-        List<OrdersResponse> list =
-                ordersService.getInfiniteOrders(user.getId(), lastOrderId, size);
-
-        return RsData.of("200", "주문 무한스크롤 조회 성공", list);
+        return RsData.of("200", "주문 무한스크롤 조회 성공",
+                ordersService.getInfiniteOrders(user, lastOrderId, size));
     }
 
     @PostMapping("/cancel-before-payment")
     public RsData<Void> cancelBeforePayment(@RequestBody CancelBeforePayRequest req) {
-        ordersService.cancelBeforePayment(req.getOrderCode());
+        SiteUser user = siteUserService.getCurrentUser();
+        ordersService.cancelBeforePayment(user, req.getOrderCode());
         return RsData.of("200", "결제 취소로 인한 주문 삭제 완료");
     }
 }

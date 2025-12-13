@@ -100,4 +100,47 @@ public class Orders {
         Delivery delivery = Delivery.create(this, address);
         this.deliveries.add(delivery);
     }
+
+    // Orders.java
+    public void cancel(String reason) {
+        this.status = "취소";
+        this.reason = reason;
+
+        this.deliveries.stream()
+                .findFirst()
+                .ifPresent(d -> {
+                    if (!"배송준비중".equals(d.getDeliveryStatus())) {
+                        throw new IllegalStateException("배송 준비중일 때만 취소 가능");
+                    }
+                    d.setDeliveryStatus("취소");
+                });
+    }
+
+    public void returnOrder(String reason) {
+        this.status = "반품";
+        this.reason = reason;
+
+        this.deliveries.stream()
+                .findFirst()
+                .ifPresent(d -> {
+                    if (!"배송완료".equals(d.getDeliveryStatus())) {
+                        throw new IllegalStateException("배송 완료된 주문만 반품 가능");
+                    }
+                    d.setDeliveryStatus("반품");
+                });
+    }
+
+    public void exchange(String reason) {
+        this.status = "교환";
+        this.reason = reason;
+
+        this.deliveries.stream()
+                .findFirst()
+                .ifPresent(d -> {
+                    if (!"배송완료".equals(d.getDeliveryStatus())) {
+                        throw new IllegalStateException("배송 완료된 주문만 교환 가능");
+                    }
+                    d.setDeliveryStatus("교환");
+                });
+    }
 }

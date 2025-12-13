@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,87 +25,58 @@ public class WishListService {
     private final ProductRepository productRepository;
     private final ImageRepository imageRepository;
 
-    // 사용자별 위시 목록 조회
-    public List<WishListResponse> getWishListByUser(SiteUser siteUser) {
-        List<WishList> wishLists = wishListRepository.findBySiteUser(siteUser);
-
-        return wishLists.stream()
-                .map(item -> WishListResponse.from(item, imageRepository))
-                .collect(Collectors.toList());
-    }
-
-    // 위시 추가
-    @Transactional
-    public WishListResponse addWishList(WishListRequest request) {
-        // 이미 위시한 상품인지 확인
-        Optional<WishList> existing = wishListRepository.findBySiteUserAndProduct(
-                request.getSiteUser(), request.getProduct());
-
-        if (existing.isPresent()) {
-            throw new IllegalStateException("이미 찜한 상품입니다.");
-        }
-
-        WishList wishList = WishList.builder()
-                .siteUser(SiteUser.builder().id(request.getSiteUser().getId()).build())
-                .product(request.getProduct())
-                .build();
-
-        WishList saved = wishListRepository.save(wishList);
-        return WishListResponse.from(saved, imageRepository);
-    }
-
-    // 위시 삭제
-    @Transactional
-    public void removeWishList(Long wishlistId) {
-        WishList wishList = wishListRepository.findById(wishlistId)
-                .orElseThrow(() -> new IllegalArgumentException("찜 정보를 찾을 수 없습니다."));
-
-        wishListRepository.delete(wishList);
-    }
-
-    // 위시 삭제 (사용자 + 상품)
-    @Transactional
-    public void removeWishListByUserAndProduct(SiteUser siteUser, Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
-
-        WishList wishList = wishListRepository.findBySiteUserAndProduct(siteUser, product)
-                .orElseThrow(() -> new IllegalArgumentException("찜 정보를 찾을 수 없습니다."));
-
-        wishListRepository.delete(wishList);
-    }
-
-    // 위시 여부 확인
-    public boolean isWished(SiteUser siteUser, Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
-        return wishListRepository.existsBySiteUserAndProduct(siteUser, product);
-    }
-
-    // 상품의 위시 개수 조회
-    public long getWishCount(Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
-        return wishListRepository.countByProduct(product);
-    }
-
-    // 사용자의 위시 개수 조회
-    public long getUserWishCount(SiteUser siteUser) {
-        return wishListRepository.countBySiteUser(siteUser);
-    }
-
-    public List<WishListResponse> getInfiniteWishlist(SiteUser user, Long lastWishId, int size) {
-        Pageable pageable = PageRequest.of(0, size);
-
-        List<WishList> wishList = wishListRepository.findInfiniteWishList(
-                user.getId(),
-                lastWishId,
-                pageable
-        );
-
-        return wishList.stream()
-                .map(wishlist -> WishListResponse.from(wishlist, imageRepository))
+    public List<WishListResponse> getWishListByUser(SiteUser user) {
+        return wishListRepository.findBySiteUser(user)
+                .stream()
+                .map(w -> WishListResponse.from(w, imageRepository))
                 .toList();
     }
 
+    @Transactional
+    public WishListResponse addWishList(WishListRequest request) {
+        SiteUser user = request.getSiteUser();
+
+        Product product = productRepository.findById(request.getProduct().getId())
+                .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
+
+        wishListRepository.findBySiteUserAndProduct(user, product)
+                .ifPresent(w -> { throw new IllegalStateException("이미 찜"); });
+
+        WishList wish = WishList.builder()
+                .siteUser(user)
+                .product(product)
+                .build();
+
+        return WishListResponse.from(wishListRepository.save(wish), imageRepository);
+    }
+
+    @Transactional
+    public void removeWishList(Long wishlistId, SiteUser user) {
+        WishList wish = wishListRepository.findByWishlistIdAndSiteUser_Id(wishlistId, user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+
+        wishListRepository.delete(wish);
+    }
+
+    public boolean isWished(SiteUser user, Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
+
+        return wishListRepository.existsBySiteUserAndProduct(user, product);
+    }
+
+    public long getUserWishCount(SiteUser user) {
+        return wishListRepository.countBySiteUser(user);
+    }
+
+    public List<WishListResponse> getInfiniteWishlist(
+            SiteUser user, Long lastWishId, int size
+    ) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        return wishListRepository.findInfiniteWishList(user.getId(), lastWishId, pageable)
+                .stream()
+                .map(w -> WishListResponse.from(w, imageRepository))
+                .toList();
+    }
 }

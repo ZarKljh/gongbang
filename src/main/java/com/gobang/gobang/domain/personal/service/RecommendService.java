@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.personal.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.response.RecommendResponse;
 import com.gobang.gobang.domain.personal.entity.WishList;
@@ -9,8 +11,8 @@ import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -27,13 +29,15 @@ public class RecommendService {
     private final CategoryRepository categoryRepository;
     private final AiMessageService aiMessageService;
     private final ImageRepository imageRepository;
+    private final SiteUserService siteUserService;
 
     public RecommendResponse getWishlistRecommend(Long userId) {
 
         LocalDateTime monthAgo = LocalDateTime.now().minusMonths(1);
 
+        SiteUser user = siteUserService.getCurrentUser();
         List<WishList> wishInMonth =
-                wishListRepository.findBySiteUser_IdAndCreatedAtAfter(userId, monthAgo);
+                wishListRepository.findBySiteUserAndCreatedAtAfter(user, monthAgo);
 
         if (wishInMonth.isEmpty()) {
             return new RecommendResponse(Collections.emptyList(),
@@ -84,8 +88,8 @@ public class RecommendService {
                         (a, b) -> a
                 ));
 
-        // 7) AI 문구 생성
-        String aiMessage = aiMessageService.generateCategoryRecommendMessage(categoryNames);
+        // 7) AI 문구 생성 (자동 캐싱 + 실패 시 기본 문구)
+        String aiMessage = aiMessageService.generateCategoryRecommendMessage(userId, categoryNames);
 
         // 8) 최종 Response 변환
         return RecommendResponse.from(candidates, aiMessage, imageMap);
