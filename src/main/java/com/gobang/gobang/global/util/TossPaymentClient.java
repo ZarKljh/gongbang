@@ -1,7 +1,6 @@
 package com.gobang.gobang.global.util;
 
 import com.gobang.gobang.domain.personal.dto.response.TossPaymentResponse;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -16,11 +15,6 @@ public class TossPaymentClient {
     private String secretKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
-
-    @PostConstruct
-    public void check() {
-        System.out.println("🔥 toss.secret-key = " + secretKey);
-    }
 
     public TossPaymentResponse confirm(String paymentKey) {
 

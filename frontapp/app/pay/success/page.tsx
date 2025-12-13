@@ -39,7 +39,7 @@ export default function PaymentSuccessPage() {
         }
 
         confirmOrder({
-            orderCode: orderId,
+            orderId,
             paymentKey,
             amount,
         })

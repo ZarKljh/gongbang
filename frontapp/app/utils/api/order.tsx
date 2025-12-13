@@ -15,7 +15,7 @@ export interface PrepareOrderResponse {
 
 // 서버로 보내는 승인 요청
 export interface ConfirmOrderRequest {
-    orderCode: string
+    orderId: string
     paymentKey: string
     amount: number
 }
