@@ -98,7 +98,7 @@ public class OrdersService {
     ) {
         UserAddress address = userAddressRepository
                 .findByUserAddressIdAndSiteUser_Id(addressId, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("배송지 권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         Orders order = Orders.createTempOrder(user);
 
@@ -106,7 +106,7 @@ public class OrdersService {
 
         for (CartOrderItemDto item : items) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
+                    .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
             BigDecimal price = BigDecimal.valueOf(product.getBasePrice());
             total = total.add(price.multiply(BigDecimal.valueOf(item.getQuantity())));
@@ -125,7 +125,7 @@ public class OrdersService {
     @Transactional
     public void cancelBeforePayment(SiteUser user, String orderCode) {
         Orders order = ordersRepository.findByOrderCodeAndSiteUser(orderCode, user)
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         ordersRepository.delete(order);
     }

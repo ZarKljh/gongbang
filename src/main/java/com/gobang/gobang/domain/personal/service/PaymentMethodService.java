@@ -43,7 +43,7 @@ public class PaymentMethodService {
     @Transactional
     public void deletePaymentMethod(Long paymentId, SiteUser user) {
         PaymentMethod pm = paymentMethodRepository.findByPaymentIdAndSiteUser(paymentId, user)
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         pm.setIsDeleted(true);
     }
@@ -51,7 +51,7 @@ public class PaymentMethodService {
     @Transactional
     public void setDefaultPayment(Long paymentId, SiteUser user) {
         PaymentMethod pm = paymentMethodRepository.findByPaymentIdAndSiteUser(paymentId, user)
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         paymentMethodRepository.unsetDefaultBySiteUser(user);
         pm.setDefaultPayment(true);

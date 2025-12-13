@@ -27,7 +27,7 @@ public class QnaService {
 
     public QnaResponse getInquiryDetail(SiteUser user, Long qnaId) {
         Inquiry inquiry = inquiryRepository.findByIdAndWriter(qnaId, user)
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         return QnaResponse.from(inquiry);
     }
@@ -35,7 +35,7 @@ public class QnaService {
     @Transactional
     public void deleteInquiry(SiteUser user, Long qnaId) {
         Inquiry inquiry = inquiryRepository.findByIdAndWriter(qnaId, user)
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         inquiryRepository.delete(inquiry);
     }

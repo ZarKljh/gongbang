@@ -53,7 +53,7 @@ public class UserAddressService {
             Long addressId, SiteUser user, UserAddressRequest request
     ) {
         UserAddress address = userAddressRepository.findByUserAddressIdAndSiteUser_Id(addressId, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         address.updateFrom(request);
         return UserAddressResponse.from(address);
@@ -62,7 +62,7 @@ public class UserAddressService {
     @Transactional
     public void deleteAddress(Long addressId, SiteUser user) {
         UserAddress address = userAddressRepository.findByUserAddressIdAndSiteUser_Id(addressId, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         userAddressRepository.delete(address);
     }
@@ -70,7 +70,7 @@ public class UserAddressService {
     @Transactional
     public void setDefaultAddress(Long addressId, SiteUser user) {
         UserAddress address = userAddressRepository.findByUserAddressIdAndSiteUser_Id(addressId, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         userAddressRepository.clearDefaultAddress(user.getId());
         address.setIsDefault(true);

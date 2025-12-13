@@ -37,10 +37,10 @@ public class WishListService {
         SiteUser user = request.getSiteUser();
 
         Product product = productRepository.findById(request.getProduct().getId())
-                .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         wishListRepository.findBySiteUserAndProduct(user, product)
-                .ifPresent(w -> { throw new IllegalStateException("이미 찜"); });
+                .ifPresent(w -> { throw new IllegalStateException("요청을 처리할 수 없습니다."); });
 
         WishList wish = WishList.builder()
                 .siteUser(user)
@@ -53,14 +53,14 @@ public class WishListService {
     @Transactional
     public void removeWishList(Long wishlistId, SiteUser user) {
         WishList wish = wishListRepository.findByWishlistIdAndSiteUser_Id(wishlistId, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         wishListRepository.delete(wish);
     }
 
     public boolean isWished(SiteUser user, Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         return wishListRepository.existsBySiteUserAndProduct(user, product);
     }

@@ -36,7 +36,7 @@ public class CartService {
         SiteUser user = request.getSiteUser();
 
         Product product = productRepository.findById(request.getProduct().getId())
-                .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         Cart cart = cartRepository.findBySiteUserAndProduct(user, product)
                 .orElseGet(() -> Cart.builder()
@@ -52,7 +52,7 @@ public class CartService {
     @Transactional
     public CartResponse updateCartQuantity(Long cartId, Long quantity, SiteUser user) {
         Cart cart = cartRepository.findByCartIdAndSiteUser(cartId, user)
-                .orElseThrow(() -> new IllegalArgumentException("본인 장바구니 아님"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         cart.setQuantity(quantity);
         return CartResponse.from(cart, imageRepository);
@@ -61,7 +61,7 @@ public class CartService {
     @Transactional
     public void deleteCart(Long cartId, SiteUser user) {
         Cart cart = cartRepository.findByCartIdAndSiteUser(cartId, user)
-                .orElseThrow(() -> new IllegalArgumentException("본인 장바구니 아님"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         cartRepository.delete(cart);
     }

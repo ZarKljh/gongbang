@@ -22,7 +22,7 @@ public class DeliveryService {
     public DeliveryResponse updateDelivery(DeliveryRequest request, SiteUser user) {
         Delivery delivery = deliveryRepository
                 .findByDeliveryIdAndOrder_SiteUser_Id(request.getDeliveryId(), user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         if (request.getTrackingNumber() != null) {
             delivery.setTrackingNumber(request.getTrackingNumber());
@@ -41,7 +41,7 @@ public class DeliveryService {
     public DeliveryResponse getDeliveryByOrderId(Long orderId, SiteUser user) {
         Delivery delivery = deliveryRepository
                 .findByOrder_OrderIdAndOrder_SiteUser(orderId, user)
-                .orElseThrow(() -> new IllegalArgumentException("권한 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         return DeliveryResponse.from(delivery);
     }
