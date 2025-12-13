@@ -161,7 +161,7 @@ public class ProductOrderService {
 
 
 
-        if (order.getStatus() == Orders.OrderStatus.TEMP) { // 혹은 order.getStatus() == OrderStatus.PAID <<enum으로 교체해서 변경했습니다
+        if (order.getStatus() == Orders.OrderStatus.PAID) { // 혹은 order.getStatus() == OrderStatus.PAID <<enum으로 교체해서 변경했습니다
             // 중복 승인 요청 들어온 상황
             throw new IllegalStateException("이미 결제가 완료된 주문입니다. orderId=" + orderId);
         }

@@ -59,7 +59,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     /* ===== 통계 ===== */
 
     @Query("""
-        select count(o)
+        select count(distinct o)
         from Orders o
         join o.deliveries d
         where o.siteUser.id = :userId
@@ -70,6 +70,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             @Param("userId") Long userId,
             @Param("status") String status
     );
+
 
     @Query("""
         SELECT COUNT(d)

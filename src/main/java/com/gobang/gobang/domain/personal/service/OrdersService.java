@@ -9,6 +9,7 @@ import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.entity.UserAddress;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
 import com.gobang.gobang.domain.personal.repository.UserAddressRepository;
+import com.gobang.gobang.domain.product.dto.response.ConfirmOrderResponse;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -91,35 +92,79 @@ public class OrdersService {
     }
 
     @Transactional
+    public ConfirmOrderResponse confirmPayment(
+            SiteUser user,
+            String orderCode,
+            String paymentKey,
+            long amount
+    ) {
+        Orders order = ordersRepository.findByOrderCodeAndSiteUser(orderCode, user)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if (order.getStatus() != Orders.OrderStatus.TEMP) {
+            throw new IllegalStateException("이미 결제가 처리된 주문입니다.");
+        }
+
+        if (order.getTotalPrice().longValue() != amount) {
+            throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
+        }
+
+        order.markPaid(paymentKey, "TOSS");
+
+        return new ConfirmOrderResponse(
+                order.getOrderCode(),
+                paymentKey,
+                amount,
+                "DONE",
+                "결제가 정상적으로 완료되었습니다."
+        );
+    }
+
+    @Transactional
     public PrepareOrderResponse prepareCartOrder(
             SiteUser user,
             List<CartOrderItemDto> items,
             Long addressId
     ) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("요청을 처리할 수 없습니다.");
+        }
+
         UserAddress address = userAddressRepository
                 .findByUserAddressIdAndSiteUser_Id(addressId, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
+        // TEMP 주문 생성 (결제 전)
         Orders order = Orders.createTempOrder(user);
+
+        // Toss에 넘길 orderId = orderCode
+        String orderCode = "ORD_" + UUID.randomUUID();
+        order.setOrderCode(orderCode);
 
         BigDecimal total = BigDecimal.ZERO;
 
+        // 주문 상품 생성
         for (CartOrderItemDto item : items) {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
             BigDecimal price = BigDecimal.valueOf(product.getBasePrice());
-            total = total.add(price.multiply(BigDecimal.valueOf(item.getQuantity())));
+            BigDecimal itemTotal = price.multiply(BigDecimal.valueOf(item.getQuantity()));
 
             order.addOrderItem(product, item.getQuantity(), price);
+            total = total.add(itemTotal);
         }
 
+        // 배송 정보 추가
         order.addDelivery(address);
-        order.setTotalPrice(total);
-        order.setOrderCode("ORD_" + UUID.randomUUID());
 
+        // 총 금액 설정
+        order.setTotalPrice(total);
+
+        // 반드시 DB 저장
         ordersRepository.save(order);
-        return new PrepareOrderResponse(order.getOrderCode(), total.longValueExact());
+
+        return new PrepareOrderResponse(orderCode, total.longValueExact());
     }
 
     @Transactional
