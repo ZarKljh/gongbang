@@ -59,11 +59,12 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     /* ===== 통계 ===== */
 
     @Query("""
-        SELECT COUNT(d)
-        FROM Delivery d
-        JOIN d.order o
-        WHERE o.siteUser.id = :userId
-          AND d.deliveryStatus = :status
+        select count(o)
+        from Orders o
+        join o.deliveries d
+        where o.siteUser.id = :userId
+          and o.status = com.gobang.gobang.domain.personal.entity.Orders.OrderStatus.PAID
+          and d.deliveryStatus = :status
     """)
     long countByDeliveryStatus(
             @Param("userId") Long userId,
