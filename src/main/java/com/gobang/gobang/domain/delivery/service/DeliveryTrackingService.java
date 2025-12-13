@@ -130,7 +130,9 @@ public class DeliveryTrackingService {
                 .orderId(order.getOrderId())
                 .orderCode(order.getOrderCode())
                 .orderCreatedDate(order.getCreatedDate())
-                .orderStatus(order.getStatus())
+                .orderStatus(order.getStatus() != null
+                        ? order.getStatus().name()
+                        : null)
                 .deliveryStatus(delivery.getDeliveryStatus())
                 .courierName(delivery.getCourierName())
                 .trackingNumber(delivery.getTrackingNumber())

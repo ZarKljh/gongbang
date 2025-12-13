@@ -67,7 +67,7 @@ public class ProductOrderService {
         orders.setSiteUser(user);
         orders.setOrderCode(orderCode);
         orders.setTotalPrice(totalPrice);
-        orders.setStatus("PENDING");
+        orders.setStatus(Orders.OrderStatus.TEMP); //enum으로 교체해서 변경했습니다
         // createdDate는 @CreationTimestamp로 자동 설정
 
         // 6. OrderItem 생성 후 Orders에 연결
@@ -158,11 +158,10 @@ public class ProductOrderService {
         System.out.println(orderId);
 
         Orders order = findByOrderCode(orderId);
-        markPaid(order, paymentKey, "CARD");
 
 
 
-        if (order.getStatus().equals("paid")) { // 혹은 order.getStatus() == OrderStatus.PAID
+        if (order.getStatus() == Orders.OrderStatus.TEMP) { // 혹은 order.getStatus() == OrderStatus.PAID <<enum으로 교체해서 변경했습니다
             // 중복 승인 요청 들어온 상황
             throw new IllegalStateException("이미 결제가 완료된 주문입니다. orderId=" + orderId);
         }
@@ -177,6 +176,7 @@ public class ProductOrderService {
             );
         }
 
+        markPaid(order, paymentKey, "CARD"); //모든 검증 후로 결제완료 처리 순서 수정했습니다
 
         for (OrderItem item : order.getOrderItems()) {
             Product p = item.getProduct();
@@ -221,7 +221,7 @@ public class ProductOrderService {
 
     // 2️⃣ 결제 완료 처리
     public void markPaid(Orders order, String paymentKey, String methodName) {
-        order.setStatus("PAID");
+        order.setStatus(Orders.OrderStatus.PAID); //enum으로 교체해서 변경했습니다
         order.setPaymentKey(paymentKey);
         order.setPaymentMethodName(methodName);
         order.setPaidAt(LocalDateTime.now());

@@ -51,7 +51,7 @@ public class OrdersResponse {
                 ? orders.getDeliveries().stream().map(DeliveryResponse::from).toList()
                 : Collections.emptyList();
 
-        // 🚀 가장 최근 Delivery (createdDate 기준)
+        // 가장 최근 Delivery (createdDate 기준)
         Delivery latest = orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()
                 ? orders.getDeliveries().stream()
                 .max(Comparator.comparing(Delivery::getCreatedDate))
@@ -73,8 +73,10 @@ public class OrdersResponse {
                 .totalPrice(orders.getTotalPrice() != null ? orders.getTotalPrice() : BigDecimal.ZERO)
                 .createdDate(createdDateStr)
                 .deliveryStatus(deliveryStatus)
-                .completedAt(completedAt)   // ⭐ 정상 문자열
-                .status(orders.getStatus())
+                .completedAt(completedAt)
+                .status(orders.getStatus() != null
+                        ? orders.getStatus().name()
+                        : null)
                 .reason(orders.getReason())
                 .buyerNickname(
                         orders.getSiteUser() != null

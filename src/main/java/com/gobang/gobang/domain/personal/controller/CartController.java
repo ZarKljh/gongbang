@@ -5,10 +5,12 @@ import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.request.CartDeleteRequest;
 import com.gobang.gobang.domain.personal.dto.request.CartOrderRequest;
 import com.gobang.gobang.domain.personal.dto.request.CartRequest;
+import com.gobang.gobang.domain.personal.dto.request.PaymentConfirmRequest;
 import com.gobang.gobang.domain.personal.dto.response.CartResponse;
 import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
 import com.gobang.gobang.domain.personal.service.CartService;
 import com.gobang.gobang.domain.personal.service.OrdersService;
+import com.gobang.gobang.domain.personal.service.PaymentService;
 import com.gobang.gobang.global.RsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,7 @@ public class CartController {
     private final CartService cartService;
     private final SiteUserService siteUserService;
     private final OrdersService orderService;
+    private final PaymentService paymentService;
 
     @GetMapping
     public RsData<List<CartResponse>> cartList() {
@@ -88,5 +91,14 @@ public class CartController {
         SiteUser user = siteUserService.getCurrentUser();
         cartService.deletePurchasedItems(user, request.getCartIds());
         return RsData.of("200", "구매한 상품 장바구니 삭제 완료");
+    }
+
+    @PostMapping("/payment/confirm")
+    public RsData<Void> confirmPayment(
+            @RequestBody PaymentConfirmRequest request
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        paymentService.confirm(request, user);
+        return RsData.of("200", "결제 완료");
     }
 }

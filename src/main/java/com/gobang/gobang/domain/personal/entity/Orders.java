@@ -39,8 +39,9 @@ public class Orders {
     @CreationTimestamp
     private LocalDateTime createdDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
-    private String status; // 취소, 반품, 교환, null
+    private OrderStatus status; // 취소, 반품, 교환, null
 
     // 취소, 반품, 교환 사유
     @Column(name = "reason")
@@ -71,15 +72,6 @@ public class Orders {
     private List<OrderItem> orderItems = new ArrayList<>();
 
 
-    //  임시 주문 생성
-    public static Orders createTempOrder(SiteUser user) {
-        Orders order = new Orders();
-        order.setSiteUser(user);
-        order.setStatus("TEMP"); // 임시 주문 상태
-
-        return order;
-    }
-
     //  주문 상품 추가
     public void addOrderItem(Product product, Long quantity, BigDecimal price) {
         OrderItem item = new OrderItem();
@@ -101,46 +93,42 @@ public class Orders {
         this.deliveries.add(delivery);
     }
 
-    // Orders.java
     public void cancel(String reason) {
-        this.status = "취소";
+        this.status = OrderStatus.CANCELLED;
         this.reason = reason;
-
-        this.deliveries.stream()
-                .findFirst()
-                .ifPresent(d -> {
-                    if (!"배송준비중".equals(d.getDeliveryStatus())) {
-                        throw new IllegalStateException("배송 준비중일 때만 취소 가능");
-                    }
-                    d.setDeliveryStatus("취소");
-                });
     }
 
     public void returnOrder(String reason) {
-        this.status = "반품";
+        this.status = OrderStatus.RETURN;
         this.reason = reason;
-
-        this.deliveries.stream()
-                .findFirst()
-                .ifPresent(d -> {
-                    if (!"배송완료".equals(d.getDeliveryStatus())) {
-                        throw new IllegalStateException("배송 완료된 주문만 반품 가능");
-                    }
-                    d.setDeliveryStatus("반품");
-                });
     }
 
     public void exchange(String reason) {
-        this.status = "교환";
+        this.status = OrderStatus.EXCHANGE;
         this.reason = reason;
+    }
 
-        this.deliveries.stream()
-                .findFirst()
-                .ifPresent(d -> {
-                    if (!"배송완료".equals(d.getDeliveryStatus())) {
-                        throw new IllegalStateException("배송 완료된 주문만 교환 가능");
-                    }
-                    d.setDeliveryStatus("교환");
-                });
+
+    public enum OrderStatus {
+        TEMP, PAID, CANCELLED, RETURN, EXCHANGE
+    }
+
+    public static Orders createTempOrder(SiteUser user) {
+        Orders order = new Orders();
+        order.siteUser = user;
+        order.status = OrderStatus.TEMP;
+        order.totalPrice = BigDecimal.ZERO;
+        return order;
+    }
+
+    public boolean isTemp() {
+        return this.status == OrderStatus.TEMP;
+    }
+
+    public void markPaid(String paymentKey, String methodName) {
+        this.status = OrderStatus.PAID;
+        this.paymentKey = paymentKey;
+        this.paymentMethodName = methodName;
+        this.paidAt = LocalDateTime.now();
     }
 }

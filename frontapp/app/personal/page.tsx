@@ -2225,7 +2225,7 @@ export default function MyPage() {
                                 className="btn-primary"
                                 onClick={() => {
                                     setIsAddressSelectModalOpen(false)
-                                    setActiveTab("address")  // 배송지 탭으로 이동
+                                    setActiveTab("addresses")  // 배송지 탭으로 이동
                                 }}
                             >
                                 + 배송지 추가하기
