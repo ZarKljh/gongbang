@@ -12,6 +12,7 @@ import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
 import api from '@/app/utils/api'
 import ReviewSummary from '@/app/components/product/detail/ReviewSummary'
+import Image from 'next/image'
 
 export default function Review() {
     // ================= 리뷰 =================
@@ -355,61 +356,60 @@ export default function Review() {
 
     // 리뷰 좋아요 버튼
     // 좋아요 클릭
-const handleLikeClick = async (reviewId: number) => {
-    // 1️⃣ 비로그인 먼저 체크하고 서버 요청 보내지 않기
-    if (!isLoggedIn) {
-        const goLogin = confirm('로그인이 필요합니다. 로그인 하시겠습니까?')
-        if (goLogin) {
-            window.location.href = '/auth/login'
-        }
-        return
-    }
-
-    try {
-        // 2️⃣ 로그인 상태일 때만 요청 전송
-        const res = await api.post(`/reviews/${reviewId}/like`)
-        const data = res.data
-
-        if (!data || !data.resultCode) {
-            console.error('좋아요 요청 실패:', data)
-            return
-        }
-
-        // 좋아요 추가 (201)
-        if (data.resultCode === '201') {
-            setLikeCounts(prev => ({
-                ...prev,
-                [reviewId]: (prev[reviewId] ?? 0) + 1,
-            }))
-            setLiked(prev => ({
-                ...prev,
-                [reviewId]: true,
-            }))
-        }
-
-        // 좋아요 취소 (202)
-        else if (data.resultCode === '202') {
-            setLikeCounts(prev => ({
-                ...prev,
-                [reviewId]: Math.max(0, (prev[reviewId] ?? 1) - 1),
-            }))
-            setLiked(prev => ({
-                ...prev,
-                [reviewId]: false,
-            }))
-        }
-    } catch (err: any) {
-        // 401이면 로그인 필요 안내
-        if (err.response?.status === 401) {
+    const handleLikeClick = async (reviewId: number) => {
+        // 1️⃣ 비로그인 먼저 체크하고 서버 요청 보내지 않기
+        if (!isLoggedIn) {
             const goLogin = confirm('로그인이 필요합니다. 로그인 하시겠습니까?')
-            if (goLogin) window.location.href = '/auth/login'
+            if (goLogin) {
+                window.location.href = '/auth/login'
+            }
             return
         }
 
-        console.error('좋아요 요청 실패:', err)
-    }
-}
+        try {
+            // 2️⃣ 로그인 상태일 때만 요청 전송
+            const res = await api.post(`/reviews/${reviewId}/like`)
+            const data = res.data
 
+            if (!data || !data.resultCode) {
+                console.error('좋아요 요청 실패:', data)
+                return
+            }
+
+            // 좋아요 추가 (201)
+            if (data.resultCode === '201') {
+                setLikeCounts((prev) => ({
+                    ...prev,
+                    [reviewId]: (prev[reviewId] ?? 0) + 1,
+                }))
+                setLiked((prev) => ({
+                    ...prev,
+                    [reviewId]: true,
+                }))
+            }
+
+            // 좋아요 취소 (202)
+            else if (data.resultCode === '202') {
+                setLikeCounts((prev) => ({
+                    ...prev,
+                    [reviewId]: Math.max(0, (prev[reviewId] ?? 1) - 1),
+                }))
+                setLiked((prev) => ({
+                    ...prev,
+                    [reviewId]: false,
+                }))
+            }
+        } catch (err: any) {
+            // 401이면 로그인 필요 안내
+            if (err.response?.status === 401) {
+                const goLogin = confirm('로그인이 필요합니다. 로그인 하시겠습니까?')
+                if (goLogin) window.location.href = '/auth/login'
+                return
+            }
+
+            console.error('좋아요 요청 실패:', err)
+        }
+    }
 
     // 좋아요 상태 받아오기
     const fetchLikedReviews = async (productId: number) => {
@@ -547,13 +547,15 @@ const handleLikeClick = async (reviewId: number) => {
                     <div className="review-banner">
                         {/* <h2>생생한 리뷰를 기다리고 있어요!</h2> */}
                         {/* <p>사진과 함께 리뷰를 남겨주시면 다른 분들께 큰 도움이 됩니다</p> */}
-                        <img className="review-banner-img" src="/images/리뷰_배너2.png" alt="배너 이미지" />
+                        <picture>
+                            <source media="(max-width: 768px)" srcSet="/images/모바일_리뷰_배너.png" />
+                            <img src="/images/리뷰_배너2.png" alt="배너 이미지" className="review-banner-img" />
+                        </picture>
                     </div>
-
 
                     {/* 제목 + 버튼 */}
                     <div className="review-list-title">
-                        <h2 className='reviews-title'>리뷰 목록</h2>
+                        <h2 className="reviews-title">리뷰 목록</h2>
                         {roleType === 'USER' && (
                             <button className="review-write-btn" onClick={handleCreateClick}>
                                 리뷰 작성하기
@@ -594,9 +596,7 @@ const handleLikeClick = async (reviewId: number) => {
 
                         {/* 포토 모달 */}
                         {showModal && (
-                            <div className='photo-modal'
-                                onClick={closePhotoModal}
-                            >
+                            <div className="photo-modal" onClick={closePhotoModal}>
                                 {/* 모달 내용 */}
                                 <div
                                     style={{
@@ -636,11 +636,11 @@ const handleLikeClick = async (reviewId: number) => {
 
                     {/* 📜 리뷰 목록 */}
                     <div ref={reviewTopRef} aria-hidden>
-                        <hr style={{ marginBottom: '20px',  border: '1px solid #E9DCC4' }} />
+                        <hr style={{ marginBottom: '20px', border: '1px solid #E9DCC4' }} />
                         <h3 className="review-title">리뷰</h3>
                     </div>
 
-                     <ReviewSummary productId={productId} />
+                    <ReviewSummary productId={productId} />
 
                     {/* 평균 별점 */}
                     <div className="review-average-container">
@@ -797,15 +797,9 @@ const handleLikeClick = async (reviewId: number) => {
                                                     onClick={() => handleLikeClick(review.reviewId)}
                                                 >
                                                     {liked[review.reviewId] ? (
-                                                        <FaThumbsUp
-                                                            className="like-icon"
-                                                            
-                                                        />
+                                                        <FaThumbsUp className="like-icon" />
                                                     ) : (
-                                                        <FaRegThumbsUp
-                                                            className="like-icon"
-                                                            
-                                                        />
+                                                        <FaRegThumbsUp className="like-icon" />
                                                     )}
                                                     <span className="like-text">
                                                         도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}

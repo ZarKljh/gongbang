@@ -159,6 +159,9 @@
 
 .review-banner-img {
     border-radius: 8px;
+     width: 100%;
+  height: auto;
+  display: block;
 }
 .review-banner h2 {
     font-size: 38px;
