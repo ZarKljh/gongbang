@@ -138,4 +138,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 
+    @Query("""
+        select p
+        from Product p
+        left join WishList w on w.product = p
+        group by p.id
+        order by count(w.id) desc
+    """)
+    List<Product> findPopularProducts(PageRequest pageRequest);
+
 }
