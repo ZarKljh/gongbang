@@ -29,6 +29,7 @@ public class AiService {
             형식:
             - 장점: 2~3줄
             - 단점: 1~2줄
+            
             - 총평: 1줄
 
             리뷰:

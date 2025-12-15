@@ -269,7 +269,7 @@
     }
 }
 
-/* ---- 모바일 (max-width: 600px) ---- */
+/* ---- 모바일 (max-width: 460px) ---- */
 @media (max-width: 460px) {
     .review-create-container {
         padding: 0 10px 50px;
