@@ -76,7 +76,7 @@ export default function MainContent(props: MainContentProps) {
                                         {studio?.studioLogoImage?.imageFileName ? (
                                             <Link href={`/seller/studio/${studio.studioId}`}>
                                                 <img
-                                                    src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
+                                                    src={`https://api.gongyedam.shop/images/${studio.studioLogoImage.imageFileName}`}
                                                     alt="공방로고사진"
                                                 />
                                             </Link>

@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { api } from '@/app/utils/api'
 import './sellerPage.css'
 import Sidebar from './components/sideBar'
 import MainContent from './components/mainContent'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1'
+//const API_BASE_URL = 'https://localhost:8090/api/v1'
+const API_BASE_URL = api.defaults.baseURL
 
 export default function MyPage() {
     // ======= 상태 관리 =======
@@ -125,6 +127,7 @@ export default function MyPage() {
         setUserData(data.data)
         return data.data
     }
+
     const fetchOrders = async (id: number) => {
         const { data } = await axios.get(`${API_BASE_URL}/mypage/orders`, { withCredentials: true })
         setOrders(data.data)
