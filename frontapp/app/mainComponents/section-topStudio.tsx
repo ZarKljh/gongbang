@@ -82,17 +82,17 @@ export default function TopStudios() {
 
                                 <div className="topStudioProductWrap">
                                     {studio.recentProducts.map((p) => (
-                                        <Link href={`/product/list/detail?productId=${p.productId}`} key={p.productId} className="topProductCardSmall">
+                                        <Link
+                                            href={`/product/list/detail?productId=${p.productId}`}
+                                            key={p.productId}
+                                            className="topProductCardSmall"
+                                        >
                                             <img
                                                 src={`http://localhost:8090${p.imageUrl}`}
                                                 alt={p.productName}
                                                 className="topProductImgSmall"
                                             />
-                                            <p 
-                                                className="topProductNameSmall"
-                                            >
-                                                {p.productName}
-                                            </p>
+                                            <p className="topProductNameSmall">{p.productName}</p>
                                             <p className="topProductsummary">{p.summary}</p>
                                         </Link>
                                     ))}
