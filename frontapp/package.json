@@ -23,6 +23,7 @@
     "lucide-react": "^0.546.0",
     "memorize": "^0.0.4",
     "next": "15.5.5",
+    "pg": "^8.16.3",
     "rc-slider": "^11.1.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",

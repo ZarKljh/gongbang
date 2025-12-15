@@ -26,12 +26,12 @@
 /* ===============================
    주문 기본 정보 박스
 ================================ */
-.order-detail-box { 
+.order-detail-box {
     padding: 24px 30px;
     border-radius: 8px;
     margin-bottom: 40px;
-    border: 1px solid #E9DCC4;
-    background: #FAF7F0;
+    border: 1px solid #e9dcc4;
+    background: #faf7f0;
 }
 
 .order-detail-box p {
@@ -55,15 +55,30 @@
     font-weight: 600;
     text-wrap: nowrap;
 }
-.badge.배송준비중 { background: #ffe9a7; color: #775a00; }
-.badge.배송중 { background: #bfe3ff; color: #004a80; }
-.badge.배송완료 { background: #d4f7dc; color: #1f5c2b; }
+
+/* 배송 준비중 */
+.badge.pending {
+    background-color: #eee;
+    color: #333;
+}
+
+/* 배송 중 */
+.badge.delivering {
+    background-color: #ffeb99;
+    color: #8a6d1e;
+}
+
+/* 배송 완료 */
+.badge.delivered {
+    background-color: #d1f2d1;
+    color: #1e7e34;
+}
 
 /* ===============================
    상품 목록
 ================================ */
 .order-items-list {
-    border-top: 2px solid #E9DCC4;
+    border-top: 2px solid #e9dcc4;
     padding-top: 20px;
     margin-top: 10px;
 }
@@ -72,7 +87,7 @@
     display: flex;
     gap: 16px;
     padding: 18px 0;
-    border-bottom: 1px solid #F3EEE6;
+    border-bottom: 1px solid #f3eee6;
 }
 
 .order-detail-item img {
@@ -80,8 +95,8 @@
     height: 90px;
     border-radius: 8px;
     object-fit: cover;
-    border: 1px solid #E9DCC4;
-    background: #FAF7F0;
+    border: 1px solid #e9dcc4;
+    background: #faf7f0;
 }
 
 .order-detail-item .item-name {
@@ -98,8 +113,8 @@
    총 금액 박스
 ================================ */
 .order-total {
-    background: #FAF7F0;
-    border: 1px solid #E9DCC4;
+    background: #faf7f0;
+    border: 1px solid #e9dcc4;
     padding: 20px;
     border-radius: 8px;
     margin-top: 25px;
@@ -118,7 +133,7 @@
 /* 공통 버튼 */
 .btn-primary {
     padding: 10px 18px;
-    background: #DAC0A3;
+    background: #dac0a3;
     color: white;
     border: none;
     font-size: 14px;
@@ -129,7 +144,7 @@
 }
 
 .btn-primary:hover {
-    background: #C99F8A;
+    background: #c99f8a;
     text-decoration: underline;
 }
 
@@ -167,7 +182,7 @@
 .reason-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.55);
+    background: rgba(0, 0, 0, 0.55);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -181,7 +196,7 @@
     width: 420px;
     padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal-content h3 {
@@ -194,12 +209,12 @@
     width: calc(100% - 30px);
     height: 120px;
     padding: 12px;
-    border: 1px solid #E9DCC4;
+    border: 1px solid #e9dcc4;
     border-radius: 8px;
     resize: none;
     font-size: 14px;
     font-family: inherit;
-    background: #FAF7F0;
+    background: #faf7f0;
 }
 
 .modal-actions {

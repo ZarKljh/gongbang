@@ -29,6 +29,10 @@ public class OrdersResponse {
     private String status;
     private String reason;
     private String buyerNickname;   // 셀러 페이지에서 볼 구매자 닉네임 - 상진 추가
+
+    private String courierName;
+    private String trackingNumber;
+
     private List<OrderItemResponse> items;
     private List<DeliveryResponse> deliveries;
 
@@ -48,6 +52,15 @@ public class OrdersResponse {
                 .map(item -> OrderItemResponse.from(item, imageRepository))
                 .toList();
 
+        Delivery latestDelivery = null;
+        if (orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()) {
+            latestDelivery = orders.getDeliveries().stream()
+                    .max(Comparator.comparing(Delivery::getCreatedDate))
+                    .orElse(null);
+        }
+
+
+
         // OrdersResponse.from
         String deliveryStatus = orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()
                 ? orders.getDeliveries().stream()
@@ -55,6 +68,12 @@ public class OrdersResponse {
                 .get()
                 .getDeliveryStatus()
                 : "배송준비중";
+
+        String courierName =
+                latestDelivery != null ? latestDelivery.getCourierName() : null;
+
+        String trackingNumber =
+                latestDelivery != null ? latestDelivery.getTrackingNumber() : null;
 
         String completedAt = deliveries.isEmpty() || deliveries.get(deliveries.size() - 1).getCompletedAt() == null
                 ? null
@@ -75,6 +94,8 @@ public class OrdersResponse {
                                 ? orders.getSiteUser().getNickName()
                                 : null
                 )
+                .courierName(courierName)
+                .trackingNumber(trackingNumber)
                 .items(items)
                 .deliveries(deliveries)
                 .build();

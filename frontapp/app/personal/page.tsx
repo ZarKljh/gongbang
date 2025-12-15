@@ -44,6 +44,107 @@ interface CartItem {
     productId: number
 }
 
+// ===== 타입 & 헬퍼 =====
+type NormalizedStatus = 'PENDING' | 'DELIVERING' | 'DELIVERED'
+
+type TrackingStep = {
+    location: string
+    status: string
+    statusCode: string | null
+    driverPhone: string | null
+    time: string | null
+}
+
+type TrackingDetail = {
+    orderId: number
+    orderCode: string
+    orderCreatedDate: string
+    orderStatus: string
+    deliveryStatus: string | null
+    courierName: string | null
+    trackingNumber: string | null
+    productBrand: string
+    productName: string
+    productOption: string
+    productPrice: number
+    productQuantity: number
+    productImageUrl: string | null
+    steps: TrackingStep[]
+}
+
+// 문자열 상태를 정규화
+const normalizeStatus = (status?: string | null): NormalizedStatus => {
+    if (!status) return 'PENDING'
+    const s = status.toUpperCase()
+
+    if (s.includes('DELIVERED') || s.includes('배송완료') || s.includes('배송 완료')) {
+        return 'DELIVERED'
+    }
+    if (s.includes('DELIVERING') || s.includes('배송중') || s.includes('배송 중') || s.includes('IN_TRANSIT')) {
+        return 'DELIVERING'
+    }
+    return 'PENDING'
+}
+
+// steps 기반으로 최종 배송 상태 추론
+const inferStatusFromTrackingSteps = (tracking?: TrackingDetail | null): NormalizedStatus | null => {
+    if (!tracking || !tracking.steps || tracking.steps.length === 0) return null
+
+    const validSteps = tracking.steps.filter((s) => s.time)
+    const latest =
+        validSteps.length > 0
+            ? validSteps.slice().sort((a, b) => {
+                  const ta = new Date(a.time as string).getTime()
+                  const tb = new Date(b.time as string).getTime()
+                  return tb - ta
+              })[0]
+            : tracking.steps[0]
+
+    const code = (latest.statusCode || '').toUpperCase()
+    const text = (latest.status || '').toUpperCase()
+
+    if (code === 'DELIVERED') return 'DELIVERED'
+    if (code === 'OUT_FOR_DELIVERY' || code === 'IN_TRANSIT' || code === 'AT_PICKUP') return 'DELIVERING'
+
+    if (text.includes('배송완료') || text.includes('DELIVERED')) return 'DELIVERED'
+    if (
+        text.includes('배송출발') ||
+        text.includes('배송 중') ||
+        text.includes('배송중') ||
+        text.includes('IN_TRANSIT')
+    ) {
+        return 'DELIVERING'
+    }
+
+    return 'PENDING'
+}
+
+// 뱃지 라벨
+const getStatusLabel = (normalized: NormalizedStatus): string => {
+    switch (normalized) {
+        case 'DELIVERED':
+            return '배송완료'
+        case 'DELIVERING':
+            return '배송중'
+        case 'PENDING':
+        default:
+            return '배송준비중'
+    }
+}
+
+// 뱃지 CSS 클래스
+const getStatusBadgeClass = (normalized: NormalizedStatus): string => {
+    switch (normalized) {
+        case 'DELIVERED':
+            return 'badge delivered'
+        case 'DELIVERING':
+            return 'badge delivering'
+        case 'PENDING':
+        default:
+            return 'badge pending'
+    }
+}
+
 export default function MyPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -99,6 +200,7 @@ export default function MyPage() {
     const [reasonModalTitle, setReasonModalTitle] = useState('')
     const [reasonModalOnSubmit, setReasonModalOnSubmit] = useState<(reason: string) => void>(() => {})
     const [reasonText, setReasonText] = useState('')
+    const [trackingStatusMap, setTrackingStatusMap] = useState<Record<number, NormalizedStatus>>({})
 
     // 배송지
     const [addresses, setAddresses] = useState<any[]>([])
@@ -555,6 +657,12 @@ export default function MyPage() {
         const diffTime = Math.abs(now.getTime() - completedDate.getTime())
         const diffDays = diffTime / (1000 * 60 * 60 * 24)
         return diffDays <= 7
+    }
+
+    const getOrderNormalizedStatus = (order: any): NormalizedStatus => {
+        const fromMap = trackingStatusMap[order.orderId]
+        if (fromMap) return fromMap
+        return normalizeStatus(order.deliveryStatus)
     }
 
     // ================= 주문 취소 / 반품 / 교환 =================
@@ -1395,6 +1503,53 @@ export default function MyPage() {
         deletePurchased()
     }, [])
 
+    useEffect(() => {
+        if (!infiniteOrders || infiniteOrders.length === 0) {
+            setTrackingStatusMap({})
+            return
+        }
+        // 실시간 배송 추적용
+        const fetchStatuses = async () => {
+            try {
+                const entries = await Promise.all(
+                    infiniteOrders.map(async (o: any) => {
+                        try {
+                            const res = await axios.get(
+                                `http://localhost:8090/api/v1/mypage/orders/${o.orderId}/tracking`,
+                                { withCredentials: true },
+                            )
+
+                            if (res.data.resultCode === '200') {
+                                const tracking: TrackingDetail = res.data.data
+                                const inferred = inferStatusFromTrackingSteps(tracking)
+                                const fromTrackingText = normalizeStatus(tracking.deliveryStatus)
+                                const normalized = inferred || fromTrackingText || normalizeStatus(o.deliveryStatus)
+
+                                return [o.orderId, normalized] as [number, NormalizedStatus]
+                            }
+                        } catch (e) {
+                            console.error('tracking fetch error for order', o.orderId, e)
+                        }
+
+                        // 실패 시: 기존 deliveryStatus 기반
+                        return [o.orderId, normalizeStatus(o.deliveryStatus)] as [number, NormalizedStatus]
+                    }),
+                )
+
+                const map: Record<number, NormalizedStatus> = {}
+                entries.forEach(([id, status]) => {
+                    map[id] = status
+                })
+
+                setTrackingStatusMap(map)
+            } catch (e) {
+                console.error('trackingStatusMap build error:', e)
+            }
+        }
+
+        fetchStatuses()
+    }, [infiniteOrders])
+
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
         return <div>로딩중...</div>
@@ -1571,9 +1726,10 @@ export default function MyPage() {
                                     <p>배송준비중</p>
                                     <p>
                                         {
-                                            infiniteOrders.filter(
-                                                (o) => o.deliveryStatus?.replace(/\s/g, '') === '배송준비중',
-                                            ).length
+                                            infiniteOrders.filter((o: any) => {
+                                                const st = getOrderNormalizedStatus(o)
+                                                return st === 'PENDING'
+                                            }).length
                                         }
                                     </p>
                                 </div>
@@ -1589,14 +1745,14 @@ export default function MyPage() {
                                     <p>배송중</p>
                                     <p>
                                         {
-                                            infiniteOrders.filter(
-                                                (o) => o.deliveryStatus?.replace(/\s/g, '') === '배송중',
-                                            ).length
+                                            infiniteOrders.filter((o: any) => {
+                                                const st = getOrderNormalizedStatus(o)
+                                                return st === 'DELIVERING'
+                                            }).length
                                         }
                                     </p>
                                 </div>
 
-                                {/* 배송완료 - 7일 이내만 */}
                                 <div
                                     className="status-card"
                                     onClick={() => {
@@ -1607,11 +1763,10 @@ export default function MyPage() {
                                     <p>배송완료</p>
                                     <p>
                                         {
-                                            infiniteOrders.filter(
-                                                (o) =>
-                                                    o.deliveryStatus?.replace(/\s/g, '') === '배송완료' &&
-                                                    isWithinSevenDays(o.completedAt),
-                                            ).length
+                                            infiniteOrders.filter((o: any) => {
+                                                const st = getOrderNormalizedStatus(o)
+                                                return st === 'DELIVERED'
+                                            }).length
                                         }
                                     </p>
                                 </div>
@@ -1625,46 +1780,51 @@ export default function MyPage() {
                             {infiniteOrders.length === 0 ? (
                                 <p className="empty-state">주문 내역이 없습니다.</p>
                             ) : (
-                                infiniteOrders.map((order) => (
-                                    <div key={order.orderId} className="order-card">
-                                        {/* 주문 요약 */}
-                                        <div
-                                            className="order-header"
-                                            onClick={() => router.push(`/personal/${order.orderId}`)}
-                                        >
-                                            <div className="order-title">
-                                                <p>
-                                                    주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
-                                                </p>
-                                                <span className={`badge ${order.deliveryStatus}`}>
-                                                    {order.deliveryStatus}
-                                                </span>
-                                            </div>
-                                            <div className="order-img">
-                                                {(order.items || []).slice(0, 4).map((item, idx) => (
-                                                    <img
-                                                        key={idx}
-                                                        src={`http://localhost:8090${item.imageUrl}`}
-                                                        alt={item.productName}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div className="order-footer">
-                                            <button
-                                                type="button"
-                                                className="order-btn shipping-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation() // 상단 onClick 안 타게 방지
-                                                    router.push(`/personal/delivery/${order.orderId}`)
-                                                }}
+                                infiniteOrders.map((order: any) => {
+                                    const normalized = getOrderNormalizedStatus(order)
+                                    const badgeClass = getStatusBadgeClass(normalized)
+                                    const label = getStatusLabel(normalized)
+
+                                    return (
+                                        <div key={order.orderId} className="order-card">
+                                            {/* 주문 요약 */}
+                                            <div
+                                                className="order-header"
+                                                onClick={() => router.push(`/personal/${order.orderId}`)}
                                             >
-                                                배송 조회
-                                            </button>
+                                                <div className="order-title">
+                                                    <p>
+                                                        주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
+                                                    </p>
+                                                    <span className={badgeClass}>{label}</span>
+                                                </div>
+                                                <div className="order-img">
+                                                    {(order.items || []).slice(0, 4).map((item: any, idx: number) => (
+                                                        <img
+                                                            key={idx}
+                                                            src={`http://localhost:8090${item.imageUrl}`}
+                                                            alt={item.productName}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="order-footer">
+                                                <button
+                                                    type="button"
+                                                    className="order-btn shipping-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation() // 상단 onClick 안 타게 방지
+                                                        router.push(`/personal/delivery/${order.orderId}`)
+                                                    }}
+                                                >
+                                                    배송 조회
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
+                                    )
+                                })
                             )}
+
                             {infiniteOrdersLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
                             {!infiniteOrdersHasMore && <p style={{ textAlign: 'center', color: '#999' }}>---</p>}
                         </div>
