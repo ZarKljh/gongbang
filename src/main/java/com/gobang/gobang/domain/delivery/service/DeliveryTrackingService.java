@@ -29,7 +29,6 @@ public class DeliveryTrackingService {
     private final DeliveryTrackerClient deliveryTrackerClient;
     private final CarrierCodeMapper carrierCodeMapper;
 
-
     /**
      * 마이페이지(일반 유저)용 배송 추적
      */
@@ -82,6 +81,7 @@ public class DeliveryTrackingService {
 
         Product product = firstItem.getProduct();
 
+
         // 3) 택배사 코드 매핑
         String carrierCode = carrierCodeMapper.toCarrierCode(delivery.getCourierName());
         System.out.println("mapped carrierCode = " + carrierCode);
@@ -103,7 +103,7 @@ public class DeliveryTrackingService {
         }
 
         // 5) 만약 외부 API에서 아무 이벤트도 못 받았으면,
-        //    (선택) DB에 저장된 DeliveryTracking 이력을 fallback 으로 사용
+        //    (선택) DB에 저장된 DeliveryTracking 이력을 fallback 으로 사용할 수도 있음
         if (steps == null || steps.isEmpty()) {
             List<DeliveryTracking> trackingList =
                     deliveryTrackingRepository.findByDeliveryOrderByEventTimeDesc(delivery);
@@ -113,6 +113,7 @@ public class DeliveryTrackingService {
                     .map(t -> TrackingStepDto.builder()
                             .location(t.getLocation())
                             .status(t.getStatus())
+                            // statusCode, driverPhone 등 필드 추가했다면 여기에 같이 매핑
                             .time(t.getEventTime())
                             .build())
                     .toList();
@@ -120,15 +121,7 @@ public class DeliveryTrackingService {
             System.out.println("steps from DB fallback size = " + steps.size());
         }
 
-        // 6) 실시간 이벤트(steps) + 기존 DB 상태(delivery.getDeliveryStatus())를 합쳐서
-        //    화면에서 쓸 "현재 배송 상태 코드" 계산
-        String currentStatus = resolveStatusFromSteps(steps, delivery.getDeliveryStatus());
-
-        // (선택) DB 상태도 같이 업데이트하고 싶으면 주석 해제
-        // delivery.setDeliveryStatus(currentStatus);
-        // 여기서 save 할 경우, readOnly = true 제거 및 repository save 필요
-
-        // 7) 상품 부가 정보(브랜드/옵션/이미지)는 추후 필요시 채우기
+        // 6) 상품 부가 정보(브랜드/옵션/이미지)는 추후 필요시 채우기
         String productBrand = "";
         String productOption = "";
         String productImageUrl = null;
@@ -137,8 +130,10 @@ public class DeliveryTrackingService {
                 .orderId(order.getOrderId())
                 .orderCode(order.getOrderCode())
                 .orderCreatedDate(order.getCreatedDate())
-                .orderStatus(order.getStatus())
-                .deliveryStatus(currentStatus) // 🔹 여기! 실시간 기준 상태 코드
+                .orderStatus(order.getStatus() != null
+                        ? order.getStatus().name()
+                        : null)
+                .deliveryStatus(delivery.getDeliveryStatus())
                 .courierName(delivery.getCourierName())
                 .trackingNumber(delivery.getTrackingNumber())
                 .productBrand(productBrand)

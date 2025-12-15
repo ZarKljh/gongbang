@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.personal.entity;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.personal.dto.request.UserAddressRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -59,5 +60,16 @@ public class UserAddress {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void updateFrom(UserAddressRequest request) {
+        this.recipientName = request.getRecipientName();
+        this.baseAddress = request.getBaseAddress();
+        this.detailAddress = request.getDetailAddress();
+        this.zipcode = request.getZipcode();
+
+        if (request.getIsDefault() != null) {
+            this.isDefault = request.getIsDefault();
+        }
     }
 }

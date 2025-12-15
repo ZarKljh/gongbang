@@ -36,246 +36,247 @@ type PendingOrderItem = {
 }
 
 export default function MyPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+    const searchParams = useSearchParams()
+    const router = useRouter()
 
-  // =============== 전역 UI 상태 ===============
-  const [pageLoading, setPageLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('orders')
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+    // =============== 전역 UI 상태 ===============
+    const [pageLoading, setPageLoading] = useState(true)
+    const [activeTab, setActiveTab] = useState('orders')
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
-  // 통계 (QnA 수, 리뷰 수, 배송 상태)
-  const [stats, setStats] = useState<Stats>({
-    totalQna: 0,
-    totalReviews: 0,
-    preparing: 0,
-    shipping: 0,
-    completed: 0,
-  })
+    // 통계 (QnA 수, 리뷰 수, 배송 상태)
+    const [stats, setStats] = useState<Stats>({
+        totalQna: 0,
+        totalReviews: 0,
+        preparing: 0,
+        shipping: 0,
+        completed: 0,
+    })
 
-  // 삭제/확인 모달
-  const [deleteModal, setDeleteModal] = useState<{
-    open: boolean
-    title: string
-    message: string
-    warning: string
-    onConfirm: () => void
-    onCancel: () => void
-  }>({
-    open: false,
-    title: '',
-    message: '',
-    warning: '',
-    onConfirm: () => {},
-    onCancel: () => {},
-  })
+    // 삭제/확인 모달
+    const [deleteModal, setDeleteModal] = useState<{
+        open: boolean
+        title: string
+        message: string
+        warning: string
+        onConfirm: () => void
+        onCancel: () => void
+    }>({
+        open: false,
+        title: '',
+        message: '',
+        warning: '',
+        onConfirm: () => {},
+        onCancel: () => {},
+    })
 
-  const [confirmModal, setConfirmModal] = useState<{
-    open: boolean
-    message: string
-    onConfirm: null | (() => void)
-    onCancel: null | (() => void)
-  }>({
-    open: false,
-    message: '',
-    onConfirm: null,
-    onCancel: null,
-  })
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean
+        message: string
+        onConfirm: null | (() => void)
+        onCancel: null | (() => void)
+    }>({
+        open: false,
+        message: '',
+        onConfirm: null,
+        onCancel: null,
+    })
 
-  // 사용자 정보
-  const [userData, setUserData] = useState<any>(null)
+    // 사용자 정보
+    const [userData, setUserData] = useState<any>(null)
 
-  // =============== 커스텀 훅 연결 ===============
+    // =============== 커스텀 훅 연결 ===============
 
-  // 주문 / 주문관리
-    const {
-        // 리스트
-        orders,
-        infiniteOrders,
-        infiniteOrdersLoading,
-        infiniteOrdersHasMore,
-        infiniteOrdersLastId,
-        filteredOrders,
+    // 주문 / 주문관리
+        const {
+            // 리스트
+            orders,
+            infiniteOrders,
+            infiniteOrdersLoading,
+            infiniteOrdersHasMore,
+            infiniteOrdersLastId,
+            filteredOrders,
 
-        // 상태
-        selectedStatus,
-        activeFilter,
-        isStatusModal,
-        openOrderId,
+            // 상태
+            selectedStatus,
+            activeFilter,
+            isStatusModal,
+            openOrderId,
 
-        // 사유 입력 모달
-        isReasonModal,
-        reasonModalTitle,
-        reasonText,
+            // 사유 입력 모달
+            isReasonModal,
+            reasonModalTitle,
+            reasonText,
 
-        // setters
-        setIsStatusModal,
-        setActiveFilter,
-        setIsReasonModal,
-        setReasonModalTitle,
-        setReasonModalOnSubmit,
-        setReasonText,
+            // setters
+            setIsStatusModal,
+            setActiveFilter,
+            setIsReasonModal,
+            setReasonModalTitle,
+            setReasonModalOnSubmit,
+            setReasonText,
 
-        // 기능
-        fetchOrders,
-        fetchInfiniteOrders,
-        resetInfiniteOrders,
-        handleStatusClick,
-        toggleOrderDetail,
-        submitReason,
-        filterOrdersByStatus,
-    } = useOrders()
+            // 기능
+            fetchOrders,
+            fetchInfiniteOrders,
+            resetInfiniteOrders,
+            handleStatusClick,
+            toggleOrderDetail,
+            submitReason,
+            filterOrdersByStatus,
+            ORDER_STATUS_LABEL,
+        } = useOrders()
 
-  // 장바구니
-    const {
-        cart,
-        selectedItems,
-        selectedProducts,
-        setCart,
-        setSelectedItems,
-        fetchCart,
-        handleUpdateCart,
-        handleDeleteCart,
-        handleSelectItem,
-        handleToggleSelectAll,
-        handleClearSelection,
-    } = useCart()
+    // 장바구니
+        const {
+            cart,
+            selectedItems,
+            selectedProducts,
+            setCart,
+            setSelectedItems,
+            fetchCart,
+            handleUpdateCart,
+            handleDeleteCart,
+            handleSelectItem,
+            handleToggleSelectAll,
+            handleClearSelection,
+        } = useCart()
 
-  // 배송지
-    const {
-        addresses,
-        isAddressModal,
-        editAddressModal,
-        editAddressData,
-        defaultAddress,
-        newAddress,
-        isAddressSelectModalOpen,
-        selectedAddress,
-        setIsAddressModal,
-        setEditAddressModal,
-        setEditAddressData,
-        setDefaultAddress,
-        setNewAddress,
-        setIsAddressSelectModalOpen,
-        setSelectedAddress,
-        fetchAddresses,
-        handleSaveAddress,
-        handleUpdateAddress,
-        handleDeleteAddress,
-        sample6_execDaumPostcode,
-        sample6_execDaumPostcodeForEdit,
-    } = useAddress(userData?.id)
+    // 배송지
+        const {
+            addresses,
+            isAddressModal,
+            editAddressModal,
+            editAddressData,
+            defaultAddress,
+            newAddress,
+            isAddressSelectModalOpen,
+            selectedAddress,
+            setIsAddressModal,
+            setEditAddressModal,
+            setEditAddressData,
+            setDefaultAddress,
+            setNewAddress,
+            setIsAddressSelectModalOpen,
+            setSelectedAddress,
+            fetchAddresses,
+            handleSaveAddress,
+            handleUpdateAddress,
+            handleDeleteAddress,
+            sample6_execDaumPostcode,
+            sample6_execDaumPostcodeForEdit,
+        } = useAddress(userData?.id)
 
-  // 결제수단
-    const {
-        paymentMethods,
-        isPaymentModal,
-        paymentType,
-        bankName,
-        accountNumber,
-        accountHolder,
-        cardCompany,
-        cardNumber,
-        cardExpire,
-        defaultPayment,
-        errors: paymentErrors,
-        setIsPaymentModal,
-        setPaymentType,
-        setBankName,
-        setAccountNumber,
-        setAccountHolder,
-        setCardCompany,
-        setCardNumber,
-        setCardExpire,
-        setDefaultPayment,
-        fetchPaymentMethods,
-        handleSavePayment,
-        handleSetDefault,
-        handleDeletePayment,
-        maskCard,
-    } = usePayment()
+    // 결제수단
+        const {
+            paymentMethods,
+            isPaymentModal,
+            paymentType,
+            bankName,
+            accountNumber,
+            accountHolder,
+            cardCompany,
+            cardNumber,
+            cardExpire,
+            defaultPayment,
+            errors: paymentErrors,
+            setIsPaymentModal,
+            setPaymentType,
+            setBankName,
+            setAccountNumber,
+            setAccountHolder,
+            setCardCompany,
+            setCardNumber,
+            setCardExpire,
+            setDefaultPayment,
+            fetchPaymentMethods,
+            handleSavePayment,
+            handleSetDefault,
+            handleDeletePayment,
+            maskCard,
+        } = usePayment()
 
-  // 프로필 / 계정정보
-    const {
-        tempData,
-        errors: profileErrors,
-        editMode,
-        isAuthenticated,
-        passwordInput,
-        newPassword,
-        confirmPassword,
-        showAuthBox,
-        isProfileModalOpen,
-        previewProfileImage,
-        profileFile,
-        setPasswordInput,
-        setNewPassword,
-        setConfirmPassword,
-        setShowAuthBox,
-        setIsProfileModalOpen,
-        setTempData,
-        handleVerifyPassword,
-        handleEdit,
-        handleSave,
-        handleCancel,
-        handleProfileClick,
-        handleProfileFileChange,
-        handleProfileUpload,
-        handleProfileDelete,
-        fetchProfileImage,
-    } = useProfile(userData, setUserData)
+    // 프로필 / 계정정보
+        const {
+            tempData,
+            errors: profileErrors,
+            editMode,
+            isAuthenticated,
+            passwordInput,
+            newPassword,
+            confirmPassword,
+            showAuthBox,
+            isProfileModalOpen,
+            previewProfileImage,
+            profileFile,
+            setPasswordInput,
+            setNewPassword,
+            setConfirmPassword,
+            setShowAuthBox,
+            setIsProfileModalOpen,
+            setTempData,
+            handleVerifyPassword,
+            handleEdit,
+            handleSave,
+            handleCancel,
+            handleProfileClick,
+            handleProfileFileChange,
+            handleProfileUpload,
+            handleProfileDelete,
+            fetchProfileImage,
+        } = useProfile(userData, setUserData)
 
-  // QnA
-    const {
-        qna,
-        openQnaId,
-        setQna,
-        fetchQna,
-        handleDeleteQna,
-        toggleQna,
-    } = useQna()
+    // QnA
+        const {
+            qna,
+            openQnaId,
+            setQna,
+            fetchQna,
+            handleDeleteQna,
+            toggleQna,
+        } = useQna()
 
-  // 리뷰
-    const {
-        infiniteReviews,
-        infiniteReviewLoading,
-        infiniteReviewHasMore,
-        infiniteReviewLastId,
-        isEditReviewModal,
-        editReviewContent,
-        editReviewRating,
-        setInfiniteReviews,
-        setInfiniteReviewHasMore,
-        setInfiniteReviewLastId,
-        setEditReviewContent,
-        setEditReviewRating,
-        fetchInfiniteReviews,
-        handleEditClick,
-        handleCloseModal,
-        handleSaveEdit,
-        handleDeleteReview,
-    } = useReviews()
+    // 리뷰
+        const {
+            infiniteReviews,
+            infiniteReviewLoading,
+            infiniteReviewHasMore,
+            infiniteReviewLastId,
+            isEditReviewModal,
+            editReviewContent,
+            editReviewRating,
+            setInfiniteReviews,
+            setInfiniteReviewHasMore,
+            setInfiniteReviewLastId,
+            setEditReviewContent,
+            setEditReviewRating,
+            fetchInfiniteReviews,
+            handleEditClick,
+            handleCloseModal,
+            handleSaveEdit,
+            handleDeleteReview,
+        } = useReviews()
 
-  // 위시리스트 / 팔로우 / 추천
-    const {
-        infiniteWishList,
-        infiniteWishLoading,
-        infiniteWishHasMore,
-        infiniteWishLastId,
-        followList,
-        activeSubTab,
-        setActiveSubTab,
-        fetchInfiniteWishList,
-        resetInfiniteWishList,
-        fetchFollowList,
-        handleRemoveWish,
-        handleUnfollow,
-        recommendItems,
-        recommendMessage,
-        fetchRecommendList,
-    } = useWishlist()
+    // 위시리스트 / 팔로우 / 추천
+        const {
+            infiniteWishList,
+            infiniteWishLoading,
+            infiniteWishHasMore,
+            infiniteWishLastId,
+            followList,
+            activeSubTab,
+            setActiveSubTab,
+            fetchInfiniteWishList,
+            resetInfiniteWishList,
+            fetchFollowList,
+            handleRemoveWish,
+            handleUnfollow,
+            recommendItems,
+            recommendMessage,
+            fetchRecommendList,
+        } = useWishlist()
 
-  // =============== 결제 관련 상태 (토스 위젯) ===============
+    // =============== 결제 관련 상태 (토스 위젯) ===============
     const [orderCode, setOrderCode] = useState<string | null>(null)
     const [total, setTotal] = useState<number>(0)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -286,80 +287,80 @@ export default function MyPage() {
     const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
     const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
 
-  // =============== 공통 유틸 ===============
+    // =============== 공통 유틸 ===============
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
         setIsMobileSidebarOpen(false)
     }
 
-  // =============== 사용자 정보 조회 ===============
-  const fetchUser = async () => {
-    try {
-      const { data } = await axios.get(`${API_BASE_URL}/me`, {
-        withCredentials: true,
-      })
+    // =============== 사용자 정보 조회 ===============
+    const fetchUser = async () => {
+        try {
+        const { data } = await axios.get(`${API_BASE_URL}/me`, {
+            withCredentials: true,
+        })
 
-      if (data.code === '401') {
-        window.location.href = '/auth/login'
+        if (data.code === '401') {
+            window.location.href = '/auth/login'
+            return null
+        }
+
+        setUserData(data.data)
+        return data.data
+        } catch (error) {
+        console.error('사용자 정보 조회 실패:', error)
         return null
-      }
-
-      setUserData(data.data)
-      return data.data
-    } catch (error) {
-      console.error('사용자 정보 조회 실패:', error)
-      return null
-    }
-  }
-
-  // =============== 초기 로딩 ===============
-  useEffect(() => {
-    const init = async () => {
-      setPageLoading(true)
-      try {
-        const user = await fetchUser()
-        if (!user || !user.id) return
-
-        await Promise.all([
-          fetchOrders(),
-          fetchCart(user.id),
-          fetchAddresses(user.id),
-          fetchPaymentMethods(),
-          fetchFollowList(user.id),
-          fetchQna(user.id),
-          fetchProfileImage(user.id),
-          fetchInfiniteWishList(null),
-          fetchInfiniteReviews(null),
-          fetchRecommendList(),
-          fetchStats(user.id),
-        ])
-      } catch (e) {
-        console.error('초기 데이터 로딩 실패:', e)
-      } finally {
-        setPageLoading(false)
-      }
+        }
     }
 
-    init()
-  }, [])
+    // =============== 초기 로딩 ===============
+    useEffect(() => {
+        const init = async () => {
+        setPageLoading(true)
+        try {
+            const user = await fetchUser()
+            if (!user || !user.id) return
 
-  // =============== tab query 동기화 ===============
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab) setActiveTab(tab)
-  }, [searchParams])
+            await Promise.all([
+            fetchOrders(),
+            fetchCart(user.id),
+            fetchAddresses(user.id),
+            fetchPaymentMethods(),
+            fetchFollowList(user.id),
+            fetchQna(user.id),
+            fetchProfileImage(user.id),
+            fetchInfiniteWishList(null),
+            fetchInfiniteReviews(null),
+            fetchRecommendList(),
+            fetchStats(user.id),
+            ])
+        } catch (e) {
+            console.error('초기 데이터 로딩 실패:', e)
+        } finally {
+            setPageLoading(false)
+        }
+        }
 
-  // =============== 카카오 우편번호 스크립트 로드 ===============
-  useEffect(() => {
-    if (isAddressModal && !window.daum) {
-      const script = document.createElement('script')
-      script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
-      script.async = true
-      document.body.appendChild(script)
-    }
-  }, [isAddressModal])
+        init()
+    }, [])
 
-  // =============== 통계 계산 ===============
+    // =============== tab query 동기화 ===============
+    useEffect(() => {
+        const tab = searchParams.get('tab')
+        if (tab) setActiveTab(tab)
+    }, [searchParams])
+
+    // =============== 카카오 우편번호 스크립트 로드 ===============
+    useEffect(() => {
+        if (isAddressModal && !window.daum) {
+        const script = document.createElement('script')
+        script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
+        script.async = true
+        document.body.appendChild(script)
+        }
+    }, [isAddressModal])
+
+    // =============== 통계 계산 ===============
     const fetchStats = async (userId: number) => {
         const res = await axios.get(`${API_BASE_URL}/stats`, {
             params: { userId },
@@ -368,367 +369,302 @@ export default function MyPage() {
         setStats(res.data.data)
     }
 
-  // =============== 삭제 모달 핸들러 ===============
-  const handleReviewDeleteClick = (review: any) => {
-    setDeleteModal({
-      open: true,
-      title: '리뷰 삭제',
-      message: '정말로 이 리뷰를 삭제하시겠습니까?',
-      warning: '삭제된 리뷰는 복구할 수 없습니다.',
-      onConfirm: () => {
-        handleDeleteReview(review.reviewId)
-        setDeleteModal(prev => ({ ...prev, open: false }))
-      },
-      onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
-    })
-  }
-
-  const askDeleteCart = (cartId: number) => {
-    setDeleteModal({
-      open: true,
-      title: '장바구니 삭제',
-      message: '이 상품을 장바구니에서 삭제하시겠습니까?',
-      warning: '',
-      onConfirm: () => {
-        handleDeleteCart(cartId)
-        setDeleteModal(prev => ({ ...prev, open: false }))
-      },
-      onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
-    })
-  }
-
-  // =============== 기본 설정 모달 (배송지/결제수단) ===============
-  const handleAskDefaultAddress = () => {
-    if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
-      alert('이름과 주소를 모두 입력해주세요.')
-      return
-    }
-
-    setConfirmModal({
-      open: true,
-      message: '이 배송지를 기본 배송지로 설정하시겠습니까?',
-      onConfirm: () => handleSaveAddress(true),
-      onCancel: () => handleSaveAddress(false),
-    })
-  }
-
-  const handleAskDefaultPayment = () => {
-    setConfirmModal({
-      open: true,
-      message: '이 결제수단을 기본 결제수단으로 설정하시겠습니까?',
-      onConfirm: () => handleSavePayment(true),
-      onCancel: () => handleSavePayment(false),
-    })
-  }
-
-  // =============== 무한 스크롤 ===============
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY
-      const viewportHeight = window.innerHeight
-      const fullHeight = document.documentElement.scrollHeight
-
-      if (scrollTop + viewportHeight >= fullHeight - 50) {
-        if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
-          fetchInfiniteOrders(infiniteOrdersLastId)
-        } else if (
-          activeTab === 'like' &&
-          activeSubTab === 'product' &&
-          !infiniteWishLoading &&
-          infiniteWishHasMore
-        ) {
-          fetchInfiniteWishList(infiniteWishLastId)
-        } else if (activeTab === 'reviews' && !infiniteReviewLoading && infiniteReviewHasMore) {
-          fetchInfiniteReviews(infiniteReviewLastId)
-        }
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    window.addEventListener('touchmove', handleScroll)
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('touchmove', handleScroll)
-    }
-  }, [
-    activeTab,
-    activeSubTab,
-    infiniteOrdersLoading,
-    infiniteOrdersHasMore,
-    infiniteOrdersLastId,
-    infiniteWishLoading,
-    infiniteWishHasMore,
-    infiniteWishLastId,
-    infiniteReviewLoading,
-    infiniteReviewHasMore,
-    infiniteReviewLastId,
-    fetchInfiniteOrders,
-    fetchInfiniteWishList,
-    fetchInfiniteReviews,
-  ])
-
-  useEffect(() => {
-    if (activeTab === 'orders' && infiniteOrders.length === 0) {
-      resetInfiniteOrders()
-      fetchInfiniteOrders(null)
-    } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
-      resetInfiniteWishList()
-      fetchInfiniteWishList(null)
-    } else if (activeTab === 'reviews' && infiniteReviews.length === 0) {
-      setInfiniteReviews([])
-      setInfiniteReviewHasMore(true)
-      setInfiniteReviewLastId(null)
-      fetchInfiniteReviews(null)
-    }
-  }, [activeTab, activeSubTab])
-
-  // =============== 장바구니 → 배송지 선택 → 결제 흐름 ===============
-
-  // 선택 상품 구매 버튼
-  const handlePurchaseSelected = () => {
-    if (selectedItems.length === 0) {
-      alert('선택된 상품이 없습니다.')
-      return
-    }
-
-    const selected = cart
-      .filter(item => selectedItems.includes(item.cartId))
-      .map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-      }))
-
-    setPendingOrderItems(selected)
-    setIsAddressSelectModalOpen(true)
-  }
-
-  // 배송지 선택 후 "다음" 버튼
-  const handleAddressNext = async () => {
-    if (!selectedAddress) {
-      alert('배송지를 선택해주세요.')
-      return
-    }
-
-    try {
-      const res = await axios.post(
-        `${API_BASE_URL}/cart/prepare`,
-        {
-          items: pendingOrderItems,
-          addressId: selectedAddress.userAddressId,
+    // =============== 삭제 모달 핸들러 ===============
+    const handleReviewDeleteClick = (review: any) => {
+        setDeleteModal({
+        open: true,
+        title: '리뷰 삭제',
+        message: '정말로 이 리뷰를 삭제하시겠습니까?',
+        warning: '삭제된 리뷰는 복구할 수 없습니다.',
+        onConfirm: () => {
+            handleDeleteReview(review.reviewId)
+            setDeleteModal(prev => ({ ...prev, open: false }))
         },
-        { withCredentials: true },
-      )
-
-      const { orderCode, totalPrice } = res.data.data
-
-      setOrderCode(orderCode)
-      setTotal(totalPrice)
-
-      // 장바구니에서 구매한 cartId 기록 → 결제 성공 후 삭제용
-      localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
-      localStorage.setItem('PAY_PENDING', '1')
-
-      setIsAddressSelectModalOpen(false)
-      setIsModalOpen(true)
-    } catch (error) {
-      console.error('결제 준비 실패:', error)
-      alert('결제 준비 중 오류가 발생했습니다.')
-    }
-  }
-
-  // 토스 결제 위젯 초기화
-  const handleInitPaymentWidget = async (amount: number) => {
-    try {
-      let widget = paymentWidget
-
-      if (!widget) {
-        widget = await loadPaymentWidget(clientKey, customerKey)
-        setPaymentWidget(widget)
-      }
-
-      await widget.renderPaymentMethods('#payment-method', {
-        value: amount,
-      })
-
-      await widget.renderAgreement('#agreement')
-
-      setWidgetLoaded(true)
-    } catch (e) {
-      console.error('장바구니 위젯 초기화 실패', e)
-      setWidgetLoaded(false)
-    }
-  }
-
-  // 결제 모달 열릴 때 위젯 렌더
-  useEffect(() => {
-    if (!isModalOpen) return
-    handleInitPaymentWidget(total)
-  }, [isModalOpen, total])
-
-  // 결제 요청
-  const handleRequestPayment = async () => {
-    if (!paymentWidget) {
-      console.warn('[PAY] paymentWidget 없음')
-      return
+        onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
+        })
     }
 
-    if (!orderCode) {
-      console.warn('[PAY] orderCode 없음')
-      return
+    const askDeleteCart = (cartId: number) => {
+        setDeleteModal({
+        open: true,
+        title: '장바구니 삭제',
+        message: '이 상품을 장바구니에서 삭제하시겠습니까?',
+        warning: '',
+        onConfirm: () => {
+            handleDeleteCart(cartId)
+            setDeleteModal(prev => ({ ...prev, open: false }))
+        },
+        onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
+        })
     }
 
-    try {
-      await paymentWidget.requestPayment({
-        amount: total,
-        orderId: orderCode,
-        orderName: '장바구니 상품 결제',
-        successUrl: `${window.location.origin}/pay/success`,
-        failUrl: `${window.location.origin}/pay/fail`,
-      })
-    } catch (e: any) {
-      try {
-        await axios.post(
-          `${API_BASE_URL}/orders/cancel-before-payment`,
-          { orderCode },
-          { withCredentials: true },
-        )
-      } catch (cancelErr) {
-        console.error('[PAY] cancel-before-payment API 호출 실패', cancelErr)
-      }
+    // =============== 기본 설정 모달 (배송지/결제수단) ===============
+    const handleAskDefaultAddress = () => {
+        if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
+        alert('이름과 주소를 모두 입력해주세요.')
+        return
+        }
 
-      if (e?.code === 'USER_CANCEL') {
-        alert('결제가 취소되었습니다.')
-      } else {
-        alert('결제 요청 중 오류가 발생했습니다.')
-      }
+        setConfirmModal({
+        open: true,
+        message: '이 배송지를 기본 배송지로 설정하시겠습니까?',
+        onConfirm: () => handleSaveAddress(true),
+        onCancel: () => handleSaveAddress(false),
+        })
     }
-  }
 
-  // 결제 성공 후 후처리 (장바구니 삭제 등)
-  useEffect(() => {
-    const payPending = localStorage.getItem('PAY_PENDING')
-    if (!payPending) return
+    const handleAskDefaultPayment = () => {
+        setConfirmModal({
+        open: true,
+        message: '이 결제수단을 기본 결제수단으로 설정하시겠습니까?',
+        onConfirm: () => handleSavePayment(true),
+        onCancel: () => handleSavePayment(false),
+        })
+    }
 
-    const cameFromSuccess = document.referrer.includes('/pay/success')
+    // =============== 무한 스크롤 ===============
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY
+            const viewportHeight = window.innerHeight
+            const fullHeight = document.documentElement.scrollHeight
 
-    if (cameFromSuccess) {
-      const stored = localStorage.getItem('ORDER_CART_IDS')
-      if (stored) {
-        const cartIds = JSON.parse(stored)
-
-        axios
-          .delete(`${API_BASE_URL}/cart/after-order`, {
-            data: { cartIds },
-            withCredentials: true,
-          })
-          .then(() => {
-            localStorage.removeItem('ORDER_CART_IDS')
-            if (userData?.id) {
-              fetchCart(userData.id)
+            if (scrollTop + viewportHeight >= fullHeight - 50) {
+                if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
+                    fetchInfiniteOrders(infiniteOrdersLastId)
+                } else if (
+                    activeTab === 'like' &&
+                    activeSubTab === 'product' &&
+                    !infiniteWishLoading &&
+                    infiniteWishHasMore
+                ) {
+                    fetchInfiniteWishList(infiniteWishLastId)
+                } else if (activeTab === 'reviews' && !infiniteReviewLoading && infiniteReviewHasMore) {
+                    fetchInfiniteReviews(infiniteReviewLastId)
+                }
             }
-          })
-          .catch(e => console.error('장바구니 항목 삭제 실패:', e))
-      }
+        }
 
-      setIsModalOpen(false)
-      setPaymentWidget(null)
-      setTotal(0)
-      setOrderCode(null)
-      setSelectedItems([])
-      localStorage.removeItem('PAY_PENDING')
-    }
-  }, [])
+        window.addEventListener('scroll', handleScroll)
+        window.addEventListener('touchmove', handleScroll)
 
-  const handleClosePaymentModal = () => {
-    setIsModalOpen(false)
-    setWidgetLoaded(false)
-    setPaymentWidget(null)
-    setOrderCode(null)
-    setTotal(0)
-    setSelectedItems([])
-  }
-
-  // 선택된 첫 번째 장바구니 아이템 (UI에 표시용)
-  const firstSelectedCartId = selectedItems[0]
-  const firstSelectedItem = cart.find(item => item.cartId === firstSelectedCartId)
-
-  // ================= 세로 스크롤 막고 가로 드래그 작동 =================
-    const sliderRef = useRef<HTMLDivElement | null>(null)
-    const isDraggingRef = useRef(false)   // ← 드래그 중인지 체크용
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            window.removeEventListener('touchmove', handleScroll)
+        }
+    }, [
+        activeTab,
+        activeSubTab,
+        infiniteOrdersLoading,
+        infiniteOrdersHasMore,
+        infiniteOrdersLastId,
+        infiniteWishLoading,
+        infiniteWishHasMore,
+        infiniteWishLastId,
+        infiniteReviewLoading,
+        infiniteReviewHasMore,
+        infiniteReviewLastId,
+        fetchInfiniteOrders,
+        fetchInfiniteWishList,
+        fetchInfiniteReviews,
+    ])
 
     useEffect(() => {
-    const slider = sliderRef.current
-    if (!slider) return
+        if (activeTab === 'orders' && infiniteOrders.length === 0) {
+        resetInfiniteOrders()
+        fetchInfiniteOrders(null)
+        } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
+        resetInfiniteWishList()
+        fetchInfiniteWishList(null)
+        } else if (activeTab === 'reviews' && infiniteReviews.length === 0) {
+        setInfiniteReviews([])
+        setInfiniteReviewHasMore(true)
+        setInfiniteReviewLastId(null)
+        fetchInfiniteReviews(null)
+        }
+    }, [activeTab, activeSubTab])
 
-    let isDown = false
-    let startX = 0
-    let scrollLeft = 0
+    // =============== 장바구니 → 배송지 선택 → 결제 흐름 ===============
 
-    const handlePointerDown = (e: PointerEvent) => {
-        // 마우스 오른쪽/휠 클릭 무시
-        if (e.pointerType === 'mouse' && e.button !== 0) return
-console.log('pointer down', e.pointerType)
-        isDown = true
-        isDraggingRef.current = false
-
-        slider.classList.add('active')
-        slider.setPointerCapture(e.pointerId)
-
-        // 시작 시점 기준값 저장
-        startX = e.clientX
-        scrollLeft = slider.scrollLeft
-    }
-
-    const handlePointerMove = (e: PointerEvent) => {
-        if (!isDown) return
-console.log('pointer move')
-        // 세로 스크롤 방지 (특히 모바일)
-        e.preventDefault()
-
-        const dx = e.clientX - startX
-        const walk = dx * 1.3
-
-        if (Math.abs(walk) > 5) {
-        isDraggingRef.current = true
+    // 선택 상품 구매 버튼
+    const handlePurchaseSelected = () => {
+        if (selectedItems.length === 0) {
+        alert('선택된 상품이 없습니다.')
+        return
         }
 
-        slider.scrollLeft = scrollLeft - walk
+        const selected = cart
+        .filter(item => selectedItems.includes(item.cartId))
+        .map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+        }))
+
+        setPendingOrderItems(selected)
+        setIsAddressSelectModalOpen(true)
     }
 
-    const endDrag = (e: PointerEvent) => {
-        if (!isDown) return
-
-        isDown = false
-        slider.classList.remove('active')
+    // 배송지 선택 후 "다음" 버튼
+    const handleAddressNext = async () => {
+        if (!selectedAddress) {
+        alert('배송지를 선택해주세요.')
+        return
+        }
 
         try {
-        slider.releasePointerCapture(e.pointerId)
-        } catch {
-        // 이미 해제된 경우 무시
+        const res = await axios.post(
+            `${API_BASE_URL}/cart/prepare`,
+            {
+            items: pendingOrderItems,
+            addressId: selectedAddress.userAddressId,
+            },
+            { withCredentials: true },
+        )
+
+        const { orderCode, totalPrice } = res.data.data
+
+        setOrderCode(orderCode)
+        setTotal(totalPrice)
+
+        // 장바구니에서 구매한 cartId 기록 → 결제 성공 후 삭제용
+        localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
+        localStorage.setItem('PAY_PENDING', '1')
+
+        setIsAddressSelectModalOpen(false)
+        setIsModalOpen(true)
+        } catch (error) {
+        console.error('결제 준비 실패:', error)
+        alert('결제 준비 중 오류가 발생했습니다.')
+        }
+    }
+
+    // 토스 결제 위젯 초기화
+    const handleInitPaymentWidget = async (amount: number) => {
+        try {
+        let widget = paymentWidget
+
+        if (!widget) {
+            widget = await loadPaymentWidget(clientKey, customerKey)
+            setPaymentWidget(widget)
         }
 
-        // click 이벤트와 구분하기 위해 한 틱 뒤에 false로
-        setTimeout(() => {
-        isDraggingRef.current = false
-        }, 0)
+        await widget.renderPaymentMethods('#payment-method', {
+            value: amount,
+        })
+
+        await widget.renderAgreement('#agreement')
+
+        setWidgetLoaded(true)
+        } catch (e) {
+        console.error('장바구니 위젯 초기화 실패', e)
+        setWidgetLoaded(false)
+        }
     }
 
-    // passive 옵션 명시 (모바일에서 preventDefault 허용)
-    slider.addEventListener('pointerdown', handlePointerDown, { passive: true })
-    slider.addEventListener('pointermove', handlePointerMove, { passive: false })
-    slider.addEventListener('pointerup', endDrag)
-    slider.addEventListener('pointercancel', endDrag)
-    slider.addEventListener('pointerleave', endDrag)
+    // 결제 모달 열릴 때 위젯 렌더
+    useEffect(() => {
+        if (!isModalOpen) return
+        handleInitPaymentWidget(total)
+    }, [isModalOpen, total])
 
-    return () => {
-        slider.removeEventListener('pointerdown', handlePointerDown)
-        slider.removeEventListener('pointermove', handlePointerMove)
-        slider.removeEventListener('pointerup', endDrag)
-        slider.removeEventListener('pointercancel', endDrag)
-        slider.removeEventListener('pointerleave', endDrag)
+    // 결제 요청
+    const handleRequestPayment = async () => {
+        if (!paymentWidget) {
+        console.warn('[PAY] paymentWidget 없음')
+        return
+        }
+
+        if (!orderCode) {
+        console.warn('[PAY] orderCode 없음')
+        return
+        }
+
+        try {
+        await paymentWidget.requestPayment({
+            amount: total,
+            orderId: orderCode,
+            orderName: '장바구니 상품 결제',
+            successUrl: `${window.location.origin}/pay/success`,
+            failUrl: `${window.location.origin}/pay/fail`,
+        })
+        } catch (e: any) {
+        try {
+            await axios.post(
+            `${API_BASE_URL}/orders/cancel-before-payment`,
+            { orderCode },
+            { withCredentials: true },
+            )
+        } catch (cancelErr) {
+            console.error('[PAY] cancel-before-payment API 호출 실패', cancelErr)
+        }
+
+        if (e?.code === 'USER_CANCEL') {
+            alert('결제가 취소되었습니다.')
+        } else {
+            alert('결제 요청 중 오류가 발생했습니다.')
+        }
+        }
     }
+
+    // 결제 성공 후 후처리 (장바구니 삭제 등)
+    useEffect(() => {
+        const payPending = localStorage.getItem('PAY_PENDING')
+        if (!payPending) return
+
+        const cameFromSuccess = document.referrer.includes('/pay/success')
+
+        if (cameFromSuccess) {
+        const stored = localStorage.getItem('ORDER_CART_IDS')
+        if (stored) {
+            const cartIds = JSON.parse(stored)
+
+            axios
+            .delete(`${API_BASE_URL}/cart/after-order`, {
+                data: { cartIds },
+                withCredentials: true,
+            })
+            .then(() => {
+                localStorage.removeItem('ORDER_CART_IDS')
+                if (userData?.id) {
+                fetchCart(userData.id)
+                }
+            })
+            .catch(e => console.error('장바구니 항목 삭제 실패:', e))
+        }
+
+        setIsModalOpen(false)
+        setPaymentWidget(null)
+        setTotal(0)
+        setOrderCode(null)
+        setSelectedItems([])
+        localStorage.removeItem('PAY_PENDING')
+        }
     }, [])
+
+    const handleClosePaymentModal = () => {
+        setIsModalOpen(false)
+        setWidgetLoaded(false)
+        setPaymentWidget(null)
+        setOrderCode(null)
+        setTotal(0)
+        setSelectedItems([])
+    }
+
+    // 선택된 첫 번째 장바구니 아이템 (UI에 표시용)
+    const firstSelectedCartId = selectedItems[0]
+    const firstSelectedItem = cart.find(item => item.cartId === firstSelectedCartId)
+
+    const sliderRef = useRef<HTMLDivElement>(null)
+
+    const moveSlide = (dir: number) => {
+        const slider = sliderRef.current
+        if (!slider) return
+
+        slider.scrollBy({
+            left: dir * 300, // 카드 1개 정도 만큼 이동
+            behavior: "smooth"
+        })
+    }
 
     // =============== 렌더링 조건 ===============
     if (pageLoading) {
@@ -969,7 +905,7 @@ console.log('pointer move')
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
                                                     <img
                                                         key={idx}
-                                                        src={`http://localhost:8090${item.imageUrl}`}
+                                                        src={`${IMAGE_BASE_URL}${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 ))}
@@ -978,7 +914,7 @@ console.log('pointer move')
                                         <div className="order-footer">
                                             <button
                                                 type="button"
-                                                className="order-btn shipping-btn"
+                                                className="order-btn shipping-btn btn-primary"
                                                 onClick={(e) => {
                                                     e.stopPropagation() // 상단 onClick 안 타게 방지
                                                     router.push(`/personal/delivery/${order.orderId}`)
@@ -1008,10 +944,10 @@ console.log('pointer move')
                                     onChange={(e) => setActiveFilter(e.target.value)}
                                     className="filter-select"
                                 >
-                                    <option value="전체">전체</option>
-                                    <option value="취소">취소</option>
-                                    <option value="반품">반품</option>
-                                    <option value="교환">교환</option>
+                                    <option value="ALL">전체</option>
+                                    <option value="CANCELLED">취소</option>
+                                    <option value="RETURN">반품</option>
+                                    <option value="EXCHANGE">교환</option>
                                 </select>
                             </div>
 
@@ -1043,7 +979,7 @@ console.log('pointer move')
                                                         <p> | 주문일: {order.createdDate}</p>
                                                         <p> | {status} 일시: {statusDate}</p>
                                                     </div>
-                                                    <span className={`badge ${status}`}>{status}</span>
+                                                    <span className={`badge ${order.status}`}>{ORDER_STATUS_LABEL[order.status]}</span>
                                                 </div>
                                             </div>
                                         )
@@ -1472,6 +1408,10 @@ console.log('pointer move')
                             {activeSubTab === 'product' && (
                                 <div className="subtab-content">
                                     <div className="rs-wrapper">
+
+                                        <button className="rs-btn left" onClick={() => moveSlide(-1)}>‹</button>
+                                        <button className="rs-btn right" onClick={() => moveSlide(1)}>›</button>
+
                                         <div className="rs-header">
                                             <h3>AI 추천 상품</h3>
                                         </div>
@@ -1485,21 +1425,18 @@ console.log('pointer move')
                                                 <div
                                                     key={item.productId}
                                                     className="rs-card"
-                                                    onClick={(e) => {
-                                                        if (isDraggingRef.current) {
-                                                            e.preventDefault()
-                                                            return
-                                                        }
+                                                    onClick={() => {
                                                         router.push(`/product/list/detail?productId=${item.productId}`)
                                                     }}
                                                 >
                                                     <img
-                                                        src={item.imageUrl ? `http://localhost:8090${item.imageUrl}` : ""}
+                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : "/no-image.png"}
                                                         className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
                                                         alt={item.productName}
+                                                        draggable={false}
                                                     />
 
-                                                    <div className="rs-name">{item.productName}</div>
+                                                    <div className="rs-name">{item.name}</div>
                                                     <div className="rs-price">
                                                         {item.price ? `${item.price.toLocaleString()}원` : "가격 없음"}
                                                     </div>
@@ -1523,7 +1460,9 @@ console.log('pointer move')
                                                 >
                                                     <div className="wishlist-image">
                                                         <img 
-                                                            src={`http://localhost:8090${item.imageUrl}`}
+                                                            src={item.imageUrl
+                                                                ? `${IMAGE_BASE_URL}${item.imageUrl}`
+                                                                : "/no-image.png"}
                                                             alt={item.productName}
                                                         />
                                                     </div>
@@ -1562,7 +1501,7 @@ console.log('pointer move')
                                                     <div className="studio-info">
                                                         {follow.studioImageUrl ? (
                                                             <img 
-                                                                src={`http://localhost:8090${follow.studioImageUrl}`}
+                                                                src={`${IMAGE_BASE_URL}${follow.studioImageUrl}`}
                                                                 alt={follow.studioName}
                                                                 className="studio-image"
                                                             />
@@ -1613,7 +1552,7 @@ console.log('pointer move')
                                                     {review.images.map((url, i) => (
                                                         <img
                                                             key={i}
-                                                            src={`http://localhost:8090${url}`}
+                                                            src={`${IMAGE_BASE_URL}${url}`}
                                                             alt={`리뷰 이미지 ${i + 1}`}
                                                             className="review-image-item"
                                                         />
@@ -2287,7 +2226,7 @@ console.log('pointer move')
                                 className="btn-primary"
                                 onClick={() => {
                                     setIsAddressSelectModalOpen(false)
-                                    setActiveTab("address")  // 배송지 탭으로 이동
+                                    setActiveTab("addresses")  // 배송지 탭으로 이동
                                 }}
                             >
                                 + 배송지 추가하기
@@ -2339,7 +2278,7 @@ console.log('pointer move')
                                     <img
                                         src={
                                             firstSelectedItem?.imageUrl
-                                                ? `http://localhost:8090${firstSelectedItem.imageUrl}`
+                                                ? `${IMAGE_BASE_URL}${firstSelectedItem.imageUrl}`
                                                 : "/default-product.png"
                                         }
                                         alt="장바구니 대표 이미지"

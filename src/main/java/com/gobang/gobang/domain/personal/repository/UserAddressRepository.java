@@ -6,6 +6,7 @@ import com.gobang.gobang.domain.personal.entity.UserAddress;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,18 +14,25 @@ import java.util.Optional;
 
 @Repository
 public interface UserAddressRepository extends JpaRepository<UserAddress, Long> {
-    // 사용자별 배송지 목록 조회
     List<UserAddress> findBySiteUser(SiteUser siteUser);
 
-    // 사용자의 모든 배송지를 기본 배송지 해제
+    Optional<UserAddress> findByUserAddressIdAndSiteUser_Id(
+            Long addressId,
+            Long userId
+    );
+
+    boolean existsBySiteUserAndIsDefault(SiteUser siteUser, boolean isDefault);
+
     @Modifying
-    @Query("UPDATE UserAddress ua SET ua.isDefault = false WHERE ua.siteUser.id = :userId AND ua.isDefault = true")
-    void clearDefaultAddress(Long userId);
+    @Query("""
+        UPDATE UserAddress ua
+        SET ua.isDefault = false
+        WHERE ua.siteUser.id = :userId
+            AND ua.isDefault = true
+    """)
+    void clearDefaultAddress(@Param("userId") Long userId);
 
     //hj 기본배송지 조회 추가
     Optional<UserAddress> findBySiteUserAndIsDefaultTrue(SiteUser user);
     boolean existsBySiteUserAndIsDefaultTrue(SiteUser user); // ✅ 추가
-
-    // 기본 배송지가 존재하는지 확인
-    boolean existsBySiteUserAndIsDefault(SiteUser siteUser, boolean isDefault);
 }

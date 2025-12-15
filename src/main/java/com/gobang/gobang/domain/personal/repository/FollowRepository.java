@@ -57,5 +57,4 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             Long lastFollowId,
             Pageable pageable
     );
-
 }

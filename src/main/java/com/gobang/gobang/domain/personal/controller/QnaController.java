@@ -1,5 +1,7 @@
 package com.gobang.gobang.domain.personal.controller;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.inquiry.model.InquiryType;
 import com.gobang.gobang.domain.personal.dto.response.QnaResponse;
 import com.gobang.gobang.domain.personal.service.QnaService;
@@ -15,39 +17,47 @@ import java.util.List;
 public class QnaController {
 
     private final QnaService qnaService;
+    private final SiteUserService siteUserService;
 
-    // 내 문의 전체 조회
     @GetMapping
-    public RsData<List<QnaResponse>> getMyInquiries(@RequestParam Long userId) {
-        return qnaService.getMyInquiries(userId);
+    public RsData<List<QnaResponse>> getMyInquiries() {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "내 문의 조회 성공",
+                qnaService.getMyInquiries(user));
     }
 
-    // 특정 문의 상세 조회
     @GetMapping("/{qnaId}")
-    public RsData<QnaResponse> getInquiryDetail(@RequestParam Long userId, @PathVariable Long qnaId) {
-        return qnaService.getInquiryDetail(userId, qnaId);
+    public RsData<QnaResponse> getInquiryDetail(@PathVariable Long qnaId) {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "문의 상세 조회 성공",
+                qnaService.getInquiryDetail(user, qnaId));
     }
 
-    // 문의 삭제
     @DeleteMapping("/{qnaId}")
-    public RsData<Void> deleteInquiry(@RequestParam Long userId, @PathVariable Long qnaId) {
-        return qnaService.deleteInquiry(userId, qnaId);
+    public RsData<Void> deleteInquiry(@PathVariable Long qnaId) {
+        SiteUser user = siteUserService.getCurrentUser();
+        qnaService.deleteInquiry(user, qnaId);
+        return RsData.of("200", "문의 삭제 성공");
     }
 
-    // 타입별 조회
     @GetMapping("/type/{type}")
-    public RsData<List<QnaResponse>> getInquiriesByType(@RequestParam Long userId, @PathVariable InquiryType type) {
-        return qnaService.getInquiriesByType(userId, type);
+    public RsData<List<QnaResponse>> getInquiriesByType(@PathVariable InquiryType type) {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "타입별 문의 조회 성공",
+                qnaService.getInquiriesByType(user, type));
     }
 
-    // 답변 완료/대기 조회
     @GetMapping("/answered")
-    public RsData<List<QnaResponse>> getAnsweredInquiries(@RequestParam Long userId) {
-        return qnaService.getInquiriesByAnswered(userId, true);
+    public RsData<List<QnaResponse>> getAnsweredInquiries() {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "답변 완료 문의 조회 성공",
+                qnaService.getInquiriesByAnswered(user, true));
     }
 
     @GetMapping("/pending")
-    public RsData<List<QnaResponse>> getPendingInquiries(@RequestParam Long userId) {
-        return qnaService.getInquiriesByAnswered(userId, false);
+    public RsData<List<QnaResponse>> getPendingInquiries() {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "답변 대기 문의 조회 성공",
+                qnaService.getInquiriesByAnswered(user, false));
     }
 }

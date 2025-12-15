@@ -98,7 +98,7 @@ export default function MyPage() {
                 const user = await fetchUser()
                 if (!user?.id) return
                 await Promise.all([
-                    fetchOrders(user.id),
+                    // fetchOrders(user.id),
                     fetchCart(user.id),
                     fetchAddresses(user.id),
                     fetchPaymentMethods(user.id),
@@ -125,8 +125,8 @@ export default function MyPage() {
         setUserData(data.data)
         return data.data
     }
-    const fetchOrders = async (id: number) => {
-        const { data } = await axios.get(`${API_BASE_URL}/mypage/orders`, { withCredentials: true })
+    const fetchOrders = async (studioId: number) => {
+        const { data } = await axios.get(`${API_BASE_URL}/mypage/studios/${studioId}/orders`, { withCredentials: true })
         setOrders(data.data)
     }
     const fetchCart = async (id: number) => {
@@ -407,6 +407,11 @@ export default function MyPage() {
             fetchGlobalCategories()
         }
     }, [activeTab])
+
+    useEffect(() => {
+        if (!studio?.studioId) return
+        fetchOrders(studio.studioId)
+    }, [studio])
 
     // =============== 🔐 회원정보 관련 함수 ===============
     const handleVerifyPassword = async () => {

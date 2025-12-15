@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.personal.entity;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.personal.dto.request.PaymentMethodRequest;
 import com.gobang.gobang.domain.personal.enums.PaymentType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -71,4 +72,23 @@ public class PaymentMethod {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    public static PaymentMethod from(
+            PaymentMethodRequest request,
+            SiteUser user,
+            boolean isDefault
+    ) {
+        return PaymentMethod.builder()
+                .siteUser(user)
+                .type(request.getType())
+                .bankName(request.getBankName())
+                .accountNumber(request.getAccountNumber())
+                .accountHolder(request.getAccountHolder())
+                .cardCompany(request.getCardCompany())
+                .cardNumber(request.getCardNumber())
+                .cardExpire(request.getCardExpire())
+                .defaultPayment(isDefault)
+                .build();
+    }
+
 }
