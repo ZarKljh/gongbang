@@ -29,42 +29,55 @@ public class OrdersResponse {
     private String status;
     private String reason;
     private String buyerNickname;   // 셀러 페이지에서 볼 구매자 닉네임 - 상진 추가
+
+    private String courierName;
+    private String trackingNumber;
+
     private List<OrderItemResponse> items;
     private List<DeliveryResponse> deliveries;
 
     public static OrdersResponse from(Orders orders, ImageRepository imageRepository) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        // createdDate
         String createdDateStr = orders.getCreatedDate() != null
                 ? orders.getCreatedDate().format(formatter)
                 : LocalDateTime.now().format(formatter);
 
-        // items
+        List<DeliveryResponse> deliveries = orders.getDeliveries() != null
+                ? orders.getDeliveries().stream().map(DeliveryResponse::from).toList()
+                : Collections.emptyList();
+
         List<OrderItemResponse> items = orders.getOrderItems()
                 .stream()
                 .map(item -> OrderItemResponse.from(item, imageRepository))
                 .toList();
 
-        // deliveries (response용)
-        List<DeliveryResponse> deliveries = orders.getDeliveries() != null
-                ? orders.getDeliveries().stream().map(DeliveryResponse::from).toList()
-                : Collections.emptyList();
+        Delivery latestDelivery = null;
+        if (orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()) {
+            latestDelivery = orders.getDeliveries().stream()
+                    .max(Comparator.comparing(Delivery::getCreatedDate))
+                    .orElse(null);
+        }
 
-        // 🚀 가장 최근 Delivery (createdDate 기준)
-        Delivery latest = orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()
+
+
+        // OrdersResponse.from
+        String deliveryStatus = orders.getDeliveries() != null && !orders.getDeliveries().isEmpty()
                 ? orders.getDeliveries().stream()
                 .max(Comparator.comparing(Delivery::getCreatedDate))
-                .orElse(null)
-                : null;
+                .get()
+                .getDeliveryStatus()
+                : "배송준비중";
 
-        // 배송상태
-        String deliveryStatus = latest != null ? latest.getDeliveryStatus() : "배송준비중";
+        String courierName =
+                latestDelivery != null ? latestDelivery.getCourierName() : null;
 
-        // 배송완료 날짜 (문자열로 변환)
-        String completedAt = (latest != null && latest.getCompletedAt() != null)
-                ? latest.getCompletedAt().format(formatter)
-                : null;
+        String trackingNumber =
+                latestDelivery != null ? latestDelivery.getTrackingNumber() : null;
+
+        String completedAt = deliveries.isEmpty() || deliveries.get(deliveries.size() - 1).getCompletedAt() == null
+                ? null
+                : deliveries.get(deliveries.size() - 1).getCompletedAt();
 
         return OrdersResponse.builder()
                 .orderId(orders.getOrderId())
@@ -73,7 +86,7 @@ public class OrdersResponse {
                 .totalPrice(orders.getTotalPrice() != null ? orders.getTotalPrice() : BigDecimal.ZERO)
                 .createdDate(createdDateStr)
                 .deliveryStatus(deliveryStatus)
-                .completedAt(completedAt)   // ⭐ 정상 문자열
+                .completedAt(completedAt)
                 .status(orders.getStatus())
                 .reason(orders.getReason())
                 .buyerNickname(
@@ -81,6 +94,8 @@ public class OrdersResponse {
                                 ? orders.getSiteUser().getNickName()
                                 : null
                 )
+                .courierName(courierName)
+                .trackingNumber(trackingNumber)
                 .items(items)
                 .deliveries(deliveries)
                 .build();
