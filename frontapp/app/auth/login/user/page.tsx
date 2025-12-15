@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import './login_user.css'
 import { loginUserValidation } from '@/app/auth/hooks/loginUserValidation'
 import ErrorMessage from '@/app/auth/common/errorMessage'
-import axios from 'axios'
 import { api } from '@/app/utils/api'
 
 export default function LoginUser() {
@@ -62,23 +61,24 @@ export default function LoginUser() {
         <>
             <section className="login-container">
                 <h2 className="login-title">로그인</h2>
-                <form onSubmit={handleSubmit}>
+                <form className="login-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label">아이디</label>
                         <input type="text" name="userName" className="form-input" onChange={handleChange}></input>
+                        <div className="errorMessage-area">
+                            <ErrorMessage message={errors.userName} />
+                        </div>
                     </div>
-                    <ErrorMessage message={errors.userName} />
                     <div className="form-group">
                         <label className="form-label">패스워드</label>
                         <input type="password" name="password" className="form-input" onChange={handleChange}></input>
+                        <div className="errorMessage-area">
+                            <ErrorMessage message={errors.password} />
+                        </div>
                     </div>
-                    <ErrorMessage message={errors.password} />
                     <div className="button-group">
                         <input type="submit" value="로그인" className="btn btn-primary" />
                         {/* <button type="submit">등록</button> */}
-                        <button type="button" className="btn" onClick={handleLogout}>
-                            로그아웃
-                        </button>
                     </div>
                 </form>
             </section>

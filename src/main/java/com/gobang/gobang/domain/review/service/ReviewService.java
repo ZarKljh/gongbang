@@ -20,8 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -37,6 +37,7 @@ public class ReviewService {
     private final ReviewImageService reviewImageService ;
     private final ReviewImageRepository reviewImageRepository;
     private final ImageRepository imageRepository;
+    private final AiService aiService;
 
     // 리뷰 목록 조회
     public Page<Review> getReviews(
@@ -64,7 +65,7 @@ public class ReviewService {
 
         Page<Review> reviewPage;
 
-        // ⭐⭐⭐ 1) 별점 필터가 가장 우선
+        // 1) 별점 필터가 가장 우선
         if (rating != null) {
             if (productId != null) {
                 reviewPage = reviewRepository.findRatingFiltered(productId, rating, pageable);
@@ -72,7 +73,7 @@ public class ReviewService {
                 reviewPage = reviewRepository.findRatingFilteredGlobal(rating, pageable);
             }
 
-            // ⭐ keyword도 별점 필터 내부에서 처리해야 함
+            // keyword도 별점 필터 내부에서 처리해야 함
             if (hasKeyword) {
                 if (productId != null) {
                     reviewPage = reviewRepository.findByProductIdAndContentContainingIgnoreCase(
@@ -86,7 +87,7 @@ public class ReviewService {
             return decorateReviews(reviewPage);
         }
 
-        // ⭐⭐⭐ 2) 별점 필터 없으면 기본 목록
+        // 2) 별점 필터 없으면 기본 목록
         if (productId != null) {
             if (hasKeyword) {
                 reviewPage = reviewRepository.findByProductIdAndContentContainingIgnoreCase(productId, keyword, pageable);
@@ -389,4 +390,23 @@ public class ReviewService {
                 .map(review -> ReviewResponse.fromEntity(review, imageRepository))
                 .toList();
     }
+
+    public String generateReviewSummary(Long productId) {
+
+        List<Review> reviews = reviewRepository.findByProductIdAndIsActiveTrue(productId);
+
+        if (reviews.isEmpty()) {
+            return "아직 작성된 리뷰가 없습니다.";
+        }
+
+        // 리뷰 본문만 추출
+        List<String> contents = reviews.stream()
+                .map(Review::getContent)
+                .toList();
+
+        String joinedText = String.join("\n", contents);
+
+        return aiService.summarizeReviews(joinedText);
+    }
+
 }

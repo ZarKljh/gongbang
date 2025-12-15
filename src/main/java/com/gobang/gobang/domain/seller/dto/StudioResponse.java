@@ -12,6 +12,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class StudioResponse {
+    private Long id;
     private String email;
     private String userName;
     private String fullName;
@@ -37,6 +38,7 @@ public class StudioResponse {
     //private List<Studio> studioList;
 
     public StudioResponse(SiteUser siteUser, Studio studio){
+        this.id = siteUser.getId();
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
         this.fullName = siteUser.getFullName();
@@ -60,6 +62,7 @@ public class StudioResponse {
     }
 
     public StudioResponse(SiteUser siteUser, Studio studio, Image studioMainImage, Image studioLogoImage, List<Image> studioImages){
+        this.id = siteUser.getId();
         this.email = siteUser.getEmail();
         this.userName = siteUser.getUserName();
         this.fullName = siteUser.getFullName();

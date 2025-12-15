@@ -4,6 +4,10 @@ import api from '@/app/utils/api'
 import { useEffect, useState } from 'react'
 import './section-topStudio.css'
 import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
+const API_BASE_URL = api.defaults.baseURL
+export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 type TopStudio = {
     studioId: number
@@ -29,7 +33,7 @@ export default function TopStudios() {
 
     const fetchTopStudios = async () => {
         try {
-            const res = await api.get('http://localhost:8090/api/v1/home/top-studios')
+            const res = await api.get(`${API_BASE_URL}/home/top-studios`)
             if (res.data?.data) {
                 setTopStudio(res.data.data)
             }
@@ -53,9 +57,9 @@ export default function TopStudios() {
             <div className="sliderWrapper">
                 {/* 왼쪽 버튼 */}
                 {topStudio.length > 0 && (
-                    <button className="slideBtn prev" onClick={() => moveSlide(-1)}>
-                        &lt;
-                    </button>
+                    <div className="review-rank-prev slideBtn prev" onClick={() => moveSlide(-1)}>
+                        <ChevronLeft className="review-rank-btn-icon" size={26} strokeWidth={2.5} />
+                    </div>
                 )}
 
                 <div className="topStudioList" style={{ transform: `translateX(-${slideIndex * 100}%)` }}>
@@ -66,7 +70,7 @@ export default function TopStudios() {
                             <div key={studio.studioId} className="topStudioCard">
                                 <div className="topStudioBox">
                                     <img
-                                        src={`http://localhost:8090${studio.mainImageUrl}`}
+                                        src={`${IMAGE_BASE_URL}${studio.mainImageUrl}`}
                                         alt={studio.studioName}
                                         className="topStudioMainImg"
                                     />
@@ -88,7 +92,7 @@ export default function TopStudios() {
                                             className="topProductCardSmall"
                                         >
                                             <img
-                                                src={`http://localhost:8090${p.imageUrl}`}
+                                                src={`${IMAGE_BASE_URL}${p.imageUrl}`}
                                                 alt={p.productName}
                                                 className="topProductImgSmall"
                                             />
@@ -104,9 +108,9 @@ export default function TopStudios() {
 
                 {/* 오른쪽 버튼 */}
                 {topStudio.length > 0 && (
-                    <button className="slideBtn next" onClick={() => moveSlide(1)}>
-                        &gt;
-                    </button>
+                    <div className="review-rank-next slideBtn next" onClick={() => moveSlide(1)}>
+                        <ChevronRight className="review-rank-btn-icon" size={26} strokeWidth={2.5} />
+                    </div>
                 )}
             </div>
         </div>

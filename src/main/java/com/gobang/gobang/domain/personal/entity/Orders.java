@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.personal.entity;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.order.model.OrderStatus;
 import com.gobang.gobang.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -40,8 +40,9 @@ public class Orders {
     @CreationTimestamp
     private LocalDateTime createdDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
-    private String status; // 취소, 반품, 교환, null
+    private OrderStatus status; // 취소, 반품, 교환, null
 
     // 취소, 반품, 교환 사유
     @Column(name = "reason")
@@ -72,17 +73,6 @@ public class Orders {
     private List<OrderItem> orderItems = new ArrayList<>();
 
 
-    //  임시 주문 생성
-    public static Orders createTempOrder(SiteUser user) {
-        Orders order = new Orders();
-        order.setSiteUser(user);
-        order.setStatus("TEMP"); // 임시 주문 상태
-        order.setOrderCode("ORD_" + UUID.randomUUID());
-        order.setTotalPrice(BigDecimal.ZERO); // 일단 0 -> 뒤에서 계산됨
-
-        return order;
-    }
-
     //  주문 상품 추가
     public void addOrderItem(Product product, Long quantity, BigDecimal price) {
         OrderItem item = new OrderItem();
@@ -97,5 +87,44 @@ public class Orders {
         }
 
         this.orderItems.add(item);
+    }
+
+    public void addDelivery(UserAddress address) {
+        Delivery delivery = Delivery.create(this, address);
+        this.deliveries.add(delivery);
+    }
+
+    public void cancel(String reason) {
+        this.status = OrderStatus.CANCELLED;
+        this.reason = reason;
+    }
+
+    public void returnOrder(String reason) {
+        this.status = OrderStatus.RETURN;
+        this.reason = reason;
+    }
+
+    public void exchange(String reason) {
+        this.status = OrderStatus.EXCHANGE;
+        this.reason = reason;
+    }
+
+    public static Orders createTempOrder(SiteUser user) {
+        Orders order = new Orders();
+        order.siteUser = user;
+        order.status = OrderStatus.TEMP;
+        order.totalPrice = BigDecimal.ZERO;
+        return order;
+    }
+
+    public boolean isTemp() {
+        return this.status == OrderStatus.TEMP;
+    }
+
+    public void markPaid(String paymentKey, String methodName) {
+        this.status = OrderStatus.PAID;
+        this.paymentKey = paymentKey;
+        this.paymentMethodName = methodName;
+        this.paidAt = LocalDateTime.now();
     }
 }

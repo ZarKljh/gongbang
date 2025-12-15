@@ -10,15 +10,22 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Long> {
 
     List<PaymentMethod> findBySiteUserAndIsDeletedFalse(SiteUser siteUser);
 
-    @Modifying
-    @Query("UPDATE PaymentMethod p SET p.defaultPayment = false WHERE p.siteUser = :siteUser AND p.defaultPayment = true")
-    void unsetDefaultBySiteUser(@Param("siteUser") SiteUser siteUser);
+    Optional<PaymentMethod> findByPaymentIdAndSiteUser(Long paymentId, SiteUser siteUser);
 
     boolean existsBySiteUserAndDefaultPayment(SiteUser siteUser, boolean defaultPayment);
+
+    @Modifying
+    @Query("""
+        UPDATE PaymentMethod p
+        SET p.defaultPayment = false
+        WHERE p.siteUser = :siteUser
+    """)
+    void unsetDefaultBySiteUser(@Param("siteUser") SiteUser siteUser);
 }

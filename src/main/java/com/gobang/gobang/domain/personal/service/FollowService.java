@@ -42,7 +42,7 @@ public class FollowService {
                 request.getSiteUser(), request.getStudio());
 
         if (existing.isPresent()) {
-            throw new IllegalStateException("이미 팔로우 중입니다.");
+            throw new IllegalStateException("요청을 처리할 수 없습니다.");
         }
 
         Follow follow = Follow.builder()

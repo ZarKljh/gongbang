@@ -10,38 +10,44 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface WishListRepository extends JpaRepository<WishList, Long> {
 
-    // 사용자별 찜목록 조회
     List<WishList> findBySiteUser(SiteUser siteUser);
 
-    // 사용자와 상품으로 찜목록 조회
     Optional<WishList> findBySiteUserAndProduct(SiteUser siteUser, Product product);
 
-    // 상품별 찜 개수
-    long countByProduct(Product product);
+    Optional<WishList> findByWishlistIdAndSiteUser_Id(
+            Long wishlistId,
+            Long userId
+    );
 
-    // 사용자별 찜 개수
-    long countBySiteUser(SiteUser siteUser);
-
-    // 찜 여부 확인
     boolean existsBySiteUserAndProduct(SiteUser siteUser, Product product);
 
+    long countBySiteUser(SiteUser siteUser);
+
+    long countByProduct(Product product);
+
     @Query("""
-    SELECT w
-    FROM WishList w
-    WHERE w.siteUser.id = :userId
-      AND (:lastWishId IS NULL OR w.wishlistId < :lastWishId)
-    ORDER BY w.wishlistId DESC
+        SELECT w
+        FROM WishList w
+        WHERE w.siteUser.id = :userId
+          AND (:lastWishId IS NULL OR w.id < :lastWishId)
+        ORDER BY w.id DESC
     """)
     List<WishList> findInfiniteWishList(
-            Long userId,
-            Long lastWishId,
+            @Param("userId") Long userId,
+            @Param("lastWishId") Long lastWishId,
             Pageable pageable
+    );
+
+    List<WishList> findBySiteUserAndCreatedAtAfter(
+            SiteUser siteUser,
+            LocalDateTime createdAt
     );
 
 
@@ -68,4 +74,5 @@ public interface WishListRepository extends JpaRepository<WishList, Long> {
             """)
     List<Long> findLikedProductIds(@Param("userId") Long userId,
                                    @Param("productIds") List<Long> productIds);
+
 }

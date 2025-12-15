@@ -65,7 +65,7 @@ export default function ReviewRank() {
                         // slidesPerView={4}
                         slidesPerView="auto"
                         slidesPerGroup={4}
-                        spaceBetween={20}
+                        // spaceBetween={20}
                         loop={false}
                         navigation={false}
                         onSwiper={(swiper) => {
@@ -78,10 +78,11 @@ export default function ReviewRank() {
                         }}
                         className="review-rank-swiper"
                         breakpoints={{
-                            1200: { slidesPerView: 4, slidesPerGroup: 4 },
-                            992: { slidesPerView: 3, slidesPerGroup: 3 },
-                            768: { slidesPerView: 3, slidesPerGroup: 3 },
-                            0: { slidesPerView: 3, slidesPerGroup: 3 },
+                            1200: { slidesPerView: 4, slidesPerGroup: 4, spaceBetween: 20},
+                            992: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 20 },
+                            768: { slidesPerView: 3, slidesPerGroup: 3, spaceBetween: 16 },
+                            460: { slidesPerView: 2, slidesPerGroup: 2, spaceBetween: 12 },
+                            0: { slidesPerView: 2, slidesPerGroup: 2, spaceBetween: 12 },
                         }}
                     >
                         {products.map((p) => (
@@ -115,10 +116,10 @@ export default function ReviewRank() {
 
                     {/* 커스텀 화살표 */}
                     <div ref={prevRef} className="review-rank-prev">
-                        <ChevronLeft size={26} strokeWidth={2.5} />
+                        <ChevronLeft className="review-rank-btn-icon" size={26} strokeWidth={2.5} />
                     </div>
                     <div ref={nextRef} className="review-rank-next">
-                        <ChevronRight size={26} strokeWidth={2.5} />
+                        <ChevronRight className="review-rank-btn-icon" size={26} strokeWidth={2.5} />
                     </div>
                 </div>
             )}

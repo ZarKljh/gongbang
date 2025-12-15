@@ -4,7 +4,7 @@ spring:
     include: secret
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         show_sql: true
@@ -12,6 +12,14 @@ spring:
         use_sql_comments: true
   flyway:
     baseline-on-migrate: true
+  mvc:
+    async:
+      request-timeout: 60000 # 스프링 MVC요청 타임아웃 60초로 늘리기
+server:
+  tomcat:
+    connection-timeout: 60000   # Tomcat 요청 타임아웃 60초로 늘리기 (기본 10초)
+    keep-alive-timeout: 60000
+    max-swallow-size: -1
 logging:
   level:
     root: INFO
@@ -23,3 +31,7 @@ logging:
       enabled: true
       max-file-size: 10MB
       max-request-size: 20MB
+gemini:
+  api-key: ${GEMINI_API_KEY:dummy}
+caffeine:
+  spec: maximumSize=500,expireAfterWrite=24h

@@ -1,12 +1,12 @@
 .auth-container {
     width: 100%;
     max-width: 600px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: white;
+    margin: 40px auto;
+    padding: 40px;
+    background-color: #eeebe5;
     border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    box-shadow: 8px 8px 10px rgba(0, 0, 0, 0.5);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -33,15 +33,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: white;
+    background-color: #fff0dd;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.3);
     padding: 10px 20px;
     font-size: 16px;
     font-weight: 600;
 }
 
 .auth-group > .auth-box:hover {
-    background-color: #e2e8f0;
+    background-color: #8e8282;
+    color: white;
 }

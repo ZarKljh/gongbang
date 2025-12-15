@@ -11,6 +11,8 @@ import 'swiper/css/navigation'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { Nanum_Brush_Script } from 'next/font/google'
 import api from '@/app/utils/api'
+import ReviewSummary from '@/app/components/product/detail/ReviewSummary'
+import Image from 'next/image'
 
 export default function Review() {
     // ================= 리뷰 =================
@@ -186,10 +188,12 @@ export default function Review() {
 
             if (data.data) {
                 const formatted = data.data.map((r) => ({
-                    id: r.reviewId,
-                    img: `http://localhost:8090${r.imageUrl}`,
+                    reviewId: r.reviewId,
+                    imageUrls: r.imageUrls ?? [], // 모든 이미지 리스트 유지
+                    content: r.content,
                     title: r.content.length > 15 ? r.content.slice(0, 15) + '...' : r.content,
                 }))
+
                 setPhotoReviews(formatted)
             }
         } catch (e) {
@@ -198,12 +202,30 @@ export default function Review() {
     }
 
     useEffect(() => {
-        if (productId) fetchPhotoReviews()
+        if (productId) fetchPhotoReviews(productId)
     }, [productId])
 
+    // 모달용 전체 이미지들 구성
+    const allReviewImages = Array.isArray(photoReviews)
+        ? photoReviews.flatMap((review) =>
+              Array.isArray(review.imageUrls)
+                  ? review.imageUrls.map((url) => ({
+                        reviewId: review.reviewId,
+                        url,
+                    }))
+                  : [],
+          )
+        : []
     // 모달 열기 + 전체 이미지 세팅
     const openPhotoModal = () => {
-        setModalImages(photoReviews) // 전체 포토 이미지 모달에 표시
+        const allReviewImages = photoReviews.flatMap((review) =>
+            (review.imageUrls ?? []).map((url) => ({
+                reviewId: review.reviewId,
+                img: `http://localhost:8090${url}`,
+            })),
+        )
+
+        setModalImages(allReviewImages)
         setShowModal(true)
     }
 
@@ -333,24 +355,28 @@ export default function Review() {
     }
 
     // 리뷰 좋아요 버튼
+    // 좋아요 클릭
     const handleLikeClick = async (reviewId: number) => {
+        // 1️⃣ 비로그인 먼저 체크하고 서버 요청 보내지 않기
+        if (!isLoggedIn) {
+            const goLogin = confirm('로그인이 필요합니다. 로그인 하시겠습니까?')
+            if (goLogin) {
+                window.location.href = '/auth/login'
+            }
+            return
+        }
+
         try {
+            // 2️⃣ 로그인 상태일 때만 요청 전송
             const res = await api.post(`/reviews/${reviewId}/like`)
             const data = res.data
 
-            if (!isLoggedIn) {
-                if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
-                    window.location.href = '/auth/login'
-                }
-            }
-
-            // 요청 실패 시 (서버 오류등)
-            if (!data || !data.msg) {
+            if (!data || !data.resultCode) {
                 console.error('좋아요 요청 실패:', data)
                 return
             }
 
-            // 좋아요 추가 201
+            // 좋아요 추가 (201)
             if (data.resultCode === '201') {
                 setLikeCounts((prev) => ({
                     ...prev,
@@ -362,7 +388,7 @@ export default function Review() {
                 }))
             }
 
-            // 좋아요 취소 202
+            // 좋아요 취소 (202)
             else if (data.resultCode === '202') {
                 setLikeCounts((prev) => ({
                     ...prev,
@@ -373,7 +399,14 @@ export default function Review() {
                     [reviewId]: false,
                 }))
             }
-        } catch (err) {
+        } catch (err: any) {
+            // 401이면 로그인 필요 안내
+            if (err.response?.status === 401) {
+                const goLogin = confirm('로그인이 필요합니다. 로그인 하시겠습니까?')
+                if (goLogin) window.location.href = '/auth/login'
+                return
+            }
+
             console.error('좋아요 요청 실패:', err)
         }
     }
@@ -509,22 +542,20 @@ export default function Review() {
     return (
         <>
             <div>
-                <div
-                    style={{
-                        maxWidth: '1280px',
-                        margin: '0 auto',
-                    }}
-                >
+                <div className="detailPage">
                     {/* 🎨 상단 배너 */}
                     <div className="review-banner">
                         {/* <h2>생생한 리뷰를 기다리고 있어요!</h2> */}
                         {/* <p>사진과 함께 리뷰를 남겨주시면 다른 분들께 큰 도움이 됩니다</p> */}
-                        <img className="review-banner-img" src="/images/리뷰_배너2.png" alt="배너 이미지" />
+                        <picture>
+                            <source media="(max-width: 768px)" srcSet="/images/모바일_리뷰_배너.png" />
+                            <img src="/images/리뷰_배너2.png" alt="배너 이미지" className="review-banner-img" />
+                        </picture>
                     </div>
 
                     {/* 제목 + 버튼 */}
                     <div className="review-list-title">
-                        <h2>리뷰 목록</h2>
+                        <h2 className="reviews-title">리뷰 목록</h2>
                         {roleType === 'USER' && (
                             <button className="review-write-btn" onClick={handleCreateClick}>
                                 리뷰 작성하기
@@ -552,10 +583,11 @@ export default function Review() {
                             }}
                         >
                             {photoReviews.map((r) => (
-                                <SwiperSlide key={r.id}>
+                                <SwiperSlide key={r.reviewId}>
                                     <div className="photoCard" onClick={openPhotoModal}>
-                                        <img src={r.img} alt={r.title} />
-
+                                        {r.imageUrls?.[0] && (
+                                            <img src={`http://localhost:8090${r.imageUrls[0]}`} alt="" />
+                                        )}
                                         <p>{r.title}</p>
                                     </div>
                                 </SwiperSlide>
@@ -564,18 +596,7 @@ export default function Review() {
 
                         {/* 포토 모달 */}
                         {showModal && (
-                            <div
-                                style={{
-                                    position: 'fixed',
-                                    inset: 0,
-                                    background: 'rgba(0,0,0,0.7)',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    zIndex: 2000,
-                                }}
-                                onClick={closePhotoModal}
-                            >
+                            <div className="photo-modal" onClick={closePhotoModal}>
                                 {/* 모달 내용 */}
                                 <div
                                     style={{
@@ -588,28 +609,16 @@ export default function Review() {
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <h3 style={{ marginBottom: '15px' }}>포토 리뷰 전체 보기</h3>
+                                    <h3 className="modal-title">포토 리뷰 전체 보기</h3>
 
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexWrap: 'wrap',
-                                            gap: '12px',
-                                        }}
-                                    >
+                                    <div className="modal-container">
                                         {modalImages.map((item) => (
                                             <img
+                                                className="modal-img"
                                                 key={item.id}
                                                 src={item.img}
                                                 alt=""
-                                                style={{
-                                                    width: '160px',
-                                                    height: '160px',
-                                                    objectFit: 'cover',
-                                                    borderRadius: '8px',
-                                                    cursor: 'pointer',
-                                                }}
-                                                onClick={() => moveToDetail(item.id)} // 클릭 → 상세 페이지 이동
+                                                onClick={() => moveToDetail(item.reviewId)} // 클릭 → 상세 페이지 이동
                                             />
                                         ))}
                                     </div>
@@ -627,9 +636,11 @@ export default function Review() {
 
                     {/* 📜 리뷰 목록 */}
                     <div ref={reviewTopRef} aria-hidden>
-                        <hr style={{ marginBottom: '20px' }} />
+                        <hr style={{ marginBottom: '20px', border: '1px solid #E9DCC4' }} />
                         <h3 className="review-title">리뷰</h3>
                     </div>
+
+                    <ReviewSummary productId={productId} />
 
                     {/* 평균 별점 */}
                     <div className="review-average-container">
@@ -765,6 +776,7 @@ export default function Review() {
                                             <div className="review-stars">
                                                 {[1, 2, 3, 4, 5].map((num) => (
                                                     <FaStar
+                                                        className="star-icon"
                                                         key={num}
                                                         size={28}
                                                         color={num <= review.rating ? '#FFD700' : '#E0E0E0'}
@@ -785,11 +797,13 @@ export default function Review() {
                                                     onClick={() => handleLikeClick(review.reviewId)}
                                                 >
                                                     {liked[review.reviewId] ? (
-                                                        <FaThumbsUp style={{ marginRight: '6px' }} />
+                                                        <FaThumbsUp className="like-icon" />
                                                     ) : (
-                                                        <FaRegThumbsUp style={{ marginRight: '6px' }} />
+                                                        <FaRegThumbsUp className="like-icon" />
                                                     )}
-                                                    도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
+                                                    <span className="like-text">
+                                                        도움돼요 {likeCounts[review.reviewId] ?? review.reviewLike}
+                                                    </span>
                                                 </button>
 
                                                 {(Number(currentUserId) === Number(review.userId) ||
