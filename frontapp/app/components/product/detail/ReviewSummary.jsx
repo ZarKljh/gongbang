@@ -1,64 +1,49 @@
-"use client"
+'use client'
 
-import { useState } from "react"
+import { useState } from 'react'
 import api from '@/app/utils/api'
+import { FcManager } from 'react-icons/fc'
+import '@/app/components/product/detail/styles/ReviewSummary.css'
 
 export default function ReviewSummary({ productId }) {
-    const [summary, setSummary] = useState("")
+    const [summary, setSummary] = useState('')
     const [loading, setLoading] = useState(false)
 
     const handleSummaryClick = async () => {
         setLoading(true)
-        setSummary("")
+        setSummary('')
+
+        if (loading) return
 
         try {
             const res = await api.get('/reviews/summary', {
                 params: { productId },
             })
 
-            if (res.data?.resultCode?.startsWith("200")) {
+            if (res.data?.resultCode?.startsWith('200')) {
                 setSummary(res.data.data)
             } else {
-                alert(res.data?.msg || "요약 실패")
+                alert(res.data?.msg || '요약 실패')
             }
         } catch (e) {
             console.error(e)
-            alert("요약 호출 중 오류 발생")
+            alert('요약 호출 중 오류 발생')
         } finally {
             setLoading(false)
         }
     }
 
     return (
-        <div style={{ marginTop: "20px" }}>
-            <button
-                onClick={handleSummaryClick}
-                disabled={loading}
-                style={{
-                    padding: "10px 18px",
-                    backgroundColor: "#dac0a3",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                }}
-            >
-                {loading ? "요약 생성 중..." : "AI 리뷰 요약 보기"}
+        <div className="review-summary-container">
+            <button className="review-summary-btn" onClick={handleSummaryClick} disabled={loading}>
+                {loading ? '요약 생성 중...' : 'AI 리뷰 요약 보기'}
             </button>
 
             {summary && (
-                <div
-                    style={{
-                        marginTop: "20px",
-                        padding: "12px",
-                        backgroundColor: "#f8f8f8",
-                        borderRadius: "8px",
-                        border: "1px solid #ddd",
-                        whiteSpace: "pre-wrap",
-                        lineHeight: "1.6",
-                    }}
-                >
-                    <strong>요약 결과</strong>
+                <div className="review-summary-box">
+                    <strong>
+                        <FcManager size={24} /> AI 요약 결과 (Google Gemini 기반)
+                    </strong>
                     <br />
                     {summary}
                 </div>

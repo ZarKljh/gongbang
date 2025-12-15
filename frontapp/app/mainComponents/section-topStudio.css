@@ -11,6 +11,7 @@
   font-weight: 700;
   margin-bottom: 20px;
   color: #6b5642;
+   padding: 20px;
 }
 
 .topStudioSlider {
@@ -92,10 +93,15 @@
   flex-direction: column;
   background: white;
   width: 100%;
+  transition: 0.2s ease;
   border: 1px solid #e5e5e5;
   overflow: hidden;
   cursor: pointer;
   border-radius: 8px;
+}
+
+.topProductCardSmall:hover {
+  transform: scale(1.03);
 }
 
 .topProductImgSmall {
@@ -108,18 +114,16 @@
 
 .topProductNameSmall {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 700;
   color: #8a7661;
-  padding: 12px 15px 4px;
-  margin: 0;
+  margin: 10px 12px 0;
   line-height: 1.2;
 }
 
 .topProductsummary {
   font-size: 14px;
   color: #8a7661;
-  padding: 0 15px 12px;
-  margin: 0;
+  margin: 10px 12px 0;
   line-height: 1.4;
   overflow: hidden;
 }
@@ -134,7 +138,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
+  background-color: #fff;
   border: none;
   width: 34px;
   height: 34px;
@@ -143,15 +147,15 @@
   font-size: 18px;
   z-index: 100;
   color: #8a7661;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  
 }
 
 .slideBtn.prev { left: 0px; }
 .slideBtn.next { right: 0px; }
 
 .slideBtn:hover {
-    background-color: #8a7661;
-    color: #fff;
+    background-color: #f1f1f1;
+    transform: translateY(-50%) scale(1.1);
 }
 
 /* ===========================
@@ -165,6 +169,7 @@
     .sectionTitle {
         font-size: 20px;
         margin-bottom: 12px;
+        padding: 0;
     }
 
     .topStudioCard {
@@ -229,13 +234,15 @@
     }
 
     .topProductNameSmall {
-        font-size: 14px;
-        padding: 10px 12px 4px;
+        font-size: 15px;
+        margin: 6px 8px 0;
+        font-weight: 700;
     }
 
     .topProductsummary {
         font-size: 13px;
-        padding: 0 12px 10px;
+        margin: 6px 8px 0; 
+        padding-bottom: 12px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -247,8 +254,8 @@
         width: 28px;
         height: 28px;
         font-size: 14px;
-        background: rgba(218, 192, 163, 0.9);
-        color: white;
+        background:#fff;
+        color: #8a7661;
     }
 
     .slideBtn.prev {
@@ -260,6 +267,6 @@
     }
 
     .slideBtn:hover {
-        background: rgba(138, 118, 97, 0.9);
+        background: #f1f1f1;
     }
 }
