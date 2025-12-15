@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.review.repository;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.product.dto.ReviewRatingDto;
 import com.gobang.gobang.domain.review.dto.response.ReviewPopularProductResponse;
 import com.gobang.gobang.domain.review.entity.Review;
@@ -25,6 +26,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByContentContainingIgnoreCase(String keyword, Pageable pageable);
 
     Page<Review> findByProductIdAndIsActiveTrue(Long productId, Pageable pageable);
+
+    // ai 요약용 전체 조회
+    List<Review> findByProductIdAndIsActiveTrue(Long productId);
 
     Page<Review> findByIsActiveTrue(Pageable pageable);
 
@@ -82,4 +86,51 @@ HAVING COUNT(r.reviewId) >= 100
 ORDER BY AVG(r.rating) DESC, COUNT(r.reviewId) DESC
 """)
     List<ReviewPopularProductResponse> findPopularReviewProducts();
+
+    @Query("""
+        SELECT r FROM Review r
+        WHERE r.siteUser.id = :userId
+        AND (:lastId IS NULL OR r.reviewId < :lastId)
+        ORDER BY r.reviewId DESC
+    """)
+    List<Review> findInfiniteReviews(Long userId, Long lastId, Pageable pageable);
+
+    /// 명확한 정렬 기준 선언 (별점 필터)
+    @Query(
+            value = """
+        SELECT r FROM Review r
+        WHERE r.productId = :productId
+          AND r.rating = :rating
+          AND r.isActive = true
+        """,
+            countQuery = """
+        SELECT COUNT(r) FROM Review r
+        WHERE r.productId = :productId
+          AND r.rating = :rating
+          AND r.isActive = true
+        """
+    )
+    Page<Review> findRatingFiltered(
+            @Param("productId") Long productId,
+            @Param("rating") Integer rating,
+            Pageable pageable);
+
+
+    // productId 없는 경우
+    @Query(
+            value = """
+        SELECT r FROM Review r
+        WHERE r.rating = :rating
+          AND r.isActive = true
+        """,
+            countQuery = """
+        SELECT COUNT(r) FROM Review r
+        WHERE r.rating = :rating
+          AND r.isActive = true
+        """
+    )
+    Page<Review> findRatingFilteredGlobal(
+            @Param("rating") Integer rating,
+            Pageable pageable);
+
 }

@@ -11,6 +11,7 @@ import com.gobang.gobang.domain.review.service.ReviewCommentService;
 import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.domain.review.service.ReviewService;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.util.GeminiClient;
 import jakarta.validation.Valid;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final SiteUserService siteUserService;
     private final ReviewImageService reviewImageService;
+    private GeminiClient geminiClient;
 
 
 
@@ -53,13 +55,15 @@ public class ReviewController {
 
 
 
+    // 현재 검색 기능은 사용 안 함
     @GetMapping
     public RsData<ReviewsResponse> getAllReviews(
             @RequestParam(required = false) Long productId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "date_desc") String sort,
             @RequestParam(value = "kwType",required = false) List<String> kwTypes,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer rating
     ) {
         System.out.println("🔥 sort param = " + sort);
         System.out.println("🔥 keyword param = " + keyword);
@@ -78,7 +82,7 @@ public class ReviewController {
                 ));
 
 
-        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort, kwTypes, keyword);
+        Page<Review> reviewPage = reviewService.getReviews(productId, page, sort, kwTypes, keyword, rating);
         ReviewsResponse response = ReviewsResponse.fromPage(reviewPage);
         log.info("검색 요청: productId={}, page={}, sort={}, keyword={}",
                 productId, page, sort, keyword);
@@ -194,4 +198,15 @@ public class ReviewController {
                 reviewService.getProfileImageUrl()
         );
     }
+
+    // ai 리뷰 요약
+    @GetMapping("/summary")
+    public RsData<String> summarizeReviews(@RequestParam Long productId) {
+
+        String summary = reviewService.generateReviewSummary(productId);
+
+        return RsData.of("200", "리뷰 요약 완료", summary);
+    }
+
+
 }

@@ -8,6 +8,7 @@ import styles from './Cards.module.css'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
 type Category = {
@@ -72,6 +73,9 @@ export default function Product() {
     const searchParams = useSearchParams()
     const didMount = useRef(false)
 
+    //필터버튼 활성화용
+    const [sort, setSort] = useState<'NEW' | 'PRICE_ASC' | 'PRICE_DESC' | null>(null)
+
     const [items, setItems] = useState<any[]>([])
     const [products, setProducts] = useState<Product[]>([])
 
@@ -87,17 +91,29 @@ export default function Product() {
     // code별로 선택된 값 집합 관리 (예: COLOR → {베이지, 화이트})
     const [selectedBtn, setSelectedBtn] = useState<Record<string, string | null>>({})
 
+    // 상단에 state 선언 active
+    const [activeSub, setActiveSub] = useState<number | null>(null)
+    const [activeSubName, setActiveSubName] = useState<string | null>(null) // ← 추가
+
     const MUTEX: Record<string, string[]> = {
         PRICE_MIN: ['PRICE_MAX'],
         PRICE_MAX: ['PRICE_MIN'],
     }
     const BASE_URL = 'http://localhost:8090'
 
+    // 모바일페이지용 6개씩 페이지 단위로 나누기
+    const pages = []
+    for (let i = 0; i < products.length; i += 6) {
+        pages.push(products.slice(i, 6 + i))
+    }
+    const router = useRouter()
+
     const onClickSubCategory = (catId: number, subId: number) => {
         // 2️⃣ 이전 필터·선택 상태·결과 초기화
         setSelectedBtn({}) // 선택된 필터버튼 초기화
         setFilterGroups([]) // 기존 필터 그룹 제거
         setFilterOptions({}) // 기존 필터 옵션 제거
+        setSort(null) // 페이지 전환시 아무 정렬도 선택되지 않은 상태
         //setItems([]) // 필터 검색 결과 초기화
         //setProducts([]) // 서브카테고리별 기본 상품목록 초기화
 
@@ -227,7 +243,9 @@ export default function Product() {
                                 // ❗ 여기가 핵심: 절대경로 보정
                                 imageUrl: img.imageUrl.startsWith('http') ? img.imageUrl : `${BASE_URL}${img.imageUrl}`,
                             })) ?? []
+
                         const review = reviewMapList?.[p.id] ?? null
+
                         return {
                             ...p,
                             images,
@@ -249,6 +267,10 @@ export default function Product() {
     // ✅ 파라미터에서 categoryId, subId 받아서 상태로 설정
     useEffect(() => {
         const catIdStr = searchParams.get('categoryId')
+        const subCatName = searchParams.get('subName')
+        console.log(`subCatName :${subCatName}`)
+        setActiveSubName(subCatName)
+
         const subIdStr = searchParams.get('subId') ?? '0'
         if (!catIdStr) return
 
@@ -261,9 +283,11 @@ export default function Product() {
         if (subId === 0) {
             api.get(`category/${catId}/min`)
                 .then((res) => {
-                    const minSubId = res.data?.data
-
+                    console.log('로그 출력 data:', res.data.data)
+                    const minSubId = res.data?.data.subCategoryDto.id
+                    const subCatName = res.data?.data.subCategoryDto.name
                     onClickSubCategory(catId, minSubId)
+                    setActiveSubName(subCatName)
                 })
                 .catch((err) => {
                     console.error(' sub-min 값 검색 실패:', err)
@@ -305,12 +329,17 @@ export default function Product() {
 
                 setProducts((prev) => prev.map((p) => (p.id === targetId ? { ...p, liked, likeCount } : p)))
             })
+
             .catch((err) => {
-                if (err.response?.status === 401) {
-                    alert('로그인이 필요합니다.')
+                const error = err?.response?.data?.error // ✅ 여기!
+                if (error?.code === 'M002') {
+                    const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                    if (result) {
+                        router.push('/auth/login')
+                    }
+                    return
                 } else {
-                    alert('로그인이 필요합니다.')
-                    console.error('좋아요 에러:', err)
+                    console.error('장바구니 에러:', err)
                 }
             })
     }
@@ -332,10 +361,13 @@ export default function Product() {
                                     {(subCategoriesByCat[cat.id] ?? []).map((sub) => (
                                         <li key={sub.id}>
                                             <a
+                                                className={activeSub === sub.id ? styles.activeSub : ''}
                                                 href="#"
                                                 onClick={(e) => {
                                                     e.preventDefault()
+                                                    setActiveSub(sub.id)
                                                     onClickSubCategory(cat.id, sub.id)
+                                                    setActiveSubName(sub.name) //
                                                 }}
                                             >
                                                 {sub.name}
@@ -479,10 +511,87 @@ export default function Product() {
 
                     {/* 카드 섹션 */}
                     <section aria-labelledby="cards-title" className={styles.cardsWrap}>
-                        <h2 id="cards-title">카테고리별 상품</h2>
+                        <div className={styles.cardHeader}>{activeSubName}</div>
+                        {/* 검색필터영역 */}
+                        <div className={styles.searchFilterBar}>
+                            <div className={styles.searchBox}>
+                                <input
+                                    form="filterForm"
+                                    name="keyword"
+                                    type="text"
+                                    className={`${styles.searchInput} ${styles.textSm}`}
+                                    placeholder="상품명을 입력하세요"
+                                    onChange={(e) => handleFilterClick('keyword', e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            return false // 어떤 경우라도 submit/실행 X
+                                        }
+                                    }}
+                                />
+                                <button className={styles.searchBtn}>🔍</button>
+                            </div>
+
+                            <div className={styles.sortGroup}>
+                                <button
+                                    type="button"
+                                    className={`${styles.sortBtn} ${styles.textSm} ${
+                                        sort === 'NEW' ? styles.active : ''
+                                    }`}
+                                    onClick={() => {
+                                        setSort((prev) => (prev === 'NEW' ? null : 'NEW'))
+
+                                        if (sort === 'NEW') {
+                                            handleFilterClick('sort', '')
+                                        } else {
+                                            handleFilterClick('sort', 'NEW')
+                                        }
+                                    }}
+                                >
+                                    최신순
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className={`${styles.sortBtn} ${styles.textSm} ${
+                                        sort === 'PRICE_ASC' ? styles.active : ''
+                                    }`}
+                                    onClick={() => {
+                                        setSort((prev) => (prev === 'PRICE_ASC' ? null : 'PRICE_ASC'))
+
+                                        if (sort === 'PRICE_ASC') {
+                                            handleFilterClick('sort', '')
+                                        } else {
+                                            handleFilterClick('sort', 'PRICE_ASC')
+                                        }
+                                    }}
+                                >
+                                    낮은 가격순
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className={`${styles.sortBtn} ${styles.textSm} ${
+                                        sort === 'PRICE_DESC' ? styles.active : ''
+                                    }`}
+                                    onClick={() => {
+                                        setSort((prev) => (prev === 'PRICE_DESC' ? null : 'PRICE_DESC'))
+
+                                        if (sort === 'PRICE_DESC') {
+                                            handleFilterClick('sort', '')
+                                        } else {
+                                            handleFilterClick('sort', 'PRICE_DESC')
+                                        }
+                                    }}
+                                >
+                                    높은 가격순
+                                </button>
+                            </div>
+                        </div>
 
                         {products.length === 0 ? (
-                            <p className={styles.textSm}>표시할 상품목록이 없습니다.</p>
+                            <p className={styles.textSm2}>표시할 상품목록이 없습니다.</p>
                         ) : (
                             <ul className={styles.cardGrid} role="list">
                                 {products.map((p) => (
@@ -503,7 +612,9 @@ export default function Product() {
                                                         alt={p.name}
                                                     />
                                                 </div>
-                                                <h3 className={styles.cardTitle}>{p.name}</h3>
+                                                <h3 className={styles.cardTitle}>
+                                                    {p.name} - {p.id}
+                                                </h3>
 
                                                 <p className={styles.cardDesc}>{p.seoTitle}</p>
                                                 <p className={styles.cardDescPrice}>{p.basePrice.toLocaleString()}원</p>
@@ -530,6 +641,61 @@ export default function Product() {
                                 ))}
                             </ul>
                         )}
+
+                        {/* 📱 모바일 - 좌우 슬라이드 6개씩 */}
+                        <div className={styles.mobileSlider}>
+                            <div className={styles.mobileTrack}>
+                                {pages.map((page, i) => (
+                                    <ul className={styles.mobileGrid} key={i}>
+                                        {page.map((p) => (
+                                            <li className={styles.card} key={p.id}>
+                                                <article>
+                                                    <Link
+                                                        href={{
+                                                            pathname: '/product/list/detail',
+                                                            query: { productId: p.id },
+                                                        }}
+                                                        className={styles.cardLink}
+                                                    >
+                                                        <div className={styles.cardMedia}>
+                                                            <img
+                                                                src={
+                                                                    p.images && p.images.length > 0
+                                                                        ? p.images[0].imageUrl
+                                                                        : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                                }
+                                                                alt={p.name}
+                                                            />
+                                                        </div>
+                                                        <h3 className={styles.cardTitle}>{p.name}</h3>
+                                                        <p className={styles.cardDescPrice}>
+                                                            {p.basePrice.toLocaleString()}원
+                                                        </p>
+                                                    </Link>
+
+                                                    <footer className={styles.cardActions}>
+                                                        <span>
+                                                            ⭐{Math.round((p.avgRating ?? 0) * 10) / 10} (
+                                                            {p.ratingCount ?? 0})
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.likeBtn}
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                handleToggleLike(p.id)
+                                                            }}
+                                                        >
+                                                            {p.liked ? '💗' : '🤍'}
+                                                        </button>
+                                                    </footer>
+                                                </article>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ))}
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>

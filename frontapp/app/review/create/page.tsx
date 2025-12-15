@@ -59,38 +59,53 @@ export default function ReviewCreate() {
         }
     }, [productId])
 
-    // 리뷰 + 이미지 업로드 전체 완료
-    const handleSubmit = async (e) => {
-        e.preventDefault()
+    // 리뷰 + 이미지 업로드 전체 완료 + 이미지 검증
+   const handleSubmit = async (e) => {
+    e.preventDefault()
 
-        if (review.rating < 1) return alert('별점을 선택해주세요.')
-        if (!review.content.trim()) return alert('내용을 입력해주세요.')
+    if (review.rating < 1) return alert('별점을 선택해주세요.')
+    if (!review.content.trim()) return alert('내용을 입력해주세요.')
 
-        const res = await api.post('/reviews', review)
-        if (!res.data?.resultCode?.startsWith('200')) {
-            return alert(res.data?.msg || '리뷰 등록 실패')
-        }
+    const res = await api.post('/reviews', review)
 
-        const reviewId = res.data.data.reviewId
-
-        // 이미지 업로드
-        for (let i = 0; i < imageFiles.length; i++) {
-            const formData = new FormData()
-            formData.append('file', imageFiles[i])
-            formData.append('refId', reviewId.toString())
-            formData.append('refType', 'REVIEW')
-            formData.append('sortOrder', i.toString())
-
-            await fetch('http://localhost:8090/api/v1/images/upload', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-            })
-        }
-
-        alert('리뷰가 등록되었습니다.')
-        router.push(`/product/list/detail?productId=${review.productId}`)
+    if (!res.data?.resultCode?.startsWith('200')) {
+        return alert(res.data?.msg || '리뷰 등록 실패')
     }
+
+    const reviewId = res.data.data.reviewId
+
+    let failedCount = 0
+
+    for (let i = 0; i < imageFiles.length; i++) {
+
+        const formData = new FormData()
+        formData.append('file', imageFiles[i])
+        formData.append('refId', reviewId.toString())
+        formData.append('refType', 'REVIEW')
+        formData.append('sortOrder', i.toString())
+
+        try {
+            await api.post('/images/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true,
+            })
+        } catch (err) {
+            failedCount++
+            console.error('이미지 업로드 실패:', err)
+        }
+    }
+
+    if (failedCount > 0) {
+        alert(`리뷰는 등록되었지만 이미지 ${failedCount}장은 업로드에 실패했습니다.`)
+    } else {
+        alert('리뷰가 등록되었습니다.')
+    }
+
+    router.push(`/product/list/detail?productId=${review.productId}`)
+}
+
 
     // 🔥 이미지 선택 + base64 미리보기 + 파일 저장
     const handleFileChange = async (e) => {

@@ -3,7 +3,6 @@ package com.gobang.gobang.domain.product.productList.controller;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
-import com.gobang.gobang.domain.personal.dto.response.SiteUserResponse;
 import com.gobang.gobang.domain.personal.repository.UserAddressRepository;
 import com.gobang.gobang.domain.product.dto.HotProductDto;
 import com.gobang.gobang.domain.product.dto.ProductDto;
@@ -19,12 +18,10 @@ import com.gobang.gobang.global.exception.CustomException;
 import com.gobang.gobang.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -49,7 +46,8 @@ public class ProductController {
 
     @GetMapping("/{subCategoryId}/search")
     @Operation(summary = "목록페이지 상품 다건 필터 조회")
-    public RsData<FilterProductResponse> categoryFilterList(@PathVariable Long subCategoryId, @RequestParam(defaultValue = "20") int size, @RequestParam MultiValueMap<String, String> params) {
+    public RsData<FilterProductResponse> categoryFilterList(@PathVariable Long subCategoryId, @RequestParam(defaultValue = "50") int size, @RequestParam MultiValueMap<String, String> params,
+                                                            @AuthenticationPrincipal SecurityUser user) {
 
         System.out.println("===== 📦 받은 필터 파라미터 =====");
         params.forEach((key, values) -> {
@@ -59,59 +57,40 @@ public class ProductController {
 
 
 
-        SiteUserResponse currentUser = null;
-        try {
-            currentUser = siteUserService.getCurrentUserInfo(); // 로그인 안 되어 있으면 null 리턴 or 예외
-        } catch (RuntimeException e) {
-            // 인증 예외만 골라서 잡아도 됨 (ex. CustomAuthException)
-            currentUser = null; // 비로그인 상태로 처리
-        }
 
 
-        FilterProductResponse result = productService.getProductFilterList(subCategoryId, size, params, currentUser);
+        FilterProductResponse result = productService.getProductFilterList(subCategoryId, size, params, user);
         return RsData.of("200", "상품 다건 조회 성공", result);
     }
 
 
-
     @GetMapping("/{productId}/detail")
     @Operation(summary = "상품 상세 조회 (상세+이미지+셀러+팔로우 상세)")
-    public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId) {
-
-        // 🔒 현재 로그인 유저 조회
-        //SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
-
-        SiteUserResponse currentUser = null;
-        try {
-            currentUser = siteUserService.getCurrentUserInfo();
-        } catch (IllegalStateException e) {
-            // 로그인 안 된 상태 → 그냥 null로 두고 진행
-        }
+    public RsData<ProductDetailResponse> DetailList(@PathVariable Long productId,
+    @AuthenticationPrincipal SecurityUser user
+    ) {
 
         // 로그인되어 있으면 userId 전달, 아니면 null
-        Long userId = (currentUser != null ? currentUser.getId() : null);
+        Long userId = (user != null ? user.getId() : null);
 
         ProductDetailResponse productDetailList = productService.getProductDetail(productId, userId);
         return RsData.of("200", "상품 다건 조회 성공", productDetailList);
     }
 
 
-
     @PostMapping("/{productId}/like")
     @Operation(summary = "(목록+상세) 페이지 상품 좋아요")
     public RsData<ProductLikeResponse> toggleLike(
-            @PathVariable Long productId
+            @PathVariable Long productId,
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        // 🔒 현재 로그인 유저 조회
-        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
-
-        // 비로그인 상태 처리
-        if (currentUser == null) {
-            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
+        if (user == null) {
+            throw new CustomException(ErrorCode.LOGIN_INPUT_INVALID);
         }
 
+
         // ✅ 좋아요 토글 서비스 호출
-        ProductLikeResponse res = productWishListService.toggleLike(productId, currentUser.getId());
+        ProductLikeResponse res = productWishListService.toggleLike(productId, user.getId());
 
         // ✅ 최종 응답 반환 (RsData 래핑)
         String msg = res.isLiked() ? "상품을 찜했습니다." : "찜을 취소했습니다.";
@@ -120,21 +99,18 @@ public class ProductController {
     }
 
 
-
     @PostMapping("/{studioId}/follow")
     @Operation(summary = "상세페이지 셀러 팔로우")
     public RsData<SellerFollowResponse> toggleFollow(
-            @PathVariable Long studioId
-    ) {
-        // 🔒 현재 로그인 유저 조회
-        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
+            @PathVariable Long studioId,
+            @AuthenticationPrincipal SecurityUser user
 
-        // 비로그인 상태 처리
-        if (currentUser == null) {
-            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
+    ) {
+        if (user == null) {
+            throw new CustomException(ErrorCode.LOGIN_INPUT_INVALID);
         }
 
-        SellerFollowResponse res = sellerFollowService.toggleFollow(studioId, currentUser.getId());
+        SellerFollowResponse res = sellerFollowService.toggleFollow(studioId, user.getId());
 
         // ✅ 최종 응답 반환 (RsData 래핑)
         String msg = res.isFollowed() ? "작가 팔로우." : "작가 팔로우 취소.";
@@ -147,17 +123,14 @@ public class ProductController {
     @Operation(summary = "상세페이지 상품 장바구니")
     public RsData<ProductCartResponse> toggleCart(
             @PathVariable Long productId,
-            @RequestBody ProductCartRequest request
+            @RequestBody ProductCartRequest request,
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        // 🔒 현재 로그인 유저 조회
-        SiteUserResponse currentUser = siteUserService.getCurrentUserInfo();
-
-        // 비로그인 상태 처리
-        if (currentUser == null) {
-            return RsData.of("401", "로그인 후 이용할 수 있습니다."); // data 없음
+        if (user == null) {
+            throw new CustomException(ErrorCode.LOGIN_INPUT_INVALID);
         }
 
-        ProductCartResponse res = productCartService.addToCart(productId, currentUser.getId(), request);
+        ProductCartResponse res = productCartService.addToCart(productId, user.getId(), request);
 
         // ✅ 최종 응답 반환 (RsData 래핑)
 
@@ -184,7 +157,8 @@ public class ProductController {
     ) {
         if (user == null) {
             // 방법 1: 예외 던지기
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+            //throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+            throw new CustomException(ErrorCode.LOGIN_INPUT_INVALID);
         }
 
         // 2) SecurityUser → SiteUser 조회

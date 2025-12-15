@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import api from './api'
 
 interface ReviewRank {
     thumbnail?: string
@@ -19,7 +20,7 @@ interface ReviewRank {
 }
 
 export default function ReviewRank() {
-    const [products, setProducts] = useState<PopularReviewProduct[]>([])
+    const [products, setProducts] = useState<ReviewRank[]>([])
     // const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -30,17 +31,11 @@ export default function ReviewRank() {
     useEffect(() => {
         const fetchPopularProducts = async () => {
             try {
-                const res = await fetch('http://localhost:8090/api/v1/reviews/popular', {
-                    method: 'GET',
-                    credentials: 'include',
-                })
+                const res = await api.get('/reviews/popular')
 
-                if (!res.ok) {
-                    console.error('❌ API 응답 오류:', res.status)
-                    return
-                }
+                console.error('❌ API 응답 오류:', res.status)
 
-                const json = await res.json()
+                const json = res.data
                 console.log('🔥 인기 리뷰 상품 API 응답:', json)
 
                 setProducts(json.data || [])
@@ -62,7 +57,7 @@ export default function ReviewRank() {
             <div className="review-rank-sub">리뷰가 보장하는 상품이에요</div>
 
             {products.length === 0 && <div className="review-rank-empty-text">아직 인기 리뷰 상품이 없습니다.</div>}
-            
+
             {products.length > 0 && (
                 <div className="review-rank-slider-wrapper">
                     <Swiper
@@ -72,20 +67,22 @@ export default function ReviewRank() {
                         slidesPerGroup={4}
                         spaceBetween={20}
                         loop={false}
-                        navigation={{
-                            prevEl: prevRef.current,
-                            nextEl: nextRef.current,
-                        }}
-                        onBeforeInit={(swiper) => {
-                            swiper.params.navigation.prevEl = prevRef.current
-                            swiper.params.navigation.nextEl = nextRef.current
+                        navigation={false}
+                        onSwiper={(swiper) => {
+                            setTimeout(() => {
+                                swiper.params.navigation.prevEl = prevRef.current
+                                swiper.params.navigation.nextEl = nextRef.current
+                                swiper.navigation.init()
+                                swiper.navigation.update()
+                            }, 0)
                         }}
                         className="review-rank-swiper"
                         breakpoints={{
                             1200: { slidesPerView: 4, slidesPerGroup: 4 },
                             992: { slidesPerView: 3, slidesPerGroup: 3 },
                             768: { slidesPerView: 3, slidesPerGroup: 3 },
-                            0: { slidesPerView: 3, slidesPerGroup: 3 },
+                            460: { slidesPerView: 2, slidesPerGroup: 2 },
+                            0: { slidesPerView: 2, slidesPerGroup: 2 },
                         }}
                     >
                         {products.map((p) => (

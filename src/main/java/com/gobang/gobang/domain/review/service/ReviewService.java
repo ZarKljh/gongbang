@@ -20,8 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -37,42 +37,75 @@ public class ReviewService {
     private final ReviewImageService reviewImageService ;
     private final ReviewImageRepository reviewImageRepository;
     private final ImageRepository imageRepository;
+    private final AiService aiService;
 
     // 리뷰 목록 조회
-    public Page<Review> getReviews(Long productId, int page, String sort, List<String> kwTypes, String keyword) {
+    public Page<Review> getReviews(
+            Long productId,
+            int page,
+            String sort,
+            List<String> kwTypes,
+            String keyword,
+            Integer rating
+    ) {
         System.out.println("🔥🔥 들어온 sort = " + sort);
 
         Sort sortOption = switch (sort) {
             case "like_desc" -> Sort.by(Sort.Direction.DESC, "reviewLike");
             case "like_asc" -> Sort.by(Sort.Direction.ASC, "reviewLike");
             case "rating_desc" -> Sort.by(Sort.Order.desc("rating"), Sort.Order.desc("createdDate"));
-            case "rating_asc" -> Sort.by(Sort.Order.asc("rating"), Sort.Order.desc("createdDate"));
+            case "rating_asc" -> Sort.by(Sort.Order.asc("rating"), Sort.Order.asc("createdDate"));
             case "date_asc" -> Sort.by(Sort.Direction.ASC, "createdDate");
             default -> Sort.by(Sort.Direction.DESC, "createdDate");
         };
 
         Pageable pageable = PageRequest.of(page, 10, sortOption);
+
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
 
-        Page<Review> reviewPage = (productId != null)
-                ? reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable)
-                : reviewRepository.findByIsActiveTrue(pageable);
+        Page<Review> reviewPage;
 
-        if (hasKeyword) {
+        // 1) 별점 필터가 가장 우선
+        if (rating != null) {
             if (productId != null) {
+                reviewPage = reviewRepository.findRatingFiltered(productId, rating, pageable);
+            } else {
+                reviewPage = reviewRepository.findRatingFilteredGlobal(rating, pageable);
+            }
+
+            // keyword도 별점 필터 내부에서 처리해야 함
+            if (hasKeyword) {
+                if (productId != null) {
+                    reviewPage = reviewRepository.findByProductIdAndContentContainingIgnoreCase(
+                            productId, keyword, pageable
+                    );
+                } else {
+                    reviewPage = reviewRepository.findByContentContainingIgnoreCase(keyword, pageable);
+                }
+            }
+
+            return decorateReviews(reviewPage);
+        }
+
+        // 2) 별점 필터 없으면 기본 목록
+        if (productId != null) {
+            if (hasKeyword) {
                 reviewPage = reviewRepository.findByProductIdAndContentContainingIgnoreCase(productId, keyword, pageable);
             } else {
-                reviewPage = reviewRepository.findByContentContainingIgnoreCase(keyword, pageable);
+                reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
             }
         } else {
-            if (productId != null) {
-                reviewPage = reviewRepository.findByProductIdAndIsActiveTrue(productId, pageable);
+            if (hasKeyword) {
+                reviewPage = reviewRepository.findByContentContainingIgnoreCase(keyword, pageable);
             } else {
                 reviewPage = reviewRepository.findByIsActiveTrue(pageable);
             }
         }
 
-        // 각 리뷰에 이미지 주입
+        return decorateReviews(reviewPage);
+    }
+
+    private Page<Review> decorateReviews(Page<Review> reviewPage) {
         reviewPage.forEach(review -> {
             List<Image> images = reviewImageRepository.findByRefTypeAndRefId(Image.RefType.REVIEW, review.getReviewId())
                     .stream()
@@ -86,14 +119,12 @@ public class ReviewService {
                     .map(Image::getImageUrl)
                     .orElse(null);
 
-            // 엔티티에 없는 값이므로 직접 DTO 변환 후 설정
             review.setProfileImageUrl(profileUrl);
         });
 
         return reviewPage;
-
-
     }
+
 
     // 리뷰 단건 조회
     public Optional<Review> getReviewById(Long id) {
@@ -183,6 +214,13 @@ public class ReviewService {
         review.setRating(request.getRating());
         review.setContent(request.getContent());
         review.setModifiedDate(LocalDateTime.now());
+
+        // 이미지 수정이 없는 경우 (마이페이지 수정)
+        // request.getImageUrls()가 아예 null이거나, 프론트가 필드 자체를 보내지 않으면 그대로 유지
+        if (request.getImageUrls().isEmpty()) {
+            reviewRepository.save(review);
+            return RsData.of("200", "리뷰가 수정되었습니다.(이미지 변경 없음)", review);
+        }
 
         // 최종 이미지 URL 리스트(프론트에서 순서대로 보냄)
         List<String> targetUrls = Optional.ofNullable(request.getImageUrls()).orElseGet(List::of)
@@ -312,37 +350,63 @@ public class ReviewService {
         return map;
     }
 
-    // 유저 프로필 이미지 가져오기
+    // 리뷰 100개 이상 상품 이미지 가져오기
     public List<ReviewPopularProductResponse> getProfileImageUrl() {
 
         List<ReviewPopularProductResponse> list = reviewRepository.findPopularReviewProducts();
 
         for (ReviewPopularProductResponse p : list) {
 
-            String basePath = "C:/Users/SBS/Desktop/jhy/gobang/uploads/products/";
-            // 너의 실제 로컬 절대 경로로 변경!
+            // 대표 이미지 조회 (sortOrder ASC 우선)
+            List<Image> images = imageRepository.findByRefTypeAndRefIdOrderBySortOrderAsc(
+                    Image.RefType.PRODUCT,
+                    p.getProductId()
+            );
 
-            String prefix = p.getName();
-            String thumbnail = null;
-
-            for (int i = 1; i <= 5; i++) {
-                File file = new File(basePath + prefix + i + ".jfif");
-                if (file.exists()) {
-                    thumbnail = "/uploads/products/" + prefix + i + ".jfif";
-                    break;
-                }
+            if (!images.isEmpty()) {
+                // DB에 들어있는 image_url 그대로 사용
+                p.setThumbnail(images.get(0).getImageUrl());
+            } else {
+                // 기본 이미지
+                p.setThumbnail("/images/no-image-soft.png");
             }
-
-            // 아무 이미지도 없으면 기본 이미지
-            if (thumbnail == null) {
-                thumbnail = "/uploads/products/no-image-soft.png";
-            }
-
-            p.setThumbnail(thumbnail);
         }
 
         // 하루 랜덤 리스트 유지용 셔플
         Collections.shuffle(list);
         return list.size() > 10 ? list.subList(0, 10) : list;
     }
+
+    public List<ReviewResponse> getInfiniteReviews(Long userId, Long lastId, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        List<Review> reviews = reviewRepository.findInfiniteReviews(
+                userId,
+                lastId,
+                pageable
+        );
+
+        return reviews.stream()
+                .map(review -> ReviewResponse.fromEntity(review, imageRepository))
+                .toList();
+    }
+
+    public String generateReviewSummary(Long productId) {
+
+        List<Review> reviews = reviewRepository.findByProductIdAndIsActiveTrue(productId);
+
+        if (reviews.isEmpty()) {
+            return "아직 작성된 리뷰가 없습니다.";
+        }
+
+        // 리뷰 본문만 추출
+        List<String> contents = reviews.stream()
+                .map(Review::getContent)
+                .toList();
+
+        String joinedText = String.join("\n", contents);
+
+        return aiService.summarizeReviews(joinedText);
+    }
+
 }

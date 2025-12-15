@@ -44,8 +44,8 @@ public class HomeService {
 
                     // 공방 대표 이미지 (STUDIO_MAIN)
                     String mainImageUrl = imageRepository
-                            .findTopByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.STUDIO_MAIN, studioId)
-                            .map(Image::getImageUrl)
+                            .findTopByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.STUDIO_LOGO, studioId)
+                            .map(img -> "/images/" + img.getImageFileName())
                             .orElse(null);
 
                     // 최신 상품 3개
@@ -59,7 +59,7 @@ public class HomeService {
                                 // 상품 대표 이미지 조회
                                 String thumbUrl = imageRepository
                                         .findTopByRefTypeAndRefIdOrderBySortOrderAsc(Image.RefType.PRODUCT, p.getId())
-                                        .map(Image::getImageUrl)
+                                        .map(img -> "/images/" + img.getImageFileName())
                                         .orElse(null);
 
                                 return TopStudioResponse.ProductDto.builder()

@@ -10,8 +10,6 @@ import com.gobang.gobang.domain.personal.repository.CartRepository;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,7 +74,10 @@ public class CartService {
                 .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다."));
 
         cart.setQuantity(quantity);
-        return CartResponse.from(cart, imageRepository);
+
+        Cart saved = cartRepository.save(cart);
+
+        return CartResponse.from(saved, imageRepository);
     }
 
     // 장바구니 항목 삭제
@@ -97,12 +98,6 @@ public class CartService {
     // 장바구니 개수 조회
     public long getCartCount(SiteUser siteUser) {
         return cartRepository.sumQuantityBySiteUser(siteUser);
-    }
-
-    public List<CartResponse> getInfiniteCart(Long userId, Long lastCartId, int size) {
-        Pageable pageable = PageRequest.of(0, size);
-        List<Cart> carts = cartRepository.findInfiniteCart(userId, lastCartId, pageable);
-        return carts.stream().map(cart -> CartResponse.from(cart, imageRepository)).toList();
     }
 
     @Transactional

@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react'
 import './section-topStudio.css'
 import Link from 'next/link'
 
+const API_BASE_URL = api.defaults.baseURL
+export const IMAGE_BASE_URL = 'http://localhost:8090'
+
 type TopStudio = {
     studioId: number
     studioName: string
@@ -29,7 +32,7 @@ export default function TopStudios() {
 
     const fetchTopStudios = async () => {
         try {
-            const res = await api.get('http://localhost:8090/api/v1/home/top-studios')
+            const res = await api.get(`${API_BASE_URL}/home/top-studios`)
             if (res.data?.data) {
                 setTopStudio(res.data.data)
             }
@@ -66,12 +69,12 @@ export default function TopStudios() {
                             <div key={studio.studioId} className="topStudioCard">
                                 <div className="topStudioBox">
                                     <img
-                                        src={studio.mainImageUrl ?? '/default-studio.jpg'}
+                                        src={`${IMAGE_BASE_URL}${studio.mainImageUrl}`}
                                         alt={studio.studioName}
                                         className="topStudioMainImg"
                                     />
                                     <div className="topStudioTxtBox">
-                                        <Link className="topStudioName" href={`/studio/${studio.studioId}`}>
+                                        <Link className="topStudioName" href={`/seller/studio/${studio.studioId}`}>
                                             {studio.studioName}
                                         </Link>
                                         <p className="topStudioFollowers">
@@ -82,21 +85,19 @@ export default function TopStudios() {
 
                                 <div className="topStudioProductWrap">
                                     {studio.recentProducts.map((p) => (
-                                        <div key={p.productId} className="topProductCardSmall">
+                                        <Link href={`/product/list/detail?productId=${p.productId}`} key={p.productId} className="topProductCardSmall">
                                             <img
-                                                src={p.imageUrl ?? '/default-product.png'}
+                                                src={`${IMAGE_BASE_URL}${p.imageUrl}`}
                                                 alt={p.productName}
                                                 className="topProductImgSmall"
                                             />
-                                            <Link
+                                            <p 
                                                 className="topProductNameSmall"
-                                                href={`/product/list/detail?productId=${p.productId}`}
                                             >
                                                 {p.productName}
-                                            </Link>
+                                            </p>
                                             <p className="topProductsummary">{p.summary}</p>
-                                            <p className="topProductsummary">{p.price}</p>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             </div>

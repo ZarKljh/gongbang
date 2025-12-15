@@ -5,8 +5,10 @@ import { useParams, useRouter } from 'next/navigation'
 import axios from 'axios'
 import '@/app/personal/[orderId]/page.css'
 import Link from 'next/link'
+import api from '@/app/utils/api'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1/mypage'
+const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 // ===== 타입 정의 =====
 type DeliveryDto = {
@@ -204,19 +206,16 @@ export default function OrderDetailPage() {
                 console.error('배송 추적 조회 실패 (주문 상세만 사용):', e)
             }
         } catch (err) {
-            console.error(err)
             setError('주문 정보를 불러오지 못했습니다.')
         } finally {
             setLoading(false)
         }
     }
 
-    // 완료 후 7일 이내인지 체크
-    const isWithinSevenDays = (dateString?: string | null) => {
+    // 완료 후 7일인지 체크
+    const isWithinSevenDays = (dateString?: string) => {
         if (!dateString) return false
         const completedDate = new Date(dateString)
-        if (Number.isNaN(completedDate.getTime())) return false
-
         const now = new Date()
         const diffTime = Math.abs(now.getTime() - completedDate.getTime())
         const diffDays = diffTime / (1000 * 60 * 60 * 24)
@@ -310,6 +309,12 @@ export default function OrderDetailPage() {
         <>
             <h2 className="order-detail-title">주문 상세 보기</h2>
             <div className="order-detail-container">
+                <button
+                    className="back-btn"
+                    onClick={() => router.push('/personal?tab=orders')}
+                >
+                    ← 주문 목록으로
+                </button>
                 {/* 주문 기본 정보 */}
                 <div className="order-detail-box">
                     <p>
@@ -352,7 +357,7 @@ export default function OrderDetailPage() {
                 <div className="order-items-list">
                     {order.items?.map((item) => (
                         <div key={item.orderItemId} className="order-detail-item">
-                            <img src={`http://localhost:8090${item.imageUrl}`} alt={item.productName} />
+                            <img src={`${IMAGE_BASE_URL}${item.imageUrl}`} alt={item.productName} />
                             <div>
                                 <Link
                                     href={`http://localhost:3000/product/list/detail?productId=${item.productId}`}

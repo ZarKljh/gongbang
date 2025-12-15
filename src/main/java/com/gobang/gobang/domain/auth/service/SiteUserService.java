@@ -90,7 +90,7 @@ public class SiteUserService {
 
 
     public SiteUser getSiteUserByEmail(String email) {
-        return siteUserRepository.findByEmail(email);
+        return siteUserRepository.findByEmail(email).get();
     }
 
     public SiteUser getSiteUserByUserName(String userName) {
@@ -198,7 +198,6 @@ public class SiteUserService {
         studioService.createStudio(newStudio);
         System.out.println("공방이 저장되었습니다");
         return newUser;
-
     }
 
     public SiteUser getSiteUserById(Long id) {
@@ -218,7 +217,6 @@ public class SiteUserService {
         } else {
             return false;
         }
-
     }
 
     public boolean existsByNickName(String nickName) {
@@ -228,7 +226,15 @@ public class SiteUserService {
         } else {
             return false;
         }
+    }
 
+    public boolean existsByEmail(String email) {
+        Optional os = siteUserRepository.findByEmail(email);
+        if ( os.isPresent() ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

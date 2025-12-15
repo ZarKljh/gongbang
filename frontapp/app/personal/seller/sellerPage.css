@@ -36,7 +36,7 @@ body {
 
 /* 사이드바 */
 .mypage-sidebar {
-    width: 205px;
+    width: 265px;
     border-right: 1px solid #e5e7eb;
     padding: 32px;
     background: transparent;
@@ -95,11 +95,8 @@ body {
 /* 메인 콘텐츠 */
 .main-content {
     flex: 1;
-    padding-top: 32px;
-    padding-left: 32px;
+    padding: 32px 48px;
 }
-
-/* ⭐ 스크롤되는 영역 */
 
 .tab-content {
     margin-top: 24px;
@@ -197,6 +194,7 @@ body {
     font-weight: normal;
     color: #000;
     border-bottom: 1px solid #e9dcc4;
+    border-right: 1px solid #e9dcc4;
 }
 
 .stats-table td:first-child {
@@ -209,6 +207,7 @@ body {
     padding: 16px;
     font-size: 24px;
     font-weight: bold;
+    border-right: 1px solid #e9dcc4;
 }
 
 .profile-image {
@@ -219,7 +218,7 @@ body {
     background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.profile-image > img {
+.profile-image img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -339,12 +338,17 @@ body {
     align-items: flex-start;
     gap: 20px;
 }
+.form-group * {
+    /*
+    border: 1px solid black;
+    */
+}
 
 .form-group label {
     width: 100px;
     font-size: 14px;
     font-weight: 500;
-    padding-top: 10px;
+    padding-top: 8px;
     margin: 16px 0;
     border-right: 1px solid #dac0a3;
 }
@@ -904,72 +908,4 @@ body {
 .order-table th {
     background-color: #faf7f0;
     font-weight: 600;
-}
-
-/* 받은 주문 리스트 css */
-
-.delivery-filter {
-    margin-bottom: 12px;
-    display: flex;
-    gap: 8px;
-}
-
-.filter-btn {
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid #ddd;
-    background: #fff;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.filter-btn.active {
-    background: #111;
-    color: #fff;
-    border-color: #111;
-}
-
-.btn-delivery-link {
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid #ccc;
-    font-size: 12px;
-}
-
-.btn-delivery-link.filled {
-    background: #f5f5f5;
-    border-color: #999;
-}
-
-.btn-delivery-link.completed {
-    background: #d1f2d1;
-    color: #1e7e34;
-    border-color: #1e7e34;
-}
-
-.order-link {
-    all: unset;
-    cursor: pointer;
-}
-
-.order-link:hover {
-    color: #c99f8a;
-    transition: 0.3s;
-}
-
-.manageClass {
-    all: unset;
-    border: 1px solid #c99f8a;
-    padding: 5px 7px;
-    border-radius: 999;
-    cursor: pointer;
-}
-
-.manageClass:hover {
-    color: #c99f8a;
-    transition: 0.3s;
-}
-
-.order-table-item {
-    margin-top: 10px;
 }

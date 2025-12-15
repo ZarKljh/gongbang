@@ -83,6 +83,19 @@ public class SiteUserController {
         }
     }
 
+    @GetMapping("/signup/user/checkemail")
+    public RsData<Boolean> checkEmail(@RequestParam String email) {
+
+        boolean exists = siteUserService.existsByEmail(email);
+
+        if (exists) {
+            return RsData.of("200", "이미 사용중인 이메일입니다.", false);
+        } else {
+            return RsData.of("200", "사용 가능한 이메일입니다.", true);
+        }
+    }
+
+
     @PostMapping("/signup/seller")
     public RsData<SignupSellerResponse> joinSeller(
             @Valid @RequestPart("request") SignupSellerRequest signupSellerRequest,

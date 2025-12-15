@@ -6,6 +6,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class StatsResponse {
-    private Long totalQna;
-    private Long totalReviews;
+    private long totalQna;
+    private long totalReviews;
+    private long preparing;
+    private long shipping;
+    private long completed;
 }

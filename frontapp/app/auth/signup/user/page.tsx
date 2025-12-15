@@ -5,6 +5,8 @@ import { useRef } from 'react'
 import './signup_user.css'
 import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
 import ErrorMessage from '@/app/auth/common/errorMessage'
+import axios from 'axios'
+import { api } from '@/app/utils/api'
 
 export default function SignupUser() {
     const router = useRouter()
@@ -29,8 +31,10 @@ export default function SignupUser() {
     // 중복검사 결과 저장
     const [userNameCheckMsg, setUserNameCheckMsg] = useState('')
     const [nickNameCheckMsg, setNickNameCheckMsg] = useState('')
+    const [emailCheckMsg, setEmailCheckMsg] = useState('')
     const [isUserNameValid, setIsUserNameValid] = useState(false)
     const [isNickNameValid, setIsNickNameValid] = useState(false)
+    const [isEmailValid, setIsEmailValid] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
 
     const checkUserName = async () => {
@@ -39,13 +43,12 @@ export default function SignupUser() {
             return
         }
 
-        const res = await fetch(
-            `http://localhost:8090/api/v1/auth/signup/user/checkusername?userName=${formData.userName}`,
-        )
-        const body = await res.json()
+        const { data } = await api.get('/auth/signup/user/checkusername', {
+            params: { userName: formData.userName },
+        })
 
-        setUserNameCheckMsg(body.msg)
-        setIsUserNameValid(body.data === true)
+        setUserNameCheckMsg(data.msg)
+        setIsUserNameValid(data.data === true)
     }
 
     const checkNickName = async () => {
@@ -54,13 +57,26 @@ export default function SignupUser() {
             return
         }
 
-        const res = await fetch(
-            `http://localhost:8090/api/v1/auth/signup/user/checknickname?nickName=${formData.nickName}`,
-        )
-        const body = await res.json()
+        const { data } = await api.get('/auth/signup/user/checknickname', {
+            params: { nickName: formData.nickName },
+        })
 
-        setNickNameCheckMsg(body.msg)
-        setIsNickNameValid(body.data === true)
+        setNickNameCheckMsg(data.msg)
+        setIsNickNameValid(data.data === true)
+    }
+
+    const checkEmail = async () => {
+        if (!formData.email) {
+            setEmailCheckMsg('이메일을 입력해주세요.')
+            return
+        }
+
+        const { data } = await api.get('/auth/signup/user/checkemail', {
+            params: { email: formData.email },
+        })
+
+        setEmailCheckMsg(data.msg)
+        setIsEmailValid(data.data === true)
     }
 
     const handleChange = (e) => {
@@ -71,6 +87,10 @@ export default function SignupUser() {
         if (name === 'userName') {
             setIsUserNameValid(false)
             setUserNameCheckMsg('')
+        }
+        if (name === 'email') {
+            setIsEmailValid(false)
+            setEmailCheckMsg('')
         }
         if (name === 'nickName') {
             setIsNickNameValid(false)
@@ -115,7 +135,10 @@ export default function SignupUser() {
             alert('아이디 중복확인을 해주세요.')
             return
         }
-
+        if (!isEmailValid) {
+            alert('이메일 중복확인을 해주세요.')
+            return
+        }
         if (!isNickNameValid) {
             alert('닉네임 중복확인을 해주세요.')
             return
@@ -155,19 +178,10 @@ export default function SignupUser() {
                 submitData.append('file', fileToUpload)
             }
 
-            const response = await fetch('http://localhost:8090/api/v1/auth/signup/user', {
-                method: 'POST',
-                body: submitData,
-            })
+            await api.post('/auth/signup/user', submitData)
 
-            if (response.ok) {
-                alert('회원가입 성공하였습니다. 로그인을 해주세요')
-                router.push('/')
-            } else {
-                const error = await response.text()
-                console.error('회원가입 실패:', error)
-                alert('회원가입에 실패하였습니다')
-            }
+            alert('회원가입 성공하였습니다. 로그인을 해주세요')
+            router.push('/')
         } catch (err) {
             console.error(err)
             alert('회원가입 에러')
@@ -182,17 +196,19 @@ export default function SignupUser() {
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label required">ID</label>
-                        <input
-                            type="text"
-                            name="userName"
-                            className="form-input"
-                            onChange={handleChange}
-                            value={formData.userName}
-                            placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
-                        />
-                        <button type="button" className="btn btn-secondary" onClick={checkUserName}>
-                            중복확인
-                        </button>
+                        <div className="form-row">
+                            <input
+                                type="text"
+                                name="userName"
+                                className="form-input"
+                                onChange={handleChange}
+                                value={formData.userName}
+                                placeholder="아이디에는 영문4자가 이상 포함되어야합니다"
+                            />
+                            <button type="button" className="btn btn-secondary" onClick={checkUserName}>
+                                중복확인
+                            </button>
+                        </div>
                     </div>
                     {errors.userName && <ErrorMessage message={errors.userName} />}
                     {!errors.userName && userNameCheckMsg && (
@@ -236,16 +252,22 @@ export default function SignupUser() {
                     <ErrorMessage message={errors.fullName} />
                     <div className="form-group required">
                         <label className="form-label">이메일</label>
-                        <input
-                            type="text"
-                            name="email"
-                            className="form-input"
-                            onChange={handleChange}
-                            value={formData.email}
-                            placeholder="소문자로입력해주세요"
-                        />
+                        <div className="form-row">
+                            <input
+                                type="text"
+                                name="email"
+                                className="form-input"
+                                onChange={handleChange}
+                                value={formData.email}
+                                placeholder="소문자로입력해주세요"
+                            />
+                            <button type="button" className="btn btn-secondary" onClick={checkEmail}>
+                                중복확인
+                            </button>
+                        </div>
                     </div>
-                    <ErrorMessage message={errors.email} />
+                    {errors.email && <ErrorMessage message={errors.email} />}
+                    {!errors.email && emailCheckMsg && <ErrorMessage message={emailCheckMsg} success={isEmailValid} />}
                     <div className="form-group">
                         <label className="form-label required">생년월일</label>
                         <input
@@ -259,17 +281,19 @@ export default function SignupUser() {
                     </div>
                     <div className="form-group">
                         <label className="form-label required">닉네임</label>
-                        <input
-                            type="text"
-                            name="nickName"
-                            className="form-input"
-                            value={formData.nickName}
-                            onChange={handleChange}
-                            placeholder="닉네임은 2글자 이상이어야합니다"
-                        />
-                        <button type="button" className="btn btn-secondary" onClick={checkNickName}>
-                            중복확인
-                        </button>
+                        <div className="form-row">
+                            <input
+                                type="text"
+                                name="nickName"
+                                className="form-input"
+                                value={formData.nickName}
+                                onChange={handleChange}
+                                placeholder="닉네임은 2글자 이상이어야합니다"
+                            />
+                            <button type="button" className="btn btn-secondary" onClick={checkNickName}>
+                                중복확인
+                            </button>
+                        </div>
                     </div>
                     {errors.nickName && <ErrorMessage message={errors.nickName} />}
                     {!errors.nickName && nickNameCheckMsg && (

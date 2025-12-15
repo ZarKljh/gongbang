@@ -3,9 +3,9 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import ProductList from '../components/productListOfStudio'
 import '../style/studio.css'
 import ProductListScroll from '../components/productListScrollOfStudio'
+import api from '@/app/utils/api'
 //import useCurrentUser from '@/app/auth/common/useCurrentUser'
 
 export default function viewStudioInfo() {
@@ -18,6 +18,7 @@ export default function viewStudioInfo() {
 
     //도메인별 변수세팅
     const [seller, setSeller] = useState({
+        userId: '',
         userName: '',
         nickName: '',
     })
@@ -43,7 +44,7 @@ export default function viewStudioInfo() {
         mainImageFileName: '',
         mainImageUrl: '',
     })
-
+    const [sellerProfileImage, setSellerProfileImage] = useState(null)
     useEffect(() => {
         if (!studioId) {
             alert('공방정보를 확인할수 없습니다')
@@ -52,23 +53,23 @@ export default function viewStudioInfo() {
         }
         const fetchStudioById = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/studio/${studioId}`, {
-                    method: 'GET',
-                    credentials: 'include',
-                })
-                if (!response.ok) {
-                    throw new Error('스튜디오 정보를 불러올 수 없습니다.')
-                }
-                const result = await response.json()
+                // ⭐ axios(api) 사용 — fetch와 달리 자동으로 JSON 파싱됨
+                const response = await api.get(`/studio/${studioId}`)
+
+                const result = response.data
                 const { studio: studioData, studioList: studioListData } = result.data
 
                 console.log('요청을 보냈습니다')
-                //도메인별 변수세팅
+
+                // ⭐ 셀러 정보 저장
                 setSeller({
+                    userId: studioData.id,
                     userName: studioData.userName,
                     nickName: studioData.nickName,
                 })
                 console.log('seller 정보를 셋팅하였습니다')
+
+                // ⭐ 스튜디오 정보 저장
                 setStudio({
                     studioName: studioData.studioName,
                     studioDescription: studioData.studioDescription,
@@ -85,13 +86,21 @@ export default function viewStudioInfo() {
                     sutdioGalleryImages: studioData.sutdioGalleryImages,
                 })
                 console.log('studio 정보를 셋팅하였습니다')
+                console.log(studioData)
+
+                // ⭐ 스튜디오 리스트 저장
                 setStudioList(studioListData)
                 console.log('studioList 정보를 셋팅하였습니다')
+
+                // ⭐ 셀러 프로필 이미지 가져오기
+                fetchSellerProfileImage(studioData.id)
             } catch (error) {
+                console.error(error)
                 alert('오류가 발생했습니다')
                 router.back()
             }
         }
+
         /*
         const fetchMainImage = async () => {
             try {
@@ -132,6 +141,31 @@ export default function viewStudioInfo() {
         fetchStudioById()
         //fetchProductList()
     }, [studioId])
+
+    const fetchSellerProfileImage = async (userId) => {
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/image/profile/${userId}`, {
+                method: 'GET',
+                credentials: 'include',
+            })
+
+            if (!response.ok) {
+                throw new Error('프로필 이미지를 불러올 수 없습니다.')
+            }
+
+            // personal 페이지와 동일 — Blob 객체 생성
+            const blob = await response.blob()
+
+            // personal 페이지와 동일 — Blob URL 생성
+            const url = URL.createObjectURL(blob)
+
+            // 상태에 저장 → img src에 바로 반영됨
+            setSellerProfileImage(url)
+        } catch (error) {
+            console.error('셀러 프로필 이미지 로드 실패:', error)
+            setSellerProfileImage(null) // 실패 시 fallback 사용
+        }
+    }
 
     return (
         <>
@@ -183,26 +217,17 @@ export default function viewStudioInfo() {
                                 <div className="seller-name">
                                     <h2>셀러정보</h2>
                                     <div className="seller-info-profileImage">
-                                        <img src="null" alt="셀러프로필사진"></img>
+                                        <img
+                                            src={sellerProfileImage || '/images/default_profile.jpg'}
+                                            onError={(e) => {
+                                                e.currentTarget.src = '/images/default_profile.jpg'
+                                            }}
+                                            alt="셀러프로필사진"
+                                        ></img>
                                     </div>
                                     <ul className="seller-info-detail">
                                         <li>📝 닉네임: {seller.nickName}</li>
                                         <li>👤 아이디: {seller.userName}</li>
-                                    </ul>
-                                </div>
-                                <div className="studio-list">
-                                    <h2>{seller.nickName}님의 공방리스트</h2>
-                                    <ul className="sutdio-logo-list">
-                                        {studioList.map((item) => (
-                                            <li key={item.studioId}>
-                                                <Link href={`/seller/studio/${item.studioId}`}>
-                                                    <img
-                                                        src={`http://localhost:8090/images/${item.studioLogoImage?.imageFileName}`}
-                                                        alt={item.studioName}
-                                                    />
-                                                </Link>
-                                            </li>
-                                        ))}
                                     </ul>
                                 </div>
                             </div>

@@ -64,24 +64,14 @@ public class CartController {
         return RsData.of("200", "장바구니 개수 조회 성공", count);
     }
 
-    @GetMapping("/infinite")
-    public RsData<List<CartResponse>> getInfiniteCart(
-            @RequestParam(required = false) Long lastCartId,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        SiteUser user = siteUserService.getCurrentUser();
-        List<CartResponse> carts = cartService.getInfiniteCart(user.getId(), lastCartId, size);
-        return RsData.of("200", "장바구니 무한스크롤 조회 성공", carts);
-    }
-
     @PostMapping("/prepare")
     public RsData<PrepareOrderResponse> prepareCartOrder(@RequestBody CartOrderRequest request) {
 
         SiteUser user = siteUserService.getCurrentUser();
 
-        PrepareOrderResponse response = orderService.prepareCartOrder(user, request.getItems());
+        PrepareOrderResponse response = orderService.prepareCartOrder(user, request.getItems(), request.getAddressId());
 
-        return RsData.of("200", "장바구니 주문 준비 성공", response);
+        return RsData.of("200", "장바구니 주문 준비 성공", response );
     }
 
     @DeleteMapping("/after-order")

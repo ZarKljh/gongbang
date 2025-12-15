@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import './login_seller.css'
 import { loginUserValidation } from '@/app/auth/hooks/loginUserValidation'
 import ErrorMessage from '@/app/auth/common/errorMessage'
+import axios from 'axios'
+import { api } from '@/app/utils/api'
 
 export default function LoginSeller() {
     const router = useRouter()
@@ -25,35 +27,24 @@ export default function LoginSeller() {
             return
         }
 
-        const response = await fetch(`http://localhost:8090/api/v1/auth/login/seller`, {
-            method: 'POST',
-            credentials: 'include', //인증정보를 함께 보내는 경우, 쿠키와 같은 것들포함
-            //서버에게 주고받는 데이터를 json형태로 하겠다고 선언하는 것
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            //무엇을 json으로 할지 선언한것
-            body: JSON.stringify(seller),
-        })
-        if (response.ok) {
-            alert('login success')
-            router.push(`/`)
-        } else {
-            alert('login fail')
+        try {
+            await api.post('/auth/login/seller', seller)
+
+            alert('로그인성공하였습니다')
+            router.push('/')
+        } catch (error) {
+            alert('로그인에 실패하였습니다. 아이디 혹은 비밀번호를 확인해주세요')
         }
     }
 
     //로그아웃을 위한 메소드
     const handleLogout = async () => {
-        const response = await fetch('http://localhost:8090/api/v1/auth/logout', {
-            method: 'POST',
-            credentials: 'include',
-        })
-        if (response.ok) {
-            alert('logout success')
-            router.push(`/`)
-        } else {
-            alert('logout fail')
+        try {
+            await api.post('/auth/logout')
+            alert('로그아웃 성공하였습니다')
+            router.push('/')
+        } catch (error) {
+            alert('로그아웃에 실패하였습니다.')
         }
     }
 
@@ -82,9 +73,6 @@ export default function LoginSeller() {
                     <div className="button-group">
                         <input type="submit" value="로그인" className="btn btn-primary" />
                         {/* <button type="submit">등록</button> */}
-                        <button className="btn" onClick={handleLogout}>
-                            로그아웃
-                        </button>
                     </div>
                 </form>
             </section>

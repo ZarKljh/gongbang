@@ -19,13 +19,16 @@ public class ProfileImageController {
 
     // ---------------- 업로드 ----------------
     @PostMapping("/profile")
-    public RsData<Void> uploadProfileImage(@RequestParam MultipartFile file) {
+    public RsData<String> uploadProfileImage(@RequestParam MultipartFile file) {
         SiteUser user = siteUserService.getCurrentUser();
-        RsData<Void> result = profileImageService.uploadProfileImage(user.getId(), file);
-        if (result.isSuccess()) {
-            return RsData.of("200", "프로필 업로드 성공");
-        }
-        return result;
+        return profileImageService.uploadProfileImage(user.getId(), file);
+    }
+
+    // ---------------- 수정 ----------------
+    @PatchMapping("/profile")
+    public RsData<String> updateProfileImage(@RequestParam MultipartFile file) {
+        SiteUser user = siteUserService.getCurrentUser();
+        return profileImageService.uploadProfileImage(user.getId(), file);
     }
 
     // ---------------- 조회 ----------------
@@ -34,25 +37,10 @@ public class ProfileImageController {
         return profileImageService.getProfileImage(userId);
     }
 
-    // ---------------- 수정 ----------------
-    @PatchMapping("/profile")
-    public RsData<Void> updateProfileImage(@RequestParam MultipartFile file) {
-        SiteUser user = siteUserService.getCurrentUser();
-        RsData<Void> result = profileImageService.updateProfileImage(user.getId(), file);
-        if (result.isSuccess()) {
-            return RsData.of("200", "프로필 수정 성공");
-        }
-        return result;
-    }
-
     // ---------------- 삭제 ----------------
     @DeleteMapping("/profile")
     public RsData<Void> deleteProfileImage() {
         SiteUser user = siteUserService.getCurrentUser();
-        RsData<Void> result = profileImageService.deleteProfileImage(user.getId());
-        if (result.isSuccess()) {
-            return RsData.of("200", "프로필 삭제 성공");
-        }
-        return result;
+        return profileImageService.deleteProfileImage(user.getId());
     }
 }

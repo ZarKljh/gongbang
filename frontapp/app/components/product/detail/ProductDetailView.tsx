@@ -13,6 +13,7 @@ import { loadPaymentWidget /*, ANONYMOUS*/ } from '@tosspayments/payment-widget-
 import { v4 as uuidv4 } from 'uuid'
 import ReportButton from '@/app/admin/components/ReportButton'
 import { useBuyBtn, usePrepareOrder } from '@/app/utils/api/order'
+import { createPortal } from 'react-dom'
 
 type ProductDetail = {
     id: number
@@ -136,13 +137,15 @@ export default function ProductDetailView() {
     const liked: boolean = data?.productLikeInfo?.liked ?? false
     const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
+    const BASE_URL = 'http://localhost:8090'
+
     const pdImageUrl = detailImage
-        ? `http://localhost:8090${detailImage.imageUrl}`
-        : 'http://localhost:8090/uploads/products/no-image-soft.png'
+        ? `${BASE_URL}${detailImage.imageUrl}`
+        : `${BASE_URL}/uploads/products/no-image-soft.png`
 
     const gbImageUrl = gbLogo
-        ? `http://localhost:8090/images/${gbLogo.imageUrl}`
-        : 'http://localhost:8090/uploads/products/no-image-soft.png'
+        ? `${BASE_URL}/images/${gbLogo.imageUrl}`
+        : `${BASE_URL}/uploads/products/no-image-soft.png`
 
     const unitPrice = useMemo(() => product?.basePrice ?? 0, [product])
     const total = unitPrice * count
@@ -177,10 +180,14 @@ export default function ProductDetailView() {
             )
         },
         onError: (err: any) => {
-            if (err?.response?.status === 401) {
-                alert('로그인이 필요합니다.')
+            const error = err?.response?.data?.error // ✅ 여기!
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return
             } else {
-                alert('로그인이 필요합니다.')
                 console.error('팔로우 에러:', err)
             }
         },
@@ -190,12 +197,15 @@ export default function ProductDetailView() {
     const cartMutation = useMutation({
         mutationFn: ([prodId, quantity]: [number, number]) =>
             api.post(`/product/${prodId}/cart`, { quantity }).then((res) => res.data),
-        onSuccess: (resData) => {
-            const { resultCode, data: cartData } = resData
 
+        onSuccess: (resData, variables) => {
+            const { resultCode, data: cartData } = resData
             if (resultCode !== '200') return
 
             if (!productId) return
+
+            // variables 가 우리가 mutate 할 때 넘긴 [prodId, quantity]
+            const [prodId, quantity] = variables as [number, number]
 
             queryClient.setQueryData(['productDetail', productId], (old: any) =>
                 old
@@ -207,14 +217,21 @@ export default function ProductDetailView() {
                       }
                     : old,
             )
+
             console.log('🧾 cartData:', cartData)
-            alert('장바구니에 담았습니다.')
+
+            alert(`🛒 '${product?.name ?? '상품'}' ${quantity}개를 장바구니에 담았어요!`)
+            // 또는 product?.name 쓰고 싶으면 위에 product를 가져다 쓰면 됨
         },
         onError: (err: any) => {
-            if (err?.response?.status === 401) {
-                alert('로그인이 필요합니다.')
+            const error = err?.response?.data?.error // ✅ 여기!
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return
             } else {
-                alert('로그인이 필요합니다.')
                 console.error('장바구니 에러:', err)
             }
         },
@@ -250,11 +267,15 @@ export default function ProductDetailView() {
             )
         },
         onError: (err: any) => {
-            if (err?.response?.status === 401) {
-                alert('로그인이 필요합니다.')
+            const error = err?.response?.data?.error // ✅ 여기!
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return
             } else {
-                alert('로그인이 필요합니다.')
-                console.error('팔로우 에러:', err)
+                console.error('좋아요 에러:', err)
             }
         },
     })
@@ -283,9 +304,9 @@ export default function ProductDetailView() {
         }
     }
 
-    // React Query mutation 훅
+    // React Query mutation usePrepareOrder 훅
     const { mutateAsync: prepareOrderMutation } = usePrepareOrder()
-    // React Query mutation 훅
+    // React Query mutation useBuyBtn 훅
     const { mutateAsync: buyBtnMutation } = useBuyBtn()
 
     const handleRequestPayment = async () => {
@@ -344,22 +365,27 @@ export default function ProductDetailView() {
 
             console.log('status = ', e?.response?.status)
             console.log('data   = ', e?.response?.data)
-            const error = e?.response?.data
+            const error = e?.response?.data?.error // ✅ 여기!
 
             //기본 배송지 없음
-            if (error?.code === 'NO_DEFAULT_ADDRESS') {
-                alert(error.message)
-                router.push('/mypage/address')
+            if (error?.code === 'A001') {
+                const result = window.confirm('기본 배송지가 설정되어 있지 않습니다.\n 배송 등록 페이지로 이동할까요?')
+
+                if (result) {
+                    router.push('/personal?tab=addresses')
+                }
                 return
             }
 
             // 로그인 안 되어 있음
-            if (e?.response?.status === 401) {
-                alert('로그인이 필요한 서비스입니다.')
-                router.push('/auth/login')
-                return
-            }
+            if (error?.code === 'M002') {
+                const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
 
+                if (result) {
+                    router.push('/auth/login')
+                }
+                return // confirm 후에는 실행 중단
+            }
             alert(error?.message || '기본 배송지가 설정되어 있지 않습니다2.')
         }
     }
@@ -413,7 +439,9 @@ export default function ProductDetailView() {
                     {sellerinfo && (
                         <div className={styles.creatorBox}>
                             <div className={styles.creatorLeft}>
-                                <img className={styles.creatorProfile} src={gbImageUrl} alt="프로필" />
+                                <Link href={`/seller/studio/${sellerinfo.studioId}`}>
+                                    <img className={styles.creatorProfile} src={gbImageUrl} alt="프로필" />
+                                </Link>
                                 <div className={styles.creatorInfo}>
                                     <div className={styles.creatorName}>{sellerinfo.studioName}</div>
                                     <div className={styles.creatorActions}>
@@ -428,16 +456,16 @@ export default function ProductDetailView() {
                                             {isFollowed ? '언팔로우' : '+ 팔로우'}
                                         </button>
                                         <Link href={`/seller/studio/${sellerinfo.studioId}`} className={styles.btnHome}>
-                                            작가홈
+                                            공방이동
                                         </Link>
                                     </div>
                                 </div>
                             </div>
-
+                            {/* 
                             <div className={styles.creatorRight}>
                                 <div className={styles.followerLabel}>팔로워</div>
                                 <div className={styles.followerCount}>{followerCount}</div>
-                            </div>
+                            </div> */}
                         </div>
                     )}
 
@@ -447,76 +475,77 @@ export default function ProductDetailView() {
                         </button>
 
                         {/* 결제 모달 */}
-                        {isModalOpen && (
-                            <div className={styles.modalOverlay}>
-                                <div className={styles.modalContainer}>
-                                    {/* 헤더 */}
-                                    <div className={styles.modalHeader}>
-                                        <h2 className={styles.modalTitle}>결제하기</h2>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setIsModalOpen(false)
-                                                setWidgetLoaded(false)
-                                            }}
-                                            className={styles.modalCloseBtn}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
+                        {isModalOpen &&
+                            createPortal(
+                                <div className={styles.modalOverlay}>
+                                    <div className={styles.modalContainer}>
+                                        {/* 헤더 */}
+                                        <div className={styles.modalHeader}>
+                                            <h2 className={styles.modalTitle}>결제하기</h2>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsModalOpen(false)
+                                                    setWidgetLoaded(false)
+                                                }}
+                                                className={styles.modalCloseBtn}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
 
-                                    {/* ✅ 한 섹션 카드 안에 상품요약 + 결제위젯 같이 */}
-                                    <div className={styles.modalSection}>
-                                        {/* 상품 정보 요약 */}
-                                        <div className={styles.modalProductSummary}>
-                                            <div className={styles.summaryThumb}>
-                                                <img src={pdImageUrl} alt={product?.name} />
+                                        {/* 한 섹션 카드 안에 상품요약 + 결제위젯 */}
+                                        <div className={styles.modalSection}>
+                                            {/* 상품 정보 요약 */}
+                                            <div className={styles.modalProductSummary}>
+                                                <div className={styles.summaryThumb}>
+                                                    <img src={pdImageUrl} alt={product?.name} />
+                                                </div>
+
+                                                <div className={styles.summaryText}>
+                                                    <div className={styles.summaryTitle}>{product?.name}</div>
+                                                    <div className={styles.summaryDesc}>
+                                                        {product?.description ?? '상품 설명이 없습니다.'}
+                                                    </div>
+
+                                                    <div className={styles.summaryRow}>
+                                                        <span className={styles.summaryLabel}>수량</span>
+                                                        <span className={styles.summaryValue}>{count}개</span>
+                                                    </div>
+
+                                                    <div className={styles.summaryRow}>
+                                                        <span className={styles.summaryLabel}>총 결제 금액</span>
+                                                        <span className={styles.summaryTotal}>
+                                                            {total.toLocaleString()}원
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div className={styles.summaryText}>
-                                                <div className={styles.summaryTitle}>{product?.name}</div>
-                                                <div className={styles.summaryDesc}>
-                                                    {product?.description ?? '상품 설명이 없습니다.'}
-                                                </div>
+                                            <div className={styles.sectionDivider} />
 
-                                                <div className={styles.summaryRow}>
-                                                    <span className={styles.summaryLabel}>수량</span>
-                                                    <span className={styles.summaryValue}>{count}개</span>
-                                                </div>
-
-                                                <div className={styles.summaryRow}>
-                                                    <span className={styles.summaryLabel}>총 결제 금액</span>
-                                                    <span className={styles.summaryTotal}>
-                                                        {total.toLocaleString()}원
-                                                    </span>
-                                                </div>
+                                            {/* 토스 결제 UI 영역 */}
+                                            <div className={styles.paymentBox}>
+                                                <div id="payment-method" className={styles.paymentMethods} />
+                                                <div id="agreement" className={styles.paymentAgreement} />
                                             </div>
                                         </div>
 
-                                        {/* 섹션 안 구분선 */}
-                                        <div className={styles.sectionDivider} />
-
-                                        {/* 토스 결제 위젯 영역 */}
-                                        <div className={styles.paymentBox}>
-                                            <div id="payment-method" className={styles.paymentMethods} />
-                                            <div id="agreement" className={styles.paymentAgreement} />
+                                        {/* 하단 결제 버튼 */}
+                                        <div className={styles.modalFooter}>
+                                            <button
+                                                type="button"
+                                                onClick={handleRequestPayment}
+                                                className={styles.paymentSubmitBtn}
+                                                disabled={!widgetLoaded}
+                                            >
+                                                {widgetLoaded ? '결제하기' : '결제 준비중…'}
+                                            </button>
                                         </div>
                                     </div>
-
-                                    {/* 하단 결제 버튼 + 상태 텍스트(오른쪽 정렬 강조) */}
-                                    <div className={styles.modalFooter}>
-                                        <button
-                                            type="button"
-                                            onClick={handleRequestPayment}
-                                            className={styles.paymentSubmitBtn}
-                                            disabled={!widgetLoaded}
-                                        >
-                                            {widgetLoaded ? '결제하기' : '결제 준비중…'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                                </div>,
+                                document.body,
+                            )}
 
                         <div className={styles.subButtons}>
                             <button

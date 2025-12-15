@@ -5,6 +5,7 @@ import com.gobang.gobang.domain.image.dto.ImageUploadResponse;
 import com.gobang.gobang.domain.image.entity.Image;
 import com.gobang.gobang.domain.image.service.ReviewImageService;
 import com.gobang.gobang.global.RsData.RsData;
+import com.gobang.gobang.global.util.ImageValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,6 +56,10 @@ public class ReviewImageController {
             @RequestParam("refId") Long refId,
             @RequestParam("sortOrder") Integer sortOrder
     ) {
+
+        // 이미지 업로드 검증
+        ImageValidator.validate(file);
+
         return reviewImageService.uploadReviewImage(new ImageUploadRequest(file, refType, refId, sortOrder));
     }
 

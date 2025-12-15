@@ -148,6 +148,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
+    display: none;
 }
 
 .filter-checkbox-row label {
