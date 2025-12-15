@@ -10,6 +10,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
@@ -21,17 +23,19 @@ public class WebConfig implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 개발환경: 모든 도메인 허용
-        config.addAllowedOriginPattern("*");
-        config.addAllowedMethod("*");         // 모든 HTTP 메소드 허용
-        config.addAllowedHeader("*");         // 모든 Header 허용
-        config.setAllowCredentials(true);      // 쿠키/토큰 포함 요청 허용 (필요 없으면 false)
+        // ✔ 프론트 주소 두 개 허용 (PC, 모바일)
+        config.setAllowedOrigins(List.of(
+                "https://api.gongyedam.shop:3000",
+                "https://gongyedam.shop:3000"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // 모든 요청 경로 허용
+        source.registerCorsConfiguration("/api/**", config);
         return source;
     }
-
 
 
     // 이미지 파일명 접근
