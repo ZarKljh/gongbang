@@ -126,11 +126,12 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
                                 <td>{order.buyerNickname ?? '-'}</td>
                                 <td>
                                     {getOrderStatusLabel(order.status)}
-                                    {order.deliveryStatus && (
-                                        <div className="sub-status">
+                                    {/* 배송 내역 */}
+                                    {/* {order.deliveryStatus && (
+                                        <div className="sub-status" style={{fontSize:'10px'}}>
                                             {getDeliveryStatusLabel(order.deliveryStatus)}
                                         </div>
-                                    )}
+                                    )} */}
                                 </td>
                                 <td>
                                     {firstItem ? (
