@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.product.productList.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.order.model.OrderStatus;
 import com.gobang.gobang.domain.personal.entity.Delivery;
 import com.gobang.gobang.domain.personal.entity.OrderItem;
 import com.gobang.gobang.domain.personal.entity.Orders;
@@ -67,7 +68,7 @@ public class ProductOrderService {
         orders.setSiteUser(user);
         orders.setOrderCode(orderCode);
         orders.setTotalPrice(totalPrice);
-        orders.setStatus(Orders.OrderStatus.TEMP); //enum으로 교체해서 변경했습니다
+        orders.setStatus(OrderStatus.TEMP); //enum으로 교체해서 변경했습니다
         // createdDate는 @CreationTimestamp로 자동 설정
 
         // 6. OrderItem 생성 후 Orders에 연결
@@ -161,7 +162,7 @@ public class ProductOrderService {
 
 
 
-        if (order.getStatus() == Orders.OrderStatus.PAID) { // 혹은 order.getStatus() == OrderStatus.PAID <<enum으로 교체해서 변경했습니다
+        if (order.getStatus() == OrderStatus.PAID) { // 혹은 order.getStatus() == OrderStatus.PAID <<enum으로 교체해서 변경했습니다
             // 중복 승인 요청 들어온 상황
             throw new IllegalStateException("이미 결제가 완료된 주문입니다. orderId=" + orderId);
         }
@@ -221,7 +222,7 @@ public class ProductOrderService {
 
     // 2️⃣ 결제 완료 처리
     public void markPaid(Orders order, String paymentKey, String methodName) {
-        order.setStatus(Orders.OrderStatus.PAID); //enum으로 교체해서 변경했습니다
+        order.setStatus(OrderStatus.PAID); //enum으로 교체해서 변경했습니다
         order.setPaymentKey(paymentKey);
         order.setPaymentMethodName(methodName);
         order.setPaidAt(LocalDateTime.now());

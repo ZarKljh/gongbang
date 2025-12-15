@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
+import com.gobang.gobang.domain.order.model.OrderStatus;
 import com.gobang.gobang.domain.personal.dto.CartOrderItemDto;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
 import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
@@ -101,7 +102,7 @@ public class OrdersService {
         Orders order = ordersRepository.findByOrderCodeAndSiteUser(orderCode, user)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        if (order.getStatus() != Orders.OrderStatus.TEMP) {
+        if (order.getStatus() != OrderStatus.TEMP) {
             throw new IllegalStateException("이미 결제가 처리된 주문입니다.");
         }
 

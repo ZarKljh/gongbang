@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.personal.repository;
 
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.order.model.OrderStatus;
 import com.gobang.gobang.domain.personal.entity.Orders;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -59,18 +60,18 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     /* ===== 통계 ===== */
 
     @Query("""
-        select count(distinct o)
-        from Orders o
-        join o.deliveries d
-        where o.siteUser.id = :userId
-          and o.status = com.gobang.gobang.domain.personal.entity.Orders.OrderStatus.PAID
-          and d.deliveryStatus = :status
-    """)
+    select count(distinct o)
+    from Orders o
+    join o.deliveries d
+    where o.siteUser.id = :userId
+      and o.status = :orderStatus
+      and d.deliveryStatus = :deliveryStatus
+""")
     long countByDeliveryStatus(
             @Param("userId") Long userId,
-            @Param("status") String status
+            @Param("deliveryStatus") String deliveryStatus,
+            @Param("orderStatus") OrderStatus orderStatus
     );
-
 
     @Query("""
         SELECT COUNT(d)

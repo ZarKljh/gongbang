@@ -1,6 +1,7 @@
 package com.gobang.gobang.domain.personal.entity;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.order.model.OrderStatus;
 import com.gobang.gobang.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -106,11 +107,6 @@ public class Orders {
     public void exchange(String reason) {
         this.status = OrderStatus.EXCHANGE;
         this.reason = reason;
-    }
-
-
-    public enum OrderStatus {
-        TEMP, PAID, CANCELLED, RETURN, EXCHANGE
     }
 
     public static Orders createTempOrder(SiteUser user) {

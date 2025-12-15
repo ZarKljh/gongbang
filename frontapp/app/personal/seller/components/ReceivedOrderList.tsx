@@ -49,7 +49,7 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
             minute: '2-digit',
         })
 
-    const getStatusLabel = (status: OrdersResponse['status']) => {
+    const getOrderStatusLabel = (status?: string) => {
         switch (status) {
             case 'PENDING':
                 return '결제 대기'
@@ -65,6 +65,20 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
                 return status || '-'
         }
     }
+
+    const getDeliveryStatusLabel = (status?: string | null) => {
+        switch (status) {
+            case '배송준비중':
+                return '배송 준비 중'
+            case '배송중':
+                return '배송 중'
+            case '배송완료':
+                return '배송 완료'
+            default:
+                return null
+        }
+    }
+
 
     const toNumber = (v: number | string | null | undefined) => {
         if (typeof v === 'number') return v
@@ -110,7 +124,14 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
                                 <td>{totalQuantity > 0 ? `${totalQuantity}개` : '-'}</td>
                                 <td>{toNumber(order.totalPrice).toLocaleString()}원</td>
                                 <td>{order.buyerNickname ?? '-'}</td>
-                                <td>{getStatusLabel(order.status)}</td>
+                                <td>
+                                    {getOrderStatusLabel(order.status)}
+                                    {order.deliveryStatus && (
+                                        <div className="sub-status">
+                                            {getDeliveryStatusLabel(order.deliveryStatus)}
+                                        </div>
+                                    )}
+                                </td>
                                 <td>
                                     {firstItem ? (
                                         <Link

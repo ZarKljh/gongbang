@@ -124,6 +124,7 @@ export default function MyPage() {
             toggleOrderDetail,
             submitReason,
             filterOrdersByStatus,
+            ORDER_STATUS_LABEL,
         } = useOrders()
 
     // 장바구니
@@ -276,21 +277,21 @@ export default function MyPage() {
         } = useWishlist()
 
     // =============== 결제 관련 상태 (토스 위젯) ===============
-        const [orderCode, setOrderCode] = useState<string | null>(null)
-        const [total, setTotal] = useState<number>(0)
-        const [isModalOpen, setIsModalOpen] = useState(false)
-        const [paymentWidget, setPaymentWidget] = useState<any>(null)
-        const [widgetLoaded, setWidgetLoaded] = useState(false)
-        const [pendingOrderItems, setPendingOrderItems] = useState<PendingOrderItem[]>([])
+    const [orderCode, setOrderCode] = useState<string | null>(null)
+    const [total, setTotal] = useState<number>(0)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [paymentWidget, setPaymentWidget] = useState<any>(null)
+    const [widgetLoaded, setWidgetLoaded] = useState(false)
+    const [pendingOrderItems, setPendingOrderItems] = useState<PendingOrderItem[]>([])
 
-        const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
-        const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
+    const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
+    const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
 
     // =============== 공통 유틸 ===============
-        const handleTabClick = (tabName: string) => {
-            setActiveTab(tabName)
-            setIsMobileSidebarOpen(false)
-        }
+    const handleTabClick = (tabName: string) => {
+        setActiveTab(tabName)
+        setIsMobileSidebarOpen(false)
+    }
 
     // =============== 사용자 정보 조회 ===============
     const fetchUser = async () => {
@@ -360,13 +361,13 @@ export default function MyPage() {
     }, [isAddressModal])
 
     // =============== 통계 계산 ===============
-        const fetchStats = async (userId: number) => {
-            const res = await axios.get(`${API_BASE_URL}/stats`, {
-                params: { userId },
-                withCredentials: true,
-            })
-            setStats(res.data.data)
-        }
+    const fetchStats = async (userId: number) => {
+        const res = await axios.get(`${API_BASE_URL}/stats`, {
+            params: { userId },
+            withCredentials: true,
+        })
+        setStats(res.data.data)
+    }
 
     // =============== 삭제 모달 핸들러 ===============
     const handleReviewDeleteClick = (review: any) => {
@@ -943,10 +944,10 @@ export default function MyPage() {
                                     onChange={(e) => setActiveFilter(e.target.value)}
                                     className="filter-select"
                                 >
-                                    <option value="전체">전체</option>
-                                    <option value="취소">취소</option>
-                                    <option value="반품">반품</option>
-                                    <option value="교환">교환</option>
+                                    <option value="ALL">전체</option>
+                                    <option value="CANCELLED">취소</option>
+                                    <option value="RETURN">반품</option>
+                                    <option value="EXCHANGE">교환</option>
                                 </select>
                             </div>
 
@@ -978,7 +979,7 @@ export default function MyPage() {
                                                         <p> | 주문일: {order.createdDate}</p>
                                                         <p> | {status} 일시: {statusDate}</p>
                                                     </div>
-                                                    <span className={`badge ${status}`}>{status}</span>
+                                                    <span className={`badge ${order.status}`}>{ORDER_STATUS_LABEL[order.status]}</span>
                                                 </div>
                                             </div>
                                         )

@@ -30,6 +30,16 @@ public class OrdersController {
                 ordersService.getOrdersByUser(user));
     }
 
+    @GetMapping("/infinite")
+    public RsData<List<OrdersResponse>> infiniteOrders(
+            @RequestParam(required = false) Long lastOrderId,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "주문 무한스크롤 조회 성공",
+                ordersService.getInfiniteOrders(user, lastOrderId, size));
+    }
+
     @GetMapping("/{orderId}")
     public RsData<OrdersResponse> getOrderDetail(@PathVariable Long orderId) {
         SiteUser user = siteUserService.getCurrentUser();
@@ -79,16 +89,6 @@ public class OrdersController {
         SiteUser user = siteUserService.getCurrentUser();
         return RsData.of("200", "배송 상세 조회 성공",
                 deliveryService.getDeliveryByOrderId(orderId, user));
-    }
-
-    @GetMapping("/infinite")
-    public RsData<List<OrdersResponse>> infiniteOrders(
-            @RequestParam(required = false) Long lastOrderId,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        SiteUser user = siteUserService.getCurrentUser();
-        return RsData.of("200", "주문 무한스크롤 조회 성공",
-                ordersService.getInfiniteOrders(user, lastOrderId, size));
     }
 
     @PostMapping("/cancel-before-payment")
