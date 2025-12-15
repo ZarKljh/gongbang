@@ -729,7 +729,7 @@
 @media (max-width: 460px) {
     .detailPage {
         width: 100%;
-        padding: 0 16px;
+        padding: 0 14px;
     }
 
     .reviews-title {
