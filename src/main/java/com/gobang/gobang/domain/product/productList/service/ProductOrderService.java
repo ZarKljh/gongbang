@@ -222,7 +222,7 @@ public class ProductOrderService {
 
     // 2️⃣ 결제 완료 처리
     public void markPaid(Orders order, String paymentKey, String methodName) {
-        order.setStatus(OrderStatus.PAID); //enum으로 교체해서 변경했습니다
+        order.setStatus(OrderStatus.PAID); //enum으로 교체해서 변경했습니다 - jisun
         order.setPaymentKey(paymentKey);
         order.setPaymentMethodName(methodName);
         order.setPaidAt(LocalDateTime.now());
