@@ -137,7 +137,8 @@ export default function ProductDetailView() {
     const liked: boolean = data?.productLikeInfo?.liked ?? false
     const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
-    const BASE_URL = 'https://api.gongyedam.shop'
+    const BASE_URL = 'http://localhost:8090'
+    //const BASE_URL = 'https://api.gongyedam.shop'
 
     const pdImageUrl = detailImage
         ? `${BASE_URL}${detailImage.imageUrl}`
