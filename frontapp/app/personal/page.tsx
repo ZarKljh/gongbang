@@ -373,15 +373,15 @@ export default function MyPage() {
     // =============== 삭제 모달 핸들러 ===============
     const handleReviewDeleteClick = (review: any) => {
         setDeleteModal({
-        open: true,
-        title: '리뷰 삭제',
-        message: '정말로 이 리뷰를 삭제하시겠습니까?',
-        warning: '삭제된 리뷰는 복구할 수 없습니다.',
-        onConfirm: () => {
-            handleDeleteReview(review.reviewId)
-            setDeleteModal(prev => ({ ...prev, open: false }))
-        },
-        onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
+            open: true,
+            title: '리뷰 삭제',
+            message: '정말로 이 리뷰를 삭제하시겠습니까?',
+            warning: '삭제된 리뷰는 복구할 수 없습니다.',
+            onConfirm: () => {
+                handleDeleteReview(review.reviewId)
+                setDeleteModal(prev => ({ ...prev, open: false }))
+            },
+            onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
         })
     }
 
@@ -1574,7 +1574,7 @@ export default function MyPage() {
                                                     수정
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteClick(review)}
+                                                    onClick={() => handleReviewDeleteClick(review)}
                                                     className="link-btn delete"
                                                 >
                                                     삭제
