@@ -200,7 +200,6 @@ export default function OrderDetailPage() {
     }
 
     // 주문 상세 정보 요청
-    const fetchOrderDetail = async () => {
     // 주문 상세 + 배송 추적 둘 다 요청
     const fetchAll = async () => {
         setLoading(true)
@@ -348,7 +347,7 @@ export default function OrderDetailPage() {
                     </p>
                     <p>
                         <strong>배송상태:</strong>
-                        <span className={badgeClass}>{statusLabel}</span>
+                        <span className={`badge badgeClass ${statusLabel}`}>{statusLabel}</span>
                     </p>
 
                     {firstDelivery && (
@@ -425,11 +424,6 @@ export default function OrderDetailPage() {
                         </>
                     )}
                 </div>
-
-                {/* 뒤로가기 */}
-                <button className="back-btn" onClick={() => router.push('/personal?tab=orders')}>
-                    ← 주문 목록으로
-                </button>
 
                 {/* 사유 입력 모달 */}
                 {isReasonModal && (
