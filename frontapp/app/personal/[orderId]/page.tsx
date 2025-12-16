@@ -26,6 +26,23 @@ export default function OrderDetailPage() {
         fetchOrderDetail()
     }, [])
 
+    const getOrderStatusLabel = (status?: string) => {
+        switch (status) {
+            case 'PENDING':
+                return '결제 대기'
+            case 'PAID':
+                return '결제 완료'
+            case 'FAILED':
+                return '결제 실패'
+            case 'CANCELLED':
+                return '취소'
+            case 'TEMP':
+                return '임시 주문'
+            default:
+                return status || '-'
+        }
+    }
+
     // 주문 상세 정보 요청
     const fetchOrderDetail = async () => {
         setLoading(true)
@@ -133,6 +150,10 @@ export default function OrderDetailPage() {
                 <div className="order-detail-box">
                     <p><strong>주문일자:</strong> {order.createdDate}</p>
                     <p><strong>주문번호:</strong> {order.orderCode}</p>
+                    <p>
+                        <strong>주문상태:</strong>
+                        <span className={`badge ${order.status}`}>{getOrderStatusLabel(order.status)}</span>
+                    </p>
                     <p>
                         <strong>배송상태:</strong>
                         <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
