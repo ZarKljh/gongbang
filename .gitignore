@@ -39,6 +39,6 @@ out/
 application-secret.yml
 application-dev.yml
 
-gongbangImg/
+
 
 gemini.api-key
