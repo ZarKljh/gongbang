@@ -176,6 +176,8 @@ export default function OrderDetailPage() {
     const [reasonModalTitle, setReasonModalTitle] = useState('')
     const [reasonText, setReasonText] = useState('')
 
+    const isReasonValid = reasonText.trim().length > 0
+
     useEffect(() => {
         if (!orderId) return
         fetchAll()
@@ -247,8 +249,18 @@ export default function OrderDetailPage() {
         setIsReasonModal(true)
     }
 
+    
+    const validateReason = () => {
+        if (!reasonText.trim()) {
+            alert('사유를 입력해주세요.')
+            return false
+        }
+        return true
+    }
+
     // 취소
     const submitCancel = async () => {
+        if (!validateReason()) return
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/cancel`,
@@ -267,6 +279,7 @@ export default function OrderDetailPage() {
 
     // 반품
     const submitReturn = async () => {
+        if (!validateReason()) return
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/return`,
@@ -285,6 +298,7 @@ export default function OrderDetailPage() {
 
     // 교환
     const submitExchange = async () => {
+        if (!validateReason()) return
         try {
             const { data } = await axios.patch(
                 `${API_BASE_URL}/orders/${orderId}/exchange`,
@@ -304,6 +318,11 @@ export default function OrderDetailPage() {
     if (loading) return <p className="loading">로딩중...</p>
     if (error) return <p className="error">{error}</p>
     if (!order) return <p>주문 정보가 없습니다.</p>
+
+    const isActionDisabled =
+        order.status === 'CANCELLED' ||
+        order.status === 'RETURNED' ||
+        order.status === 'EXCHANGED'
 
     // ===== 배송 상태 최종 결정 =====
     // 1순위: steps 기반 추론 (지금 JSON에서 statusCode 기준)
@@ -372,6 +391,12 @@ export default function OrderDetailPage() {
                             <strong>배송완료일:</strong> {new Date(order.completedAt).toLocaleDateString('ko-KR')}
                         </p>
                     )}
+
+                    {order.reason && (
+                        <p className="order-reason">
+                            <strong>처리 사유:</strong> {order.reason}
+                        </p>
+                    )}
                 </div>
 
                 {/* 상품 목록 */}
@@ -404,23 +429,27 @@ export default function OrderDetailPage() {
 
                 {/* 주문 상태 버튼 */}
                 <div className="order-actions">
-                    {/* 배송 준비중일 때만 취소 가능 */}
-                    {normalizedStatus === 'PENDING' && (
-                        <button className="btn-primary" onClick={() => openReasonModal('주문 취소 사유')}>
-                            주문 취소
-                        </button>
-                    )}
-
-                    {/* 배송 완료 + 완료일 7일 이내일 때만 반품/교환 */}
-                    {normalizedStatus === 'DELIVERED' && isWithinSevenDays(order.completedAt) && (
+                    {!isActionDisabled && (
                         <>
-                            <button className="btn-primary" onClick={() => openReasonModal('반품 사유')}>
-                                반품 신청
-                            </button>
+                            {/* 배송 준비중일 때만 취소 가능 */}
+                            {normalizedStatus === 'PENDING' && (
+                                <button className="btn-primary" onClick={() => openReasonModal('주문 취소 사유')}>
+                                    주문 취소
+                                </button>
+                            )}
 
-                            <button className="btn-primary" onClick={() => openReasonModal('교환 사유')}>
-                                교환 신청
-                            </button>
+                            {/* 배송 완료 + 완료일 7일 이내일 때만 반품/교환 */}
+                            {normalizedStatus === 'DELIVERED' && isWithinSevenDays(order.completedAt) && (
+                                <>
+                                    <button className="btn-primary" onClick={() => openReasonModal('반품 사유')}>
+                                        반품 신청
+                                    </button>
+
+                                    <button className="btn-primary" onClick={() => openReasonModal('교환 사유')}>
+                                        교환 신청
+                                    </button>
+                                </>
+                            )}
                         </>
                     )}
                 </div>
@@ -430,25 +459,33 @@ export default function OrderDetailPage() {
                     <div className="reason-modal">
                         <div className="modal-content">
                             <h3>{reasonModalTitle}</h3>
-                            <textarea value={reasonText} onChange={(e) => setReasonText(e.target.value)} />
+                            <textarea value={reasonText} onChange={(e) => setReasonText(e.target.value)} placeholder="사유를 입력해주세요." />
+                            
+                            {/* 경고 메시지 */}
+                            {!isReasonValid && (
+                                <p className="reason-warning">
+                                    사유는 반드시 입력해야 합니다.
+                                </p>
+                            )}
+                            
                             <div className="modal-actions">
                                 {reasonModalTitle.includes('취소') && (
-                                    <button className="btn-primary" onClick={submitCancel}>
+                                    <button className="btn-primary" disabled={!isReasonValid} onClick={submitCancel}>
                                         제출
                                     </button>
                                 )}
                                 {reasonModalTitle.includes('반품') && (
-                                    <button className="btn-primary" onClick={submitReturn}>
+                                    <button className="btn-primary" disabled={!isReasonValid} onClick={submitReturn}>
                                         제출
                                     </button>
                                 )}
                                 {reasonModalTitle.includes('교환') && (
-                                    <button className="btn-primary" onClick={submitExchange}>
+                                    <button className="btn-primary" disabled={!isReasonValid} onClick={submitExchange}>
                                         제출
                                     </button>
                                 )}
 
-                                <button className="btn-secondary" onClick={() => setIsReasonModal(false)}>
+                                <button className="btn-secondary" disabled={!isReasonValid} onClick={() => setIsReasonModal(false)}>
                                     닫기
                                 </button>
                             </div>

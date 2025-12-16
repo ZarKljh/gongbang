@@ -429,13 +429,19 @@ body {
 
 .badge {
     font-size: 12px;
-    padding: 4px 8px;
-    background: #EBC2CA;
-    color: white;
+    padding: 4px 10px;
     border-radius: 12px;
+    margin-left: 6px;
     font-weight: 600;
-    letter-spacing : 1px; /* 자간 조절 */
+    text-wrap: nowrap;
 }
+
+.badge.배송준비중 { background: #ffe9a7; color: #775a00; }
+.badge.배송중 { background: #bfe3ff; color: #004a80; }
+.badge.배송완료 { background: #d4f7dc; color: #1f5c2b; }
+.badge.CANCELLED, .badge.FAILED { background-color: #ff9b9b;}
+.badge.PENDING, .badge.TEMP {background-color: rgb(252, 237, 191);}
+.badge.PAID {background-color: #79b7e4;}
 
 .card-actions {
     display: flex;

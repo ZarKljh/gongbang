@@ -134,6 +134,7 @@ export default function MyPage() {
             selectedProducts,
             setCart,
             setSelectedItems,
+            handlePurchaseComplete,
             fetchCart,
             handleUpdateCart,
             handleDeleteCart,

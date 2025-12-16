@@ -212,3 +212,14 @@
     gap: 12px;
     margin-top: 15px;
 }
+
+.reason-warning {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
