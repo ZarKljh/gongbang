@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { signupUserValidation } from '@/app/auth/hooks/signupUserValidation'
 import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
 import { api } from '@/app/utils/api'
+import '@/app/auth/signup/user/signup_user.css'
 
 export default function SellerSignupPage() {
     const [step, setStep] = useState(1)
@@ -288,7 +289,6 @@ export default function SellerSignupPage() {
 
     return (
         <section className="signup-container">
-            <h3 className="signup-title">셀러 회원가입페이지</h3>
             {step === 1 && (
                 <UserForm
                     userInfo={userInfo}
