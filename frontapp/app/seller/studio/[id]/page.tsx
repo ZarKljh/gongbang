@@ -8,6 +8,9 @@ import ProductListScroll from '../components/productListScrollOfStudio'
 import api from '@/app/utils/api'
 //import useCurrentUser from '@/app/auth/common/useCurrentUser'
 
+//const API_BASE_URL = 'https://localhost:8090/api/v1'
+const API_BASE_URL = api.defaults.baseURL
+const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '') || ''
 export default function viewStudioInfo() {
     const params = useParams()
     const router = useRouter()
@@ -196,7 +199,7 @@ export default function viewStudioInfo() {
                         <section className="studio-left studio-info">
                             <div className="studio-main-img">
                                 <img
-                                    src={`https://api.gongyedam.shop/images/${studio.studioMainImage.imageFileName}`}
+                                    src={`${IMAGE_BASE_URL}/images/${studio.studioMainImage.imageFileName}`}
                                     alt="공방대표사진"
                                     width="280"
                                     height="280"
@@ -206,7 +209,8 @@ export default function viewStudioInfo() {
                                 <div className="studio-info-header">
                                     <div className="studio-logo-img">
                                         <img
-                                            src={`https://api.gongyedam.shop/images/${studio.studioLogoImage.imageFileName}`}
+                                            //src={`https://api.gongyedam.shop/images/${studio.studioLogoImage.imageFileName}`}
+                                            src={`${IMAGE_BASE_URL}/images/${studio.studioLogoImage?.imageFileName}`}
                                             alt="공방로고사진"
                                         ></img>
                                     </div>

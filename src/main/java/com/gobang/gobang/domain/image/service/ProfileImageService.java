@@ -304,7 +304,7 @@ public class ProfileImageService {
                     .refType(refType)
                     .refId(productId)
                     .imageFileName(savedFileName)
-                    .imageUrl(savedFileName)
+                    .imageUrl("/images/"+ savedFileName)
                     .sortOrder(sortOrder)
                     .build();
 
@@ -362,7 +362,7 @@ public class ProfileImageService {
                     .refType(refType)
                     .refId(productId)
                     .imageFileName(savedFileName)
-                    .imageUrl(savedFileName) // 로컬 경로 또는 URL 형태로 저장
+                    .imageUrl("/images/"+ savedFileName) // 로컬 경로 또는 URL 형태로 저장
                     .sortOrder(0)
                     .build();
 

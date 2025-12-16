@@ -785,7 +785,7 @@ export default function MyPage() {
                     productImages.PRODUCT.forEach((f) => form.append('productGalleryImages', f))
                 }
 
-                const res = await axios.post(`${API_BASE_URL}/studio/product/add`, form, {
+                const res = await axios.post(`${API_BASE_URL}/studio/product/new`, form, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
                 })

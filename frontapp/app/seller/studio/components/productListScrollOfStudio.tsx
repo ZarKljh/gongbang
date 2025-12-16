@@ -21,14 +21,17 @@ interface Product {
     themeId: number
     seoTitle: string
     seoDescription: string
-    imageUrl: string
+    productImage: { imageUrl: string } | null
+    //imageUrl: string
 }
 
 interface ProductListInfiniteProps {
     studioId: number | string
 }
 
-const API_BASE_URL = 'http://localhost:8090/api/v1'
+//const API_BASE_URL = 'http://localhost:8090/api/v1'
+const API_BASE_URL = api.defaults.baseURL
+const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '') || ''
 
 export default function ProductListInfinite({ studioId }: ProductListInfiniteProps) {
     const [products, setProducts] = useState<Product[]>([])
@@ -72,7 +75,7 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
             const bottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100
             if (bottom) fetchProducts(page)
         }
-
+        console.log('최초 로드된 상품들:', products)
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [page, hasNext, loading])
@@ -89,7 +92,11 @@ export default function ProductListInfinite({ studioId }: ProductListInfinitePro
                             <Link href={`/product/list/detail?productId=${product.id}`}>
                                 <img
                                     className="product-image"
-                                    src={product.imageUrl || 'http://localhost:8090/images/no-image-soft.png'} // 기본 이미지 설정 가능
+                                    //src={product.imageUrl || 'http://localhost:8090/images/no-image-soft.png'} // 기본 이미지 설정 가능
+                                    src={
+                                        `${IMAGE_BASE_URL}${product.productImage?.imageUrl}` ||
+                                        `${IMAGE_BASE_URL}/images/no-image-soft.png`
+                                    } // 기본 이미지 설정 가능
                                     alt={product.name}
                                 />
                                 <div className="product-info">

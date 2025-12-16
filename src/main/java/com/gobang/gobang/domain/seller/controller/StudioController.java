@@ -63,7 +63,7 @@ public class StudioController {
     }
 
     @GetMapping("/{id}/products")
-    public RsData<Page<ProductDto>> getProductList(
+    public RsData<Page<ProductListOfStudioPageResponse>> getProductList(
             @PathVariable("id") Long studioId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
@@ -72,8 +72,16 @@ public class StudioController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<ProductDto> productPage = studioService.getProductListByStudioId(studioId, pageable);
 
+        Page<ProductListOfStudioPageResponse> responsePage = productPage.map(productDto -> {
+            // 각 상품의 ID를 이용해 메인 이미지를 조회합니다.
+            // (조회 메서드 명칭은 studioService의 실제 메서드명으로 확인해주세요)
+            Image productImage = studioService.getProductMainImage(productDto.getId());
 
-        return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", productPage);
+            // ProductDto + Image -> ProductListOfStudioPageResponse 변환
+            return ProductListOfStudioPageResponse.of(productDto, productImage);
+        });
+
+        return RsData.of("s-1", "해당공방의 상품리스트를 가져왔습니다", responsePage);
     }
 
     @GetMapping("/{id}/studio-products")
@@ -274,7 +282,7 @@ public class StudioController {
         );
     }
     /* 신규상품등록 */
-    @PostMapping("/product/add")
+    @PostMapping("/product/new")
     public RsData<ProductAddlResponse> addProduct(
             @RequestPart("request") ProductAddRequest request,
             @RequestPart(value = "productMainImage", required = false) MultipartFile productMainImage,

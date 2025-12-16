@@ -26,7 +26,8 @@ public class WebConfig implements WebMvcConfigurer {
         // ✔ 프론트 주소 두 개 허용 (PC, 모바일)
         config.setAllowedOrigins(List.of(
                 "https://api.gongyedam.shop:3000",
-                "https://gongyedam.shop:3000"
+                "https://gongyedam.shop:3000",
+                "http://localhost:3000"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
