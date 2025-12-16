@@ -147,4 +147,43 @@ public class DeliveryTrackingService {
 
         return RsData.of("200", "배송 조회 성공", response);
     }
+
+    /**
+     * 실시간 이벤트(steps)를 보고 현재 배송 상태를 요약 코드로 변환
+     * - DELIVERED : 배송 완료
+     * - DELIVERING : 배송 중
+     * - 그 외      : 배송 준비중
+     */
+    private String resolveStatusFromSteps(List<TrackingStepDto> steps, String defaultStatus) {
+        if (steps == null || steps.isEmpty()) {
+            return defaultStatus != null ? defaultStatus : "배송준비중";
+        }
+
+        // time 있는 이벤트 중 가장 최신 1개 찾기
+        TrackingStepDto latest = steps.stream()
+                .filter(s -> s.getTime() != null)
+                .max(Comparator.comparing(TrackingStepDto::getTime))
+                .orElse(steps.get(0));
+
+        String text = latest.getStatus() != null ? latest.getStatus() : "";
+        String upper = text.toUpperCase();
+
+        // 1) 배송 완료 케이스
+        if (upper.contains("배송 완료")
+                || upper.contains("DELIVERED")
+                || upper.contains("배달완료")) {
+            return "DELIVERED";
+        }
+
+        // 2) 배송 중 / 출발
+        if (upper.contains("배송 출발")
+                || upper.contains("배송중")
+                || upper.contains("IN_TRANSIT")
+                || upper.contains("배달출발")) {
+            return "DELIVERING";
+        }
+
+        // 3) 그 외는 준비중
+        return defaultStatus != null ? defaultStatus : "배송준비중";
+    }
 }

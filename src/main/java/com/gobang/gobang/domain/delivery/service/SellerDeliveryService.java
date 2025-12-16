@@ -117,4 +117,14 @@ public class SellerDeliveryService {
 
         return RsData.of("200", "배송 정보가 저장되었습니다.");
     }
+
+    @Transactional(readOnly = true)
+    public boolean isSellerOwnerOfOrder(Long sellerId, Long orderId) {
+        Orders order = ordersRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        return order.getOrderItems().stream()
+                .map(OrderItem::getProduct)
+                .anyMatch(p -> p.getStudioId().equals(sellerId));
+    }
 }

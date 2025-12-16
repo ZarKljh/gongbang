@@ -26,12 +26,12 @@
 /* ===============================
    주문 기본 정보 박스
 ================================ */
-.order-detail-box { 
+.order-detail-box {
     padding: 24px 30px;
     border-radius: 8px;
     margin-bottom: 40px;
-    border: 1px solid #E9DCC4;
-    background: #FAF7F0;
+    border: 1px solid #e9dcc4;
+    background: #faf7f0;
 }
 
 .order-detail-box p {

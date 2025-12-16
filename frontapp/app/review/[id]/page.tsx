@@ -252,6 +252,7 @@ export default function ReviewDetail() {
                     <div className="review-rating-box">
                         {[1, 2, 3, 4, 5].map((num) => (
                             <FaStar
+                                className="star-icon"
                                 key={num}
                                 size={26}
                                 color={num <= review.rating ? '#FFD700' : '#E0E0E0'}

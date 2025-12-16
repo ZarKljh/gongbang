@@ -16,6 +16,8 @@ type HotLikeProduct = {
 
 export default function MainSection02() {
     const viewportRef = useRef<HTMLDivElement | null>(null)
+    const BASE_URL = 'https://api.gongyedam.shop'
+    //const BASE_URL = 'https://api.gongyedam.shop'
 
     const handleScroll = (direction: 'prev' | 'next') => {
         const el = viewportRef.current
@@ -74,18 +76,27 @@ export default function MainSection02() {
                 <ul className={styles.track}>
                     {products.map((p) => {
                         const thumbnailSrc = p.thumbnailUrl
-                            ? `http://localhost:8090${p.thumbnailUrl}`
-                            : 'http://localhost:8090/uploads/products/no-image-soft.png'
+                            ? `${BASE_URL}${p.thumbnailUrl}`
+                            : `${BASE_URL}/uploads/products/no-image-soft.png`
 
                         return (
                             <li key={p.productId} className={styles.productItem}>
-                                <Link href={`/product/list/detail?productId=${p.productId}`} prefetch={false}>
+                                <Link
+                                    href={`/product/list/detail?productId=${p.productId}`}
+                                    prefetch={false}
+                                    className={styles.cardLink}
+                                >
                                     <div className={styles.productCard}>
-                                        <img src={thumbnailSrc} alt={p.productName} />
-                                    </div>
-                                    <div className={styles.productInfo}>
-                                        <p className={styles.productTitle}>{p.productName}</p>
-                                        <p className={styles.productPrice}>{p.basePrice.toLocaleString('ko-KR')}원</p>
+                                        <div className={styles.imageWrap}>
+                                            <img src={thumbnailSrc} alt={p.productName} />
+                                        </div>
+
+                                        <div className={styles.productInfo}>
+                                            <p className={styles.productTitle}>{p.productName}</p>
+                                            <p className={styles.productPrice}>
+                                                {p.basePrice.toLocaleString('ko-KR')}원
+                                            </p>
+                                        </div>
                                     </div>
                                 </Link>
                             </li>

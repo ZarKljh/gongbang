@@ -69,4 +69,8 @@ public class Delivery {
                 .deliveryStatus("배송준비중")  // 기본값
                 .build();
     }
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

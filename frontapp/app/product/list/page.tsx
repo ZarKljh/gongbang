@@ -99,7 +99,7 @@ export default function Product() {
         PRICE_MIN: ['PRICE_MAX'],
         PRICE_MAX: ['PRICE_MIN'],
     }
-    const BASE_URL = 'http://localhost:8090'
+    const BASE_URL = 'https://api.gongyedam.shop'
 
     // 모바일페이지용 6개씩 페이지 단위로 나누기
     const pages = []
@@ -308,7 +308,7 @@ export default function Product() {
         if (selectedCategoryId == null || selectedSubCategoryId == null) return
 
         const extra = buildExtra(selectedBtn)
-        submitFilter(extra)
+        submitFilter(extra) //필터 조회 동작
     }, [selectedBtn, selectedCategoryId, selectedSubCategoryId, submitFilter])
 
     const handleToggleLike = (productId: number) => {
