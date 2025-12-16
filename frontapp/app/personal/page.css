@@ -434,6 +434,8 @@ body {
     margin-left: 6px;
     font-weight: 600;
     text-wrap: nowrap;
+    background: #EBC2CA;
+    color: #fff;
 }
 
 .badge.배송준비중 { background: #ffe9a7; color: #775a00; }
