@@ -28,6 +28,7 @@ export const useOrders = () => {
   const [reasonModalOnSubmit, setReasonModalOnSubmit] =
     useState<null | ((reason: string) => void)>(null)
   const [reasonText, setReasonText] = useState("")
+  const HIDDEN_STATUSES = ['CANCELLED', 'RETURNED', 'EXCHANGED']
 
   // API - 전체 주문 조회
   const fetchOrders = async () => {
@@ -58,6 +59,10 @@ export const useOrders = () => {
       return true
     })
   }
+
+  const visibleOrders = filterOrdersByStatus(selectedStatus).filter(
+    (order) => !HIDDEN_STATUSES.includes(order.status)
+  )
 
   // 무한스크롤 데이터 로드
   const fetchInfiniteOrders = async (lastId: number | null) => {
@@ -163,5 +168,6 @@ export const useOrders = () => {
     submitReason,
     filterOrdersByStatus,
     ORDER_STATUS_LABEL,
+    visibleOrders,
   }
 }

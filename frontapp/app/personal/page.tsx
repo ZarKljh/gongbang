@@ -125,6 +125,7 @@ export default function MyPage() {
             submitReason,
             filterOrdersByStatus,
             ORDER_STATUS_LABEL,
+            visibleOrders,
         } = useOrders()
 
     // 장바구니
@@ -901,6 +902,7 @@ export default function MyPage() {
                                             <div className='order-title'>
                                                 <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
                                                 <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
+                                                <span className={`badge ${order.status}`}>{ORDER_STATUS_LABEL[order.status]}</span>
                                             </div>
                                             <div className='order-img'>
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
@@ -1667,11 +1669,11 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-body">
-                            {filterOrdersByStatus(selectedStatus).length === 0 ? (
-                                <p className='empty-state'>주문 내역이 없습니다.</p>
+                            {visibleOrders.length === 0 ? (
+                                <p className="empty-state">주문 내역이 없습니다.</p>
                             ) : (
                                 <div className="modal-orders-list">
-                                    {filterOrdersByStatus(selectedStatus).map((order) => (
+                                    {visibleOrders.map((order) => (
                                         <div key={order.orderId} className="modal-order-card">
                                             <div className="modal-order-header">
                                                 <span className="order-date">{order.createdDate}</span>
@@ -1680,7 +1682,7 @@ export default function MyPage() {
 
                                             <div className="modal-order-info">
                                                 <span className="product-name">
-                                                    {order.items?.[0]?.productName || "상품 없음"}
+                                                    {order.items?.[0]?.productName || '상품 없음'}
                                                 </span>
                                                 <span className={`badge ${order.deliveryStatus}`}>
                                                     {order.deliveryStatus}
