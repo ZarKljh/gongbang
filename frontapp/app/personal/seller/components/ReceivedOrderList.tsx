@@ -32,7 +32,7 @@ interface ReceivedOrderListProps {
     orders: OrdersResponse[]
 }
 
-* ================== 트래킹 타입 / 헬퍼 ================== */
+/* ================== 트래킹 타입 / 헬퍼 ================== */
 
 type NormalizedDeliveryStatus = 'PENDING' | 'DELIVERING' | 'DELIVERED'
 type ManageState = 'NEED_REGISTER' | 'IN_PROGRESS' | 'DELIVERED'
