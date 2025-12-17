@@ -85,7 +85,7 @@ export default function Main() {
             {/* 배너 */}
             <div className={styles.pageContainer}>
                 <div className={styles.heroBanner}>
-                    <img src={`${BASE_URL}/uploads/banner3.png`} alt="메인 배너" />
+                    <img src={`${BASE_URL}/uploads/banner3.png`} alt="메인 배너입니다" />
                 </div>
             </div>
             {/* 카테고리 */}
