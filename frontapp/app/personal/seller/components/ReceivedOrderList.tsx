@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
 
@@ -20,7 +20,7 @@ export type OrdersResponse = {
     status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'TEMP' | string
     buyerNickname?: string
 
-    // 🔹 배송 관련 필드 (백엔드 DTO에서 추가해 주면 됨)
+    // 배송 관련
     courierName?: string | null
     trackingNumber?: string | null
     deliveryStatus?: string | null
@@ -32,7 +32,7 @@ interface ReceivedOrderListProps {
     orders: OrdersResponse[]
 }
 
-* ================== 트래킹 타입 / 헬퍼 ================== */
+/* ================== 트래킹 타입 / 헬퍼 ================== */
 
 type NormalizedDeliveryStatus = 'PENDING' | 'DELIVERING' | 'DELIVERED'
 type ManageState = 'NEED_REGISTER' | 'IN_PROGRESS' | 'DELIVERED'
@@ -65,29 +65,23 @@ type TrackingDetail = {
 
 const TRACKING_API_BASE_URL = 'http://localhost:8090/api/v1'
 
-// 텍스트/코드 기반 배송 상태 정규화
 const normalizeDeliveryStatusText = (deliveryStatus?: string | null): NormalizedDeliveryStatus => {
     if (!deliveryStatus) return 'PENDING'
     const s = deliveryStatus.toUpperCase().replace(/\s/g, '')
-
     if (s.includes('DELIVERED') || s.includes('배송완료')) return 'DELIVERED'
     if (s.includes('DELIVERING') || s.includes('배송중')) return 'DELIVERING'
-
     return 'PENDING'
 }
 
-// 트래킹 steps 기반으로 최종 상태 추론
 const inferStatusFromTrackingSteps = (tracking?: TrackingDetail | null): NormalizedDeliveryStatus | null => {
-    if (!tracking || !tracking.steps || tracking.steps.length === 0) return null
+    if (!tracking?.steps?.length) return null
 
     const validSteps = tracking.steps.filter((s) => s.time)
     const latest =
         validSteps.length > 0
-            ? validSteps.slice().sort((a, b) => {
-                  const ta = new Date(a.time as string).getTime()
-                  const tb = new Date(b.time as string).getTime()
-                  return tb - ta
-              })[0]
+            ? validSteps
+                  .slice()
+                  .sort((a, b) => new Date(b.time as string).getTime() - new Date(a.time as string).getTime())[0]
             : tracking.steps[0]
 
     const code = (latest.statusCode || '').toUpperCase()
@@ -97,115 +91,111 @@ const inferStatusFromTrackingSteps = (tracking?: TrackingDetail | null): Normali
     if (code === 'OUT_FOR_DELIVERY' || code === 'IN_TRANSIT' || code === 'AT_PICKUP') return 'DELIVERING'
 
     if (text.includes('배송완료') || text.includes('DELIVERED')) return 'DELIVERED'
-    if (
-        text.includes('배송출발') ||
-        text.includes('배송중') ||
-        text.includes('배송중입니다') ||
-        text.includes('INTRANSIT')
-    ) {
-        return 'DELIVERING'
-    }
+    if (text.includes('배송출발') || text.includes('배송중') || text.includes('INTRANSIT')) return 'DELIVERING'
 
     return 'PENDING'
 }
 
+/* ================== 버튼 라벨/클래스 ================== */
+
+const getManageButtonLabel = (state: ManageState) => {
+    switch (state) {
+        case 'NEED_REGISTER':
+            return '배송 정보 등록'
+        case 'IN_PROGRESS':
+            return '배송 정보 수정'
+        case 'DELIVERED':
+            return '배송 완료'
+        default:
+            return '배송 관리'
+    }
+}
+
+const getManageButtonClass = (state: ManageState) => {
+    // 프로젝트 CSS에 맞춰 className만 유지 (원하면 수정)
+    switch (state) {
+        case 'NEED_REGISTER':
+            return 'btn-delivery-link'
+        case 'IN_PROGRESS':
+            return 'btn-delivery-link filled'
+        case 'DELIVERED':
+            return 'btn-delivery-link disabled'
+        default:
+            return 'btn-delivery-link'
+    }
+}
+
+/* ================== 컴포넌트 ================== */
+
 export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
-
-     // 기본 필터: 배송 정보 등록 필요
     const [filter, setFilter] = useState<FilterType>('NEED_REGISTER')
-
-    // orderId 기준 실시간 배송 상태 맵
     const [trackingStatusMap, setTrackingStatusMap] = useState<Record<number, NormalizedDeliveryStatus>>({})
 
-        /* ============ 트래킹 호출해서 실시간 상태 채우기 ============ */
-        useEffect(() => {
-            if (!orders || orders.length === 0) {
-                setTrackingStatusMap({})
-                return
-            }
+    useEffect(() => {
+        if (!orders || orders.length === 0) {
+            setTrackingStatusMap({})
+            return
+        }
 
-            console.log('[Seller ReceivedOrderList] tracking fetch start, orders =', orders)
+        const fetchTrackingStatuses = async () => {
+            try {
+                const entries = await Promise.all(
+                    orders.map(async (o) => {
+                        let normalized: NormalizedDeliveryStatus = normalizeDeliveryStatusText(o.deliveryStatus)
 
-            const fetchTrackingStatuses = async () => {
-                try {
-                    const entries = await Promise.all(
-                        orders.map(async (o) => {
-                            let normalized: NormalizedDeliveryStatus = normalizeDeliveryStatusText(o.deliveryStatus)
-
-                            console.log('[Seller] orderId:', o.orderId, 'trackingNumber:', o.trackingNumber)
-
-                            // 운송장 없으면 /tracking 안 부름
-                            if (!o.trackingNumber) {
-                                console.log(' -> skip axios, no trackingNumber')
-                                return [o.orderId, normalized] as [number, NormalizedDeliveryStatus]
-                            }
-
-                            try {
-                                console.log(' -> call axios GET /seller/orders/' + o.orderId + '/tracking')
-                                const res = await axios.get(
-                                    `${TRACKING_API_BASE_URL}/seller/orders/${o.orderId}/tracking`,
-                                    { withCredentials: true },
-                                )
-                                console.log(' <- tracking response', o.orderId, res.data)
-
-                                if (res.data.resultCode === '200') {
-                                    const tracking: TrackingDetail = res.data.data
-                                    const inferred = inferStatusFromTrackingSteps(tracking)
-                                    const fromTrackingText = normalizeDeliveryStatusText(tracking.deliveryStatus)
-
-                                    normalized =
-                                        inferred || fromTrackingText || normalizeDeliveryStatusText(o.deliveryStatus)
-                                }
-                            } catch (e) {
-                                console.error('tracking fetch error (seller list) for order', o.orderId, e)
-                            }
-
+                        // 운송장 없으면 tracking 호출 안 함
+                        if (!o.trackingNumber) {
                             return [o.orderId, normalized] as [number, NormalizedDeliveryStatus]
-                        }),
-                    )
+                        }
 
-                    const map: Record<number, NormalizedDeliveryStatus> = {}
-                    entries.forEach(([id, status]) => {
-                        map[id] = status
-                    })
-                    setTrackingStatusMap(map)
-                } catch (e) {
-                    console.error('trackingStatusMap build error (seller list):', e)
-                }
+                        try {
+                            const res = await axios.get(
+                                `${TRACKING_API_BASE_URL}/seller/orders/${o.orderId}/tracking`,
+                                {
+                                    withCredentials: true,
+                                },
+                            )
+
+                            if (res.data?.resultCode === '200') {
+                                const tracking: TrackingDetail = res.data.data
+                                const inferred = inferStatusFromTrackingSteps(tracking)
+                                const fromTrackingText = normalizeDeliveryStatusText(tracking.deliveryStatus)
+
+                                normalized =
+                                    inferred || fromTrackingText || normalizeDeliveryStatusText(o.deliveryStatus)
+                            }
+                        } catch (e) {
+                            console.error('tracking fetch error for order', o.orderId, e)
+                        }
+
+                        return [o.orderId, normalized] as [number, NormalizedDeliveryStatus]
+                    }),
+                )
+
+                const map: Record<number, NormalizedDeliveryStatus> = {}
+                entries.forEach(([id, status]) => {
+                    map[id] = status
+                })
+                setTrackingStatusMap(map)
+            } catch (e) {
+                console.error('trackingStatusMap build error:', e)
             }
-
-            fetchTrackingStatuses()
-        }, [orders])
-
-        /* ============ 헬퍼: 주문별 최종 배송 상태 & 관리 상태 ============ */
-
-        const getNormalizedStatusForOrder = (order: OrdersResponse): NormalizedDeliveryStatus => {
-            const fromMap = trackingStatusMap[order.orderId]
-            if (fromMap) return fromMap
-
-            return normalizeDeliveryStatusText(order.deliveryStatus)
         }
 
-        const getManageState = (order: OrdersResponse): ManageState => {
-            // 운송장 자체가 없으면 → 등록 필요
-            if (!order.trackingNumber) return 'NEED_REGISTER'
+        fetchTrackingStatuses()
+    }, [orders])
 
-            // 운송장은 있는데, 실시간 상태 보고 판단
-            const norm = getNormalizedStatusForOrder(order)
-            if (norm === 'DELIVERED') return 'DELIVERED'
+    const getNormalizedStatusForOrder = (order: OrdersResponse): NormalizedDeliveryStatus => {
+        const fromMap = trackingStatusMap[order.orderId]
+        if (fromMap) return fromMap
+        return normalizeDeliveryStatusText(order.deliveryStatus)
+    }
 
-            // 운송장 있고 아직 완료 아님 → 진행 중(수정 가능)
-            return 'IN_PROGRESS'
-        }
-
-
-    if (!orders || orders.length === 0) {
-        return (
-            <div className="order-list">
-                <h2>받은 주문</h2>
-                <p>아직 들어온 주문이 없습니다.</p>
-            </div>
-        )
+    const getManageState = (order: OrdersResponse): ManageState => {
+        if (!order.trackingNumber) return 'NEED_REGISTER'
+        const norm = getNormalizedStatusForOrder(order)
+        if (norm === 'DELIVERED') return 'DELIVERED'
+        return 'IN_PROGRESS'
     }
 
     const formatDate = (dateStr: string) =>
@@ -247,7 +237,6 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
         }
     }
 
-
     const toNumber = (v: number | string | null | undefined) => {
         if (typeof v === 'number') return v
         if (!v) return 0
@@ -255,29 +244,36 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
         return Number.isNaN(n) ? 0 : n
     }
 
-    /* ============ 필터 적용 ============ */
+    const filteredOrders = useMemo(() => {
+        return (orders || []).filter((order) => {
+            const state = getManageState(order)
+            switch (filter) {
+                case 'NEED_REGISTER':
+                    return state === 'NEED_REGISTER'
+                case 'IN_PROGRESS':
+                    return state === 'IN_PROGRESS'
+                case 'DELIVERED':
+                    return state === 'DELIVERED'
+                case 'ALL':
+                default:
+                    return true
+            }
+        })
+    }, [orders, filter, trackingStatusMap])
 
-    const filteredOrders = (orders || []).filter((order) => {
-        const state = getManageState(order)
-
-        switch (filter) {
-            case 'NEED_REGISTER':
-                return state === 'NEED_REGISTER'
-            case 'IN_PROGRESS':
-                return state === 'IN_PROGRESS'
-            case 'DELIVERED':
-                return state === 'DELIVERED'
-            case 'ALL':
-            default:
-                return true
-        }
-    })
+    if (!orders || orders.length === 0) {
+        return (
+            <div className="order-list">
+                <h2>받은 주문</h2>
+                <p>아직 들어온 주문이 없습니다.</p>
+            </div>
+        )
+    }
 
     return (
         <div className="order-list">
             <h2>받은 주문</h2>
 
-            {/* 🔹 배송 관리 상태 필터 */}
             <div className="delivery-filter">
                 <button
                     type="button"
@@ -309,9 +305,9 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
                 </button>
             </div>
 
-            {(!filteredOrders || filteredOrders.length === 0) && <p>해당 조건에 맞는 주문이 없습니다.</p>}
-
-            {filteredOrders && filteredOrders.length > 0 && (
+            {filteredOrders.length === 0 ? (
+                <p>해당 조건에 맞는 주문이 없습니다.</p>
+            ) : (
                 <table className="order-table">
                     <thead>
                         <tr>
@@ -330,58 +326,16 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
                         {filteredOrders.map((order) => {
                             const firstItem = order.items?.[0]
                             const totalQuantity = order.items?.reduce((sum, item) => sum + (item.quantity ?? 0), 0) ?? 0
+
                             const productTitle =
                                 firstItem && order.items.length > 1
                                     ? `${firstItem.productName} 외 ${order.items.length - 1}건`
                                     : firstItem?.productName ?? '-'
 
-                        const hasTracking = !!order.trackingNumber
-                        const manageState = getManageState(order)
-                        const manageLabel = getManageButtonLabel(manageState)
-                        const manageClass = getManageButtonClass(manageState)
+                            const manageState = getManageState(order)
+                            const manageLabel = getManageButtonLabel(manageState)
+                            const manageClass = getManageButtonClass(manageState)
 
-                        return (
-                            <tr key={order.orderId}>
-                                <td>{order.orderCode}</td>
-                                <td>{formatDate(order.createdDate)}</td>
-                                <td>{productTitle}</td>
-                                <td>{totalQuantity > 0 ? `${totalQuantity}개` : '-'}</td>
-                                <td>{toNumber(order.totalPrice).toLocaleString()}원</td>
-                                <td>{order.buyerNickname ?? '-'}</td>
-                                <td>
-                                    {getOrderStatusLabel(order.status)}
-                                    {/* 배송 내역 */}
-                                   {order.deliveryStatus && (
-                                        <div className="sub-status" style={{fontSize:'10px'}}>
-                                            {getDeliveryStatusLabel(order.deliveryStatus)}
-                                        </div>
-                                    )}
-                                </td>
-                                <td>
-                                    {firstItem ? (
-                                        <Link
-                                            href={`/product/detail?productId=${firstItem.productId}`}
-                                            className="order-link"
-                                        >
-                                            상품보기
-                                        </Link>
-                                    ) : (
-                                        '-'
-                                    )}
-                                </td>
-                                <td>
-                                    <Link
-                                        href={`/personal/seller/orders/${order.orderId}/delivery`}
-                                        className={`btn-delivery-link ${hasTracking ? 'filled' : ''}`}
-                                    >
-                                        {hasTracking ? '배송 정보 수정' : '배송 정보 등록'}
-                                    </Link>
-                                </td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </table>
                             return (
                                 <tr key={order.orderId} className="order-table-item">
                                     <td>{order.orderCode}</td>
@@ -390,7 +344,14 @@ export default function ReceivedOrderList({ orders }: ReceivedOrderListProps) {
                                     <td>{totalQuantity > 0 ? `${totalQuantity}개` : '-'}</td>
                                     <td>{toNumber(order.totalPrice).toLocaleString()}원</td>
                                     <td>{order.buyerNickname ?? '-'}</td>
-                                    <td>{getOrderStatusLabel(order.status)}</td>
+                                    <td>
+                                        {getOrderStatusLabel(order.status)}
+                                        {order.deliveryStatus && (
+                                            <div className="sub-status" style={{ fontSize: '10px' }}>
+                                                {getDeliveryStatusLabel(order.deliveryStatus)}
+                                            </div>
+                                        )}
+                                    </td>
                                     <td>
                                         {firstItem ? (
                                             <Link
