@@ -95,6 +95,9 @@ export const useWishlist = (
   }
 
   const handleUnfollow = async (studioId: number, userId: number) => {
+    const confirmed = confirm('정말 이 공방을 언팔로우 하시겠습니까?')
+    if (!confirmed) return
+
     try {
       const { data } = await axios.delete(`${API_BASE_URL}/follow`, {
         params: { studioId },
@@ -102,8 +105,10 @@ export const useWishlist = (
       })
 
       if (data.resultCode === '200') {
+        setFollowList(prev =>
+          prev.filter(item => item.studioId !== studioId)
+        )
         alert('공방을 언팔로우 했습니다.')
-        await fetchFollowList(userId)
       } else {
         alert(`언팔로우 실패: ${data.msg}`)
       }
@@ -115,6 +120,9 @@ export const useWishlist = (
 
   // ================= 위시 리스트 삭제 =================
   const handleRemoveWish = async (wishlistId: number) => {
+    const confirmed = confirm('정말 이 상품을 삭제 하시겠습니까?')
+    if (!confirmed) return
+
     try {
       const { data } = await axios.delete(`${API_BASE_URL}/wishlist/${wishlistId}`, {
         withCredentials: true,
