@@ -14,8 +14,6 @@ export const useCart = () => {
 
   // 장바구니 불러오기
   const fetchCart = async (userId?: number) => {
-    if (!userId) return
-
     try {
       const { data } = await axios.get(`${API_BASE_URL}/cart`, {
         params: { userId: userId },
