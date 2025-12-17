@@ -143,7 +143,8 @@ export default function ProductModifyTab(props: ProductModifyTabProps) {
     /** ============================================
      *  🔥 대표 이미지 미리보기 처리
      * ============================================ */
-    const serverImageUrl = (name: string) => `http://localhost:8090/images/${name}`
+    //const serverImageUrl = (name: string) => `http://localhost:8090/images/${name}`
+    const serverImageUrl = (name: string) => `https://api.gongyedam.shop/images/${name}`
 
     const previewNewMain = productImages.PRODUCT_MAIN && URL.createObjectURL(productImages.PRODUCT_MAIN)
 

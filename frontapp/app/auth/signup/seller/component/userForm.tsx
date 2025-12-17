@@ -54,6 +54,7 @@ export default function UserForm({
 
     return (
         <div className="form-container">
+            <h3 className="signup-title">셀러 회원가입페이지</h3>
             <h4 className="form-title">사용자 정보 입력</h4>
             <div className="form-group">
                 <label className="form-label required">아이디</label>

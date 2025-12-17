@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { api } from '@/app/utils/api'
 import './sellerPage.css'
 import Sidebar from './components/sideBar'
 import MainContent from './components/mainContent'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1'
+//const API_BASE_URL = 'https://localhost:8090/api/v1'
+const API_BASE_URL = api.defaults.baseURL
 
 export default function MyPage() {
     // ======= 상태 관리 =======
@@ -98,7 +100,7 @@ export default function MyPage() {
                 const user = await fetchUser()
                 if (!user?.id) return
                 await Promise.all([
-                    // fetchOrders(user.id),
+                    fetchOrders(user.id),
                     fetchCart(user.id),
                     fetchAddresses(user.id),
                     fetchPaymentMethods(user.id),
@@ -787,7 +789,7 @@ export default function MyPage() {
                     productImages.PRODUCT.forEach((f) => form.append('productGalleryImages', f))
                 }
 
-                const res = await axios.post(`${API_BASE_URL}/studio/product/add`, form, {
+                const res = await axios.post(`${API_BASE_URL}/studio/product/new`, form, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
                 })
