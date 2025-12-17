@@ -232,7 +232,6 @@ export default function MyPage() {
         const {
             qna,
             openQnaId,
-            setQna,
             fetchQna,
             handleDeleteQna,
             toggleQna,
@@ -1205,7 +1204,7 @@ export default function MyPage() {
                                                 onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
                                                 className="editable"
                                             />
-                                            {errors.nickName && <p className="error-msg">{errors.nickName}</p>}
+                                            {profileErrors.nickName && <p className="error-msg">{profileErrors.nickName}</p>}
                                         </div>
                                     ) : (
                                         <p>{userData.nickName}</p>
@@ -1224,7 +1223,7 @@ export default function MyPage() {
                                                 onChange={(e) => setNewPassword(e.target.value)}
                                                 className="editable"
                                             />
-                                            {errors.newPassword && <p className="error-msg">{errors.newPassword}</p>}
+                                            {profileErrors.newPassword && <p className="error-msg">{profileErrors.newPassword}</p>}
                                         </div>
                                     )}
                                 </div>
@@ -1239,7 +1238,7 @@ export default function MyPage() {
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                             />
-                                            {errors.confirmPassword && <p className="error-msg">{errors.confirmPassword}</p>}
+                                            {profileErrors.confirmPassword && <p className="error-msg">{profileErrors.confirmPassword}</p>}
                                         </div>
                                     )}
                                 </div>
@@ -1254,7 +1253,7 @@ export default function MyPage() {
                                                 onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
                                                 className="editable"
                                             />
-                                            {errors.email && <p className="error-msg">{errors.email}</p>}
+                                            {profileErrors.email && <p className="error-msg">{profileErrors.email}</p>}
                                         </div>
                                     ) : (
                                         <p>{userData.email}</p>
@@ -1271,7 +1270,7 @@ export default function MyPage() {
                                                 onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
                                                 className="editable"
                                             />
-                                            {errors.mobilePhone && <p className="error-msg">{errors.mobilePhone}</p>}
+                                            {profileErrors.mobilePhone && <p className="error-msg">{profileErrors.mobilePhone}</p>}
                                         </div>
                                     ) : (
                                         <p>{userData.mobilePhone}</p>
@@ -1603,23 +1602,26 @@ export default function MyPage() {
                             ) : (
                                 <div className="qna-list">
                                     {qna.map((item) => (
-                                        <div key={item.qnaId} className="qna-card"
-                                        onClick={() => toggleQna(item.qnaId)}
-                                        >
-                                            <div className="qna-header">
-                                                <div className="qna-title">{item.title}</div>
-                                                <span className="qna-type">{item.type}</span>
-                                            </div>
+                                        <div key={item.qnaId} className="qna-card">
+                                            <div
+                                                className="qna-click-area"
+                                                onClick={() => toggleQna(item.qnaId)}
+                                            >
+                                                <div className="qna-header">
+                                                    <div className="qna-title">{item.title}</div>
+                                                    <span className="qna-type">{item.type}</span>
+                                                </div>
 
-                                            <div className="qna-status">
-                                                {item.answered ? (
-                                                    <span className="answered">답변 완료</span>
-                                                ) : (
-                                                    <span className="waiting">답변 대기 중</span>
-                                                )}
-                                            </div>
+                                                <div className="qna-status">
+                                                    {item.answered ? (
+                                                        <span className="answered">답변 완료</span>
+                                                    ) : (
+                                                        <span className="waiting">답변 대기 중</span>
+                                                    )}
+                                                </div>
 
-                                            <div className="qna-content">{item.content}</div>
+                                                <div className="qna-content">{item.content}</div>
+                                            </div>
 
                                             <div className="qna-footer">
                                                 <span>작성일: {' '}
@@ -1630,11 +1632,10 @@ export default function MyPage() {
                                                     })}
                                                 </span>
                                                 <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleDeleteQna(item.qnaId)
-                                                    }}
-                                                    className="link-btn delete"
+                                                    onClick={(e) => {handleDeleteQna(item.qnaId)}}
+                                                    type="button"
+                                                    className={`link-btn delete ${item.answered ? 'disabled' : ''}`}
+                                                    disabled={item.answered}
                                                 >
                                                     삭제
                                                 </button>
@@ -1919,7 +1920,7 @@ export default function MyPage() {
                                             value={bankName} 
                                             onChange={(e) => setBankName(e.target.value)} 
                                         />
-                                        {errors.bankName && <p className="error-msg">{errors.bankName}</p>}
+                                        {paymentErrors.bankName && <p className="error-msg">{paymentErrors.bankName}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>계좌번호</label>
@@ -1929,7 +1930,7 @@ export default function MyPage() {
                                             value={accountNumber} 
                                             onChange={(e) => setAccountNumber(e.target.value)} 
                                         />
-                                        {errors.accountNumber && <p className="error-msg">{errors.accountNumber}</p>}
+                                        {paymentErrors.accountNumber && <p className="error-msg">{paymentErrors.accountNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>예금주</label>
@@ -1963,7 +1964,7 @@ export default function MyPage() {
                                             value={cardNumber} 
                                             onChange={(e) => setCardNumber(e.target.value)} 
                                         />
-                                        {errors.cardNumber && <p className="error-msg">{errors.cardNumber}</p>}
+                                        {paymentErrors.cardNumber && <p className="error-msg">{paymentErrors.cardNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>유효기간</label>
@@ -1973,7 +1974,7 @@ export default function MyPage() {
                                             value={cardExpire} 
                                             onChange={(e) => setCardExpire(e.target.value)} 
                                         />
-                                        {errors.cardExpire && <p className="error-msg">{errors.cardExpire}</p>}
+                                        {paymentErrors.cardExpire && <p className="error-msg">{paymentErrors.cardExpire}</p>}
                                     </div>
                                 </>
                             )}

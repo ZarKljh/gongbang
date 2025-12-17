@@ -7,10 +7,18 @@ import api from '@/app/utils/api'
 const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 export const IMAGE_BASE_URL = 'http://localhost:8090'
 
+interface ProfileErrors {
+  nickName?: string
+  newPassword?: string
+  confirmPassword?: string
+  email?: string
+  mobilePhone?: string
+}
+
 export const useProfile = (userData: any, setUserData: any) => {
 
   const [tempData, setTempData] = useState<any>(userData)
-  const [errors, setErrors] = useState<any>({})
+  const [errors, setErrors] = useState<ProfileErrors>({})
   const [editMode, setEditMode] = useState({})
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -150,6 +158,9 @@ export const useProfile = (userData: any, setUserData: any) => {
   // ===== 취소 =====
   const handleCancel = (section: string) => {
     setTempData({ ...userData })
+    setErrors({})
+    setNewPassword('')
+    setConfirmPassword('')
     setEditMode(prev => ({ ...prev, [section]: false }))
   }
 
