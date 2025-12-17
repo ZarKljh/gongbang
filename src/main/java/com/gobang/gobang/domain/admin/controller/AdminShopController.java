@@ -3,7 +3,9 @@ package com.gobang.gobang.domain.admin.controller;
 import com.gobang.gobang.domain.admin.dto.AdminRecentShopDto;
 import com.gobang.gobang.domain.admin.dto.AdminShopDetailDto;
 import com.gobang.gobang.domain.admin.dto.AdminShopListDto;
+import com.gobang.gobang.domain.admin.entity.Admin;
 import com.gobang.gobang.domain.admin.repository.request.AdminShopStatusUpdateRequest;
+import com.gobang.gobang.domain.admin.service.AdminShopService;
 import com.gobang.gobang.domain.auth.entity.RoleType;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.entity.Studio;
@@ -37,19 +39,16 @@ public class AdminShopController {
     private final StudioRepository studioRepository;
     private final CategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
-    private final SiteUserRepository siteUserRepository;
-    private final ShopMailService shopMailService;
+    private final AdminShopService adminShopService;
 
     public AdminShopController(StudioRepository studioRepository,
                                CategoryRepository categoryRepository,
                                ImageRepository imageRepository,
-                               SiteUserRepository siteUserRepository,
-                               ShopMailService shopMailService) {
+                               AdminShopService adminShopService) {
         this.studioRepository = studioRepository;
         this.categoryRepository = categoryRepository;
         this.imageRepository = imageRepository;
-        this.siteUserRepository = siteUserRepository;
-        this.shopMailService = shopMailService;
+        this.adminShopService = adminShopService;
     }
 
     @GetMapping("/recent")
@@ -142,43 +141,16 @@ public class AdminShopController {
     // 상태 변경
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    @Transactional
     public ResponseEntity<?> updateStatus(@PathVariable Long id,
                                           @RequestBody AdminShopStatusUpdateRequest req) {
 
-        Studio studio = studioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Studio not found: " + id));
-
         StudioStatus newStatus = StudioStatus.valueOf(req.status().toUpperCase());
-        StudioStatus oldStatus = studio.getStatus();
 
-        // 1) 스튜디오 상태 변경
-        studio.setStatus(newStatus);
-        studioRepository.save(studio);
-
-        // 2) PENDING → APPROVED 가 되는 순간에만 USER → SELLER 승급
-        if (oldStatus != StudioStatus.APPROVED && newStatus == StudioStatus.APPROVED) {
-            SiteUser owner = studio.getSiteUser();
-            if (owner != null) {
-                if (owner.getRole() != RoleType.SELLER && owner.getRole() != RoleType.ADMIN) {
-                    owner.setRole(RoleType.SELLER);
-                    siteUserRepository.save(owner);
-                }
-            }
-        }
-
-        // 3) REJECTED 로 바뀌는 경우, 반려 안내 메일 발송
-        if (newStatus == StudioStatus.REJECTED) {
-            SiteUser owner = studio.getSiteUser();
-            String reasonText = req.rejectReason(); // 프론트에서 보낸 반려 사유
-            if (owner != null && reasonText != null && !reasonText.isBlank()) {
-                shopMailService.sendShopRejectedMail(
-                        owner.getEmail(),
-                        studio.getStudioName(),
-                        reasonText
-                );
-            }
-        }
+        Studio studio = adminShopService.updateStatus(
+                id,
+                newStatus,
+                req.rejectReason()
+        );
 
         return ResponseEntity.ok(
                 Map.of(
