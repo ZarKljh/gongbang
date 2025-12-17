@@ -6,7 +6,7 @@ import '@/app/personal/page.css'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
-import { loadPaymentWidget } from "@tosspayments/payment-widget-sdk"
+import { loadPaymentWidget } from '@tosspayments/payment-widget-sdk'
 import api from '@/app/utils/api'
 
 // 커스텀 훅
@@ -23,71 +23,71 @@ const API_BASE_URL = `${api.defaults.baseURL}/mypage`
 export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 interface Stats {
-  totalQna: number
-  totalReviews: number
-  preparing: number
-  shipping: number
-  completed: number
+    totalQna: number
+    totalReviews: number
+    preparing: number
+    shipping: number
+    completed: number
 }
 
 type PendingOrderItem = {
-  productId: number
-  quantity: number
+    productId: number
+    quantity: number
 }
 
 export default function MyPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+    const searchParams = useSearchParams()
+    const router = useRouter()
 
-  // =============== 전역 UI 상태 ===============
-  const [pageLoading, setPageLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('orders')
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+    // =============== 전역 UI 상태 ===============
+    const [pageLoading, setPageLoading] = useState(true)
+    const [activeTab, setActiveTab] = useState('orders')
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
-  // 통계 (QnA 수, 리뷰 수, 배송 상태)
-  const [stats, setStats] = useState<Stats>({
-    totalQna: 0,
-    totalReviews: 0,
-    preparing: 0,
-    shipping: 0,
-    completed: 0,
-  })
+    // 통계 (QnA 수, 리뷰 수, 배송 상태)
+    const [stats, setStats] = useState<Stats>({
+        totalQna: 0,
+        totalReviews: 0,
+        preparing: 0,
+        shipping: 0,
+        completed: 0,
+    })
 
-  // 삭제/확인 모달
-  const [deleteModal, setDeleteModal] = useState<{
-    open: boolean
-    title: string
-    message: string
-    warning: string
-    onConfirm: () => void
-    onCancel: () => void
-  }>({
-    open: false,
-    title: '',
-    message: '',
-    warning: '',
-    onConfirm: () => {},
-    onCancel: () => {},
-  })
+    // 삭제/확인 모달
+    const [deleteModal, setDeleteModal] = useState<{
+        open: boolean
+        title: string
+        message: string
+        warning: string
+        onConfirm: () => void
+        onCancel: () => void
+    }>({
+        open: false,
+        title: '',
+        message: '',
+        warning: '',
+        onConfirm: () => {},
+        onCancel: () => {},
+    })
 
-  const [confirmModal, setConfirmModal] = useState<{
-    open: boolean
-    message: string
-    onConfirm: null | (() => void)
-    onCancel: null | (() => void)
-  }>({
-    open: false,
-    message: '',
-    onConfirm: null,
-    onCancel: null,
-  })
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean
+        message: string
+        onConfirm: null | (() => void)
+        onCancel: null | (() => void)
+    }>({
+        open: false,
+        message: '',
+        onConfirm: null,
+        onCancel: null,
+    })
 
-  // 사용자 정보
-  const [userData, setUserData] = useState<any>(null)
+    // 사용자 정보
+    const [userData, setUserData] = useState<any>(null)
 
-  // =============== 커스텀 훅 연결 ===============
+    // =============== 커스텀 훅 연결 ===============
 
-  // 주문 / 주문관리
+    // 주문 / 주문관리
     const {
         // 리스트
         orders,
@@ -126,7 +126,7 @@ export default function MyPage() {
         filterOrdersByStatus,
     } = useOrders()
 
-  // 장바구니
+    // 장바구니
     const {
         cart,
         selectedItems,
@@ -141,7 +141,7 @@ export default function MyPage() {
         handleClearSelection,
     } = useCart()
 
-  // 배송지
+    // 배송지
     const {
         addresses,
         isAddressModal,
@@ -166,7 +166,7 @@ export default function MyPage() {
         sample6_execDaumPostcodeForEdit,
     } = useAddress(userData?.id)
 
-  // 결제수단
+    // 결제수단
     const {
         paymentMethods,
         isPaymentModal,
@@ -195,7 +195,7 @@ export default function MyPage() {
         maskCard,
     } = usePayment()
 
-  // 프로필 / 계정정보
+    // 프로필 / 계정정보
     const {
         tempData,
         errors: profileErrors,
@@ -225,17 +225,10 @@ export default function MyPage() {
         fetchProfileImage,
     } = useProfile(userData, setUserData)
 
-  // QnA
-    const {
-        qna,
-        openQnaId,
-        setQna,
-        fetchQna,
-        handleDeleteQna,
-        toggleQna,
-    } = useQna()
+    // QnA
+    const { qna, openQnaId, setQna, fetchQna, handleDeleteQna, toggleQna } = useQna()
 
-  // 리뷰
+    // 리뷰
     const {
         infiniteReviews,
         infiniteReviewLoading,
@@ -256,7 +249,7 @@ export default function MyPage() {
         handleDeleteReview,
     } = useReviews()
 
-  // 위시리스트 / 팔로우 / 추천
+    // 위시리스트 / 팔로우 / 추천
     const {
         infiniteWishList,
         infiniteWishLoading,
@@ -275,7 +268,7 @@ export default function MyPage() {
         fetchRecommendList,
     } = useWishlist()
 
-  // =============== 결제 관련 상태 (토스 위젯) ===============
+    // =============== 결제 관련 상태 (토스 위젯) ===============
     const [orderCode, setOrderCode] = useState<string | null>(null)
     const [total, setTotal] = useState<number>(0)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -286,80 +279,83 @@ export default function MyPage() {
     const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
     const customerKey = 'lMWxsh58-vF7S1kAyBIuG'
 
-  // =============== 공통 유틸 ===============
+    // =============== 공통 유틸 ===============
     const handleTabClick = (tabName: string) => {
         setActiveTab(tabName)
         setIsMobileSidebarOpen(false)
     }
 
-  // =============== 사용자 정보 조회 ===============
-  const fetchUser = async () => {
-    try {
-      const { data } = await axios.get(`${API_BASE_URL}/me`, {
-        withCredentials: true,
-      })
+    // =============== 사용자 정보 조회 ===============
+    const fetchUser = async () => {
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/me`, {
+                withCredentials: true,
+            })
 
-      if (data.code === '401') {
-        window.location.href = '/auth/login'
-        return null
-      }
+            if (data.code === '401') {
+                window.location.href = '/auth/login'
+                return null
+            }
 
-      setUserData(data.data)
-      return data.data
-    } catch (error) {
-      console.error('사용자 정보 조회 실패:', error)
-      return null
-    }
-  }
-
-  // =============== 초기 로딩 ===============
-  useEffect(() => {
-    const init = async () => {
-      setPageLoading(true)
-      try {
-        const user = await fetchUser()
-        if (!user || !user.id) return
-
-        await Promise.all([
-          fetchOrders(),
-          fetchCart(user.id),
-          fetchAddresses(user.id),
-          fetchPaymentMethods(),
-          fetchFollowList(user.id),
-          fetchQna(user.id),
-          fetchProfileImage(user.id),
-          fetchInfiniteWishList(null),
-          fetchInfiniteReviews(null),
-          fetchRecommendList(),
-          fetchStats(user.id),
-        ])
-      } catch (e) {
-        console.error('초기 데이터 로딩 실패:', e)
-      } finally {
-        setPageLoading(false)
-      }
+            setUserData(data.data)
+            return data.data
+        } catch (error) {
+            console.error('사용자 정보 조회 실패:', error)
+            return null
+        }
     }
 
-    init()
-  }, [])
+    // =============== 초기 로딩 ===============
+    useEffect(() => {
+        const init = async () => {
+            setPageLoading(true)
+            try {
+                const user = await fetchUser()
+                if (!user || !user.id) return
 
-  // =============== tab query 동기화 ===============
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab) setActiveTab(tab)
-  }, [searchParams])
+                await Promise.all([
+                    fetchOrders(),
+                    fetchCart(user.id),
+                    fetchAddresses(user.id),
+                    fetchPaymentMethods(),
+                    fetchFollowList(user.id),
+                    fetchQna(user.id),
+                    fetchProfileImage(user.id),
+                    fetchInfiniteWishList(null),
+                    fetchInfiniteReviews(null),
+                    fetchRecommendList(),
+                    fetchStats(user.id),
+                ])
+            } catch (e) {
+                console.error('초기 데이터 로딩 실패:', e)
+            } finally {
+                setPageLoading(false)
+            }
+        }
 
-  // =============== 카카오 우편번호 스크립트 로드 ===============
-  useEffect(() => {
-    if (isAddressModal && !window.daum) {
-      const script = document.createElement('script')
-      script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
-      script.async = true
-      document.body.appendChild(script)
-    }
-  }, [isAddressModal])
+        init()
+    }, [])
 
-  // =============== 통계 계산 ===============
+    // =============== tab query 동기화 ===============
+    useEffect(() => {
+        const tab = searchParams.get('tab')
+        if (tab === 'qna') {
+            setActiveTab('qna')
+            return
+        }
+    }, [searchParams])
+
+    // =============== 카카오 우편번호 스크립트 로드 ===============
+    useEffect(() => {
+        if (isAddressModal && !window.daum) {
+            const script = document.createElement('script')
+            script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
+            script.async = true
+            document.body.appendChild(script)
+        }
+    }, [isAddressModal])
+
+    // =============== 통계 계산 ===============
     const fetchStats = async (userId: number) => {
         const res = await axios.get(`${API_BASE_URL}/stats`, {
             params: { userId },
@@ -368,366 +364,366 @@ export default function MyPage() {
         setStats(res.data.data)
     }
 
-  // =============== 삭제 모달 핸들러 ===============
-  const handleReviewDeleteClick = (review: any) => {
-    setDeleteModal({
-      open: true,
-      title: '리뷰 삭제',
-      message: '정말로 이 리뷰를 삭제하시겠습니까?',
-      warning: '삭제된 리뷰는 복구할 수 없습니다.',
-      onConfirm: () => {
-        handleDeleteReview(review.reviewId)
-        setDeleteModal(prev => ({ ...prev, open: false }))
-      },
-      onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
-    })
-  }
-
-  const askDeleteCart = (cartId: number) => {
-    setDeleteModal({
-      open: true,
-      title: '장바구니 삭제',
-      message: '이 상품을 장바구니에서 삭제하시겠습니까?',
-      warning: '',
-      onConfirm: () => {
-        handleDeleteCart(cartId)
-        setDeleteModal(prev => ({ ...prev, open: false }))
-      },
-      onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
-    })
-  }
-
-  // =============== 기본 설정 모달 (배송지/결제수단) ===============
-  const handleAskDefaultAddress = () => {
-    if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
-      alert('이름과 주소를 모두 입력해주세요.')
-      return
+    // =============== 삭제 모달 핸들러 ===============
+    const handleReviewDeleteClick = (review: any) => {
+        setDeleteModal({
+            open: true,
+            title: '리뷰 삭제',
+            message: '정말로 이 리뷰를 삭제하시겠습니까?',
+            warning: '삭제된 리뷰는 복구할 수 없습니다.',
+            onConfirm: () => {
+                handleDeleteReview(review.reviewId)
+                setDeleteModal((prev) => ({ ...prev, open: false }))
+            },
+            onCancel: () => setDeleteModal((prev) => ({ ...prev, open: false })),
+        })
     }
 
-    setConfirmModal({
-      open: true,
-      message: '이 배송지를 기본 배송지로 설정하시겠습니까?',
-      onConfirm: () => handleSaveAddress(true),
-      onCancel: () => handleSaveAddress(false),
-    })
-  }
+    const askDeleteCart = (cartId: number) => {
+        setDeleteModal({
+            open: true,
+            title: '장바구니 삭제',
+            message: '이 상품을 장바구니에서 삭제하시겠습니까?',
+            warning: '',
+            onConfirm: () => {
+                handleDeleteCart(cartId)
+                setDeleteModal((prev) => ({ ...prev, open: false }))
+            },
+            onCancel: () => setDeleteModal((prev) => ({ ...prev, open: false })),
+        })
+    }
 
-  const handleAskDefaultPayment = () => {
-    setConfirmModal({
-      open: true,
-      message: '이 결제수단을 기본 결제수단으로 설정하시겠습니까?',
-      onConfirm: () => handleSavePayment(true),
-      onCancel: () => handleSavePayment(false),
-    })
-  }
-
-  // =============== 무한 스크롤 ===============
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY
-      const viewportHeight = window.innerHeight
-      const fullHeight = document.documentElement.scrollHeight
-
-      if (scrollTop + viewportHeight >= fullHeight - 50) {
-        if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
-          fetchInfiniteOrders(infiniteOrdersLastId)
-        } else if (
-          activeTab === 'like' &&
-          activeSubTab === 'product' &&
-          !infiniteWishLoading &&
-          infiniteWishHasMore
-        ) {
-          fetchInfiniteWishList(infiniteWishLastId)
-        } else if (activeTab === 'reviews' && !infiniteReviewLoading && infiniteReviewHasMore) {
-          fetchInfiniteReviews(infiniteReviewLastId)
+    // =============== 기본 설정 모달 (배송지/결제수단) ===============
+    const handleAskDefaultAddress = () => {
+        if (!newAddress.recipientName || !newAddress.baseAddress || !newAddress.detailAddress) {
+            alert('이름과 주소를 모두 입력해주세요.')
+            return
         }
-      }
+
+        setConfirmModal({
+            open: true,
+            message: '이 배송지를 기본 배송지로 설정하시겠습니까?',
+            onConfirm: () => handleSaveAddress(true),
+            onCancel: () => handleSaveAddress(false),
+        })
     }
 
-    window.addEventListener('scroll', handleScroll)
-    window.addEventListener('touchmove', handleScroll)
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('touchmove', handleScroll)
-    }
-  }, [
-    activeTab,
-    activeSubTab,
-    infiniteOrdersLoading,
-    infiniteOrdersHasMore,
-    infiniteOrdersLastId,
-    infiniteWishLoading,
-    infiniteWishHasMore,
-    infiniteWishLastId,
-    infiniteReviewLoading,
-    infiniteReviewHasMore,
-    infiniteReviewLastId,
-    fetchInfiniteOrders,
-    fetchInfiniteWishList,
-    fetchInfiniteReviews,
-  ])
-
-  useEffect(() => {
-    if (activeTab === 'orders' && infiniteOrders.length === 0) {
-      resetInfiniteOrders()
-      fetchInfiniteOrders(null)
-    } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
-      resetInfiniteWishList()
-      fetchInfiniteWishList(null)
-    } else if (activeTab === 'reviews' && infiniteReviews.length === 0) {
-      setInfiniteReviews([])
-      setInfiniteReviewHasMore(true)
-      setInfiniteReviewLastId(null)
-      fetchInfiniteReviews(null)
-    }
-  }, [activeTab, activeSubTab])
-
-  // =============== 장바구니 → 배송지 선택 → 결제 흐름 ===============
-
-  // 선택 상품 구매 버튼
-  const handlePurchaseSelected = () => {
-    if (selectedItems.length === 0) {
-      alert('선택된 상품이 없습니다.')
-      return
+    const handleAskDefaultPayment = () => {
+        setConfirmModal({
+            open: true,
+            message: '이 결제수단을 기본 결제수단으로 설정하시겠습니까?',
+            onConfirm: () => handleSavePayment(true),
+            onCancel: () => handleSavePayment(false),
+        })
     }
 
-    const selected = cart
-      .filter(item => selectedItems.includes(item.cartId))
-      .map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-      }))
+    // =============== 무한 스크롤 ===============
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY
+            const viewportHeight = window.innerHeight
+            const fullHeight = document.documentElement.scrollHeight
 
-    setPendingOrderItems(selected)
-    setIsAddressSelectModalOpen(true)
-  }
-
-  // 배송지 선택 후 "다음" 버튼
-  const handleAddressNext = async () => {
-    if (!selectedAddress) {
-      alert('배송지를 선택해주세요.')
-      return
-    }
-
-    try {
-      const res = await axios.post(
-        `${API_BASE_URL}/cart/prepare`,
-        {
-          items: pendingOrderItems,
-          addressId: selectedAddress.userAddressId,
-        },
-        { withCredentials: true },
-      )
-
-      const { orderCode, totalPrice } = res.data.data
-
-      setOrderCode(orderCode)
-      setTotal(totalPrice)
-
-      // 장바구니에서 구매한 cartId 기록 → 결제 성공 후 삭제용
-      localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
-      localStorage.setItem('PAY_PENDING', '1')
-
-      setIsAddressSelectModalOpen(false)
-      setIsModalOpen(true)
-    } catch (error) {
-      console.error('결제 준비 실패:', error)
-      alert('결제 준비 중 오류가 발생했습니다.')
-    }
-  }
-
-  // 토스 결제 위젯 초기화
-  const handleInitPaymentWidget = async (amount: number) => {
-    try {
-      let widget = paymentWidget
-
-      if (!widget) {
-        widget = await loadPaymentWidget(clientKey, customerKey)
-        setPaymentWidget(widget)
-      }
-
-      await widget.renderPaymentMethods('#payment-method', {
-        value: amount,
-      })
-
-      await widget.renderAgreement('#agreement')
-
-      setWidgetLoaded(true)
-    } catch (e) {
-      console.error('장바구니 위젯 초기화 실패', e)
-      setWidgetLoaded(false)
-    }
-  }
-
-  // 결제 모달 열릴 때 위젯 렌더
-  useEffect(() => {
-    if (!isModalOpen) return
-    handleInitPaymentWidget(total)
-  }, [isModalOpen, total])
-
-  // 결제 요청
-  const handleRequestPayment = async () => {
-    if (!paymentWidget) {
-      console.warn('[PAY] paymentWidget 없음')
-      return
-    }
-
-    if (!orderCode) {
-      console.warn('[PAY] orderCode 없음')
-      return
-    }
-
-    try {
-      await paymentWidget.requestPayment({
-        amount: total,
-        orderId: orderCode,
-        orderName: '장바구니 상품 결제',
-        successUrl: `${window.location.origin}/pay/success`,
-        failUrl: `${window.location.origin}/pay/fail`,
-      })
-    } catch (e: any) {
-      try {
-        await axios.post(
-          `${API_BASE_URL}/orders/cancel-before-payment`,
-          { orderCode },
-          { withCredentials: true },
-        )
-      } catch (cancelErr) {
-        console.error('[PAY] cancel-before-payment API 호출 실패', cancelErr)
-      }
-
-      if (e?.code === 'USER_CANCEL') {
-        alert('결제가 취소되었습니다.')
-      } else {
-        alert('결제 요청 중 오류가 발생했습니다.')
-      }
-    }
-  }
-
-  // 결제 성공 후 후처리 (장바구니 삭제 등)
-  useEffect(() => {
-    const payPending = localStorage.getItem('PAY_PENDING')
-    if (!payPending) return
-
-    const cameFromSuccess = document.referrer.includes('/pay/success')
-
-    if (cameFromSuccess) {
-      const stored = localStorage.getItem('ORDER_CART_IDS')
-      if (stored) {
-        const cartIds = JSON.parse(stored)
-
-        axios
-          .delete(`${API_BASE_URL}/cart/after-order`, {
-            data: { cartIds },
-            withCredentials: true,
-          })
-          .then(() => {
-            localStorage.removeItem('ORDER_CART_IDS')
-            if (userData?.id) {
-              fetchCart(userData.id)
+            if (scrollTop + viewportHeight >= fullHeight - 50) {
+                if (activeTab === 'orders' && !infiniteOrdersLoading && infiniteOrdersHasMore) {
+                    fetchInfiniteOrders(infiniteOrdersLastId)
+                } else if (
+                    activeTab === 'like' &&
+                    activeSubTab === 'product' &&
+                    !infiniteWishLoading &&
+                    infiniteWishHasMore
+                ) {
+                    fetchInfiniteWishList(infiniteWishLastId)
+                } else if (activeTab === 'reviews' && !infiniteReviewLoading && infiniteReviewHasMore) {
+                    fetchInfiniteReviews(infiniteReviewLastId)
+                }
             }
-          })
-          .catch(e => console.error('장바구니 항목 삭제 실패:', e))
-      }
+        }
 
-      setIsModalOpen(false)
-      setPaymentWidget(null)
-      setTotal(0)
-      setOrderCode(null)
-      setSelectedItems([])
-      localStorage.removeItem('PAY_PENDING')
-    }
-  }, [])
+        window.addEventListener('scroll', handleScroll)
+        window.addEventListener('touchmove', handleScroll)
 
-  const handleClosePaymentModal = () => {
-    setIsModalOpen(false)
-    setWidgetLoaded(false)
-    setPaymentWidget(null)
-    setOrderCode(null)
-    setTotal(0)
-    setSelectedItems([])
-  }
-
-  // 선택된 첫 번째 장바구니 아이템 (UI에 표시용)
-  const firstSelectedCartId = selectedItems[0]
-  const firstSelectedItem = cart.find(item => item.cartId === firstSelectedCartId)
-
-  // ================= 세로 스크롤 막고 가로 드래그 작동 =================
-    const sliderRef = useRef<HTMLDivElement | null>(null)
-    const isDraggingRef = useRef(false)   // ← 드래그 중인지 체크용
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            window.removeEventListener('touchmove', handleScroll)
+        }
+    }, [
+        activeTab,
+        activeSubTab,
+        infiniteOrdersLoading,
+        infiniteOrdersHasMore,
+        infiniteOrdersLastId,
+        infiniteWishLoading,
+        infiniteWishHasMore,
+        infiniteWishLastId,
+        infiniteReviewLoading,
+        infiniteReviewHasMore,
+        infiniteReviewLastId,
+        fetchInfiniteOrders,
+        fetchInfiniteWishList,
+        fetchInfiniteReviews,
+    ])
 
     useEffect(() => {
-    const slider = sliderRef.current
-    if (!slider) return
+        if (activeTab === 'orders' && infiniteOrders.length === 0) {
+            resetInfiniteOrders()
+            fetchInfiniteOrders(null)
+        } else if (activeTab === 'like' && activeSubTab === 'product' && infiniteWishList.length === 0) {
+            resetInfiniteWishList()
+            fetchInfiniteWishList(null)
+        } else if (activeTab === 'reviews' && infiniteReviews.length === 0) {
+            setInfiniteReviews([])
+            setInfiniteReviewHasMore(true)
+            setInfiniteReviewLastId(null)
+            fetchInfiniteReviews(null)
+        }
+    }, [activeTab, activeSubTab])
 
-    let isDown = false
-    let startX = 0
-    let scrollLeft = 0
+    // =============== 장바구니 → 배송지 선택 → 결제 흐름 ===============
 
-    const handlePointerDown = (e: PointerEvent) => {
-        // 마우스 오른쪽/휠 클릭 무시
-        if (e.pointerType === 'mouse' && e.button !== 0) return
-console.log('pointer down', e.pointerType)
-        isDown = true
-        isDraggingRef.current = false
-
-        slider.classList.add('active')
-        slider.setPointerCapture(e.pointerId)
-
-        // 시작 시점 기준값 저장
-        startX = e.clientX
-        scrollLeft = slider.scrollLeft
-    }
-
-    const handlePointerMove = (e: PointerEvent) => {
-        if (!isDown) return
-console.log('pointer move')
-        // 세로 스크롤 방지 (특히 모바일)
-        e.preventDefault()
-
-        const dx = e.clientX - startX
-        const walk = dx * 1.3
-
-        if (Math.abs(walk) > 5) {
-        isDraggingRef.current = true
+    // 선택 상품 구매 버튼
+    const handlePurchaseSelected = () => {
+        if (selectedItems.length === 0) {
+            alert('선택된 상품이 없습니다.')
+            return
         }
 
-        slider.scrollLeft = scrollLeft - walk
+        const selected = cart
+            .filter((item) => selectedItems.includes(item.cartId))
+            .map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+            }))
+
+        setPendingOrderItems(selected)
+        setIsAddressSelectModalOpen(true)
     }
 
-    const endDrag = (e: PointerEvent) => {
-        if (!isDown) return
-
-        isDown = false
-        slider.classList.remove('active')
+    // 배송지 선택 후 "다음" 버튼
+    const handleAddressNext = async () => {
+        if (!selectedAddress) {
+            alert('배송지를 선택해주세요.')
+            return
+        }
 
         try {
-        slider.releasePointerCapture(e.pointerId)
-        } catch {
-        // 이미 해제된 경우 무시
+            const res = await axios.post(
+                `${API_BASE_URL}/cart/prepare`,
+                {
+                    items: pendingOrderItems,
+                    addressId: selectedAddress.userAddressId,
+                },
+                { withCredentials: true },
+            )
+
+            const { orderCode, totalPrice } = res.data.data
+
+            setOrderCode(orderCode)
+            setTotal(totalPrice)
+
+            // 장바구니에서 구매한 cartId 기록 → 결제 성공 후 삭제용
+            localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
+            localStorage.setItem('PAY_PENDING', '1')
+
+            setIsAddressSelectModalOpen(false)
+            setIsModalOpen(true)
+        } catch (error) {
+            console.error('결제 준비 실패:', error)
+            alert('결제 준비 중 오류가 발생했습니다.')
+        }
+    }
+
+    // 토스 결제 위젯 초기화
+    const handleInitPaymentWidget = async (amount: number) => {
+        try {
+            let widget = paymentWidget
+
+            if (!widget) {
+                widget = await loadPaymentWidget(clientKey, customerKey)
+                setPaymentWidget(widget)
+            }
+
+            await widget.renderPaymentMethods('#payment-method', {
+                value: amount,
+            })
+
+            await widget.renderAgreement('#agreement')
+
+            setWidgetLoaded(true)
+        } catch (e) {
+            console.error('장바구니 위젯 초기화 실패', e)
+            setWidgetLoaded(false)
+        }
+    }
+
+    // 결제 모달 열릴 때 위젯 렌더
+    useEffect(() => {
+        if (!isModalOpen) return
+        handleInitPaymentWidget(total)
+    }, [isModalOpen, total])
+
+    // 결제 요청
+    const handleRequestPayment = async () => {
+        if (!paymentWidget) {
+            console.warn('[PAY] paymentWidget 없음')
+            return
         }
 
-        // click 이벤트와 구분하기 위해 한 틱 뒤에 false로
-        setTimeout(() => {
-        isDraggingRef.current = false
-        }, 0)
+        if (!orderCode) {
+            console.warn('[PAY] orderCode 없음')
+            return
+        }
+
+        try {
+            await paymentWidget.requestPayment({
+                amount: total,
+                orderId: orderCode,
+                orderName: '장바구니 상품 결제',
+                successUrl: `${window.location.origin}/pay/success`,
+                failUrl: `${window.location.origin}/pay/fail`,
+            })
+        } catch (e: any) {
+            try {
+                await axios.post(
+                    `${API_BASE_URL}/orders/cancel-before-payment`,
+                    { orderCode },
+                    { withCredentials: true },
+                )
+            } catch (cancelErr) {
+                console.error('[PAY] cancel-before-payment API 호출 실패', cancelErr)
+            }
+
+            if (e?.code === 'USER_CANCEL') {
+                alert('결제가 취소되었습니다.')
+            } else {
+                alert('결제 요청 중 오류가 발생했습니다.')
+            }
+        }
     }
 
-    // passive 옵션 명시 (모바일에서 preventDefault 허용)
-    slider.addEventListener('pointerdown', handlePointerDown, { passive: true })
-    slider.addEventListener('pointermove', handlePointerMove, { passive: false })
-    slider.addEventListener('pointerup', endDrag)
-    slider.addEventListener('pointercancel', endDrag)
-    slider.addEventListener('pointerleave', endDrag)
+    // 결제 성공 후 후처리 (장바구니 삭제 등)
+    useEffect(() => {
+        const payPending = localStorage.getItem('PAY_PENDING')
+        if (!payPending) return
 
-    return () => {
-        slider.removeEventListener('pointerdown', handlePointerDown)
-        slider.removeEventListener('pointermove', handlePointerMove)
-        slider.removeEventListener('pointerup', endDrag)
-        slider.removeEventListener('pointercancel', endDrag)
-        slider.removeEventListener('pointerleave', endDrag)
+        const cameFromSuccess = document.referrer.includes('/pay/success')
+
+        if (cameFromSuccess) {
+            const stored = localStorage.getItem('ORDER_CART_IDS')
+            if (stored) {
+                const cartIds = JSON.parse(stored)
+
+                axios
+                    .delete(`${API_BASE_URL}/cart/after-order`, {
+                        data: { cartIds },
+                        withCredentials: true,
+                    })
+                    .then(() => {
+                        localStorage.removeItem('ORDER_CART_IDS')
+                        if (userData?.id) {
+                            fetchCart(userData.id)
+                        }
+                    })
+                    .catch((e) => console.error('장바구니 항목 삭제 실패:', e))
+            }
+
+            setIsModalOpen(false)
+            setPaymentWidget(null)
+            setTotal(0)
+            setOrderCode(null)
+            setSelectedItems([])
+            localStorage.removeItem('PAY_PENDING')
+        }
+    }, [])
+
+    const handleClosePaymentModal = () => {
+        setIsModalOpen(false)
+        setWidgetLoaded(false)
+        setPaymentWidget(null)
+        setOrderCode(null)
+        setTotal(0)
+        setSelectedItems([])
     }
+
+    // 선택된 첫 번째 장바구니 아이템 (UI에 표시용)
+    const firstSelectedCartId = selectedItems[0]
+    const firstSelectedItem = cart.find((item) => item.cartId === firstSelectedCartId)
+
+    // ================= 세로 스크롤 막고 가로 드래그 작동 =================
+    const sliderRef = useRef<HTMLDivElement | null>(null)
+    const isDraggingRef = useRef(false) // ← 드래그 중인지 체크용
+
+    useEffect(() => {
+        const slider = sliderRef.current
+        if (!slider) return
+
+        let isDown = false
+        let startX = 0
+        let scrollLeft = 0
+
+        const handlePointerDown = (e: PointerEvent) => {
+            // 마우스 오른쪽/휠 클릭 무시
+            if (e.pointerType === 'mouse' && e.button !== 0) return
+            console.log('pointer down', e.pointerType)
+            isDown = true
+            isDraggingRef.current = false
+
+            slider.classList.add('active')
+            slider.setPointerCapture(e.pointerId)
+
+            // 시작 시점 기준값 저장
+            startX = e.clientX
+            scrollLeft = slider.scrollLeft
+        }
+
+        const handlePointerMove = (e: PointerEvent) => {
+            if (!isDown) return
+            console.log('pointer move')
+            // 세로 스크롤 방지 (특히 모바일)
+            e.preventDefault()
+
+            const dx = e.clientX - startX
+            const walk = dx * 1.3
+
+            if (Math.abs(walk) > 5) {
+                isDraggingRef.current = true
+            }
+
+            slider.scrollLeft = scrollLeft - walk
+        }
+
+        const endDrag = (e: PointerEvent) => {
+            if (!isDown) return
+
+            isDown = false
+            slider.classList.remove('active')
+
+            try {
+                slider.releasePointerCapture(e.pointerId)
+            } catch {
+                // 이미 해제된 경우 무시
+            }
+
+            // click 이벤트와 구분하기 위해 한 틱 뒤에 false로
+            setTimeout(() => {
+                isDraggingRef.current = false
+            }, 0)
+        }
+
+        // passive 옵션 명시 (모바일에서 preventDefault 허용)
+        slider.addEventListener('pointerdown', handlePointerDown, { passive: true })
+        slider.addEventListener('pointermove', handlePointerMove, { passive: false })
+        slider.addEventListener('pointerup', endDrag)
+        slider.addEventListener('pointercancel', endDrag)
+        slider.addEventListener('pointerleave', endDrag)
+
+        return () => {
+            slider.removeEventListener('pointerdown', handlePointerDown)
+            slider.removeEventListener('pointermove', handlePointerMove)
+            slider.removeEventListener('pointerup', endDrag)
+            slider.removeEventListener('pointercancel', endDrag)
+            slider.removeEventListener('pointerleave', endDrag)
+        }
     }, [])
 
     // =============== 렌더링 조건 ===============
@@ -737,7 +733,7 @@ console.log('pointer move')
 
     if (!userData) {
         return (
-            <div className='need-login'>
+            <div className="need-login">
                 로그인이 필요합니다.
                 <button onClick={() => (window.location.href = '/auth/login')}>로그인하기</button>
             </div>
@@ -747,19 +743,20 @@ console.log('pointer move')
     // =============== 메인 렌더링 ===============
     return (
         <div className="mypage-container">
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@40,400,0,0&icon_names=user_attributes" />
+            <link
+                rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@40,400,0,0&icon_names=user_attributes"
+            />
             {/* 햄버거 메뉴 버튼 */}
-            <button 
+            <button
                 className={`mobile-menu-button ${isMobileSidebarOpen ? 'active' : ''}`}
                 onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
             >
-                <span className="material-symbols-outlined user-attributes">
-                    user_attributes
-                </span>
+                <span className="material-symbols-outlined user-attributes">user_attributes</span>
             </button>
 
             {/* 사이드바 오버레이 */}
-            <div 
+            <div
                 className={`sidebar-overlay ${isMobileSidebarOpen ? 'active' : ''}`}
                 onClick={() => setIsMobileSidebarOpen(false)}
             ></div>
@@ -859,8 +856,10 @@ console.log('pointer move')
                         </ul>
                     </div>
                 </nav>
-                {userData?.roleType === "SELLER" && (
-                    <a href="/personal/seller" className='link-btn'>공방 페이지로 이동</a>
+                {userData?.roleType === 'SELLER' && (
+                    <a href="/personal/seller" className="link-btn">
+                        공방 페이지로 이동
+                    </a>
                 )}
             </div>
 
@@ -881,20 +880,25 @@ console.log('pointer move')
                                 <tr>
                                     <td>
                                         <div className="profile-image" onClick={handleProfileClick}>
-                                                <img
-                                                    src={
-                                                        previewProfileImage ||
-                                                        stats.profileImageUrl || `${IMAGE_BASE_URL}${stats.profileImageUrl}` // 서버 이미지
-                                                    }
-                                                    onError={(e) => {
-                                                        e.currentTarget.src = "/images/default_profile.jpg"
-                                                    }}
-                                                    alt="프로필 이미지"
-                                                />
+                                            <img
+                                                src={
+                                                    previewProfileImage ||
+                                                    stats.profileImageUrl ||
+                                                    `${IMAGE_BASE_URL}${stats.profileImageUrl}` // 서버 이미지
+                                                }
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/images/default_profile.jpg'
+                                                }}
+                                                alt="프로필 이미지"
+                                            />
                                         </div>
                                     </td>
-                                    <td className='shortcut-btn' onClick={() => handleTabClick('qna')}>{stats.totalQna}</td>
-                                    <td className='shortcut-btn' onClick={() => handleTabClick('reviews')}>{stats.totalReviews}</td>
+                                    <td className="shortcut-btn" onClick={() => handleTabClick('qna')}>
+                                        {stats.totalQna}
+                                    </td>
+                                    <td className="shortcut-btn" onClick={() => handleTabClick('reviews')}>
+                                        {stats.totalReviews}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -903,7 +907,6 @@ console.log('pointer move')
                     {/* 주문배송조회 */}
                     {activeTab === 'orders' && (
                         <div className="tab-content">
-
                             {/* ================= 배송 상태 요약 ================= */}
                             <div className="delivery-status-summary">
                                 {/* 배송준비중 - 전체 */}
@@ -949,23 +952,24 @@ console.log('pointer move')
                             </div>
 
                             {infiniteOrders.length === 0 ? (
-                                <p className='empty-state'>주문 내역이 없습니다.</p>
+                                <p className="empty-state">주문 내역이 없습니다.</p>
                             ) : (
                                 infiniteOrders.map((order) => (
-                                    <div
-                                        key={order.orderId}
-                                        className="order-card"
-                                    >
+                                    <div key={order.orderId} className="order-card">
                                         {/* 주문 요약 */}
                                         <div
                                             className="order-header"
                                             onClick={() => router.push(`/personal/${order.orderId}`)}
                                         >
-                                            <div className='order-title'>
-                                                <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
-                                                <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
+                                            <div className="order-title">
+                                                <p>
+                                                    주문 일자: {order.createdDate} | 주문번호: {order.orderCode}
+                                                </p>
+                                                <span className={`badge ${order.deliveryStatus}`}>
+                                                    {order.deliveryStatus}
+                                                </span>
                                             </div>
-                                            <div className='order-img'>
+                                            <div className="order-img">
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
                                                     <img
                                                         key={idx}
@@ -1017,7 +1021,7 @@ console.log('pointer move')
 
                             <div className="orders-list">
                                 {filteredOrders.length === 0 ? (
-                                    <p className='empty-state'>해당 주문 내역이 없습니다.</p>
+                                    <p className="empty-state">해당 주문 내역이 없습니다.</p>
                                 ) : (
                                     filteredOrders.map((order) => {
                                         const items = order.orderItems || []
@@ -1028,20 +1032,23 @@ console.log('pointer move')
                                             .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0]
 
                                         const status = latestDelivery?.deliveryStatus || order.deliveryStatus
-                                        const statusDate = latestDelivery?.modifiedDate || latestDelivery?.createdDate || "N/A"
+                                        const statusDate =
+                                            latestDelivery?.modifiedDate || latestDelivery?.createdDate || 'N/A'
 
                                         return (
                                             <div key={order.orderId} className="order-card">
-
                                                 {/* 주문 요약 */}
                                                 <div
                                                     className="order-header"
                                                     onClick={() => router.push(`/personal/${order.orderId}`)}
                                                 >
-                                                    <div className='order-title'>
+                                                    <div className="order-title">
                                                         <p>주문번호: {order.orderCode}</p>
                                                         <p> | 주문일: {order.createdDate}</p>
-                                                        <p> | {status} 일시: {statusDate}</p>
+                                                        <p>
+                                                            {' '}
+                                                            | {status} 일시: {statusDate}
+                                                        </p>
                                                     </div>
                                                     <span className={`badge ${status}`}>{status}</span>
                                                 </div>
@@ -1055,8 +1062,8 @@ console.log('pointer move')
 
                     {/* 장바구니 */}
                     {activeTab === 'cart' && (
-                        <div className='tab-content'>
-                            <div className='section-header'>
+                        <div className="tab-content">
+                            <div className="section-header">
                                 <h2>장바구니</h2>
                             </div>
 
@@ -1084,12 +1091,11 @@ console.log('pointer move')
                                             {selectedItems.length > 0 && (
                                                 <span className="selection-info">
                                                     <span className="selection-count">
-                                                        {
-                                                            cart
-                                                                .filter(item => selectedItems.includes(item.cartId))
-                                                                .reduce((sum, item) => sum + item.quantity, 0)
-                                                        }
-                                                    </span>개 상품 선택됨
+                                                        {cart
+                                                            .filter((item) => selectedItems.includes(item.cartId))
+                                                            .reduce((sum, item) => sum + item.quantity, 0)}
+                                                    </span>
+                                                    개 상품 선택됨
                                                 </span>
                                             )}
                                         </div>
@@ -1108,19 +1114,24 @@ console.log('pointer move')
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedItems.includes(item.cartId)}
-                                                        onChange={(e) => handleSelectItem(item.cartId, e.target.checked)}
+                                                        onChange={(e) =>
+                                                            handleSelectItem(item.cartId, e.target.checked)
+                                                        }
                                                     />
                                                 </div>
 
                                                 <div className="cart-image">
-                                                    <img 
+                                                    <img
                                                         src={`${IMAGE_BASE_URL}${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 </div>
 
-                                                <div className='cart-info'>
-                                                    <Link href={`/product/list/detail?productId=${item.productId}`} className="cart-product-name shortcut-btn">
+                                                <div className="cart-info">
+                                                    <Link
+                                                        href={`/product/list/detail?productId=${item.productId}`}
+                                                        className="cart-product-name shortcut-btn"
+                                                    >
                                                         {item.productName}
                                                     </Link>
                                                     <div className="product-unit-price">
@@ -1132,7 +1143,7 @@ console.log('pointer move')
                                                 </div>
 
                                                 <div className="quantity-control">
-                                                    <button 
+                                                    <button
                                                         className="link-btn"
                                                         onClick={() => handleUpdateCart(item.cartId, item.quantity - 1)}
                                                         disabled={item.quantity <= 1}
@@ -1140,7 +1151,7 @@ console.log('pointer move')
                                                         -
                                                     </button>
                                                     <span className="quantity-display">{item.quantity}</span>
-                                                    <button 
+                                                    <button
                                                         className="link-btn"
                                                         onClick={() => handleUpdateCart(item.cartId, item.quantity + 1)}
                                                     >
@@ -1163,8 +1174,7 @@ console.log('pointer move')
                                     {/* 장바구니 푸터 */}
                                     <div className="cart-footer">
                                         <div className="cart-summary">
-                                            <div className="summary-row">
-                                            </div>
+                                            <div className="summary-row"></div>
                                             <div className="summary-row">
                                                 <span className="summary-label">배송비</span>
                                                 <span className="summary-value">무료</span>
@@ -1175,9 +1185,14 @@ console.log('pointer move')
                                                     {selectedItems.length === 0
                                                         ? 0
                                                         : cart
-                                                            .filter(item => selectedItems.includes(item.cartId))
-                                                            .reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
-                                                            .toLocaleString()}원
+                                                              .filter((item) => selectedItems.includes(item.cartId))
+                                                              .reduce(
+                                                                  (sum, item) =>
+                                                                      sum + (item.price || 0) * item.quantity,
+                                                                  0,
+                                                              )
+                                                              .toLocaleString()}
+                                                    원
                                                 </span>
                                             </div>
                                         </div>
@@ -1203,7 +1218,7 @@ console.log('pointer move')
                                     <button
                                         className="btn-primary"
                                         onClick={() => {
-                                            setShowAuthBox(!showAuthBox) 
+                                            setShowAuthBox(!showAuthBox)
                                             handleEdit('profile')
                                         }}
                                     >
@@ -1222,35 +1237,35 @@ console.log('pointer move')
                             </div>
 
                             {/* 아코디언 전체 */}
-                            <div className={showAuthBox && !isAuthenticated ? "auth-accordion open" : "auth-accordion"}>
+                            <div className={showAuthBox && !isAuthenticated ? 'auth-accordion open' : 'auth-accordion'}>
                                 {!isAuthenticated && (
                                     <div className="auth-banner">
                                         <span>정보 수정을 위해 비밀번호 인증이 필요합니다</span>
 
-                                        <div className='auth-banner-input'>
+                                        <div className="auth-banner-input">
                                             <input
                                                 type="password"
                                                 placeholder="현재 비밀번호 입력"
                                                 value={passwordInput}
                                                 onChange={(e) => setPasswordInput(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === "Enter") handleVerifyPassword() }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') handleVerifyPassword()
+                                                }}
                                             />
-                                            <div className='auth-banner-btn' onClick={handleVerifyPassword}>
+                                            <div className="auth-banner-btn" onClick={handleVerifyPassword}>
                                                 인증 확인
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
-                                {isAuthenticated && (
-                                    <div className="auth-banner success">인증 완료</div>
-                                )}
+                                {isAuthenticated && <div className="auth-banner success">인증 완료</div>}
                             </div>
 
                             {/* 인증 완료 표시 */}
                             {isAuthenticated && <div className="auth-banner success">인증 완료</div>}
 
-                            <div className='form-group-box'>
+                            <div className="form-group-box">
                                 <div className="form-group">
                                     <label>이름</label>
                                     <p>{userData.fullName}</p>
@@ -1259,7 +1274,7 @@ console.log('pointer move')
                                 <div className="form-group">
                                     <label>닉네임</label>
                                     {editMode.profile ? (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="text"
                                                 value={tempData.nickName || ''}
@@ -1274,9 +1289,8 @@ console.log('pointer move')
                                 </div>
 
                                 <div className="form-group">
-                                    
                                     {editMode.profile && (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <label>비밀번호</label>
                                             <input
                                                 type="password"
@@ -1292,7 +1306,7 @@ console.log('pointer move')
 
                                 <div className="form-group">
                                     {editMode.profile && (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <label>비밀번호 확인</label>
                                             <input
                                                 type="password"
@@ -1300,7 +1314,9 @@ console.log('pointer move')
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                             />
-                                            {errors.confirmPassword && <p className="error-msg">{errors.confirmPassword}</p>}
+                                            {errors.confirmPassword && (
+                                                <p className="error-msg">{errors.confirmPassword}</p>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -1308,7 +1324,7 @@ console.log('pointer move')
                                 <div className="form-group">
                                     <label>이메일</label>
                                     {editMode.profile ? (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="email"
                                                 value={tempData.email || ''}
@@ -1325,11 +1341,13 @@ console.log('pointer move')
                                 <div className="form-group">
                                     <label>휴대폰</label>
                                     {editMode.profile ? (
-                                        <div className='profile-input'>
+                                        <div className="profile-input">
                                             <input
                                                 type="tel"
                                                 value={tempData.mobilePhone || ''}
-                                                onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
+                                                onChange={(e) =>
+                                                    setTempData({ ...tempData, mobilePhone: e.target.value })
+                                                }
                                                 className="editable"
                                             />
                                             {errors.mobilePhone && <p className="error-msg">{errors.mobilePhone}</p>}
@@ -1412,36 +1430,48 @@ console.log('pointer move')
                                 <div className="empty-state">등록된 결제수단이 없습니다.</div>
                             ) : (
                                 <div className="payment-list">
-                                {paymentMethods.map((pm) => (
-                                    <div key={pm.paymentId} className="payment-card">
-                                    <div className="payment-card-info">
-                                        <div className="card-header">
-                                            {pm.type === "CARD" ? "신용/체크카드" : "계좌이체"}
-                                            {pm.defaultPayment && <span className="badge">기본</span>}
-                                        </div>
-                                        <div className="card-content">
-                                            {pm.type === "CARD" ? (
-                                            <>
-                                                <p>{pm.cardCompany}</p>
-                                                <p>카드번호 {maskCard(pm.cardNumber)}</p>
-                                                <p>유효기간 {pm.cardExpire}</p>
-                                            </>
-                                            ) : (
-                                            <>
-                                                <p>{pm.bankName}</p>
-                                                <p>계좌번호 {pm.accountNumber}</p>
-                                                <p>예금주 {pm.accountHolder}</p>
-                                            </>
-                                            )}
-                                        </div>
+                                    {paymentMethods.map((pm) => (
+                                        <div key={pm.paymentId} className="payment-card">
+                                            <div className="payment-card-info">
+                                                <div className="card-header">
+                                                    {pm.type === 'CARD' ? '신용/체크카드' : '계좌이체'}
+                                                    {pm.defaultPayment && <span className="badge">기본</span>}
+                                                </div>
+                                                <div className="card-content">
+                                                    {pm.type === 'CARD' ? (
+                                                        <>
+                                                            <p>{pm.cardCompany}</p>
+                                                            <p>카드번호 {maskCard(pm.cardNumber)}</p>
+                                                            <p>유효기간 {pm.cardExpire}</p>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <p>{pm.bankName}</p>
+                                                            <p>계좌번호 {pm.accountNumber}</p>
+                                                            <p>예금주 {pm.accountHolder}</p>
+                                                        </>
+                                                    )}
+                                                </div>
 
-                                        <div className="card-actions">
-                                            {!pm.defaultPayment && <button className='link-btn' onClick={() => handleSetDefault(pm.paymentId)}>기본설정</button>}
-                                            <button className="link-btn delete" onClick={() => handleDeletePayment(pm.paymentId)}>삭제</button>
+                                                <div className="card-actions">
+                                                    {!pm.defaultPayment && (
+                                                        <button
+                                                            className="link-btn"
+                                                            onClick={() => handleSetDefault(pm.paymentId)}
+                                                        >
+                                                            기본설정
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className="link-btn delete"
+                                                        onClick={() => handleDeletePayment(pm.paymentId)}
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    </div>
-                                ))}
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -1476,9 +1506,7 @@ console.log('pointer move')
                                             <h3>AI 추천 상품</h3>
                                         </div>
 
-                                        {recommendMessage && (
-                                            <div className="rs-message">{recommendMessage}</div>
-                                        )}
+                                        {recommendMessage && <div className="rs-message">{recommendMessage}</div>}
 
                                         <div className="rs-slider" ref={sliderRef}>
                                             {recommendItems.map((item) => (
@@ -1494,14 +1522,16 @@ console.log('pointer move')
                                                     }}
                                                 >
                                                     <img
-                                                        src={item.imageUrl ? `http://localhost:8090${item.imageUrl}` : ""}
-                                                        className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
+                                                        src={
+                                                            item.imageUrl ? `http://localhost:8090${item.imageUrl}` : ''
+                                                        }
+                                                        className={`rs-thumb ${item.imageUrl ? '' : 'placeholder'}`}
                                                         alt={item.productName}
                                                     />
 
                                                     <div className="rs-name">{item.productName}</div>
                                                     <div className="rs-price">
-                                                        {item.price ? `${item.price.toLocaleString()}원` : "가격 없음"}
+                                                        {item.price ? `${item.price.toLocaleString()}원` : '가격 없음'}
                                                     </div>
                                                 </div>
                                             ))}
@@ -1519,17 +1549,21 @@ console.log('pointer move')
                                                 <div
                                                     key={item.wishlistId}
                                                     className="wishlist-item"
-                                                    onClick={() => router.push(`/product/list/detail?productId=${item.productId}`)}
+                                                    onClick={() =>
+                                                        router.push(`/product/list/detail?productId=${item.productId}`)
+                                                    }
                                                 >
                                                     <div className="wishlist-image">
-                                                        <img 
+                                                        <img
                                                             src={`http://localhost:8090${item.imageUrl}`}
                                                             alt={item.productName}
                                                         />
                                                     </div>
                                                     <div className="wishlist-info">
                                                         <p>{item.productName}</p>
-                                                        <p className="price">{item.price ? `${item.price}원` : '가격 정보 없음'}</p>
+                                                        <p className="price">
+                                                            {item.price ? `${item.price}원` : '가격 정보 없음'}
+                                                        </p>
                                                         <div className="wishlist-btn-box">
                                                             <button
                                                                 className="link-btn delete"
@@ -1547,7 +1581,9 @@ console.log('pointer move')
                                         </div>
                                     )}
                                     {infiniteWishLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>-</p>}
+                                    {!infiniteWishHasMore && infiniteWishList.length > 0 && (
+                                        <p style={{ textAlign: 'center', color: '#999' }}>-</p>
+                                    )}
                                 </div>
                             )}
 
@@ -1561,7 +1597,7 @@ console.log('pointer move')
                                                 <li key={follow.studioId} className="follow-card">
                                                     <div className="studio-info">
                                                         {follow.studioImageUrl ? (
-                                                            <img 
+                                                            <img
                                                                 src={`http://localhost:8090${follow.studioImageUrl}`}
                                                                 alt={follow.studioName}
                                                                 className="studio-image"
@@ -1569,14 +1605,17 @@ console.log('pointer move')
                                                         ) : (
                                                             <div className="studio-image-placeholder">🏪</div>
                                                         )}
-                                                        <div className='studio-txt-box'>
+                                                        <div className="studio-txt-box">
                                                             <Link href={`/seller/studio/${follow.studioId}`}>
-                                                                <h4 className='shortcut-btn'>{follow.studioName}</h4>
+                                                                <h4 className="shortcut-btn">{follow.studioName}</h4>
                                                             </Link>
                                                             <p>{follow.studioDescription}</p>
                                                         </div>
                                                     </div>
-                                                    <div className='link-btn delete' onClick={() => handleUnfollow(follow.studioId)}>
+                                                    <div
+                                                        className="link-btn delete"
+                                                        onClick={() => handleUnfollow(follow.studioId)}
+                                                    >
                                                         언팔로우
                                                     </div>
                                                 </li>
@@ -1599,53 +1638,65 @@ console.log('pointer move')
                                 <div className="empty-state">작성한 리뷰가 없습니다.</div>
                             ) : (
                                 <div className="my-review-list">
-                                    {infiniteReviews.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()).map((review) => (
-                                        <div key={review.reviewId} className="my-review-card">
-                                            <div className="my-review-header">
-                                                <Link href={`http://localhost:3000/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
-                                                    {review.productName}
-                                                </Link>
-                                                <span className="my-review-rating">⭐ {review.rating} / 5</span>
-                                            </div>
-
-                                            {review.images && review.images.length > 0 && (
-                                                <div key={review.reviewId} className="my-review-images">
-                                                    {review.images.map((url, i) => (
-                                                        <img
-                                                            key={i}
-                                                            src={`http://localhost:8090${url}`}
-                                                            alt={`리뷰 이미지 ${i + 1}`}
-                                                            className="review-image-item"
-                                                        />
-                                                    ))}
+                                    {infiniteReviews
+                                        .sort(
+                                            (a, b) =>
+                                                new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime(),
+                                        )
+                                        .map((review) => (
+                                            <div key={review.reviewId} className="my-review-card">
+                                                <div className="my-review-header">
+                                                    <Link
+                                                        href={`http://localhost:3000/product/list/detail?productId=${review.productId}`}
+                                                        className="my-review-product-name"
+                                                    >
+                                                        {review.productName}
+                                                    </Link>
+                                                    <span className="my-review-rating">⭐ {review.rating} / 5</span>
                                                 </div>
-                                            )}
 
-                                            <div className="my-review-content">{review.content}</div>
+                                                {review.images && review.images.length > 0 && (
+                                                    <div key={review.reviewId} className="my-review-images">
+                                                        {review.images.map((url, i) => (
+                                                            <img
+                                                                key={i}
+                                                                src={`http://localhost:8090${url}`}
+                                                                alt={`리뷰 이미지 ${i + 1}`}
+                                                                className="review-image-item"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
 
-                                            <div className="my-review-footer">
-                                                <span>작성일: {review.createdDate}</span>
-                                                {review.modifiedDate && <span> · 수정일: {review.modifiedDate}</span>}
-                                                <span className="my-review-like-count">👍 {review.reviewLike}</span>
-                                                <button
-                                                    onClick={() => handleEditClick(review)}
-                                                    className="link-btn"
-                                                >
-                                                    수정
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(review)}
-                                                    className="link-btn delete"
-                                                >
-                                                    삭제
-                                                </button>
+                                                <div className="my-review-content">{review.content}</div>
+
+                                                <div className="my-review-footer">
+                                                    <span>작성일: {review.createdDate}</span>
+                                                    {review.modifiedDate && (
+                                                        <span> · 수정일: {review.modifiedDate}</span>
+                                                    )}
+                                                    <span className="my-review-like-count">👍 {review.reviewLike}</span>
+                                                    <button
+                                                        onClick={() => handleEditClick(review)}
+                                                        className="link-btn"
+                                                    >
+                                                        수정
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(review)}
+                                                        className="link-btn delete"
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
                             )}
                             {infiniteReviewLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
-                            {!infiniteReviewHasMore && infiniteReviews.length > 0 && <p style={{ textAlign: 'center', color: '#999' }}>-</p>}
+                            {!infiniteReviewHasMore && infiniteReviews.length > 0 && (
+                                <p style={{ textAlign: 'center', color: '#999' }}>-</p>
+                            )}
                         </div>
                     )}
 
@@ -1661,8 +1712,10 @@ console.log('pointer move')
                             ) : (
                                 <div className="qna-list">
                                     {qna.map((item) => (
-                                        <div key={item.qnaId} className="qna-card"
-                                        onClick={() => toggleQna(item.qnaId)}
+                                        <div
+                                            key={item.qnaId}
+                                            className="qna-card"
+                                            onClick={() => toggleQna(item.qnaId)}
                                         >
                                             <div className="qna-header">
                                                 <div className="qna-title">{item.title}</div>
@@ -1680,7 +1733,8 @@ console.log('pointer move')
                                             <div className="qna-content">{item.content}</div>
 
                                             <div className="qna-footer">
-                                                <span>작성일: {' '}
+                                                <span>
+                                                    작성일:{' '}
                                                     {new Date(item.createdAt).toLocaleDateString('ko-KR', {
                                                         year: 'numeric',
                                                         month: '2-digit',
@@ -1728,7 +1782,7 @@ console.log('pointer move')
 
                         <div className="modal-body">
                             {filterOrdersByStatus(selectedStatus).length === 0 ? (
-                                <p className='empty-state'>주문 내역이 없습니다.</p>
+                                <p className="empty-state">주문 내역이 없습니다.</p>
                             ) : (
                                 <div className="modal-orders-list">
                                     {filterOrdersByStatus(selectedStatus).map((order) => (
@@ -1740,7 +1794,7 @@ console.log('pointer move')
 
                                             <div className="modal-order-info">
                                                 <span className="product-name">
-                                                    {order.items?.[0]?.productName || "상품 없음"}
+                                                    {order.items?.[0]?.productName || '상품 없음'}
                                                 </span>
                                                 <span className={`badge ${order.deliveryStatus}`}>
                                                     {order.deliveryStatus}
@@ -1786,12 +1840,7 @@ console.log('pointer move')
                             <div className="form-field">
                                 <label>우편번호</label>
                                 <div className="input-group">
-                                    <input
-                                        type="text"
-                                        placeholder="우편번호"
-                                        value={newAddress.zipcode}
-                                        readOnly
-                                    />
+                                    <input type="text" placeholder="우편번호" value={newAddress.zipcode} readOnly />
                                     <button className="btn-primary" onClick={sample6_execDaumPostcode}>
                                         우편번호 찾기
                                     </button>
@@ -1800,12 +1849,7 @@ console.log('pointer move')
 
                             <div className="form-field">
                                 <label>주소</label>
-                                <input
-                                    type="text"
-                                    placeholder="주소"
-                                    value={newAddress.baseAddress}
-                                    readOnly
-                                />
+                                <input type="text" placeholder="주소" value={newAddress.baseAddress} readOnly />
                             </div>
 
                             <div className="form-field">
@@ -1820,12 +1864,7 @@ console.log('pointer move')
 
                             <div className="form-field">
                                 <label>참고항목</label>
-                                <input
-                                    type="text"
-                                    placeholder="참고항목"
-                                    value={newAddress.extraAddress}
-                                    readOnly
-                                />
+                                <input type="text" placeholder="참고항목" value={newAddress.extraAddress} readOnly />
                             </div>
 
                             <div className="form-field">
@@ -1870,7 +1909,9 @@ console.log('pointer move')
                                     type="text"
                                     placeholder="수령인 이름"
                                     value={editAddressData.recipientName}
-                                    onChange={(e) => setEditAddressData({ ...editAddressData, recipientName: e.target.value })}
+                                    onChange={(e) =>
+                                        setEditAddressData({ ...editAddressData, recipientName: e.target.value })
+                                    }
                                 />
                             </div>
 
@@ -1891,12 +1932,7 @@ console.log('pointer move')
 
                             <div className="form-field">
                                 <label>주소</label>
-                                <input
-                                    type="text"
-                                    placeholder="주소"
-                                    value={editAddressData.baseAddress}
-                                    readOnly
-                                />
+                                <input type="text" placeholder="주소" value={editAddressData.baseAddress} readOnly />
                             </div>
 
                             <div className="form-field">
@@ -1905,7 +1941,9 @@ console.log('pointer move')
                                     type="text"
                                     placeholder="상세주소"
                                     value={editAddressData.detailAddress}
-                                    onChange={(e) => setEditAddressData({ ...editAddressData, detailAddress: e.target.value })}
+                                    onChange={(e) =>
+                                        setEditAddressData({ ...editAddressData, detailAddress: e.target.value })
+                                    }
                                 />
                             </div>
 
@@ -1915,7 +1953,9 @@ console.log('pointer move')
                                     type="text"
                                     placeholder="참고항목"
                                     value={editAddressData.extraAddress}
-                                    onChange={(e) => setEditAddressData({ ...editAddressData, extraAddress: e.target.value })}
+                                    onChange={(e) =>
+                                        setEditAddressData({ ...editAddressData, extraAddress: e.target.value })
+                                    }
                                 />
                             </div>
 
@@ -1957,8 +1997,8 @@ console.log('pointer move')
                         <div className="modal-body">
                             <div className="form-field">
                                 <label>결제수단</label>
-                                <select 
-                                    value={paymentType} 
+                                <select
+                                    value={paymentType}
                                     onChange={(e) => setPaymentType(e.target.value as any)}
                                     className="select-input"
                                 >
@@ -1967,69 +2007,68 @@ console.log('pointer move')
                                 </select>
                             </div>
 
-                            {paymentType === "BANK" && (
+                            {paymentType === 'BANK' && (
                                 <>
                                     <div className="form-field">
                                         <label>은행명</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="은행명을 입력하세요"
-                                            value={bankName} 
-                                            onChange={(e) => setBankName(e.target.value)} 
+                                            value={bankName}
+                                            onChange={(e) => setBankName(e.target.value)}
                                         />
                                         {errors.bankName && <p className="error-msg">{errors.bankName}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>계좌번호</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="계좌번호를 입력하세요"
-                                            value={accountNumber} 
-                                            onChange={(e) => setAccountNumber(e.target.value)} 
+                                            value={accountNumber}
+                                            onChange={(e) => setAccountNumber(e.target.value)}
                                         />
                                         {errors.accountNumber && <p className="error-msg">{errors.accountNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>예금주</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="예금주명을 입력하세요"
-                                            value={accountHolder} 
-                                            onChange={(e) => setAccountHolder(e.target.value)} 
+                                            value={accountHolder}
+                                            onChange={(e) => setAccountHolder(e.target.value)}
                                         />
-                                        
                                     </div>
                                 </>
                             )}
 
-                            {paymentType === "CARD" && (
+                            {paymentType === 'CARD' && (
                                 <>
                                     <div className="form-field">
                                         <label>카드사</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="카드사를 입력하세요"
-                                            value={cardCompany} 
-                                            onChange={(e) => setCardCompany(e.target.value)} 
+                                            value={cardCompany}
+                                            onChange={(e) => setCardCompany(e.target.value)}
                                         />
                                     </div>
                                     <div className="form-field">
                                         <label>카드번호</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="카드번호를 입력하세요"
-                                            value={cardNumber} 
-                                            onChange={(e) => setCardNumber(e.target.value)} 
+                                            value={cardNumber}
+                                            onChange={(e) => setCardNumber(e.target.value)}
                                         />
                                         {errors.cardNumber && <p className="error-msg">{errors.cardNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>유효기간</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="MM/YY"
-                                            value={cardExpire} 
-                                            onChange={(e) => setCardExpire(e.target.value)} 
+                                            value={cardExpire}
+                                            onChange={(e) => setCardExpire(e.target.value)}
                                         />
                                         {errors.cardExpire && <p className="error-msg">{errors.cardExpire}</p>}
                                     </div>
@@ -2038,10 +2077,10 @@ console.log('pointer move')
 
                             <div className="form-field">
                                 <label className="checkbox-label">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={defaultPayment} 
-                                        onChange={(e) => setDefaultPayment(e.target.checked)} 
+                                    <input
+                                        type="checkbox"
+                                        checked={defaultPayment}
+                                        onChange={(e) => setDefaultPayment(e.target.checked)}
                                     />
                                     <span>기본 결제수단으로 설정</span>
                                 </label>
@@ -2052,10 +2091,7 @@ console.log('pointer move')
                             <button className="btn-primary delete" onClick={() => setIsPaymentModal(false)}>
                                 취소
                             </button>
-                            <button
-                                className="btn-primary"
-                                onClick={() => handleAskDefaultPayment()}
-                            >
+                            <button className="btn-primary" onClick={() => handleAskDefaultPayment()}>
                                 등록
                             </button>
                         </div>
@@ -2117,17 +2153,16 @@ console.log('pointer move')
             {deleteModal.open && (
                 <div className="modal-overlay" onClick={deleteModal.onCancel}>
                     <div className="modal-container modal-sm" onClick={(e) => e.stopPropagation()}>
-                        
                         <div className="modal-header">
-                            <h2>{deleteModal.title || "삭제"}</h2>
-                            <button className="modal-close" onClick={deleteModal.onCancel}>✕</button>
+                            <h2>{deleteModal.title || '삭제'}</h2>
+                            <button className="modal-close" onClick={deleteModal.onCancel}>
+                                ✕
+                            </button>
                         </div>
 
                         <div className="modal-body">
-                            <p>{deleteModal.message || "정말 삭제하시겠습니까?"}</p>
-                            {deleteModal.warning && (
-                                <p className="modal-warning">{deleteModal.warning}</p>
-                            )}
+                            <p>{deleteModal.message || '정말 삭제하시겠습니까?'}</p>
+                            {deleteModal.warning && <p className="modal-warning">{deleteModal.warning}</p>}
                         </div>
 
                         <div className="modal-footer">
@@ -2173,12 +2208,12 @@ console.log('pointer move')
                                 className="btn-primary"
                                 onClick={() => {
                                     if (!reasonText.trim()) {
-                                        alert("사유를 입력해주세요.")
+                                        alert('사유를 입력해주세요.')
                                         return
                                     }
                                     reasonModalOnSubmit(reasonText)
                                     setIsReasonModal(false)
-                                    setReasonText("")
+                                    setReasonText('')
                                 }}
                             >
                                 제출
@@ -2216,15 +2251,13 @@ console.log('pointer move')
 
                             <div className="form-field">
                                 <label className="file-input-label">
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
+                                    <input
+                                        type="file"
+                                        accept="image/*"
                                         onChange={handleProfileFileChange}
                                         className="file-input"
                                     />
-                                    <span className="file-input-button">
-                                        📁 이미지 선택
-                                    </span>
+                                    <span className="file-input-button">📁 이미지 선택</span>
                                 </label>
                             </div>
                         </div>
@@ -2248,25 +2281,25 @@ console.log('pointer move')
             {isAddressSelectModalOpen && (
                 <div className="modalOverlay">
                     <div className="modalContainer addressSelectModal">
-
                         <div className="modalHeader">
                             <h2 className="modalTitle">배송지 선택</h2>
-                            <button
-                                className="modalCloseBtn"
-                                onClick={() => setIsAddressSelectModalOpen(false)}
-                            >
+                            <button className="modalCloseBtn" onClick={() => setIsAddressSelectModalOpen(false)}>
                                 ✕
                             </button>
                         </div>
 
                         <div className="addressList">
-                            {addresses.map(addr => (
+                            {addresses.map((addr) => (
                                 <div
                                     key={addr.userAddressId}
                                     className={`
                                         addressItem
-                                        ${addr.isDefault ? "defaultAddress" : ""}
-                                        ${selectedAddress?.userAddressId === addr.userAddressId ? "selectedAddress" : ""}
+                                        ${addr.isDefault ? 'defaultAddress' : ''}
+                                        ${
+                                            selectedAddress?.userAddressId === addr.userAddressId
+                                                ? 'selectedAddress'
+                                                : ''
+                                        }
                                     `}
                                     onClick={() => {
                                         setSelectedAddress(addr)
@@ -2287,7 +2320,7 @@ console.log('pointer move')
                                 className="btn-primary"
                                 onClick={() => {
                                     setIsAddressSelectModalOpen(false)
-                                    setActiveTab("address")  // 배송지 탭으로 이동
+                                    setActiveTab('address') // 배송지 탭으로 이동
                                 }}
                             >
                                 + 배송지 추가하기
@@ -2296,7 +2329,7 @@ console.log('pointer move')
                                 className="btn-primary"
                                 onClick={async () => {
                                     if (!selectedAddress) {
-                                        alert("배송지를 먼저 선택해주세요.")
+                                        alert('배송지를 먼저 선택해주세요.')
                                         return
                                     }
                                     await handleAddressNext()
@@ -2305,7 +2338,6 @@ console.log('pointer move')
                                 다음으로
                             </button>
                         </div>
-
                     </div>
                 </div>
             )}
@@ -2314,33 +2346,26 @@ console.log('pointer move')
             {isModalOpen && (
                 <div className="modalOverlay">
                     <div className="modalContainer">
-                        
                         {/* 헤더 */}
                         <div className="modalHeader">
                             <h2 className="modalTitle">결제하기</h2>
 
-                            <button
-                                type="button"
-                                onClick={handleClosePaymentModal}
-                                className="modalCloseBtn"
-                            >
+                            <button type="button" onClick={handleClosePaymentModal} className="modalCloseBtn">
                                 ✕
                             </button>
                         </div>
 
                         {/* === 한 섹션 카드 === */}
                         <div className="modalSection">
-
                             {/* 상품 요약 */}
                             <div className="modalProductSummary">
-
                                 {/* 대표 이미지 */}
                                 <div className="summaryThumb">
                                     <img
                                         src={
                                             firstSelectedItem?.imageUrl
                                                 ? `http://localhost:8090${firstSelectedItem.imageUrl}`
-                                                : "/default-product.png"
+                                                : '/default-product.png'
                                         }
                                         alt="장바구니 대표 이미지"
                                     />
@@ -2349,31 +2374,26 @@ console.log('pointer move')
                                 {/* 텍스트 */}
                                 <div className="summaryText">
                                     <div className="summaryTitle">
-                                        장바구니 상품 {
-                                            cart
-                                                .filter(item => selectedItems.includes(item.cartId))
-                                                .reduce((sum, item) => sum + item.quantity, 0)
-                                        }개
+                                        장바구니 상품{' '}
+                                        {cart
+                                            .filter((item) => selectedItems.includes(item.cartId))
+                                            .reduce((sum, item) => sum + item.quantity, 0)}
+                                        개
                                     </div>
 
-                                    <div className="summaryDesc">
-                                        여러 상품을 함께 결제합니다.
-                                    </div>
+                                    <div className="summaryDesc">여러 상품을 함께 결제합니다.</div>
 
                                     <div className="summaryRow">
                                         <span className="summaryLabel">총 상품 수</span>
-                                        {
-                                            cart
-                                                .filter(item => selectedItems.includes(item.cartId))
-                                                .reduce((sum, item) => sum + item.quantity, 0)
-                                        }개
+                                        {cart
+                                            .filter((item) => selectedItems.includes(item.cartId))
+                                            .reduce((sum, item) => sum + item.quantity, 0)}
+                                        개
                                     </div>
 
                                     <div className="summaryRow">
                                         <span className="summaryLabel">총 결제 금액</span>
-                                        <span className="summaryTotal">
-                                            {total.toLocaleString()}원
-                                        </span>
+                                        <span className="summaryTotal">{total.toLocaleString()}원</span>
                                     </div>
                                 </div>
                             </div>
@@ -2396,7 +2416,7 @@ console.log('pointer move')
                                 className="paymentSubmitBtn"
                                 disabled={!widgetLoaded}
                             >
-                                {widgetLoaded ? "결제하기" : "결제 준비중…"}
+                                {widgetLoaded ? '결제하기' : '결제 준비중…'}
                             </button>
                         </div>
                     </div>
@@ -2414,16 +2434,16 @@ console.log('pointer move')
                             <p>{confirmModal.message}</p>
                         </div>
                         <div className="modal-footer">
-                            <button 
-                                className="btn-primary delete" 
+                            <button
+                                className="btn-primary delete"
                                 onClick={() => {
                                     confirmModal.onCancel?.()
-                                    setConfirmModal(prev => ({ ...prev, open: false }))
+                                    setConfirmModal((prev) => ({ ...prev, open: false }))
                                 }}
                             >
                                 아니요
                             </button>
-                            <button 
+                            <button
                                 className="btn-primary"
                                 onClick={() => {
                                     confirmModal.onConfirm?.()

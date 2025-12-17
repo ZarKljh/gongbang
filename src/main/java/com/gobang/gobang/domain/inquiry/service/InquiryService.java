@@ -6,6 +6,8 @@ import com.gobang.gobang.domain.inquiry.entity.Inquiry;
 import com.gobang.gobang.domain.inquiry.model.InquiryType;
 import com.gobang.gobang.domain.inquiry.repository.InquiryRepository;
 import com.gobang.gobang.domain.inquiry.dto.InquiryRequest;
+import com.gobang.gobang.domain.notification.entity.Notification;
+import com.gobang.gobang.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.List;
 public class InquiryService {
     private final InquiryRepository inquiryRepository;
     private final SiteUserRepository siteUserRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public Inquiry createInquiryForUser(InquiryRequest req, Long userId) {
@@ -69,9 +72,20 @@ public class InquiryService {
     @Transactional
     public void answerInquiry(Long id, String answerContent) {
         Inquiry inq = getById(id);
+
         inq.setAnswerContent(answerContent);
         inq.setAnswered(true);
         inq.setAnsweredAt(LocalDateTime.now());
+
+        SiteUser target = inq.getWriter();
+
+        String link = "/personal?tab=qna";
+
+        notificationRepository.save(new Notification(
+                target,
+                "문의에 답변이 등록되었습니다.",
+                link
+        ));
     }
 
 
