@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { api } from '@/app/utils/api'
 import './sellerPage.css'
 import Sidebar from './components/sideBar'
 import MainContent from './components/mainContent'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1'
+//const API_BASE_URL = 'https://localhost:8090/api/v1'
+const API_BASE_URL = api.defaults.baseURL
 
 export default function MyPage() {
     // ======= 상태 관리 =======
@@ -125,8 +127,8 @@ export default function MyPage() {
         setUserData(data.data)
         return data.data
     }
-    const fetchOrders = async (id: number) => {
-        const { data } = await axios.get(`${API_BASE_URL}/mypage/orders`, { withCredentials: true })
+    const fetchOrders = async (studioId: number) => {
+        const { data } = await axios.get(`${API_BASE_URL}/mypage/studios/${studioId}/orders`, { withCredentials: true })
         setOrders(data.data)
     }
     const fetchCart = async (id: number) => {
@@ -407,6 +409,11 @@ export default function MyPage() {
             fetchGlobalCategories()
         }
     }, [activeTab])
+
+    useEffect(() => {
+        if (!studio?.studioId) return
+        fetchOrders(studio.studioId)
+    }, [studio])
 
     // =============== 🔐 회원정보 관련 함수 ===============
     const handleVerifyPassword = async () => {
@@ -782,7 +789,7 @@ export default function MyPage() {
                     productImages.PRODUCT.forEach((f) => form.append('productGalleryImages', f))
                 }
 
-                const res = await axios.post(`${API_BASE_URL}/studio/product/add`, form, {
+                const res = await axios.post(`${API_BASE_URL}/studio/product/new`, form, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     withCredentials: true,
                 })

@@ -15,21 +15,26 @@ import java.util.Optional;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    // 사용자별 장바구니 목록 조회
-    List<Cart> findBySiteUser(SiteUser siteUser);
+    @Query("""
+        SELECT c
+        FROM Cart c
+        JOIN FETCH c.product p
+        WHERE c.siteUser = :user
+    """)
+    List<Cart> findBySiteUserWithProduct(@Param("user") SiteUser user);
 
-    // 사용자와 상품으로 장바구니 조회
     Optional<Cart> findBySiteUserAndProduct(SiteUser siteUser, Product product);
 
-    // 사용자별 장바구니 전체 삭제
+    Optional<Cart> findByCartIdAndSiteUser(Long cartId, SiteUser siteUser);
+
     void deleteBySiteUser(SiteUser siteUser);
 
-    // 상품 수량
-    @Query("SELECT COALESCE(SUM(c.quantity), 0) FROM Cart c WHERE c.siteUser = :siteUser")
+    @Query("""
+        SELECT COALESCE(SUM(c.quantity), 0)
+        FROM Cart c
+        WHERE c.siteUser = :siteUser
+    """)
     long sumQuantityBySiteUser(@Param("siteUser") SiteUser siteUser);
-
-    @Query("SELECT c FROM Cart c JOIN FETCH c.product p WHERE c.siteUser.id = :userId")
-    List<Cart> findByUserIdWithProduct(@Param("userId") Long userId);
 
     List<Cart> findByCartIdInAndSiteUser(List<Long> ids, SiteUser siteUser);
 }

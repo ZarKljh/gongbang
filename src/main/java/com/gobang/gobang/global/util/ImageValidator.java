@@ -26,7 +26,7 @@ public class ImageValidator {
 
         String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase();
         if (!ALLOWED_EXT.contains(ext)) {
-            throw new IllegalArgumentException("허용되지 않은 이미지 형식입니다. (jpg, png, webp 가능)");
+            throw new IllegalArgumentException("허용되지 않은 이미지 형식입니다. (jpg, png, webp, jfif 가능)");
         }
 
         // 2) 파일 크기 검사

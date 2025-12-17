@@ -190,10 +190,10 @@ export default function SignupUser() {
 
     return (
         <section className="signup-container">
-            <h3 className="signup-title">일반회원 회원가입페이지</h3>
             <div className="form-container">
+                <h3 className="signup-title">일반회원 회원가입페이지</h3>
                 <h4 className="form-title">사용자 정보 입력</h4>
-                <form onSubmit={handleSubmit}>
+                <form className="signup-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label required">ID</label>
                         <div className="form-row">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios"
 import api from "@/app/utils/api"
 
@@ -28,6 +28,7 @@ export const useOrders = () => {
   const [reasonModalOnSubmit, setReasonModalOnSubmit] =
     useState<null | ((reason: string) => void)>(null)
   const [reasonText, setReasonText] = useState("")
+  const HIDDEN_STATUSES = ['CANCELLED', 'RETURNED', 'EXCHANGED']
 
   // API - 전체 주문 조회
   const fetchOrders = async () => {
@@ -58,6 +59,10 @@ export const useOrders = () => {
       return true
     })
   }
+
+  const visibleOrders = filterOrdersByStatus(selectedStatus).filter(
+    (order) => !HIDDEN_STATUSES.includes(order.status)
+  )
 
   // 무한스크롤 데이터 로드
   const fetchInfiniteOrders = async (lastId: number | null) => {
@@ -104,10 +109,16 @@ export const useOrders = () => {
 
   // 필터 주문
   const filteredOrders = orders.filter(order => {
-    if (activeFilter === "전체")
-      return ["취소", "반품", "교환"].includes(order.deliveryStatus)
-    return order.deliveryStatus === activeFilter
+    if (activeFilter === "ALL") return true
+    return order.status === activeFilter
   })
+
+  const ORDER_STATUS_LABEL: Record<string, string> = {
+    CANCELLED: '취소',
+    RETURN: '반품',
+    EXCHANGE: '교환',
+    PAID: '결제완료',
+  }
 
   // 모달 클릭
   const handleStatusClick = (status: string) => {
@@ -156,5 +167,7 @@ export const useOrders = () => {
     toggleOrderDetail,
     submitReason,
     filterOrdersByStatus,
+    ORDER_STATUS_LABEL,
+    visibleOrders,
   }
 }

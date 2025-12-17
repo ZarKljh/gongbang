@@ -110,8 +110,8 @@ export default function StudioTab(props: StudioTabProps) {
     const noErrors = Object.values(errors).every((e) => !e)
 
     const isFormValid = editMode.studio && textValid && imageValid && noErrors
-    const serverImageUrl = (fileName: string) => `http://localhost:8090/images/${fileName}`
-
+    //const serverImageUrl = (fileName: string) => `http://localhost:8090/images/${fileName}`
+    const serverImageUrl = (fileName: string) => `https://api.gongyedam.shop/images/${fileName}`
     /** 🔥 부모 onTempChange + validation 함께 실행하는 wrapper */
     const handleValidatedChange = (field: keyof StudioInfo, value: any) => {
         onTempChange(field, value)

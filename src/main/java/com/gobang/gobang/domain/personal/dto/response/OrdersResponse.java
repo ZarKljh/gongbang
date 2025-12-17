@@ -39,6 +39,7 @@ public class OrdersResponse {
     public static OrdersResponse from(Orders orders, ImageRepository imageRepository) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+        // createdDate
         String createdDateStr = orders.getCreatedDate() != null
                 ? orders.getCreatedDate().format(formatter)
                 : LocalDateTime.now().format(formatter);
@@ -87,7 +88,9 @@ public class OrdersResponse {
                 .createdDate(createdDateStr)
                 .deliveryStatus(deliveryStatus)
                 .completedAt(completedAt)
-                .status(orders.getStatus())
+                .status(orders.getStatus() != null
+                        ? orders.getStatus().name()
+                        : null)
                 .reason(orders.getReason())
                 .buyerNickname(
                         orders.getSiteUser() != null

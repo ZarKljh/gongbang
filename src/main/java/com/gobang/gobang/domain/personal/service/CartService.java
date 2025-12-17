@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,86 +24,63 @@ public class CartService {
     private final ProductRepository productRepository;
     private final ImageRepository imageRepository;
 
-    // 사용자별 장바구니 목록 조회
-    @Transactional(readOnly = true)
-    public List<CartResponse> getCartsByUserId(SiteUser siteUser) {
-        List<Cart> carts = cartRepository.findByUserIdWithProduct(siteUser.getId());
-
-        return carts.stream()
-                .map(item -> CartResponse.from(item, imageRepository))
-                .collect(Collectors.toList());
+    public List<CartResponse> getCartsByUserId(SiteUser user) {
+        return cartRepository.findBySiteUserWithProduct(user)
+                .stream()
+                .map(cart -> CartResponse.from(cart, imageRepository))
+                .toList();
     }
 
-    // 장바구니 담기
     @Transactional
     public CartResponse addToCart(CartRequest request) {
+        SiteUser user = request.getSiteUser();
+
         Product product = productRepository.findById(request.getProduct().getId())
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
-        SiteUser siteUser = request.getSiteUser();
+        Cart cart = cartRepository.findBySiteUserAndProduct(user, product)
+                .orElseGet(() -> Cart.builder()
+                        .siteUser(user)
+                        .product(product)
+                        .quantity(0L)
+                        .build());
 
-        // 이미 장바구니에 있는 상품인지 확인
-        Optional<Cart> existingCart = cartRepository.findBySiteUserAndProduct(siteUser, product);
-
-        if (existingCart.isPresent()) {
-            // 이미 있으면 수량 증가
-            Cart cart = existingCart.get();
-            cart.setQuantity(cart.getQuantity() + request.getQuantity());
-
-            Cart saved = cartRepository.save(cart);
-            return CartResponse.from(saved, imageRepository);
-        } else {
-            // 없으면 새로 추가
-            Cart cart = Cart.builder()
-                    .siteUser(SiteUser.builder().id(siteUser.getId()).build())
-                    .product(product)
-                    .quantity(request.getQuantity())
-                    .build();
-
-            Cart saved = cartRepository.save(cart);
-            return CartResponse.from(saved, imageRepository);
-        }
+        cart.setQuantity(cart.getQuantity() + request.getQuantity());
+        return CartResponse.from(cartRepository.save(cart), imageRepository);
     }
 
-    // 장바구니 수량 수정
     @Transactional
-    public CartResponse updateCartQuantity(Long cartId, Long quantity) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다."));
+    public CartResponse updateCartQuantity(Long cartId, Long quantity, SiteUser user) {
+        Cart cart = cartRepository.findByCartIdAndSiteUser(cartId, user)
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         cart.setQuantity(quantity);
-
-        Cart saved = cartRepository.save(cart);
-
-        return CartResponse.from(saved, imageRepository);
+        return CartResponse.from(cart, imageRepository);
     }
 
-    // 장바구니 항목 삭제
     @Transactional
-    public void deleteCart(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다."));
+    public void deleteCart(Long cartId, SiteUser user) {
+        Cart cart = cartRepository.findByCartIdAndSiteUser(cartId, user)
+                .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         cartRepository.delete(cart);
     }
 
-    // 장바구니 전체 삭제
     @Transactional
-    public void clearCart(SiteUser siteUser) {
-        cartRepository.deleteBySiteUser(siteUser);
+    public void clearCart(SiteUser user) {
+        cartRepository.deleteBySiteUser(user);
     }
 
-    // 장바구니 개수 조회
-    public long getCartCount(SiteUser siteUser) {
-        return cartRepository.sumQuantityBySiteUser(siteUser);
+    public long getCartCount(SiteUser user) {
+        return cartRepository.sumQuantityBySiteUser(user);
     }
 
     @Transactional
     public void deletePurchasedItems(SiteUser user, List<Long> cartIds) {
         if (cartIds == null || cartIds.isEmpty()) return;
 
-        List<Cart> carts = cartRepository.findByCartIdInAndSiteUser(cartIds, user);
-
-        cartRepository.deleteAll(carts);
+        cartRepository.deleteAll(
+                cartRepository.findByCartIdInAndSiteUser(cartIds, user)
+        );
     }
 }

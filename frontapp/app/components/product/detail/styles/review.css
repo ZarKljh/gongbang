@@ -159,6 +159,9 @@
 
 .review-banner-img {
     border-radius: 8px;
+     width: 100%;
+  height: auto;
+  display: block;
 }
 .review-banner h2 {
     font-size: 38px;
@@ -282,8 +285,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid gray;
-    border-bottom: 1px solid gray;
+    border-top: 1px solid #e6d1ab;
+    border-bottom: 1px solid #e6d1ab;
     padding: 10px 0;
     margin-bottom: 40px;
 }
@@ -726,7 +729,7 @@
 @media (max-width: 460px) {
     .detailPage {
         width: 100%;
-        padding: 0 16px;
+        padding: 0 14px;
     }
 
     .reviews-title {
@@ -794,8 +797,9 @@
     }
 
     .review-rating-select {
-        font-size: 14px;
+        font-size: 13px;
         padding: 6px 12px;
+        border-radius: 6px;
     }
 
     .review-rating-select:hover {
@@ -1006,7 +1010,7 @@
        ============================ */
     .review-like-btn {
         padding: 6px 12px;
-        font-size: 12px;
+        font-size: 14px;
     }
 
     .review-like-btn.liked {
@@ -1021,10 +1025,6 @@
     }
 
     /* 아이콘 크기 */
-    .review-like-btn {
-        font-size: 16px;
-    }
-
     .like-icon {
         margin: 0;
     }
