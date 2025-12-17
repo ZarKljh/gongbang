@@ -26,12 +26,12 @@
 /* ===============================
    주문 기본 정보 박스
 ================================ */
-.order-detail-box { 
+.order-detail-box {
     padding: 24px 30px;
     border-radius: 8px;
     margin-bottom: 40px;
-    border: 1px solid #E9DCC4;
-    background: #FAF7F0;
+    border: 1px solid #e9dcc4;
+    background: #faf7f0;
 }
 
 .order-detail-box p {
@@ -58,6 +58,9 @@
 .badge.배송준비중 { background: #ffe9a7; color: #775a00; }
 .badge.배송중 { background: #bfe3ff; color: #004a80; }
 .badge.배송완료 { background: #d4f7dc; color: #1f5c2b; }
+.badge.CANCELLED, .badge.FAILED { background-color: #ff9b9b;}
+.badge.PENDING, .badge.TEMP {background-color: rgb(252, 237, 191);}
+.badge.PAID {background-color: #79b7e4;}
 
 /* ===============================
    상품 목록
@@ -208,4 +211,15 @@
     justify-content: flex-end;
     gap: 12px;
     margin-top: 15px;
+}
+
+.reason-warning {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

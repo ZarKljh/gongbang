@@ -26,6 +26,14 @@ spring:
             required: true
         debug: false
 
+  mvc:
+    async:
+      request-timeout: 60000 # 스프링 MVC요청 타임아웃 60초로 늘리기
+server:
+  tomcat:
+    connection-timeout: 60000   # Tomcat 요청 타임아웃 60초로 늘리기 (기본 10초)
+    keep-alive-timeout: 60000
+    max-swallow-size: -1
 logging:
   level:
     root: INFO
@@ -42,6 +50,8 @@ gemini:
 delivery-tracker:
   client-id: AA4fGkp0h7yLK3udnIddEUZl
   client-secret: h3I9iVbQ0gOubcebHyL2cEMRZOnT73xVFx7kia7phvw
+caffeine:
+  spec: maximumSize=500,expireAfterWrite=24h
 
 custom:
   genFileDirPath: C://work//gongbangImg

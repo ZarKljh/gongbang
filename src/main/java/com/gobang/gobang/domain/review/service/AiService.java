@@ -12,19 +12,30 @@ public class AiService {
 
     public String summarizeReviews(String reviewText) {
 
+
+        // 1) 리뷰 전처리 (토큰 줄이기)
+        String cleaned = reviewText
+                .replaceAll("[^ㄱ-ㅎ가-힣0-9.,!?\n ]", "")  // 불필요 문자 제거
+                .trim();
+
+        // 너무 길면 자르기 (무료티어 안정화)
+        if (cleaned.length() > 1500) {
+            cleaned = cleaned.substring(0, 1500);
+        }
+
         String prompt = """
-                당신은 쇼핑몰 리뷰 전문가입니다.
+            다음 리뷰들의 공통된 장점과 단점을 간단히 요약해줘.
 
-                아래는 동일한 상품을 구매한 고객들의 리뷰입니다.
-                핵심 의견을 중복 제거하여 아래 형식으로 요약해주세요:
+            형식:
+            - 장점: 2~3줄
+            - 단점: 1~2줄
+            
+            - 총평: 1줄
 
-                1) 고객들이 공통적으로 만족한 점 (2~3줄)
-                2) 개선되었으면 하는 점 (있다면 1~2줄)
-                3) 전체적인 총평 (1~2줄)
+            리뷰:
+            %s
+            """.formatted(cleaned);
 
-                리뷰 내용:
-                %s
-                """.formatted(reviewText);
 
         return geminiClient.requestSummary(prompt);
     }

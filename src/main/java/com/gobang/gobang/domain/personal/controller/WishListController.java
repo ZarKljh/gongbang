@@ -21,49 +21,38 @@ public class WishListController {
 
     @GetMapping
     public RsData<List<WishListResponse>> wishList() {
-        SiteUser siteUser = siteUserService.getCurrentUser();
-        List<WishListResponse> wishLists = wishListService.getWishListByUser(siteUser);
-        return RsData.of("200", "위시 다건 조회 성공", wishLists);
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "위시 다건 조회 성공",
+                wishListService.getWishListByUser(user));
     }
 
     @PostMapping
     public RsData<WishListResponse> addWishList(@RequestBody WishListRequest request) {
-        request.setSiteUser(siteUserService.getCurrentUser());
-        WishListResponse response = wishListService.addWishList(request);
-        return RsData.of("200", "위시 추가 성공", response);
+        SiteUser user = siteUserService.getCurrentUser();
+        request.setSiteUser(user);
+        return RsData.of("200", "위시 추가 성공",
+                wishListService.addWishList(request));
     }
 
     @DeleteMapping("/{wishlistId}")
     public RsData<Void> removeWishList(@PathVariable Long wishlistId) {
-        wishListService.removeWishList(wishlistId);
-        return RsData.of("200", "위시 삭제 성공");
-    }
-
-    @DeleteMapping
-    public RsData<Void> removeWishListByUserAndProduct(@RequestParam Long productId) {
-        SiteUser siteUser = siteUserService.getCurrentUser();
-        wishListService.removeWishListByUserAndProduct(siteUser, productId);
+        SiteUser user = siteUserService.getCurrentUser();
+        wishListService.removeWishList(wishlistId, user);
         return RsData.of("200", "위시 삭제 성공");
     }
 
     @GetMapping("/check")
     public RsData<Boolean> isWished(@RequestParam Long productId) {
-        SiteUser siteUser = siteUserService.getCurrentUser();
-        boolean isWished = wishListService.isWished(siteUser, productId);
-        return RsData.of("200", "위시 여부 확인 성공", isWished);
-    }
-
-    @GetMapping("/count/product")
-    public RsData<Long> getWishCount(@RequestParam Long productId) {
-        long count = wishListService.getWishCount(productId);
-        return RsData.of("200", "상품의 위시 개수 조회 성공", count);
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "위시 여부 확인 성공",
+                wishListService.isWished(user, productId));
     }
 
     @GetMapping("/count/user")
     public RsData<Long> getUserWishCount() {
-        SiteUser siteUser = siteUserService.getCurrentUser();
-        long count = wishListService.getUserWishCount(siteUser);
-        return RsData.of("200", "사용자의 위시 개수 조회 성공", count);
+        SiteUser user = siteUserService.getCurrentUser();
+        return RsData.of("200", "사용자의 위시 개수 조회 성공",
+                wishListService.getUserWishCount(user));
     }
 
     @GetMapping("/infinite")
@@ -72,8 +61,7 @@ public class WishListController {
             @RequestParam(defaultValue = "10") int size
     ) {
         SiteUser user = siteUserService.getCurrentUser();
-        List<WishListResponse> list = wishListService.getInfiniteWishlist(user, lastWishId, size);
-        return RsData.of("200", "위시리스트 무한스크롤 조회 성공", list);
+        return RsData.of("200", "위시리스트 무한스크롤 조회 성공",
+                wishListService.getInfiniteWishlist(user, lastWishId, size));
     }
-
 }

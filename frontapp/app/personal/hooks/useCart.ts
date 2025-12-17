@@ -18,6 +18,7 @@ export const useCart = () => {
 
     try {
       const { data } = await axios.get(`${API_BASE_URL}/cart`, {
+        params: { userId: userId },
         withCredentials: true,
       })
       const list = Array.isArray(data.data) ? data.data : []

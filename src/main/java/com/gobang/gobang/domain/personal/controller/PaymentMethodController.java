@@ -25,7 +25,7 @@ public class PaymentMethodController {
     @Operation(summary = "결제수단 목록 페이지")
     public RsData<List<PaymentMethodResponse>> paymentMethodList() {
         SiteUser siteUser = siteUserService.getCurrentUser();
-        List<PaymentMethodResponse> paymentMethods = paymentMethodService.getPaymentMethodsByUserId(siteUser);
+        List<PaymentMethodResponse> paymentMethods = paymentMethodService.getPaymentMethodsByUser(siteUser);
 
         return RsData.of("200", "결제수단 다건 조회 성공", paymentMethods);
     }
@@ -35,7 +35,7 @@ public class PaymentMethodController {
     public RsData<PaymentMethodResponse> createPaymentMethod(@RequestBody PaymentMethodRequest request) {
         SiteUser siteUser = siteUserService.getCurrentUser();
         request.setSiteUser(siteUser);
-        PaymentMethodResponse response = paymentMethodService.createPaymentMethod(request);
+        PaymentMethodResponse response = paymentMethodService.createPaymentMethod(request, siteUser);
         return RsData.of("200", "결제수단 등록 성공", response);
     }
 

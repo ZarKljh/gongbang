@@ -7,6 +7,7 @@ body {
 }
 
 /* 컨테이너 카드 상자 */
+/*
 .signup-container {
     width: 100%;
     max-width: 540px;
@@ -16,6 +17,23 @@ body {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+*/
+
+.signup-container {
+    height: calc(100vh - 180px);
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.form-container {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    width: 540px;
+    margin: 100px auto;
+    padding: 32px;
 }
 
 /* 페이지 제목 */

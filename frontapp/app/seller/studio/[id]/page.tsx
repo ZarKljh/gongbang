@@ -8,6 +8,9 @@ import ProductListScroll from '../components/productListScrollOfStudio'
 import api from '@/app/utils/api'
 //import useCurrentUser from '@/app/auth/common/useCurrentUser'
 
+//const API_BASE_URL = 'https://localhost:8090/api/v1'
+const API_BASE_URL = api.defaults.baseURL
+const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '') || ''
 export default function viewStudioInfo() {
     const params = useParams()
     const router = useRouter()
@@ -45,32 +48,6 @@ export default function viewStudioInfo() {
         mainImageUrl: '',
     })
     const [sellerProfileImage, setSellerProfileImage] = useState(null)
-
-    const fetchSellerProfileImage = async (userId) => {
-        try {
-            const response = await fetch(`http://localhost:8090/api/v1/image/profile/${userId}`, {
-                method: 'GET',
-                credentials: 'include',
-            })
-
-            if (!response.ok) {
-                throw new Error('프로필 이미지를 불러올 수 없습니다.')
-            }
-
-            // personal 페이지와 동일 — Blob 객체 생성
-            const blob = await response.blob()
-
-            // personal 페이지와 동일 — Blob URL 생성
-            const url = URL.createObjectURL(blob)
-
-            // 상태에 저장 → img src에 바로 반영됨
-            setSellerProfileImage(url)
-        } catch (error) {
-            console.error('셀러 프로필 이미지 로드 실패:', error)
-            setSellerProfileImage(null) // 실패 시 fallback 사용
-        }
-    }
-
     useEffect(() => {
         if (!studioId) {
             alert('공방정보를 확인할수 없습니다')
@@ -168,6 +145,31 @@ export default function viewStudioInfo() {
         //fetchProductList()
     }, [studioId])
 
+    const fetchSellerProfileImage = async (userId) => {
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/image/profile/${userId}`, {
+                method: 'GET',
+                credentials: 'include',
+            })
+
+            if (!response.ok) {
+                throw new Error('프로필 이미지를 불러올 수 없습니다.')
+            }
+
+            // personal 페이지와 동일 — Blob 객체 생성
+            const blob = await response.blob()
+
+            // personal 페이지와 동일 — Blob URL 생성
+            const url = URL.createObjectURL(blob)
+
+            // 상태에 저장 → img src에 바로 반영됨
+            setSellerProfileImage(url)
+        } catch (error) {
+            console.error('셀러 프로필 이미지 로드 실패:', error)
+            setSellerProfileImage(null) // 실패 시 fallback 사용
+        }
+    }
+
     return (
         <>
             <div className="studio-page">
@@ -176,7 +178,7 @@ export default function viewStudioInfo() {
                         <section className="studio-left studio-info">
                             <div className="studio-main-img">
                                 <img
-                                    src={`http://localhost:8090/images/${studio.studioMainImage.imageFileName}`}
+                                    src={`${IMAGE_BASE_URL}/images/${studio.studioMainImage.imageFileName}`}
                                     alt="공방대표사진"
                                     width="280"
                                     height="280"
@@ -186,7 +188,8 @@ export default function viewStudioInfo() {
                                 <div className="studio-info-header">
                                     <div className="studio-logo-img">
                                         <img
-                                            src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
+                                            //src={`https://api.gongyedam.shop/images/${studio.studioLogoImage.imageFileName}`}
+                                            src={`${IMAGE_BASE_URL}/images/${studio.studioLogoImage?.imageFileName}`}
                                             alt="공방로고사진"
                                         ></img>
                                     </div>

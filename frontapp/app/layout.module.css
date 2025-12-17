@@ -183,17 +183,19 @@ body {
     display: none;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 460px) {
     .Logo {
         width: 80px;
         height: 40px;
     }
 
     .FirstC {
-        width: 446px;
+        max-width: 446px;
         padding-top: 0px;
         position: relative;
         color: #6b5642;
+        margin: 0 auto;
+        padding: 10px 10px 0 10px;
     }
 
     .buttonGroup {

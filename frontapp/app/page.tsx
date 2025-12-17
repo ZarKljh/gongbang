@@ -25,6 +25,7 @@ export default function Main() {
     const [categories, setCategories] = useState<Category[]>([])
     const [subCategoriesByCat, setSubCategoriesByCat] = useState<Record<number, SubCategory[]>>({})
     const BASE_URL = 'http://localhost:8090'
+    //const BASE_URL = 'https://api.gongyedam.shop'
 
     useEffect(() => {
         fetchAll()

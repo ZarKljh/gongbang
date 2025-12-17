@@ -142,18 +142,28 @@ export const useWishlist = (
         withCredentials: true,
       })
 
+      const result = res.data?.data
+
+      if (!result) {
+        setRecommendItems([])
+        setRecommendMessage("")
+        return
+      }
+
       if (res.data?.data) {
         setRecommendItems(res.data.data.items)
         setRecommendMessage(res.data.data.aiMessage)
       }
+
+      setRecommendItems(result.items ?? [])
+      setRecommendMessage(result.aiMessage ?? "")
+
     } catch (err) {
       console.error("AI 추천 조회 실패:", err)
+      setRecommendItems([])
+      setRecommendMessage("")
     }
   }
-
-  useEffect(() => {
-    fetchRecommendList()
-  }, [])
 
   return {
     infiniteWishList,

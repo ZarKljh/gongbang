@@ -22,7 +22,6 @@ type SellerDeliveryDetail = {
 type UpdateDeliveryRequest = {
     courierName: string
     trackingNumber: string
-    deliveryStatus?: string
 }
 
 export default function SellerDeliveryEditPage() {
@@ -37,7 +36,6 @@ export default function SellerDeliveryEditPage() {
 
     const [courierName, setCourierName] = useState('')
     const [trackingNumber, setTrackingNumber] = useState('')
-    const [deliveryStatus, setDeliveryStatus] = useState('DELIVERING')
 
     const toNumber = (v: number | string | null | undefined) => {
         if (typeof v === 'number') return v
@@ -65,7 +63,6 @@ export default function SellerDeliveryEditPage() {
 
                 setCourierName(payload.courierName ?? '')
                 setTrackingNumber(payload.trackingNumber ?? '')
-                setDeliveryStatus(payload.deliveryStatus ?? 'DELIVERING')
             } catch (e: any) {
                 console.error('배송 정보 조회 실패:', e)
                 setError('배송 정보를 불러오지 못했습니다.')
@@ -89,7 +86,6 @@ export default function SellerDeliveryEditPage() {
         const body: UpdateDeliveryRequest = {
             courierName,
             trackingNumber,
-            deliveryStatus,
         }
 
         try {

@@ -4,6 +4,7 @@ import api from '@/app/utils/api'
 import { useEffect, useState } from 'react'
 import './section-topStudio.css'
 import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const API_BASE_URL = api.defaults.baseURL
 export const IMAGE_BASE_URL = 'http://localhost:8090'
@@ -56,9 +57,9 @@ export default function TopStudios() {
             <div className="sliderWrapper">
                 {/* 왼쪽 버튼 */}
                 {topStudio.length > 0 && (
-                    <button className="slideBtn prev" onClick={() => moveSlide(-1)}>
-                        &lt;
-                    </button>
+                    <div className="review-rank-prev slideBtn prev" onClick={() => moveSlide(-1)}>
+                        <ChevronLeft className="review-rank-btn-icon" size={26} strokeWidth={2.5} />
+                    </div>
                 )}
 
                 <div className="topStudioList" style={{ transform: `translateX(-${slideIndex * 100}%)` }}>
@@ -85,17 +86,17 @@ export default function TopStudios() {
 
                                 <div className="topStudioProductWrap">
                                     {studio.recentProducts.map((p) => (
-                                        <Link href={`/product/list/detail?productId=${p.productId}`} key={p.productId} className="topProductCardSmall">
+                                        <Link
+                                            href={`/product/list/detail?productId=${p.productId}`}
+                                            key={p.productId}
+                                            className="topProductCardSmall"
+                                        >
                                             <img
                                                 src={`${IMAGE_BASE_URL}${p.imageUrl}`}
                                                 alt={p.productName}
                                                 className="topProductImgSmall"
                                             />
-                                            <p 
-                                                className="topProductNameSmall"
-                                            >
-                                                {p.productName}
-                                            </p>
+                                            <p className="topProductNameSmall">{p.productName}</p>
                                             <p className="topProductsummary">{p.summary}</p>
                                         </Link>
                                     ))}
@@ -107,9 +108,9 @@ export default function TopStudios() {
 
                 {/* 오른쪽 버튼 */}
                 {topStudio.length > 0 && (
-                    <button className="slideBtn next" onClick={() => moveSlide(1)}>
-                        &gt;
-                    </button>
+                    <div className="review-rank-next slideBtn next" onClick={() => moveSlide(1)}>
+                        <ChevronRight className="review-rank-btn-icon" size={26} strokeWidth={2.5} />
+                    </div>
                 )}
             </div>
         </div>

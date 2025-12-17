@@ -16,7 +16,7 @@ public class GeminiClient {
     @Value("${gemini.api-key}")
     private String apiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public String requestSummary(String prompt) {
         String url =
@@ -62,5 +62,59 @@ public class GeminiClient {
                 (List<Map<String, Object>>) content.get("parts");
 
         return (String) parts.get(0).get("text");
+    }
+
+    public String generateText(String prompt) {
+
+        String url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+
+        Map<String, Object> body = Map.of(
+                "contents", List.of(
+                        Map.of(
+                                "role", "user",
+                                "parts", List.of(Map.of("text", prompt))
+                        )
+                )
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<Map> response =
+                    restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
+
+            return extractText(response.getBody());
+
+        } catch (Exception e) {
+            System.out.println("Gemini API Error: " + e.getMessage());
+            return null; // 실패 시 null 반환 → 기본 문구로 fallback 됨
+        }
+    }
+
+    private String extractText(Map response) {
+        if (response == null) return "";
+
+        try {
+            List candidates = (List) response.get("candidates");
+            if (candidates == null || candidates.isEmpty()) return "";
+
+            Map first = (Map) candidates.get(0);
+            Map content = (Map) first.get("content");
+            if (content == null) return "";
+
+            List parts = (List) content.get("parts");
+            if (parts == null || parts.isEmpty()) return "";
+
+            Map part = (Map) parts.get(0);
+            Object text = part.get("text");
+
+            return text != null ? text.toString() : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }

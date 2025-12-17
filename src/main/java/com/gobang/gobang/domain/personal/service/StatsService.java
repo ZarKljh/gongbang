@@ -2,6 +2,7 @@ package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.inquiry.repository.InquiryRepository;
+import com.gobang.gobang.domain.order.model.OrderStatus;
 import com.gobang.gobang.domain.personal.dto.response.StatsResponse;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
 import com.gobang.gobang.domain.review.repository.ReviewRepository;
@@ -24,10 +25,10 @@ public class StatsService {
         long totalQna = inquiryRepository.countByWriter_Id(user.getId());
 
         // 배송준비중: Orders 기준 전체 카운트
-        long preparing = ordersRepository.countByDeliveryStatus(user.getId(), "배송준비중");
+        long preparing = ordersRepository.countByDeliveryStatus(user.getId(), "배송준비중", OrderStatus.PAID);
 
         // 배송중: Orders 기준 전체 카운트
-        long shipping = ordersRepository.countByDeliveryStatus(user.getId(), "배송중");
+        long shipping = ordersRepository.countByDeliveryStatus(user.getId(), "배송중", OrderStatus.PAID);
 
         // 배송완료: 최근 7일 Orders 기준 카운트
         long completed = ordersRepository.countCompletedWithin7Days(user.getId(), LocalDateTime.now().minusDays(7));

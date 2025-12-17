@@ -1,20 +1,23 @@
 package com.gobang.gobang.domain.personal.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
 import com.gobang.gobang.domain.personal.dto.response.RecommendResponse;
 import com.gobang.gobang.domain.personal.entity.WishList;
 import com.gobang.gobang.domain.personal.repository.WishListRepository;
+import com.gobang.gobang.domain.product.category.repository.CategoryRepository;
 import com.gobang.gobang.domain.product.entity.Category;
 import com.gobang.gobang.domain.product.entity.Product;
-import com.gobang.gobang.domain.product.entity.Subcategory;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,80 +26,85 @@ public class RecommendService {
 
     private final WishListRepository wishListRepository;
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final AiMessageService aiMessageService;
     private final ImageRepository imageRepository;
+    private final SiteUserService siteUserService;
 
     public RecommendResponse getWishlistRecommend(Long userId) {
 
-        // 최근 위시 가져오기
-        List<WishList> recentWish =
-                wishListRepository.findTop10BySiteUser_IdOrderByCreatedAtDesc(userId);
+        LocalDateTime monthAgo = LocalDateTime.now().minusMonths(1);
 
-        if (recentWish.isEmpty()) {
-            return new RecommendResponse(Collections.emptyList(), "");
-        }
+        SiteUser user = siteUserService.getCurrentUser();
+        List<WishList> wishInMonth =
+                wishListRepository.findBySiteUserAndCreatedAtAfter(user, monthAgo);
 
-        Product base = recentWish.get(0).getProduct();
+        List<Product> candidates;
+        List<String> categoryNames = List.of();
+        String message;
 
-        Long baseCategoryId = base.getCategoryId();
-        Subcategory baseSub = base.getSubcategory();
-        Set<Category> extraCategories = base.getCategory();
+        if (wishInMonth.isEmpty()) {
+            candidates = productRepository
+                    .findPopularProducts(PageRequest.of(0, 30)); // ⭐ 좋아요 없어도 상품 나와야 함 (LEFT JOIN)
 
-        //  recommendedProducts 스코프 선언
-        List<Product> recommendedProducts = new ArrayList<>();
-
-        // 서브카테고리 기반 추천
-        if (baseSub != null) {
-            List<Product> subList =
-                    productRepository.findTop12BySubcategory_IdAndActiveIsTrueOrderByCreatedDateDesc(
-                            baseSub.getId()
-                    );
-            recommendedProducts.addAll(subList);
-        }
-
-        // 기본 카테고리 기반
-        if (recommendedProducts.size() < 8 && baseCategoryId != null) {
-            List<Product> categoryList =
-                    productRepository.findTop12ByCategoryIdAndActiveIsTrueOrderByCreatedDateDesc(baseCategoryId);
-            mergeWithoutDup(recommendedProducts, categoryList);
-        }
-
-        // product_category_map 기반 확장 추천
-        if (recommendedProducts.size() < 8 && extraCategories != null) {
-            for (Category c : extraCategories) {
-                List<Product> extraList =
-                        productRepository.findTop12ByCategory_CodeAndActiveIsTrueOrderByCreatedDateDesc(
-                                c.getCode()
-                        );
-                mergeWithoutDup(recommendedProducts, extraList);
+            if (candidates.isEmpty()) {
+                return new RecommendResponse(
+                        Collections.emptyList(),
+                        "추천할 상품이 아직 없습니다."
+                );
             }
-        }
 
-        // 자신 제외
-        recommendedProducts.removeIf(p -> p.getId().equals(base.getId()));
+            message = "최근 좋아요 기록이 없어 인기 상품을 추천드려요.";
+        } else {
+            // 1) 카테고리 빈도 계산
+            Map<Long, Long> categoryCounts = wishInMonth.stream()
+                    .collect(Collectors.groupingBy(
+                            w -> w.getProduct().getCategoryId(),
+                            Collectors.counting()
+                    ));
 
-        if (recommendedProducts.isEmpty()) {
-            return new RecommendResponse(Collections.emptyList(), "");
-        }
+            // 2) 상위 3개 카테고리
+            List<Long> topCategories = categoryCounts.entrySet().stream()
+                    .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                    .limit(3)
+                    .map(Map.Entry::getKey)
+                    .toList();
 
-        // AI 메시지 생성
-        String aiMessage = aiMessageService.generateCategoryMessage(base, baseSub);
+            // 3) 카테고리 이름 조회
+            categoryNames = categoryRepository.findAllById(topCategories)
+                    .stream()
+                    .map(Category::getName)
+                    .toList();
 
-        if (recommendedProducts.size() < 10) {
-            List<Product> fallback = productRepository.findTop20ByActiveIsTrueOrderByCreatedDateDesc();
+            // 4) 추천 상품 조회
+            candidates =
+                    productRepository.findRecommendProducts(topCategories, PageRequest.of(0, 30));
 
-            mergeWithoutDup(recommendedProducts, fallback);
-        }
-
-        return RecommendResponse.from(recommendedProducts, aiMessage, imageRepository);
-    }
-
-    private void mergeWithoutDup(List<Product> base, List<Product> add) {
-        Set<Long> exist = base.stream().map(Product::getId).collect(Collectors.toSet());
-        for (Product p : add) {
-            if (!exist.contains(p.getId())) {
-                base.add(p);
+            if (candidates.isEmpty()) {
+                return new RecommendResponse(Collections.emptyList(),
+                        "선호 카테고리에 해당하는 상품이 아직 없습니다.");
             }
+
+            // 7) AI 문구 생성 (자동 캐싱 + 실패 시 기본 문구)
+            message = aiMessageService.generateCategoryRecommendMessage(userId, categoryNames);
         }
+
+        // 상품 ID 리스트
+        List<Long> productIds = candidates.stream()
+                .map(Product::getId)
+                .toList();
+
+        // 이미지 맵 생성 (productId → fileName)
+        Map<Long, String> imageMap = imageRepository
+                .findFirstImagesByProductIds(productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> ((Number) row[0]).longValue(),
+                        row -> (String) row[1],
+                        (a, b) -> a
+                ));
+
+        // 8) 최종 Response 변환
+        return RecommendResponse.from(candidates, message, imageMap);
     }
 }
