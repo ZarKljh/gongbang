@@ -41,4 +41,4 @@ delivery-tracker:
 
 
 custom:
-  genFileDirPath: C://work//gongbangImg
+  genFileDirPath: /temp/images/
