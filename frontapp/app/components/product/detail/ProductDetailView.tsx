@@ -142,11 +142,9 @@ export default function ProductDetailView() {
 
     const pdImageUrl = detailImage
         ? `${BASE_URL}${detailImage.imageUrl}`
-        : `${BASE_URL}/uploads/products/no-image-soft.png`
+        : `${BASE_URL}/images/initImg/no-image-soft.png`
 
-    const gbImageUrl = gbLogo
-        ? `${BASE_URL}/images/${gbLogo.imageUrl}`
-        : `${BASE_URL}/uploads/products/no-image-soft.png`
+    const gbImageUrl = gbLogo ? `${BASE_URL}/images/${gbLogo.imageUrl}` : `${BASE_URL}/images/initImg/no-image-soft.png`
 
     const unitPrice = useMemo(() => product?.basePrice ?? 0, [product])
     const total = unitPrice * count

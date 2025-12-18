@@ -608,7 +608,7 @@ export default function Product() {
                                                         src={
                                                             p.images && p.images.length > 0
                                                                 ? p.images[0].imageUrl
-                                                                : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                                : `${BASE_URL}/images/initImg/no-image-soft.png`
                                                         }
                                                         alt={p.name}
                                                     />
@@ -663,7 +663,7 @@ export default function Product() {
                                                                 src={
                                                                     p.images && p.images.length > 0
                                                                         ? p.images[0].imageUrl
-                                                                        : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                                        : `${BASE_URL}/images/initImg/no-image-soft.png`
                                                                 }
                                                                 alt={p.name}
                                                             />
