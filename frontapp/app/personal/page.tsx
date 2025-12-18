@@ -19,8 +19,8 @@ import { useQna } from '@/app/personal/hooks/useQna'
 import { useReviews } from '@/app/personal/hooks/useReviews'
 import { useWishlist } from '@/app/personal/hooks/useWishlist'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
-export const IMAGE_BASE_URL = 'http://localhost:8090'
+const API_BASE_URL = `${api.defaults.baseURL}`
+// export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 interface Stats {
   totalQna: number
@@ -297,7 +297,7 @@ export default function MyPage() {
     // =============== 사용자 정보 조회 ===============
     const fetchUser = async () => {
         try {
-        const { data } = await axios.get(`${API_BASE_URL}/me`, {
+        const { data } = await axios.get(`${API_BASE_URL}/mypage/me`, {
             withCredentials: true,
         })
 
@@ -363,7 +363,7 @@ export default function MyPage() {
 
     // =============== 통계 계산 ===============
     const fetchStats = async (userId: number) => {
-        const res = await axios.get(`${API_BASE_URL}/stats`, {
+        const res = await axios.get(`${API_BASE_URL}/mypage/stats`, {
             params: { userId },
             withCredentials: true,
         })
@@ -514,7 +514,7 @@ export default function MyPage() {
 
         try {
         const res = await axios.post(
-            `${API_BASE_URL}/cart/prepare`,
+            `${API_BASE_URL}/mypage/cart/prepare`,
             {
             items: pendingOrderItems,
             addressId: selectedAddress.userAddressId,
@@ -591,7 +591,7 @@ export default function MyPage() {
         } catch (e: any) {
         try {
             await axios.post(
-            `${API_BASE_URL}/orders/cancel-before-payment`,
+            `${API_BASE_URL}/mypage/orders/cancel-before-payment`,
             { orderCode },
             { withCredentials: true },
             )
@@ -620,7 +620,7 @@ export default function MyPage() {
             const cartIds = JSON.parse(stored)
 
             axios
-            .delete(`${API_BASE_URL}/cart/after-order`, {
+            .delete(`${API_BASE_URL}/mypage/cart/after-order`, {
                 data: { cartIds },
                 withCredentials: true,
             })
@@ -821,7 +821,7 @@ export default function MyPage() {
                                                 <img
                                                     src={
                                                         previewProfileImage ||
-                                                        stats.profileImageUrl || `${IMAGE_BASE_URL}${stats.profileImageUrl}` // 서버 이미지
+                                                        stats.profileImageUrl || `${API_BASE_URL}${stats.profileImageUrl}` // 서버 이미지
                                                     }
                                                     onError={(e) => {
                                                         e.currentTarget.src = "/images/default_profile.jpg"
@@ -907,7 +907,7 @@ export default function MyPage() {
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
                                                     <img
                                                         key={idx}
-                                                        src={`${IMAGE_BASE_URL}${item.imageUrl}`}
+                                                        src={`${API_BASE_URL}${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 ))}
@@ -1052,7 +1052,7 @@ export default function MyPage() {
 
                                                 <div className="cart-image">
                                                     <img 
-                                                        src={`${IMAGE_BASE_URL}${item.imageUrl}`}
+                                                        src={`${API_BASE_URL}${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 </div>
@@ -1432,7 +1432,7 @@ export default function MyPage() {
                                                     }}
                                                 >
                                                     <img
-                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : "/no-image.png"}
+                                                        src={item.imageUrl ? `${API_BASE_URL}${item.imageUrl}` : "/no-image.png"}
                                                         className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
                                                         alt={item.productName}
                                                         draggable={false}
@@ -1463,7 +1463,7 @@ export default function MyPage() {
                                                     <div className="wishlist-image">
                                                         <img 
                                                             src={item.imageUrl
-                                                                ? `${IMAGE_BASE_URL}${item.imageUrl}`
+                                                                ? `${API_BASE_URL}${item.imageUrl}`
                                                                 : "/no-image.png"}
                                                             alt={item.productName}
                                                         />
@@ -1503,7 +1503,7 @@ export default function MyPage() {
                                                     <div className="studio-info">
                                                         {follow.studioImageUrl ? (
                                                             <img 
-                                                                src={`${IMAGE_BASE_URL}${follow.studioImageUrl}`}
+                                                                src={`${API_BASE_URL}${follow.studioImageUrl}`}
                                                                 alt={follow.studioName}
                                                                 className="studio-image"
                                                             />
@@ -1554,7 +1554,7 @@ export default function MyPage() {
                                                     {review.images.map((url, i) => (
                                                         <img
                                                             key={i}
-                                                            src={`${IMAGE_BASE_URL}${url}`}
+                                                            src={`${API_BASE_URL}${url}`}
                                                             alt={`리뷰 이미지 ${i + 1}`}
                                                             className="review-image-item"
                                                         />
@@ -2282,7 +2282,7 @@ export default function MyPage() {
                                     <img
                                         src={
                                             firstSelectedItem?.imageUrl
-                                                ? `${IMAGE_BASE_URL}${firstSelectedItem.imageUrl}`
+                                                ? `${API_BASE_URL}${firstSelectedItem.imageUrl}`
                                                 : "/default-product.png"
                                         }
                                         alt="장바구니 대표 이미지"
