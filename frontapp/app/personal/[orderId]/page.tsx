@@ -407,7 +407,7 @@ export default function OrderDetailPage() {
                             <img src={`${API_BASE_URL}${item.imageUrl}`} alt={item.productName} />
                             <div>
                                 <Link
-                                    href={`http://localhost:3000/product/list/detail?productId=${item.productId}`}
+                                    href={`/product/list/detail?productId=${item.productId}`}
                                     className="my-review-product-name"
                                 >
                                     <p className="item-name">{item.productName}</p>

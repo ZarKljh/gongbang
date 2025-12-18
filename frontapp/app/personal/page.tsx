@@ -1543,7 +1543,7 @@ export default function MyPage() {
                                     {infiniteReviews.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()).map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
-                                                <Link href={`http://localhost:3000/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
+                                                <Link href={`/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
                                                     {review.productName}
                                                 </Link>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
