@@ -6,30 +6,36 @@ import { usePathname } from 'next/navigation'
 import { api } from '@/app/utils/api'
 import styles from '@/app/admin/styles/MySection.module.css'
 
+type MeResponse = {
+    data?: {
+        role?: string
+        siteUser?: { role?: string }
+        siteUserDto?: { role?: string }
+    }
+}
+
 export default function AdminNavButton() {
     const [isAdmin, setIsAdmin] = useState(false)
     const [checked, setChecked] = useState(false)
-    const pathname = usePathname() // ✅ 현재 경로
+    const pathname = usePathname()
 
     useEffect(() => {
         let cancelled = false
 
-        async function checkRole() {
+        const checkRole = async () => {
             try {
                 setChecked(false)
 
-                const res = await api.get('/auth/me', {
-                    withCredentials: true,
-                    headers: {
-                        'Cache-Control': 'no-store', // 혹시 모를 캐시 방지
-                    },
+                // ✅ api.ts에서 baseURL(/api/v1) + withCredentials 설정되어 있다는 전제
+                const res = await api.get<MeResponse>('/auth/me', {
+                    headers: { 'Cache-Control': 'no-store' },
                 })
 
-                const data = res.data
-                const role = data?.data?.role || data?.data?.siteUser?.role || data?.data?.siteUserDto?.role
+                const role =
+                    res.data?.data?.role ?? res.data?.data?.siteUser?.role ?? res.data?.data?.siteUserDto?.role ?? ''
 
                 if (!cancelled) {
-                    setIsAdmin(role === 'ADMIN')
+                    setIsAdmin(role === 'ADMIN' || role === 'ROLE_ADMIN')
                     setChecked(true)
                 }
             } catch (err) {
@@ -46,7 +52,6 @@ export default function AdminNavButton() {
         return () => {
             cancelled = true
         }
-        // 경로가 바뀔 때마다 다시 체크
     }, [pathname])
 
     if (!checked) return null

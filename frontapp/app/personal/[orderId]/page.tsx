@@ -7,8 +7,8 @@ import '@/app/personal/[orderId]/page.css'
 import Link from 'next/link'
 import api from '@/app/utils/api'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
-export const IMAGE_BASE_URL = 'http://localhost:8090'
+const API_BASE_URL = `${api.defaults.baseURL}`
+// export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 // ===== 타입 정의 =====
 type DeliveryDto = {
@@ -207,7 +207,7 @@ export default function OrderDetailPage() {
         setLoading(true)
         try {
             // 1) 주문 상세
-            const orderRes = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {
+            const orderRes = await axios.get(`${API_BASE_URL}/mypage/orders/${orderId}`, {
                 withCredentials: true,
             })
             const orderData: OrderDetailDto = orderRes.data.data
@@ -215,7 +215,7 @@ export default function OrderDetailPage() {
 
             // 2) 배송 추적 (실패해도 주문 상세는 그대로 보여줌)
             try {
-                const trackingRes = await axios.get(`${API_BASE_URL}/orders/${orderId}/tracking`, {
+                const trackingRes = await axios.get(`${API_BASE_URL}/mypage/orders/${orderId}/tracking`, {
                     withCredentials: true,
                 })
                 if (trackingRes.data.resultCode === '200') {
@@ -263,7 +263,7 @@ export default function OrderDetailPage() {
         if (!validateReason()) return
         try {
             const { data } = await axios.patch(
-                `${API_BASE_URL}/orders/${orderId}/cancel`,
+                `${API_BASE_URL}/mypage/orders/${orderId}/cancel`,
                 { reason: reasonText },
                 { withCredentials: true },
             )
@@ -282,7 +282,7 @@ export default function OrderDetailPage() {
         if (!validateReason()) return
         try {
             const { data } = await axios.patch(
-                `${API_BASE_URL}/orders/${orderId}/return`,
+                `${API_BASE_URL}/mypage/orders/${orderId}/return`,
                 { reason: reasonText },
                 { withCredentials: true },
             )
@@ -301,7 +301,7 @@ export default function OrderDetailPage() {
         if (!validateReason()) return
         try {
             const { data } = await axios.patch(
-                `${API_BASE_URL}/orders/${orderId}/exchange`,
+                `${API_BASE_URL}/mypage/orders/${orderId}/exchange`,
                 { reason: reasonText },
                 { withCredentials: true },
             )
@@ -404,14 +404,14 @@ export default function OrderDetailPage() {
                 <div className="order-items-list">
                     {order.items?.map((item) => (
                         <div key={item.orderItemId} className="order-detail-item">
-                            <img src={`${IMAGE_BASE_URL}${item.imageUrl}`} alt={item.productName} />
+                            <img src={`${API_BASE_URL}${item.imageUrl}`} alt={item.productName} />
                             <div>
                                 <Link
-                                    href={`http://localhost:3000/product/list/detail?productId=${item.productId}`}
+                                    href={`/product/list/detail?productId=${item.productId}`}
                                     className="my-review-product-name"
                                 >
                                     <p className="item-name">{item.productName}</p>
-                                </Link>
+                                </Link> 
                                 <p>
                                     {item.price.toLocaleString()}원 / {item.quantity}개
                                 </p>

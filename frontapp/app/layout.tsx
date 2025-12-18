@@ -33,21 +33,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </head>
             <body>
                 {/* 1) Chatling 설정: embed.js보다 먼저 실행되어야 함 */}
-                <Script
-                    id="chatling-config"
-                    strategy="beforeInteractive"
-                    dangerouslySetInnerHTML={{
-                        __html: `window.chtlConfig = { chatbotId: "9369741529" };`,
-                    }}
-                />
+                <Script id="chatling-config" strategy="afterInteractive">
+                    {`window.chtlConfig = { chatbotId: "9369741529" };`}
+                </Script>
 
                 {/* 2) Chatling 로더 */}
+
                 <Script
-                    id="chatling-embed"
-                    strategy="afterInteractive"
+                    id="chatling-script"
                     src="https://chatling.ai/js/embed.js"
-                    data-id="9369741529"
+                    strategy="afterInteractive"
                     async
+                    data-id="9369741529"
                 />
                 <NavWrapper />
 

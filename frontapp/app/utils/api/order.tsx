@@ -20,6 +20,13 @@ export interface ConfirmOrderRequest {
     amount: number
 }
 
+export interface ConfirmCartOrderRequest {
+  orderCode: string;
+  paymentKey: string;
+  amount: number;
+  cartIds: number[];
+}
+
 // 서버에서 받는 승인 결과 (RsData 포함)
 export interface ConfirmOrderResponse {
     orderId: string
@@ -73,6 +80,11 @@ export const confirmOrder = async (body: ConfirmOrderRequest) => {
     return res.data // RsData 반환
 }
 
+export const confirmCartOrder = async (body: ConfirmCartOrderRequest) => {
+  const res = await api.post('payments/cart/confirm', body)
+  return res.data
+}
+
 /* ------------------------------
     React Query 훅
 ------------------------------ */
@@ -81,4 +93,29 @@ export const useConfirmOrder = () => {
     return useMutation({
         mutationFn: confirmOrder,
     })
+}
+
+export const useConfirmCartOrder = () => {
+    return useMutation({
+        mutationFn: confirmCartOrder,
+    })
+}
+
+export function cleanOrderCode(raw: string): string {
+    if (!raw) return raw
+
+    let code = raw
+
+    // case 1: toss가 앞에 "1" 붙여서 보내는 경우 있음
+    if (/^1ORD-/.test(code)) {
+        code = code.substring(1)
+    }
+
+    // case 2: toss가 뒤에 "tgen_xx" 붙여 보내는 경우 있음
+    const idx = code.indexOf("tgen_")
+    if (idx !== -1) {
+        code = code.substring(0, idx)
+    }
+
+    return code
 }

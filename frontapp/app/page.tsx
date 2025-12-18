@@ -85,7 +85,7 @@ export default function Main() {
             {/* 배너 */}
             <div className={styles.pageContainer}>
                 <div className={styles.heroBanner}>
-                    <img src={`${BASE_URL}/uploads/banner3.png`} alt="메인 배너입니다" />
+                    <img src={`${BASE_URL}/images/initImg/banner3.png`} alt="메인 배너" />
                 </div>
             </div>
             {/* 카테고리 */}
@@ -108,7 +108,10 @@ export default function Main() {
                                         prefetch={false}
                                     >
                                         <img
-                                            src={`${BASE_URL}/uploads/c${String(index + 1).padStart(2, '0')}.png`}
+                                            src={`${BASE_URL}/images/initImg/c${String(index + 1).padStart(
+                                                2,
+                                                '0',
+                                            )}.png`}
                                             alt={cat.name}
                                         />
                                     </Link>

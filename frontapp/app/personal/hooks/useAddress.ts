@@ -4,7 +4,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import api from '@/app/utils/api'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 export const useAddress = (userId: number) => {
   // ===== 배송지 리스트 =====
@@ -51,7 +51,7 @@ export const useAddress = (userId: number) => {
     if (!targetUserId) return
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/addresses?userId=${targetUserId}`, {
+      const response = await axios.get(`${API_BASE_URL}/mypage/addresses?userId=${targetUserId}`, {
         withCredentials: true,
       })
       const cleaned = flattenAddresses(response.data?.data || [])
@@ -83,7 +83,7 @@ export const useAddress = (userId: number) => {
     const payload = { ...newAddress, isDefault: isDefaultFlag }
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/addresses`, payload, {
+      const { data } = await axios.post(`${API_BASE_URL}/mypage/addresses`, payload, {
         withCredentials: true,
       })
 
@@ -109,7 +109,7 @@ export const useAddress = (userId: number) => {
 
     try {
       const { data } = await axios.patch(
-        `${API_BASE_URL}/addresses/${editAddressData.userAddressId}`,
+        `${API_BASE_URL}/mypage/addresses/${editAddressData.userAddressId}`,
         payload,
         { withCredentials: true },
       )
@@ -132,7 +132,7 @@ export const useAddress = (userId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
 
     try {
-      const { data } = await axios.delete(`${API_BASE_URL}/addresses/${addressId}`, {
+      const { data } = await axios.delete(`${API_BASE_URL}/mypage/addresses/${addressId}`, {
         withCredentials: true,
       })
 

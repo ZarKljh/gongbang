@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import api from '@/app/utils/api'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 
 export const useCart = () => {
@@ -14,10 +14,8 @@ export const useCart = () => {
 
   // 장바구니 불러오기
   const fetchCart = async (userId?: number) => {
-    if (!userId) return
-
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/cart`, {
+      const { data } = await axios.get(`${API_BASE_URL}/mypage/cart`, {
         params: { userId: userId },
         withCredentials: true,
       })
@@ -33,7 +31,7 @@ export const useCart = () => {
   const handleUpdateCart = async (cartId: number, quantity: number) => {
     try {
       const { data } = await axios.patch(
-        `${API_BASE_URL}/cart/${cartId}?quantity=${quantity}`,
+        `${API_BASE_URL}/mypage/cart/${cartId}?quantity=${quantity}`,
         {},
         { withCredentials: true }
       )
@@ -54,7 +52,7 @@ export const useCart = () => {
   // 삭제
   const handleDeleteCart = async (cartId: number) => {
     try {
-      await axios.delete(`${API_BASE_URL}/cart/${cartId}`, {
+      await axios.delete(`${API_BASE_URL}/mypage/cart/${cartId}`, {
         withCredentials: true,
       })
 

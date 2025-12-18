@@ -127,4 +127,17 @@ public class Orders {
         this.paymentMethodName = methodName;
         this.paidAt = LocalDateTime.now();
     }
+
+    public void markFailed() {
+        this.status = OrderStatus.FAILED;
+    }
+
+    public void markPending() {
+        this.status = OrderStatus.PENDING;
+    }
+
+    public void markCancelled(String reason) {
+        this.status = OrderStatus.CANCELLED;
+        this.reason = reason;
+    }
 }

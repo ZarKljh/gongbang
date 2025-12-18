@@ -3,11 +3,8 @@ package com.gobang.gobang.domain.personal.controller;
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.auth.service.SiteUserService;
 import com.gobang.gobang.domain.personal.dto.request.CartDeleteRequest;
-import com.gobang.gobang.domain.personal.dto.request.CartOrderRequest;
 import com.gobang.gobang.domain.personal.dto.request.CartRequest;
-import com.gobang.gobang.domain.personal.dto.request.PaymentConfirmRequest;
 import com.gobang.gobang.domain.personal.dto.response.CartResponse;
-import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
 import com.gobang.gobang.domain.personal.service.CartService;
 import com.gobang.gobang.domain.personal.service.OrdersService;
 import com.gobang.gobang.domain.personal.service.PaymentService;
@@ -73,32 +70,10 @@ public class CartController {
                 cartService.getCartCount(user));
     }
 
-    @PostMapping("/prepare")
-    public RsData<PrepareOrderResponse> prepareCartOrder(
-            @RequestBody CartOrderRequest request
-    ) {
-        SiteUser user = siteUserService.getCurrentUser();
-        return RsData.of("200", "장바구니 주문 준비 성공",
-                orderService.prepareCartOrder(
-                        user,
-                        request.getItems(),
-                        request.getAddressId()
-                ));
-    }
-
     @DeleteMapping("/after-order")
     public RsData<Void> deletePurchasedItems(@RequestBody CartDeleteRequest request) {
         SiteUser user = siteUserService.getCurrentUser();
         cartService.deletePurchasedItems(user, request.getCartIds());
         return RsData.of("200", "구매한 상품 장바구니 삭제 완료");
-    }
-
-    @PostMapping("/payment/confirm")
-    public RsData<Void> confirmPayment(
-            @RequestBody PaymentConfirmRequest request
-    ) {
-        SiteUser user = siteUserService.getCurrentUser();
-        paymentService.confirm(request, user);
-        return RsData.of("200", "결제 완료");
     }
 }

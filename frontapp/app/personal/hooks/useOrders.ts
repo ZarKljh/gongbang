@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import api from "@/app/utils/api"
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 export const useOrders = () => {
   const [orders, setOrders] = useState<any[]>([])
@@ -33,7 +33,7 @@ export const useOrders = () => {
   // API - 전체 주문 조회
   const fetchOrders = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/orders`, { withCredentials: true })
+      const res = await axios.get(`${API_BASE_URL}/mypage/orders`, { withCredentials: true })
       setOrders(res.data.data || [])
     } catch (e) {
       console.error("전체 주문 조회 실패:", e)
@@ -71,7 +71,7 @@ export const useOrders = () => {
     setInfiniteOrdersLoading(true)
 
     try {
-      const res = await axios.get(`${API_BASE_URL}/orders/infinite`, {
+      const res = await axios.get(`${API_BASE_URL}/mypage/orders/infinite`, {
         params: { lastOrderId: lastId || undefined, size: SIZE },
         withCredentials: true,
       })

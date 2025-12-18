@@ -1,5 +1,9 @@
 package com.gobang.gobang.domain.report.service;
 
+import com.gobang.gobang.domain.auth.entity.SiteUser;
+import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
+import com.gobang.gobang.domain.notification.entity.Notification;
+import com.gobang.gobang.domain.notification.repository.NotificationRepository;
 import com.gobang.gobang.domain.report.dto.ReportRequest;
 import com.gobang.gobang.domain.report.dto.ReportStatusUpdateRequest;
 import com.gobang.gobang.domain.report.entity.Report;
@@ -19,6 +23,9 @@ import java.util.List;
 public class ReportService {
 
     private final ReportRepository reportRepository;
+
+    private final SiteUserRepository siteUserRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public Report create(ReportRequest req) {
@@ -54,9 +61,27 @@ public class ReportService {
         if (req.handledByAdminId() != null) {
             r.setHandledByAdminId(req.handledByAdminId());
         }
-        if (req.status() == ReportStatus.RESOLVED || req.status() == ReportStatus.REJECTED) {
+
+        boolean handled = (req.status() == ReportStatus.RESOLVED || req.status () == ReportStatus.REJECTED);
+
+        if (handled) {
             r.setHandledAt(LocalDateTime.now());
+
+            SiteUser user = siteUserRepository.findByUserName(r.getReporterUserName())
+                    .or(() -> siteUserRepository.findByEmail(r.getReporterEmail()))
+                    .orElse(null);
+
+            if (user != null) {
+                Notification n = new Notification(
+                        user,
+                        "신고가 처리되었습니다.",
+                        null
+                );
+                notificationRepository.save(n);
+            }
         }
+
+
         return r;
     }
 

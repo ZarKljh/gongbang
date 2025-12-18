@@ -221,7 +221,7 @@ export default function Review() {
         const allReviewImages = photoReviews.flatMap((review) =>
             (review.imageUrls ?? []).map((url) => ({
                 reviewId: review.reviewId,
-                img: `http://localhost:8090${url}`,
+                img: `https://api.gongyedam.shop/images/${url}`,
             })),
         )
 
@@ -586,7 +586,7 @@ export default function Review() {
                                 <SwiperSlide key={r.reviewId}>
                                     <div className="photoCard" onClick={openPhotoModal}>
                                         {r.imageUrls?.[0] && (
-                                            <img src={`http://localhost:8090${r.imageUrls[0]}`} alt="" />
+                                            <img src={`https://api.gongyedam.shop/images/${r.imageUrls[0]}`} alt="" />
                                         )}
                                         <p>{r.title}</p>
                                     </div>
@@ -759,7 +759,7 @@ export default function Review() {
                                                 <img
                                                     src={
                                                         review.profileImageUrl
-                                                            ? `http://localhost:8090${review.profileImageUrl}`
+                                                            ? `https://api.gongyedam.shop/images/${review.profileImageUrl}`
                                                             : '/images/default_profile.jpg'
                                                     }
                                                     alt="프로필"
@@ -826,7 +826,7 @@ export default function Review() {
                                             <p className="review-content-text">{review.content}</p>
                                             {review.imageUrls && review.imageUrls.length > 0 && (
                                                 <img
-                                                    src={`http://localhost:8090${review.imageUrls[0]}`}
+                                                    src={`https://api.gongyedam.shop/images/${review.imageUrls[0]}`}
                                                     alt="리뷰 이미지"
                                                     className="review-image"
                                                 />

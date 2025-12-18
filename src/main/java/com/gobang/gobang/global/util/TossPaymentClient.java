@@ -11,7 +11,7 @@ import java.util.Base64;
 @Component
 public class TossPaymentClient {
 
-    @Value("${toss.secret-key}")
+    @Value("${custom.payment.secret-key}")
     private String secretKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
