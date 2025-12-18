@@ -12,7 +12,7 @@ on:
       - 'main'
 
 env:
-  IMAGE_NAME:  # 이미지 이름 설정
+  IMAGE_NAME:  gb-backend
 
 jobs:
   makeTagAndRelease:
@@ -61,7 +61,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }},
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }}
             ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
 
   deploy:
