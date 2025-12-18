@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Modal from '@/app/admin/components/Modal'
 import { api } from '@/app/utils/api'
 import styles from '@/app/admin/styles/MySection.module.css'
@@ -14,6 +14,22 @@ type Me = {
     role?: string
 }
 
+type MeResponse = {
+    data?: {
+        id?: number
+        email?: string
+        userName?: string
+        fullName?: string
+        nickName?: string
+        role?: string
+        // 안전망(기존 구조 대응)
+        siteUser?: Me
+        siteUserDto?: Me
+    }
+}
+
+type InquiryType = 'ACCOUNT' | 'PAYMENT' | 'CONTENT' | 'BUG' | 'FEATURE' | 'BUSINESS' | 'OTHER'
+
 export default function ClientNav() {
     const [open, setOpen] = useState(false)
 
@@ -22,8 +38,12 @@ export default function ClientNav() {
     const [meError, setMeError] = useState<string | null>(null)
 
     // 폼 상태
-    const [form, setForm] = useState({
-        type: 'OTHER' as 'ACCOUNT' | 'PAYMENT' | 'CONTENT' | 'BUG' | 'FEATURE' | 'BUSINESS' | 'OTHER',
+    const [form, setForm] = useState<{
+        type: InquiryType
+        title: string
+        content: string
+    }>({
+        type: 'OTHER',
         title: '',
         content: '',
     })
@@ -40,33 +60,58 @@ export default function ClientNav() {
         return () => clearTimeout(t)
     }, [doneMsg])
 
-    const disabled = submitting || !me?.email || !form.title.trim() || !form.content.trim()
+    const disabled = useMemo(() => {
+        return submitting || !me?.email || !form.title.trim() || !form.content.trim()
+    }, [submitting, me?.email, form.title, form.content])
+
+    const displayName = useMemo(() => {
+        return (me?.nickName || me?.fullName || me?.userName || '').toString()
+    }, [me])
+
+    const redirectToLogin = () => {
+        window.location.href = '/auth/login/user'
+    }
+
+    const extractMe = (raw: any): Me | null => {
+        // 1) 표준: raw.data.data (RsData) 형태
+        const d = raw?.data?.data ?? raw?.data
+
+        // 2) 안전망: siteUser/siteUserDto 래핑
+        const candidate: any = d?.siteUser ?? d?.siteUserDto ?? d
+
+        if (candidate && typeof candidate === 'object' && candidate.email) {
+            return candidate as Me
+        }
+        return null
+    }
 
     // ✅ 1:1 문의하기 버튼 클릭 시 로그인 체크
     const handleOpenClick = async () => {
         try {
             setMeError(null)
 
-            const r = await api.get('/auth/me', {
+            const r = await api.get<MeResponse>('/auth/me', {
                 headers: { 'Cache-Control': 'no-store' },
             })
 
-            const raw = r.data
-            const user: Me = raw?.data?.siteUser ?? raw?.data?.siteUserDto ?? raw?.data ?? raw
+            const user = extractMe(r.data)
 
-            if (!user || !user.email) {
+            if (!user?.email) {
+                setMe(null)
+                setMeError('로그인 후 이용할 수 있습니다.')
                 alert('로그인 후 이용해주세요.')
-                // 로그인 페이지로 이동 (경로는 프로젝트에 맞게 조정)
-                window.location.href = '/auth/login/user'
+                redirectToLogin()
                 return
             }
 
             setMe(user)
             setOpen(true)
-        } catch (e) {
-            // 토큰 없음 / 401 등
+        } catch (e: any) {
+            setMe(null)
+            const msg = e?.response?.data?.message ?? e?.message ?? '로그인 후 이용할 수 있습니다.'
+            setMeError(msg)
             alert('로그인 후 이용해주세요.')
-            window.location.href = '/auth/login/user'
+            redirectToLogin()
         }
     }
 
@@ -89,9 +134,8 @@ export default function ClientNav() {
                 type: form.type,
             }
 
-            await api.post('/inquiries', payload, {
-                headers: { 'Content-Type': 'application/json' },
-            })
+            // ✅ api는 JSON 자동 처리하므로 Content-Type 굳이 지정 불필요
+            await api.post('/inquiries', payload)
 
             // ✅ 성공: 모달 닫고, 폼 초기화 + 바깥에 메시지 띄우기
             setForm({ type: 'OTHER', title: '', content: '' })
@@ -119,8 +163,6 @@ export default function ClientNav() {
         }
     }
 
-    const displayName = (me?.nickName || me?.fullName || me?.userName || '').toString()
-
     return (
         <>
             <div className={styles.inquiryNavWrapper}>
@@ -129,7 +171,7 @@ export default function ClientNav() {
                 </button>
             </div>
 
-            {/* ✅ 모달 밖, 화면 하단/상단 쪽에 토스트 메시지 */}
+            {/* ✅ 모달 밖, 토스트 메시지 */}
             {typeof doneMsg === 'string' && doneMsg && <div className={styles.inquiryToast}>{doneMsg}</div>}
 
             <Modal open={open} onClose={() => setOpen(false)} title="1:1 문의하기" size="md">
@@ -154,6 +196,7 @@ export default function ClientNav() {
                                 placeholder="로그인 이메일"
                             />
                         </div>
+
                         {meError && (
                             <div className={`${styles.formField} ${styles.formFieldFull}`}>
                                 <div className={styles.errorText}>{meError}</div>

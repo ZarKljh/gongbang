@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { api } from '@/app/utils/api'
 import styles from '@/app/admin/styles/MySection.module.css'
 
+const API_BASE_URL = api.defaults.baseURL
+
 type RecentUser = {
     id: number
     userName: string
@@ -19,11 +21,15 @@ export default function RecentUsersCard({ limit = 6 }: { limit?: number }) {
     const load = async () => {
         try {
             setErr(null)
-            const res = await api.get('/admin/users/recent', { params: { limit } })
-            const list: RecentUser[] = res.data?.data ?? res.data ?? []
+
+            // ✅ 팀장 스타일: 상단 const API_BASE_URL 사용
+            const res = await api.get(`${API_BASE_URL}/admin/users/recent`, { params: { limit } })
+
+            const raw = res.data as any
+            const list: RecentUser[] = raw?.data ?? raw ?? []
             setUsers(list)
         } catch (e: any) {
-            setErr(e?.message ?? '최근 가입자를 불러오지 못했습니다.')
+            setErr(e?.response?.data?.message ?? e?.message ?? '최근 가입자를 불러오지 못했습니다.')
         } finally {
             setLoading(false)
         }
@@ -33,7 +39,8 @@ export default function RecentUsersCard({ limit = 6 }: { limit?: number }) {
         load()
         const t = setInterval(load, 3000) // 3초 폴링
         return () => clearInterval(t)
-    }, [])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [limit])
 
     return (
         <section className={styles.recentUsersCard}>

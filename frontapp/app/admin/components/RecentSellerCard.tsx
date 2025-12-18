@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { api } from '@/app/utils/api'
 import styles from '@/app/admin/styles/MySection.module.css'
 
+const API_BASE_URL = api.defaults.baseURL
+
 type RecentStudio = {
     id: number
     studioName: string
@@ -25,8 +27,12 @@ export default function RecentSellerCard({ title = '최근 입점 신청', limit
     const load = async () => {
         try {
             setError(null)
-            const r = await api.get('/admin/shops/recent', { params: { limit } })
-            const list: RecentStudio[] = Array.isArray(r.data) ? r.data : r.data?.data ?? []
+
+            // ✅ 상단 const API_BASE_URL 사용
+            const res = await api.get(`${API_BASE_URL}/admin/shops/recent`, { params: { limit } })
+
+            const raw = res.data
+            const list: RecentStudio[] = Array.isArray(raw) ? raw : raw?.data ?? []
             setItems(list)
         } catch (e: any) {
             setError(e?.response?.data?.message ?? e?.message ?? '최근 입점 신청을 불러오지 못했습니다.')
@@ -39,6 +45,7 @@ export default function RecentSellerCard({ title = '최근 입점 신청', limit
         let stop = false
         setLoading(true)
         load()
+
         const id = setInterval(() => !stop && load(), pollMs)
         return () => {
             stop = true
