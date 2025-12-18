@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useConfirmOrder } from '@/app/utils/api/order'
+import { useConfirmOrder, useConfirmCartOrder, cleanOrderCode } from '@/app/utils/api/order'
 import styles from '../PayResult.module.css'
 
 export default function PaymentSuccessPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const { mutate: confirmOrder, data, isPending, isError, error } = useConfirmOrder()
+    const { mutate: confirmCartOrder } = useConfirmCartOrder()
+    const fixedOrderCode = cleanOrderCode(orderId)
 
     // 쿼리 파라미터 상태
     const [orderId, setOrderId] = useState<string | null>(null)
@@ -38,11 +40,27 @@ export default function PaymentSuccessPage() {
             return
         }
 
-        confirmOrder({
-            orderId,
-            paymentKey,
-            amount,
-        })
+        const isCartOrder = localStorage.getItem('PAY_PENDING') === '1'
+
+        if (isCartOrder) {
+            const cartIds = JSON.parse(localStorage.getItem("ORDER_CART_IDS") ?? "[]")
+            const storedOrderCode = localStorage.getItem('orderCode')
+
+            if (!storedOrderCode) {
+            alert("결제 정보가 올바르지 않습니다.") //주문번호(orderCode) 없음
+            router.push("/")
+            return
+            }
+
+            confirmCartOrder({
+                orderCode: cleanOrderCode(orderId),
+                paymentKey,
+                amount,
+                cartIds
+            })
+        } else {
+            confirmOrder({ orderId, paymentKey, amount })
+        }
 
         console.log(`1${orderId}2${paymentKey}3${amount}`)
     }, [loaded, orderId, paymentKey, amount, confirmOrder, router])

@@ -514,7 +514,7 @@ export default function MyPage() {
 
         try {
         const res = await axios.post(
-            `${API_BASE_URL}/mypage/cart/prepare`,
+            `${API_BASE_URL}/payments/cart/prepare`,
             {
             items: pendingOrderItems,
             addressId: selectedAddress.userAddressId,
@@ -530,6 +530,7 @@ export default function MyPage() {
         // 장바구니에서 구매한 cartId 기록 → 결제 성공 후 삭제용
         localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
         localStorage.setItem('PAY_PENDING', '1')
+        localStorage.setItem('orderCode', orderCode)
 
         setIsAddressSelectModalOpen(false)
         setIsModalOpen(true)
@@ -585,7 +586,7 @@ export default function MyPage() {
             amount: total,
             orderId: orderCode,
             orderName: '장바구니 상품 결제',
-            successUrl: `${window.location.origin}/pay/success`,
+            successUrl: `${window.location.origin}/pay/success?orderId=${orderCode}&amount=${total}`,
             failUrl: `${window.location.origin}/pay/fail`,
         })
         } catch (e: any) {
@@ -1682,9 +1683,11 @@ export default function MyPage() {
                                             </div>
 
                                             <div className="modal-order-info">
-                                                <span className="product-name">
-                                                    {order.items?.[0]?.productName || '상품 없음'}
-                                                </span>
+                                                <Link href={`/product/list/detail?productId=${p.productId}`}>
+                                                    <span className="product-name">
+                                                        {order.items?.[0]?.productName || '상품 없음'}
+                                                    </span>
+                                                </Link>
                                                 <span className={`badge ${order.deliveryStatus}`}>
                                                     {order.deliveryStatus}
                                                 </span>
