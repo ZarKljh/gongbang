@@ -51,6 +51,9 @@ export default function MainNav() {
     const pathname = usePathname()
     const router = useRouter()
 
+    // ✅ 팀 규칙: 배포 시 api.ts(baseURL)만 딸깍
+    const API_BASE_URL = api.defaults.baseURL
+
     const [categories, setCategories] = useState<Category[]>([])
     const [subCategoriesByCat, setSubCategoriesByCat] = useState<Record<number, SubCategory[]>>({})
     const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -87,7 +90,8 @@ export default function MainNav() {
     // ================== 로그인 상태 확인 ==================
     const checkLogin = async () => {
         try {
-            const res = await fetch('http://localhost:8090/api/v1/auth/me', {
+            // ✅ baseURL 기반으로 통일 (baseURL에 /api/v1 포함 가정)
+            const res = await fetch(`${API_BASE_URL}/auth/me`, {
                 method: 'GET',
                 credentials: 'include',
             })
@@ -116,19 +120,19 @@ export default function MainNav() {
         checkLogin()
         setIsHamburgerOpen(false)
         setIsAlarmOpen(false)
-    }, [pathname])
+    }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const isLoggedIn = !!user
 
     // ================== 카테고리 / 세부 카테고리 로드 ==================
     const fetchCategoriesAndSubs = async () => {
         try {
-            const res = await api.get('/category')
+            const res = await api.get('/category', { withCredentials: true })
             const categoryList: Category[] = res.data.data.categoryList
             setCategories(categoryList)
 
             const subPromises = categoryList.map(async (cat) => {
-                const res = await api.get(`/category/${cat.id}/sub`)
+                const res = await api.get(`/category/${cat.id}/sub`, { withCredentials: true })
                 const subs: SubCategory[] = res.data.data.subCategoryList
                 return [cat.id, subs] as const
             })
@@ -148,12 +152,12 @@ export default function MainNav() {
 
     useEffect(() => {
         fetchCategoriesAndSubs()
-    }, [])
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     // ================== 알림 API ==================
     const fetchUnreadCount = async () => {
         try {
-            const res = await api.get<RsData<number>>('/notifications/unread-count')
+            const res = await api.get<RsData<number>>('/notifications/unread-count', { withCredentials: true })
             if (res.data.resultCode?.startsWith('200')) {
                 setUnreadCount(res.data.data ?? 0)
             }
@@ -164,7 +168,7 @@ export default function MainNav() {
 
     const fetchNotifications = async () => {
         try {
-            const res = await api.get<RsData<NotificationItem[]>>('/notifications')
+            const res = await api.get<RsData<NotificationItem[]>>('/notifications', { withCredentials: true })
             if (res.data.resultCode?.startsWith('200')) {
                 const list = res.data.data ?? []
                 // ✅ "삭제처럼 보이게" = 안 읽은 알림만 보여주기
@@ -177,7 +181,7 @@ export default function MainNav() {
 
     const markAsRead = async (id: number) => {
         try {
-            const res = await api.post<RsData<null>>(`/notifications/${id}/read`)
+            const res = await api.post<RsData<null>>(`/notifications/${id}/read`, null, { withCredentials: true })
             if (res.data.resultCode?.startsWith('200')) {
                 // ✅ 읽음 처리되면 리스트에서 제거 (삭제처럼 보임)
                 setNotifications((prev) => prev.filter((n) => n.id !== id))
@@ -193,7 +197,6 @@ export default function MainNav() {
         if (!n.isRead) {
             await markAsRead(n.id)
         } else {
-            // 혹시나 read 상태로 들어오면(현재는 필터링이라 거의 없음)
             setNotifications((prev) => prev.filter((x) => x.id !== n.id))
         }
 
@@ -218,7 +221,7 @@ export default function MainNav() {
             return
         }
         fetchUnreadCount()
-    }, [isLoggedIn])
+    }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // 바깥 클릭/ESC로 알림 닫기
     useEffect(() => {
@@ -245,7 +248,8 @@ export default function MainNav() {
     // ================== 로그아웃 ==================
     const handleLogout = async () => {
         try {
-            await fetch('http://localhost:8090/api/v1/auth/logout', {
+            // ✅ baseURL 딸깍 규칙 준수
+            await fetch(`${API_BASE_URL}/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             })
@@ -285,7 +289,6 @@ export default function MainNav() {
                                     }}
                                 >
                                     <Image src={bellIcon} alt="알림종" width={25} height={25} />
-                                    {/* 숫자 대신 N */}
                                     {unreadCount > 0 && <span className={styles.alarmBadge}>N</span>}
                                 </button>
 
@@ -307,7 +310,6 @@ export default function MainNav() {
                                                             onClick={() => handleAlarmClick(n)}
                                                         >
                                                             <span className={styles.alarmMessage}>{n.message}</span>
-                                                            {/* ✅ 날짜만 */}
                                                             <span className={styles.alarmTime}>
                                                                 {formatDate(n.createdAt)}
                                                             </span>

@@ -31,6 +31,33 @@ export type FaqRes = {
     updatedAt?: string
 }
 
+// 팀장 요청: api.ts baseURL을 여기서도 참조 가능하게
+const API_BASE_URL = api.defaults.baseURL
+
+// 슬러그 검증: 영문 소문자/숫자/하이픈만, 시작/끝은 영숫자(하이픈으로 끝나지 않게)
+function validateSlug(input: string): { ok: boolean; message?: string; normalized?: string } {
+    const raw = (input ?? '').trim()
+
+    if (!raw) return { ok: false, message: '슬러그를 입력하세요.' }
+
+    // 소문자 강제(원한다면 제거 가능)
+    const normalized = raw.toLowerCase()
+
+    // 한글/공백/특수문자 안내를 더 명확히
+    // 허용: a-z, 0-9, -
+    // 규칙: ^[a-z0-9]+(-[a-z0-9]+)*$
+    const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/
+
+    if (!slugRegex.test(normalized)) {
+        return {
+            ok: false,
+            message: '슬러그는 영어(소문자), 숫자, 하이픈(-)만 입력 가능합니다.\n예: payment, business-faq, order-1',
+        }
+    }
+
+    return { ok: true, normalized }
+}
+
 export default function AdminFaqPage() {
     const [loading, setLoading] = useState(true)
     const [err, setErr] = useState<string | null>(null)
@@ -52,14 +79,24 @@ export default function AdminFaqPage() {
     const [catManagerOpen, setCatManagerOpen] = useState(false)
     const [editingCat, setEditingCat] = useState<Partial<FaqCategoryRes> | null>(null)
 
-    // -------- Axios-safe 래퍼 --------
+    // -------- Axios-safe 래퍼 (에러 메시지 UX 개선) --------
+    function toFriendlyErrorMessage(e: any, fallback: string) {
+        const msg = e?.response?.data?.message || e?.message || fallback
+
+        // 백엔드에서 slug exists 던지는 케이스
+        if (typeof msg === 'string' && msg.toLowerCase().includes('slug exists')) {
+            return '이미 존재하는 슬러그입니다. 다른 슬러그를 입력해 주세요.'
+        }
+
+        return msg
+    }
+
     async function safe<T>(p: Promise<{ data: any }>, fallbackMsg: string): Promise<T> {
         try {
             const { data } = await p
             return data as T
         } catch (e: any) {
-            const msg = e?.response?.data?.message || e?.message || fallbackMsg
-            throw new Error(msg)
+            throw new Error(toFriendlyErrorMessage(e, fallbackMsg))
         }
     }
 
@@ -104,12 +141,14 @@ export default function AdminFaqPage() {
 
     useEffect(() => {
         loadAll()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
         if (!loading) {
             loadFaqs().catch((e) => setErr(e?.message ?? '로드 실패'))
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCatId, q])
 
     const selectedCat = useMemo(() => categories.find((c) => c.id === selectedCatId), [categories, selectedCatId])
@@ -123,16 +162,13 @@ export default function AdminFaqPage() {
             orderNo: Number(form.orderNo ?? 0),
             published: Boolean(form.published ?? true),
         }
+
         if (form.id) {
-            await safe(
-                api.patch(`/admin/faq/${form.id}`, payload, {
-                    withCredentials: true,
-                }),
-                'FAQ 수정 실패',
-            )
+            await safe(api.patch(`/admin/faq/${form.id}`, payload, { withCredentials: true }), 'FAQ 수정 실패')
         } else {
             await safe(api.post(`/admin/faq`, payload, { withCredentials: true }), 'FAQ 생성 실패')
         }
+
         await loadFaqs()
 
         // 슬라이드/모달 공통 초기화
@@ -164,27 +200,29 @@ export default function AdminFaqPage() {
 
     // -------- 액션 (카테고리) --------
     async function onSaveCategory(c: Partial<FaqCategoryRes>) {
+        // ✅ slug “형식”만 프론트에서 선제 검증 (중복 허용은 서버가 막고 있음)
+        const v = validateSlug(String(c.slug ?? ''))
+        if (!v.ok) {
+            alert(v.message)
+            return
+        }
+
         const payload = {
             name: c.name,
-            slug: c.slug,
+            slug: v.normalized, // 소문자 정규화 반영
             orderNo: Number(c.orderNo ?? 0),
             active: Boolean(c.active ?? true),
         }
+
         if (c.id) {
             await safe(
-                api.patch(`/admin/faq/categories/${c.id}`, payload, {
-                    withCredentials: true,
-                }),
+                api.patch(`/admin/faq/categories/${c.id}`, payload, { withCredentials: true }),
                 '카테고리 수정 실패',
             )
         } else {
-            await safe(
-                api.post(`/admin/faq/categories`, payload, {
-                    withCredentials: true,
-                }),
-                '카테고리 생성 실패',
-            )
+            await safe(api.post(`/admin/faq/categories`, payload, { withCredentials: true }), '카테고리 생성 실패')
         }
+
         await loadCategories()
         setEditingCat(null)
     }
@@ -192,13 +230,11 @@ export default function AdminFaqPage() {
     async function onDeleteCategory(id: Id) {
         if (!confirm('이 카테고리를 삭제할까요? (소속 FAQ가 있다면 이전 후 삭제 권장)')) return
         try {
-            await api.delete(`/admin/faq/categories/${id}`, {
-                withCredentials: true,
-            })
+            await api.delete(`/admin/faq/categories/${id}`, { withCredentials: true })
             await loadCategories()
             setSelectedCatId((prev) => (prev === id ? 'all' : prev))
         } catch (e: any) {
-            alert(e?.response?.data?.message || e?.message || '카테고리 삭제 실패')
+            alert(toFriendlyErrorMessage(e, '카테고리 삭제 실패'))
         }
     }
 
@@ -237,6 +273,8 @@ export default function AdminFaqPage() {
                     <div>
                         <h1 className={styles.title}>FAQ 관리</h1>
                         <p className={styles.pageSubtitle}>카테고리와 FAQ를 추가/수정/삭제할 수 있습니다.</p>
+                        {/* 필요하면 디버그용으로 활용 가능 */}
+                        {/* <small>API_BASE_URL: {String(API_BASE_URL)}</small> */}
                     </div>
 
                     <div className={styles.filterGroup}>
@@ -278,6 +316,7 @@ export default function AdminFaqPage() {
                 </header>
 
                 {err && <div className={styles.errorBox}>{err}</div>}
+
                 <section className={styles.card}>
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
@@ -309,7 +348,6 @@ export default function AdminFaqPage() {
 
                                         return (
                                             <Fragment key={r.id}>
-                                                {/* 클릭해서 여는 메인 행 */}
                                                 <tr
                                                     className={`${styles.tableRow} ${styles.tableRowClickable}`}
                                                     onClick={() => toggleRow(r)}
@@ -336,7 +374,6 @@ export default function AdminFaqPage() {
                                                     </td>
                                                 </tr>
 
-                                                {/* 슬라이드 인라인 에디터 행 */}
                                                 <tr className={styles.detailRow}>
                                                     <td colSpan={5} className={styles.detailCell}>
                                                         <div
@@ -371,7 +408,7 @@ export default function AdminFaqPage() {
                 </section>
             </div>
 
-            {/* 카테고리 관리 모달 (공용 Modal 사용) */}
+            {/* 카테고리 관리 모달 */}
             <Modal open={catManagerOpen} onClose={() => setCatManagerOpen(false)} title="카테고리 관리" size="md">
                 <CategoryManagerPanel
                     categories={categories}
@@ -408,7 +445,7 @@ export default function AdminFaqPage() {
     )
 }
 
-/* =================== 카테고리 관리 패널 (Modal 안 내용) =================== */
+/* =================== 카테고리 관리 패널 =================== */
 function CategoryManagerPanel({
     categories,
     onClose,
@@ -505,11 +542,15 @@ function CategoryEditor({
             alert('이름을 입력하세요')
             return
         }
-        if (!form.slug?.trim()) {
-            alert('슬러그를 입력하세요 (소문자/숫자/하이픈)')
+
+        // ✅ slug 형식 사전 검증 + 안내 메시지
+        const v = validateSlug(String(form.slug ?? ''))
+        if (!v.ok) {
+            alert(v.message)
             return
         }
-        await onSave(form)
+
+        await onSave({ ...form, slug: v.normalized })
     }
 
     return (
@@ -523,14 +564,19 @@ function CategoryEditor({
                     placeholder="예: 결제"
                 />
             </div>
+
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>슬러그</label>
                 <input
                     className={styles.inputText}
                     value={form.slug}
                     onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    placeholder="예: payment"
+                    placeholder="예: payment (영문/숫자/하이픈만)"
                 />
+            </div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 6, lineHeight: 1.4 }}>
+                슬러그는 영어(소문자), 숫자, 하이픈(-)만 입력 가능합니다.
+                <br /> 한글/공백/특수문자는 사용할 수 없습니다.
             </div>
 
             <div className={styles.modalFooter}>
@@ -545,7 +591,7 @@ function CategoryEditor({
     )
 }
 
-/* =================== FAQ 추가/수정 폼 (모달용) =================== */
+/* =================== FAQ 추가/수정 폼 =================== */
 function FaqEditor({
     categories,
     value,
@@ -598,6 +644,7 @@ function FaqEditor({
                     ))}
                 </select>
             </div>
+
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>질문</label>
                 <input
@@ -607,6 +654,7 @@ function FaqEditor({
                     placeholder="질문을 입력하세요"
                 />
             </div>
+
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>답변</label>
                 <textarea
@@ -629,7 +677,7 @@ function FaqEditor({
     )
 }
 
-/* =================== 인라인 FAQ 에디터 (슬라이드용) =================== */
+/* =================== 인라인 FAQ 에디터 =================== */
 function InlineFaqEditor({
     categories,
     form,
@@ -675,6 +723,7 @@ function InlineFaqEditor({
                     ))}
                 </select>
             </div>
+
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>질문</label>
                 <input
@@ -684,6 +733,7 @@ function InlineFaqEditor({
                     placeholder="질문을 입력하세요"
                 />
             </div>
+
             <div className={styles.formField}>
                 <label className={styles.fieldLabel}>답변</label>
                 <textarea

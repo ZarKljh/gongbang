@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Sidebar from '@/app/admin/components/Sidebar'
-import { api } from '@/app/utils/api'
 import Modal from '@/app/admin/components/Modal'
 import styles from '@/app/admin/styles/AdminReports.module.css'
+
+import { api } from '@/app/utils/api'
 
 type ReportStatus = 'PENDING' | 'RESOLVED' | 'REJECTED' | string
 
@@ -20,40 +21,29 @@ type Report = {
     createdAt: string
 }
 
-/** 🔹 신고 대상에 따라 실제 프론트 URL을 만들어주는 함수
- *  프로젝트 라우팅 규칙에 맞게 아래만 수정하면 됨
- */
+/** 신고 대상에 따라 실제 프론트 URL 생성 */
 function resolveTargetUrl(r: Report): string | null {
     switch (r.targetType) {
         case 'PRODUCT':
             return `/product/list/detail?productId=${r.targetId}`
-
-        // 필요하면 나중에 리뷰, 문의 등도 추가
-        // case 'REVIEW':
-        //     return `/review/${r.targetId}`
-
-        // case 'INQUIRY':
-        //     return `/mypage?tab=qna&id=${r.targetId}`
-
         default:
             return null
     }
 }
 
 export default function AdminReportsPage() {
+    // ✅ 팀장 룰: baseURL을 여기서 뽑아서 모든 호출에 사용
+    const API_BASE_URL = (api.defaults.baseURL ?? '').replace(/\/$/, '')
+
     const [reports, setReports] = useState<Report[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [statusFilter, setStatusFilter] = useState<'ALL' | ReportStatus>('PENDING')
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-    // ✅ 미처리(PENDING) 건 수
     const [totalPending, setTotalPending] = useState<number>(0)
-
-    // ✅ 검색어 상태
     const [search, setSearch] = useState('')
 
-    // ✅ 모달 상태
     const [detailOpen, setDetailOpen] = useState(false)
     const [selectedId, setSelectedId] = useState<number | null>(null)
     const [selectedReport, setSelectedReport] = useState<Report | null>(null)
@@ -69,12 +59,12 @@ export default function AdminReportsPage() {
             if (statusFilter !== 'ALL') params.status = statusFilter
 
             const [listRes, pendingRes] = await Promise.all([
-                api.get('/admin/reports', { params }),
-                api.get('/admin/reports', { params: { status: 'PENDING' } }),
+                api.get(`${API_BASE_URL}/admin/reports`, { params }),
+                api.get(`${API_BASE_URL}/admin/reports`, { params: { status: 'PENDING' } }),
             ])
 
-            const list: Report[] = listRes.data
-            const pendingList: Report[] = pendingRes.data
+            const list: Report[] = (listRes.data?.data ?? listRes.data) as Report[]
+            const pendingList: Report[] = (pendingRes.data?.data ?? pendingRes.data) as Report[]
 
             const sorted = [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             setReports(sorted)
@@ -82,7 +72,7 @@ export default function AdminReportsPage() {
             setLastUpdated(new Date())
         } catch (e: any) {
             console.error('신고 목록 불러오기 실패:', e)
-            setError(e?.message ?? '신고 목록을 불러오지 못했습니다.')
+            setError(e?.response?.data?.message ?? e?.message ?? '신고 목록을 불러오지 못했습니다.')
         } finally {
             setLoading(false)
         }
@@ -94,9 +84,10 @@ export default function AdminReportsPage() {
         loadReports()
         const timer = setInterval(loadReports, 3000)
         return () => clearInterval(timer)
-    }, [statusFilter])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [statusFilter, API_BASE_URL])
 
-    // 🔹 enum → 한글 라벨 매핑
+    // enum → 한글 라벨
     const statusKoreanLabel = (status: ReportStatus) => {
         switch (status) {
             case 'PENDING':
@@ -147,30 +138,30 @@ export default function AdminReportsPage() {
     // 상태 변경(목록에서 바로)
     const changeStatus = async (id: number, status: ReportStatus) => {
         try {
-            await api.patch(`/admin/reports/${id}/status`, { status, adminMemo: '' })
+            await api.patch(`${API_BASE_URL}/admin/reports/${id}/status`, { status, adminMemo: '' })
             await loadReports()
         } catch (e: any) {
             alert(e?.response?.data?.message ?? '상태 변경에 실패했습니다.')
         }
     }
 
-    // ✅ 대상 페이지로 이동
+    // 대상 페이지로 이동
     const goToTargetPage = (report: Report) => {
         const url = resolveTargetUrl(report)
         if (!url) {
             alert('이 신고 유형에 대한 대상 페이지 이동 경로가 설정되어 있지 않습니다.')
             return
         }
-        window.open(url, '_blank') // 새 탭으로 열기
+        window.open(url, '_blank')
     }
 
-    // ✅ 모달 열기 (상세 조회)
+    // 모달 열기 (상세 조회)
     const openDetail = async (id: number) => {
         setSelectedId(id)
         setDetailOpen(true)
         try {
-            const r = await api.get(`/admin/reports/${id}`)
-            const data: Report = r.data?.data ?? r.data
+            const r = await api.get(`${API_BASE_URL}/admin/reports/${id}`)
+            const data: Report = (r.data?.data ?? r.data) as Report
             setSelectedReport(data)
             setStatusDraft(data.status)
         } catch (e) {
@@ -178,12 +169,15 @@ export default function AdminReportsPage() {
         }
     }
 
-    // ✅ 모달에서 상태 저장
+    // 모달에서 상태 저장
     const saveDetailStatus = async () => {
         if (!selectedId) return
         setSaving(true)
         try {
-            await api.patch(`/admin/reports/${selectedId}/status`, { status: statusDraft, adminMemo: '' })
+            await api.patch(`${API_BASE_URL}/admin/reports/${selectedId}/status`, {
+                status: statusDraft,
+                adminMemo: '',
+            })
             setDetailOpen(false)
             setSelectedReport(null)
             await loadReports()
@@ -206,13 +200,11 @@ export default function AdminReportsPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        {/* ✅ 미처리 건 수 박스 */}
                         <div className={styles.counterBox}>
                             <span className={styles.counterLabel}>미처리 건 수</span>
                             <span className={styles.counterValue}>{totalPending}건</span>
                         </div>
 
-                        {/* ✅ 검색 박스 */}
                         <div className={styles.searchBox}>
                             <input
                                 className={styles.searchInput}
@@ -222,7 +214,6 @@ export default function AdminReportsPage() {
                             />
                         </div>
 
-                        {/* ✅ 상태 필터 셀렉트 */}
                         <div>
                             <select
                                 className={styles.select}
@@ -324,7 +315,6 @@ export default function AdminReportsPage() {
                 </section>
             </main>
 
-            {/* ✅ 상세 모달 */}
             {detailOpen && selectedReport && (
                 <Modal
                     open={detailOpen}
@@ -388,7 +378,6 @@ export default function AdminReportsPage() {
                                 alignItems: 'center',
                             }}
                         >
-                            {/* 🔹 모달 안에서도 대상 페이지 바로 열기 */}
                             <button
                                 type="button"
                                 className={`${styles.btn} ${styles.btnGhost}`}
@@ -420,7 +409,6 @@ export default function AdminReportsPage() {
     )
 }
 
-/** 작은 라벨/값 행 컴포넌트 (모달 내부용) */
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

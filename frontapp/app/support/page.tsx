@@ -50,11 +50,18 @@ export default function CustomerCenterPage() {
         }
     }
 
+    /**
+     * ⚠️ 고객센터(유저용) FAQ API는 public 엔드포인트로 두는 게 일반적:
+     * - GET /faq/categories
+     * - GET /faq
+     *
+     * 만약 백엔드가 admin만 열어뒀다면 아래를 /admin/faq/categories, /admin/faq 로 바꿔야 함.
+     */
     async function loadCategories() {
-        // ⚠️ 엔드포인트는 백엔드에 맞게 수정해줘 (/admin/faq/categories를 열어둘 거면 그걸 써도 됨)
         const data = await safe<{ content?: FaqCategory[] } | FaqCategory[]>(
             api.get('/faq/categories', {
                 params: { page: 0, size: 100, sort: 'orderNo,asc' },
+                withCredentials: true, // 쿠키 기반이면 유지 (공개면 제거해도 무방)
             }),
             '카테고리 로드 실패',
         )
@@ -63,11 +70,15 @@ export default function CustomerCenterPage() {
     }
 
     async function loadFaqs() {
-        const params: any = { page: 0, size: 200 } // 고객센터에서는 좀 넉넉하게
+        const params: any = { page: 0, size: 200 } // 고객센터에서는 넉넉히
         if (selectedCatId !== 'all') params.categoryId = String(selectedCatId)
         if (q.trim()) params.q = q.trim()
 
-        const data = await safe<{ content?: FaqItem[] } | FaqItem[]>(api.get('/faq', { params }), 'FAQ 로드 실패')
+        const data = await safe<{ content?: FaqItem[] } | FaqItem[]>(
+            api.get('/faq', { params, withCredentials: true }),
+            'FAQ 로드 실패',
+        )
+
         const list = Array.isArray(data) ? data : data.content ?? []
         setFaqs(list.filter((f) => f.published))
     }
@@ -98,7 +109,8 @@ export default function CustomerCenterPage() {
     }, [selectedCatId, q])
 
     const filteredFaqs = useMemo(() => {
-        return faqs.sort((a, b) => a.orderNo - b.orderNo)
+        // ✅ state 배열 직접 sort하면 원본이 변형되니 복사 후 정렬
+        return [...faqs].sort((a, b) => a.orderNo - b.orderNo)
     }, [faqs])
 
     const selectedCatName =
@@ -187,14 +199,16 @@ export default function CustomerCenterPage() {
                                                 <span className={styles.faqQuestionText}>{f.question}</span>
                                                 <span className={styles.faqToggleIcon}>{isOpen ? '−' : '+'}</span>
                                             </button>
+
                                             {isOpen && (
                                                 <div className={styles.faqAnswer}>
-                                                    {/* HTML이 아니라고 가정하고 텍스트만 출력 */}
-                                                    {f.answer.split('\n').map((line, idx) => (
-                                                        <p key={idx} className={styles.faqAnswerLine}>
-                                                            {line}
-                                                        </p>
-                                                    ))}
+                                                    {String(f.answer ?? '')
+                                                        .split('\n')
+                                                        .map((line, idx) => (
+                                                            <p key={idx} className={styles.faqAnswerLine}>
+                                                                {line}
+                                                            </p>
+                                                        ))}
                                                 </div>
                                             )}
                                         </li>
@@ -231,7 +245,7 @@ export default function CustomerCenterPage() {
 
                         <p className={styles.helpNotice}>
                             이미 남긴 문의는{' '}
-                            <Link href="/mypage?tab=qna" className={styles.helpInlineLink}>
+                            <Link href="/personal?tab=qna" className={styles.helpInlineLink}>
                                 마이페이지 &gt; 문의 내역
                             </Link>{' '}
                             에서 확인하실 수 있습니다.

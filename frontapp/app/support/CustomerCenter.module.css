@@ -346,3 +346,196 @@
         padding-top: 24px;
     }
 }
+
+/* 모바일용 */
+@media (max-width: 460px) {
+    .page {
+        padding: 12px;
+    }
+
+    .inner {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .left,
+    .right {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .title {
+        font-size: 20px;
+        line-height: 1.2;
+    }
+
+    .subtitle {
+        font-size: 13px;
+        line-height: 1.4;
+        margin-top: 6px;
+    }
+
+    .toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .categoryChips {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 6px;
+    }
+
+    .categoryChips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .chip {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 8px 10px;
+        font-size: 12px;
+        border-radius: 999px;
+    }
+
+    .searchBox {
+        width: 100%;
+    }
+
+    .searchInput {
+        width: 100%;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 10px;
+    }
+
+    .faqCard,
+    .helpCard,
+    .tipCard {
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .faqHeaderRow {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        margin-bottom: 10px;
+    }
+
+    .faqHeaderLabel {
+        font-size: 14px;
+    }
+
+    .faqHeaderSub {
+        font-size: 12px;
+    }
+
+    .faqList {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .faqItem {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .faqQuestionRow {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .faqCategoryBadge {
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+    }
+
+    .faqQuestionText {
+        font-size: 13px;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .faqToggleIcon {
+        font-size: 16px;
+        width: 22px;
+        text-align: right;
+        flex: 0 0 auto;
+    }
+
+    .faqAnswer {
+        padding: 12px;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .faqAnswerLine {
+        margin: 0 0 8px 0;
+    }
+    .faqAnswerLine:last-child {
+        margin-bottom: 0;
+    }
+
+    .helpTitle {
+        font-size: 16px;
+    }
+
+    .helpDesc {
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .helpList {
+        margin: 10px 0 10px;
+        padding-left: 16px;
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .helpInfo {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .helpInfoLabel,
+    .helpInfoValue {
+        font-size: 12px;
+    }
+
+    .helpNotice {
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .helpInlineLink {
+        font-size: 12px;
+    }
+
+    .tipTitle {
+        font-size: 14px;
+    }
+
+    .tipList {
+        font-size: 13px;
+        line-height: 1.45;
+        padding-left: 16px;
+    }
+
+    .inner {
+        padding: 0;
+    }
+}
