@@ -10,7 +10,7 @@
     border: 1px solid #e2e8f0; /* border-slate-200 */
     border-radius: 1rem; /* rounded-2xl */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; */
 }
 
 /* 제목 */
