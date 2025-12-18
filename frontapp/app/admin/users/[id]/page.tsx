@@ -29,7 +29,9 @@ type UserDetail = {
 export default function AdminUserDetailPage() {
     const params = useParams()
     const router = useRouter()
-    const id = params?.id as string
+
+    const rawId = params?.id as string | undefined
+    const id = rawId ? Number(rawId) : NaN
 
     const [user, setUser] = useState<UserDetail | null>(null)
     const [loading, setLoading] = useState(true)
@@ -37,8 +39,17 @@ export default function AdminUserDetailPage() {
     const [savingStatus, setSavingStatus] = useState(false)
 
     const load = async () => {
+        if (!rawId || Number.isNaN(id)) {
+            setError('잘못된 접근입니다.')
+            setLoading(false)
+            return
+        }
+
         try {
+            setLoading(true)
             setError(null)
+
+            // baseURL = .../api/v1 이므로 /api/v1 같은 prefix는 붙이지 않음
             const res = await api.get(`/admin/users/${id}`)
             const data: UserDetail = res.data?.data ?? res.data
             setUser(data)
@@ -51,30 +62,33 @@ export default function AdminUserDetailPage() {
     }
 
     useEffect(() => {
-        if (!id) return
         load()
-    }, [id])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rawId])
 
     const statusBadgeClass = (status?: UserStatus) => {
         if (!status) return styles.badge
+
         switch (status) {
             case 'ACTIVE':
-                return `${styles.badge} ${styles.badgeActive}`
+                // 프로젝트에 해당 클래스가 없다면 그냥 badge만 적용될 수 있음 (안전)
+                return (styles as any).badgeActive ? `${styles.badge} ${(styles as any).badgeActive}` : styles.badge
             case 'BAN':
-                return `${styles.badge} ${styles.badgeBAN}`
+                return (styles as any).badgeBAN ? `${styles.badge} ${(styles as any).badgeBAN}` : styles.badge
             default:
                 return styles.badge
         }
     }
 
-    // ✅ 상태 변경 호출
     const updateStatus = async (nextStatus: UserStatus) => {
         if (!user) return
         if (!confirm(`해당 유저의 상태를 '${nextStatus}'(으)로 변경하시겠습니까?`)) return
 
         try {
             setSavingStatus(true)
+
             await api.patch(`/admin/users/${user.id}/status`, { status: nextStatus })
+
             // 성공 시 로컬 상태만 업데이트
             setUser((prev) => (prev ? { ...prev, status: nextStatus } : prev))
         } catch (e: any) {
@@ -110,11 +124,11 @@ export default function AdminUserDetailPage() {
 
                 <section className={styles.card}>
                     {loading && <div className={styles.empty}>불러오는 중...</div>}
-                    {error && !loading && <div className={styles.error}>{error}</div>}
+                    {error && !loading && <div className={(styles as any).errorBox ?? styles.empty}>{error}</div>}
 
                     {!loading && !error && user && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            {/* 상단 요약 영역 */}
+                            {/* 상단 요약 */}
                             <div
                                 style={{
                                     display: 'flex',
@@ -136,8 +150,9 @@ export default function AdminUserDetailPage() {
                                 >
                                     <div>
                                         <span style={{ fontSize: 12, color: '#6b7280', marginRight: 6 }}>역할</span>
-                                        <span className={styles.roleText}>{user.role}</span>
+                                        <span className={(styles as any).roleText ?? ''}>{user.role}</span>
                                     </div>
+
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                         <div>
                                             <span style={{ fontSize: 12, color: '#6b7280', marginRight: 6 }}>상태</span>
@@ -148,13 +163,13 @@ export default function AdminUserDetailPage() {
                                             )}
                                         </div>
 
-                                        {/* ✅ 상태 변경 버튼들 */}
+                                        {/* ADMIN은 상태 변경 불가 */}
                                         {user.role !== 'ADMIN' && (
                                             <div style={{ display: 'flex', gap: 6 }}>
                                                 {user.status === 'ACTIVE' ? (
                                                     <button
                                                         disabled={savingStatus}
-                                                        className={`${styles.btn} ${styles.btnDanger}`}
+                                                        className={`${styles.btn} ${(styles as any).btnDanger ?? ''}`}
                                                         onClick={() => updateStatus('BAN')}
                                                     >
                                                         {savingStatus ? '처리 중...' : 'BAN 으로 변경'}
@@ -162,7 +177,7 @@ export default function AdminUserDetailPage() {
                                                 ) : (
                                                     <button
                                                         disabled={savingStatus}
-                                                        className={`${styles.btn} ${styles.btnPrimary}`}
+                                                        className={`${styles.btn} ${(styles as any).btnPrimary ?? ''}`}
                                                         onClick={() => updateStatus('ACTIVE')}
                                                     >
                                                         {savingStatus ? '처리 중...' : 'ACTIVE 로 변경'}
@@ -213,14 +228,8 @@ export default function AdminUserDetailPage() {
 
                             <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '16px 0' }} />
 
-                            {/* 통계 정보 */}
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    gap: 16,
-                                    fontSize: 14,
-                                }}
-                            >
+                            {/* 통계 */}
+                            <div style={{ display: 'flex', gap: 16, fontSize: 14 }}>
                                 <div
                                     style={{
                                         flex: 1,

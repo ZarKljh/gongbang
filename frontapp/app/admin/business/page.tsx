@@ -35,6 +35,9 @@ const statusKoreanLabel = (status: SellerStatus) => {
 }
 
 export default function AdminBusinessPage() {
+    // ✅ 팀장 룰: baseURL을 여기서 뽑아서 모든 호출에 사용
+    const API_BASE_URL = (api.defaults.baseURL ?? '').replace(/\/$/, '')
+
     const [shops, setShops] = useState<Shop[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -50,7 +53,7 @@ export default function AdminBusinessPage() {
             const params: any = {}
             if (statusFilter !== 'ALL') params.status = statusFilter
 
-            const res = await api.get('/admin/shops', { params })
+            const res = await api.get(`${API_BASE_URL}/admin/shops`, { params })
             const list: Shop[] = Array.isArray(res.data) ? res.data : res.data?.data ?? []
             setShops(list)
             setLastUpdated(new Date())
@@ -67,7 +70,8 @@ export default function AdminBusinessPage() {
         loadShops()
         const timer = setInterval(loadShops, 3000) // 3초 폴링
         return () => clearInterval(timer)
-    }, [statusFilter])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [statusFilter, API_BASE_URL])
 
     const statusBadgeClass = (status: SellerStatus) => {
         switch (status) {

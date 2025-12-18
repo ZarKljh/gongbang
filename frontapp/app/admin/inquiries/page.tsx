@@ -17,12 +17,7 @@ type Inquiry = {
     answerContent?: string
 }
 
-type CountResponse = {
-    count: number
-}
-
 type StatusFilter = 'ALL' | 'UNANSWERED' | 'ANSWERED'
-
 type InquiryStatus = 'PENDING' | 'RESOLVED'
 
 const inquiryStatusFromAnswered = (answered: boolean): InquiryStatus => (answered ? 'RESOLVED' : 'PENDING')
@@ -45,6 +40,24 @@ const inquiryStatusLabel = (status: InquiryStatus) => {
         case 'RESOLVED':
             return '처리 완료'
     }
+}
+
+function extractList<T>(raw: any): T[] {
+    // 서버가 [..] 또는 {data:[..]} 또는 {data:{content:[..]}} 등으로 줄 수 있어 방어
+    if (Array.isArray(raw)) return raw
+    if (Array.isArray(raw?.data)) return raw.data
+    if (Array.isArray(raw?.data?.content)) return raw.data.content
+    if (Array.isArray(raw?.content)) return raw.content
+    return []
+}
+
+function extractCount(raw: any): number {
+    // {count: n} / {data:{count:n}} / {data:n} / n 모두 방어
+    if (typeof raw === 'number') return raw
+    if (typeof raw?.count === 'number') return raw.count
+    if (typeof raw?.data === 'number') return raw.data
+    if (typeof raw?.data?.count === 'number') return raw.data.count
+    return 0
 }
 
 export default function AdminInquiriesPage() {
@@ -70,24 +83,24 @@ export default function AdminInquiriesPage() {
 
     const fetchData = useCallback(async (opts?: { silent?: boolean }) => {
         const silent = opts?.silent ?? false
+
         try {
             if (!silent) setLoading(true)
             setError(null)
 
             const [listRes, countRes] = await Promise.all([
+                // baseURL = .../api/v1 이므로 여기서는 /api/v1 붙이면 중복
                 api.get('/admin/inquiries'),
-                api.get<CountResponse>('/admin/inquiries/count'),
+                api.get('/admin/inquiries/count'),
             ])
 
-            const rawList = listRes.data as any
-            const inquiries: Inquiry[] = rawList?.data ?? rawList ?? []
-
+            const inquiries = extractList<Inquiry>(listRes.data)
             const sorted = [...inquiries].sort(
                 (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
             )
 
             setList(sorted)
-            setTotalUnread(countRes.data?.count ?? 0)
+            setTotalUnread(extractCount(countRes.data))
             setLastUpdated(new Date())
 
             // ✅ 선택된 문의가 있으면 최신 데이터로 동기화
@@ -98,12 +111,11 @@ export default function AdminInquiriesPage() {
             })
         } catch (e: any) {
             if (!silent) {
-                setError(e?.message ?? '문의 목록을 불러오는 중 오류가 발생했습니다.')
+                const msg = e?.response?.data?.message ?? e?.message ?? '문의 목록을 불러오는 중 오류가 발생했습니다.'
+                setError(msg)
             }
         } finally {
-            if (!silent) {
-                setLoading(false)
-            }
+            if (!silent) setLoading(false)
         }
     }, [])
 
@@ -125,11 +137,8 @@ export default function AdminInquiriesPage() {
 
     // ✅ 선택된 문의가 바뀔 때 답변 폼 초기화
     useEffect(() => {
-        if (selected) {
-            setReplyText(selected.answerContent ?? '')
-        } else {
-            setReplyText('')
-        }
+        if (selected) setReplyText(selected.answerContent ?? '')
+        else setReplyText('')
     }, [selected])
 
     // ✅ 상태 + 검색어 필터
@@ -190,9 +199,7 @@ export default function AdminInquiriesPage() {
                 }
             }
 
-            if (!msg && typeof e?.message === 'string') {
-                msg = e.message
-            }
+            if (!msg && typeof e?.message === 'string') msg = e.message
 
             alert(msg ?? '답변 등록 중 오류가 발생했습니다.')
         } finally {
@@ -333,18 +340,22 @@ export default function AdminInquiriesPage() {
                                     })()}
                                 </span>
                             </div>
+
                             <div className={styles.detailRow}>
                                 <span className={styles.detailLabel}>유형</span>
                                 <span>{selected.type}</span>
                             </div>
+
                             <div className={styles.detailRow}>
                                 <span className={styles.detailLabel}>이메일</span>
                                 <span>{selected.email}</span>
                             </div>
+
                             <div className={styles.detailRow}>
                                 <span className={styles.detailLabel}>제목</span>
                                 <span>{selected.title}</span>
                             </div>
+
                             <div className={styles.detailRow}>
                                 <span className={styles.detailLabel}>작성일</span>
                                 <span>{new Date(selected.createdAt).toLocaleString()}</span>
@@ -362,6 +373,7 @@ export default function AdminInquiriesPage() {
                                         <span className={styles.replyHint}>(기존 답변을 수정할 수 있습니다)</span>
                                     )}
                                 </div>
+
                                 <textarea
                                     className={styles.replyTextarea}
                                     value={replyText}
