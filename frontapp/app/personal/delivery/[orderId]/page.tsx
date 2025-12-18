@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import axios from 'axios'
 import styles from '../delivery.module.css'
+import api from '@/app/utils/api'
 
-const API_BASE_URL = 'http://localhost:8090/api/v1'
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 type TrackingStep = {
     location: string

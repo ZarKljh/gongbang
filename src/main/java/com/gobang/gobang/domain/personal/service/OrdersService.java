@@ -2,7 +2,6 @@ package com.gobang.gobang.domain.personal.service;
 
 import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.image.repository.ImageRepository;
-import com.gobang.gobang.domain.order.model.OrderStatus;
 import com.gobang.gobang.domain.personal.dto.CartOrderItemDto;
 import com.gobang.gobang.domain.personal.dto.response.OrdersResponse;
 import com.gobang.gobang.domain.personal.dto.response.PrepareOrderResponse;
@@ -10,7 +9,6 @@ import com.gobang.gobang.domain.personal.entity.Orders;
 import com.gobang.gobang.domain.personal.entity.UserAddress;
 import com.gobang.gobang.domain.personal.repository.OrdersRepository;
 import com.gobang.gobang.domain.personal.repository.UserAddressRepository;
-import com.gobang.gobang.domain.product.dto.response.ConfirmOrderResponse;
 import com.gobang.gobang.domain.product.entity.Product;
 import com.gobang.gobang.domain.product.productList.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -93,35 +91,6 @@ public class OrdersService {
     }
 
     @Transactional
-    public ConfirmOrderResponse confirmPayment(
-            SiteUser user,
-            String orderCode,
-            String paymentKey,
-            long amount
-    ) {
-        Orders order = ordersRepository.findByOrderCodeAndSiteUser(orderCode, user)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
-
-        if (order.getStatus() != OrderStatus.TEMP) {
-            throw new IllegalStateException("이미 결제가 처리된 주문입니다.");
-        }
-
-        if (order.getTotalPrice().longValue() != amount) {
-            throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
-        }
-
-        order.markPaid(paymentKey, "TOSS");
-
-        return new ConfirmOrderResponse(
-                order.getOrderCode(),
-                paymentKey,
-                amount,
-                "DONE",
-                "결제가 정상적으로 완료되었습니다."
-        );
-    }
-
-    @Transactional
     public PrepareOrderResponse prepareCartOrder(
             SiteUser user,
             List<CartOrderItemDto> items,
@@ -139,7 +108,7 @@ public class OrdersService {
         Orders order = Orders.createTempOrder(user);
 
         // Toss에 넘길 orderId = orderCode
-        String orderCode = "ORD_" + UUID.randomUUID();
+        String orderCode = "ORD-" + UUID.randomUUID().toString().replace("-", "");
         order.setOrderCode(orderCode);
 
         BigDecimal total = BigDecimal.ZERO;

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import api from '@/app/utils/api'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 export const useWishlist = (
   onWishCountChange?: (count: number) => void,
@@ -33,7 +33,7 @@ export const useWishlist = (
 
     try {
       const res = await axios.get(
-        `${API_BASE_URL}/wishlist/infinite`,
+        `${API_BASE_URL}/mypage/wishlist/infinite`,
         {
           params: { lastWishId: lastId, size: SIZE },
           withCredentials: true
@@ -78,7 +78,7 @@ export const useWishlist = (
     if (!userId) return
 
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/follow?userId=${userId}`, {
+      const { data } = await axios.get(`${API_BASE_URL}/mypage/follow?userId=${userId}`, {
         withCredentials: true,
       })
 
@@ -95,15 +95,20 @@ export const useWishlist = (
   }
 
   const handleUnfollow = async (studioId: number, userId: number) => {
+    const confirmed = confirm('정말 이 공방을 언팔로우 하시겠습니까?')
+    if (!confirmed) return
+
     try {
-      const { data } = await axios.delete(`${API_BASE_URL}/follow`, {
+      const { data } = await axios.delete(`${API_BASE_URL}/mypage/follow`, {
         params: { studioId },
         withCredentials: true,
       })
 
       if (data.resultCode === '200') {
+        setFollowList(prev =>
+          prev.filter(item => item.studioId !== studioId)
+        )
         alert('공방을 언팔로우 했습니다.')
-        await fetchFollowList(userId)
       } else {
         alert(`언팔로우 실패: ${data.msg}`)
       }
@@ -115,8 +120,11 @@ export const useWishlist = (
 
   // ================= 위시 리스트 삭제 =================
   const handleRemoveWish = async (wishlistId: number) => {
+    const confirmed = confirm('정말 이 상품을 삭제 하시겠습니까?')
+    if (!confirmed) return
+
     try {
-      const { data } = await axios.delete(`${API_BASE_URL}/wishlist/${wishlistId}`, {
+      const { data } = await axios.delete(`${API_BASE_URL}/mypage/wishlist/${wishlistId}`, {
         withCredentials: true,
       })
 
@@ -138,7 +146,7 @@ export const useWishlist = (
   // ================= AI 추천 =================
   const fetchRecommendList = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/recommend/wishlist`, {
+      const res = await axios.get(`${API_BASE_URL}/mypage/recommend/wishlist`, {
         withCredentials: true,
       })
 

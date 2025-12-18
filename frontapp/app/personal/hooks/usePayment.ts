@@ -4,7 +4,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import api from '@/app/utils/api'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 export const usePayment = () => {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([])
@@ -25,7 +25,7 @@ export const usePayment = () => {
   // ======= 결제수단 조회 =======
   const fetchPaymentMethods = async () => {
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/payment-methods`, {
+      const { data } = await axios.get(`${API_BASE_URL}/mypage/payment-methods`, {
         withCredentials: true,
       })
 
@@ -107,7 +107,7 @@ export const usePayment = () => {
     }
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/payment-methods`, payload, {
+      const { data } = await axios.post(`${API_BASE_URL}/mypage/payment-methods`, payload, {
         withCredentials: true,
       })
 
@@ -129,7 +129,7 @@ export const usePayment = () => {
   const handleSetDefault = async (paymentId: number) => {
     try {
       const { data } = await axios.patch(
-        `${API_BASE_URL}/payment-methods/${paymentId}/default`,
+        `${API_BASE_URL}/mypage/payment-methods/${paymentId}/default`,
         {},
         { withCredentials: true },
       )
@@ -150,7 +150,7 @@ export const usePayment = () => {
     if (!confirm('정말 삭제하시겠습니까?')) return
 
     try {
-      await axios.delete(`${API_BASE_URL}/payment-methods/${paymentId}`, {
+      await axios.delete(`${API_BASE_URL}/mypage/payment-methods/${paymentId}`, {
         withCredentials: true,
       })
       fetchPaymentMethods()
