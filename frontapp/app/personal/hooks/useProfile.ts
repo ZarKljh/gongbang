@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import api from '@/app/utils/api'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
-export const IMAGE_BASE_URL = 'http://localhost:8090'
+const API_BASE_URL = `${api.defaults.baseURL}`
+// export const IMAGE_BASE_URL = 'http://localhost:8090'
 
 interface ProfileErrors {
   nickName?: string
@@ -47,7 +47,7 @@ export const useProfile = (userData: any, setUserData: any) => {
 
     try {
       const { data } = await axios.post(
-        `${API_BASE_URL}/me/verify-password`,
+        `${API_BASE_URL}/mypage/me/verify-password`,
         {
           userId: userData.id,
           password: passwordInput,
@@ -132,7 +132,7 @@ export const useProfile = (userData: any, setUserData: any) => {
 
     try {
       const { data } = await axios.patch(
-        `${API_BASE_URL}/me/${userData.id}`,
+        `${API_BASE_URL}/mypage/me/${userData.id}`,
         {
           nickName: tempData.nickName,
           email: tempData.email,
@@ -189,7 +189,7 @@ export const useProfile = (userData: any, setUserData: any) => {
 
     try {
       const { data } = await axios.patch(
-        `${IMAGE_BASE_URL}/api/v1/image/profile`,
+        `${API_BASE_URL}/api/v1/image/profile`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -198,7 +198,7 @@ export const useProfile = (userData: any, setUserData: any) => {
       )
 
       if (data.resultCode === '200') {
-        let uploadedUrl = `${IMAGE_BASE_URL}${data.data}?t=${Date.now()}`
+        let uploadedUrl = `${API_BASE_URL}${data.data}?t=${Date.now()}`
 
         alert('프로필 이미지가 업데이트되었습니다.')
         setIsProfileModalOpen(false)
@@ -223,7 +223,7 @@ export const useProfile = (userData: any, setUserData: any) => {
     if (!confirm('프로필 이미지를 삭제하시겠습니까?')) return
 
     try {
-      const { data } = await axios.delete(`${IMAGE_BASE_URL}/api/v1/image/profile`, {
+      const { data } = await axios.delete(`${API_BASE_URL}/api/v1/image/profile`, {
         withCredentials: true,
       })
 
@@ -246,7 +246,7 @@ export const useProfile = (userData: any, setUserData: any) => {
   // ===== 프로필 이미지 GET =====
   const fetchProfileImage = async (userId: number) => {
     try {
-      const response = await axios.get(`${IMAGE_BASE_URL}/api/v1/image/profile/${userId}`, {
+      const response = await axios.get(`${API_BASE_URL}/api/v1/image/profile/${userId}`, {
         responseType: 'blob',
         withCredentials: true,
       })
