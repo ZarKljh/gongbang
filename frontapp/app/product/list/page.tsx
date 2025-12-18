@@ -99,8 +99,8 @@ export default function Product() {
         PRICE_MIN: ['PRICE_MAX'],
         PRICE_MAX: ['PRICE_MIN'],
     }
-    const BASE_URL = 'http://localhost:8090'
-    //const BASE_URL = 'https://api.gongyedam.shop'
+    //const BASE_URL = 'http://localhost:8090'
+    const BASE_URL = 'https://api.gongyedam.shop'
 
     // 모바일페이지용 6개씩 페이지 단위로 나누기
     const pages = []
@@ -608,7 +608,7 @@ export default function Product() {
                                                         src={
                                                             p.images && p.images.length > 0
                                                                 ? p.images[0].imageUrl
-                                                                : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                                : `${BASE_URL}/images/initImg/no-image-soft.png`
                                                         }
                                                         alt={p.name}
                                                     />
@@ -663,7 +663,7 @@ export default function Product() {
                                                                 src={
                                                                     p.images && p.images.length > 0
                                                                         ? p.images[0].imageUrl
-                                                                        : `${BASE_URL}/uploads/products/no-image-soft.png`
+                                                                        : `${BASE_URL}/images/initImg/no-image-soft.png`
                                                                 }
                                                                 alt={p.name}
                                                             />

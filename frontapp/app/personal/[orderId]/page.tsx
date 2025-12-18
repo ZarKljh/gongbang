@@ -411,7 +411,7 @@ export default function OrderDetailPage() {
                                     className="my-review-product-name"
                                 >
                                     <p className="item-name">{item.productName}</p>
-                                </Link>
+                                </Link> 
                                 <p>
                                     {item.price.toLocaleString()}원 / {item.quantity}개
                                 </p>

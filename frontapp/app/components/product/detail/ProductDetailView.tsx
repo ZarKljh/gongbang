@@ -137,16 +137,14 @@ export default function ProductDetailView() {
     const liked: boolean = data?.productLikeInfo?.liked ?? false
     const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
-    const BASE_URL = 'http://localhost:8090'
-    //const BASE_URL = 'https://api.gongyedam.shop'
+    //const BASE_URL = 'http://localhost:8090'
+    const BASE_URL = 'https://api.gongyedam.shop'
 
     const pdImageUrl = detailImage
         ? `${BASE_URL}${detailImage.imageUrl}`
-        : `${BASE_URL}/uploads/products/no-image-soft.png`
+        : `${BASE_URL}/images/initImg/no-image-soft.png`
 
-    const gbImageUrl = gbLogo
-        ? `${BASE_URL}/images/${gbLogo.imageUrl}`
-        : `${BASE_URL}/uploads/products/no-image-soft.png`
+    const gbImageUrl = gbLogo ? `${BASE_URL}/images/${gbLogo.imageUrl}` : `${BASE_URL}/images/initImg/no-image-soft.png`
 
     const unitPrice = useMemo(() => product?.basePrice ?? 0, [product])
     const total = unitPrice * count
