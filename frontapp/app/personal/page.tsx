@@ -20,7 +20,7 @@ import { useReviews } from '@/app/personal/hooks/useReviews'
 import { useWishlist } from '@/app/personal/hooks/useWishlist'
 
 const API_BASE_URL = `${api.defaults.baseURL}`
-// export const IMAGE_BASE_URL = 'http://localhost:8090'
+export const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '')
 
 interface Stats {
   totalQna: number
@@ -822,7 +822,7 @@ export default function MyPage() {
                                                 <img
                                                     src={
                                                         previewProfileImage ||
-                                                        stats.profileImageUrl || `${API_BASE_URL}${stats.profileImageUrl}` // 서버 이미지
+                                                        stats.profileImageUrl || `${IMAGE_BASE_URL}${stats.profileImageUrl}` // 서버 이미지
                                                     }
                                                     onError={(e) => {
                                                         e.currentTarget.src = "/images/default_profile.jpg"
@@ -908,7 +908,7 @@ export default function MyPage() {
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
                                                     <img
                                                         key={idx}
-                                                        src={`${API_BASE_URL}${item.imageUrl}`}
+                                                        src={`${IMAGE_BASE_URL}${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 ))}
@@ -1053,7 +1053,7 @@ export default function MyPage() {
 
                                                 <div className="cart-image">
                                                     <img 
-                                                        src={`${API_BASE_URL}${item.imageUrl}`}
+                                                        src={`${IMAGE_BASE_URL}${item.imageUrl}`}
                                                         alt={item.productName}
                                                     />
                                                 </div>
@@ -1433,7 +1433,7 @@ export default function MyPage() {
                                                     }}
                                                 >
                                                     <img
-                                                        src={item.imageUrl ? `${API_BASE_URL}${item.imageUrl}` : "/no-image.png"}
+                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : "/no-image.png"}
                                                         className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
                                                         alt={item.productName}
                                                         draggable={false}
@@ -1464,7 +1464,7 @@ export default function MyPage() {
                                                     <div className="wishlist-image">
                                                         <img 
                                                             src={item.imageUrl
-                                                                ? `${API_BASE_URL}${item.imageUrl}`
+                                                                ? `${IMAGE_BASE_URL}${item.imageUrl}`
                                                                 : "/no-image.png"}
                                                             alt={item.productName}
                                                         />
@@ -1504,7 +1504,7 @@ export default function MyPage() {
                                                     <div className="studio-info">
                                                         {follow.studioImageUrl ? (
                                                             <img 
-                                                                src={`${API_BASE_URL}${follow.studioImageUrl}`}
+                                                                src={`${IMAGE_BASE_URL}${follow.studioImageUrl}`}
                                                                 alt={follow.studioName}
                                                                 className="studio-image"
                                                             />
@@ -1555,7 +1555,7 @@ export default function MyPage() {
                                                     {review.images.map((url, i) => (
                                                         <img
                                                             key={i}
-                                                            src={`${API_BASE_URL}${url}`}
+                                                            src={`${IMAGE_BASE_URL}${url}`}
                                                             alt={`리뷰 이미지 ${i + 1}`}
                                                             className="review-image-item"
                                                         />
@@ -2285,7 +2285,7 @@ export default function MyPage() {
                                     <img
                                         src={
                                             firstSelectedItem?.imageUrl
-                                                ? `${API_BASE_URL}${firstSelectedItem.imageUrl}`
+                                                ? `${IMAGE_BASE_URL}${firstSelectedItem.imageUrl}`
                                                 : "/default-product.png"
                                         }
                                         alt="장바구니 대표 이미지"
