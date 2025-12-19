@@ -62,10 +62,22 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     @Query("""
         SELECT COUNT(o)
         FROM Orders o
+        JOIN o.deliveries d
         WHERE o.siteUser.id = :userId
           AND o.status = :orderStatus
+          AND d = (
+              SELECT d2
+              FROM Delivery d2
+              WHERE d2.order = o
+              ORDER BY d2.createdDate DESC
+              LIMIT 1
+          )
+          AND d.deliveryStatus NOT IN ('배송중', '배송완료')
     """)
-    long countByStatus(Long userId, OrderStatus orderStatus);
+    long countByStatus(
+            @Param("userId") Long userId,
+            @Param("orderStatus") OrderStatus orderStatus
+    );
 
     @Query("""
         SELECT COUNT(o)
