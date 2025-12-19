@@ -96,7 +96,7 @@ export default function SignupUser() {
             setIsNickNameValid(false)
             setNickNameCheckMsg('')
         }
-        // name 을 keyof SignupUser 로 캐스팅하여 전달합니다
+        // name 을 keyof SignupUser 로 캐스팅하여 전달합니다 favicon retry
         //validateField(name as keyof SignupUser, value, { ...formData, [name]: value })
     }
 
