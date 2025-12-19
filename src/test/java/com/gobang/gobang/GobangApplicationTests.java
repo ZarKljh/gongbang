@@ -52,12 +52,12 @@ class GobangApplicationTests {
 
         // 2) 이미지 목록
         String[] catImages = {
-                "/uploads/reviews/공방1.jfif",
-                "/uploads/reviews/공방2.jfif",
-                "/uploads/reviews/공방3.jfif",
-                "/uploads/reviews/공방4.jfif",
-                "/uploads/reviews/공방5.jfif",
-                "/uploads/reviews/공방6.jfif"
+                "/uploads/reviews/Gongbang1.jfif",
+                "/uploads/reviews/Gongbang2.jfif",
+                "/uploads/reviews/Gongbang3.jfif",
+                "/uploads/reviews/Gongbang4.jfif",
+                "/uploads/reviews/Gongbang5.jfif",
+                "/uploads/reviews/Gongbang5.jfif"
         };
 
         // 긴 텍스트
@@ -189,10 +189,10 @@ class GobangApplicationTests {
 
         List<String> photoImages = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
-            photoImages.add("/images/키링리뷰" + i + ".jpg");
+            photoImages.add("/images/KeyringReview" + i + ".jpg");
         }
 
-        String photoExtraImage = "/images/키링리뷰10-1.jpg";
+        String photoExtraImage = "/images/KeyringReview10-1.jpg";
 
         // 중복 방지
         Collections.shuffle(photoImages);
@@ -317,7 +317,7 @@ class GobangApplicationTests {
                             .refType(Image.RefType.REVIEW)
                             .refId(savedReview.getReviewId())
                             .imageUrl(photoExtraImage)
-                            .imageFileName("키링리뷰10-1.jpg")
+                            .imageFileName("KeyringReview10-1.jpg")
                             .sortOrder(1)
                             .build());
                 } else {
@@ -366,10 +366,10 @@ class GobangApplicationTests {
 
         List<String> photoImages = new ArrayList<>();
         for (int i = 1; i <= 6; i++) {
-            photoImages.add("/images/러그리뷰" + i + ".jpg");
+            photoImages.add("/images/RugReview" + i + ".jpg");
         }
 
-        String photoExtraImage = "/images/러그리뷰6-1.jpg";
+        String photoExtraImage = "/images/RugReview6-1.jpg";
 
         // 중복 방지
         Collections.shuffle(photoImages);
@@ -499,7 +499,7 @@ class GobangApplicationTests {
                             .refType(Image.RefType.REVIEW)
                             .refId(savedReview.getReviewId())
                             .imageUrl(photoExtraImage)
-                            .imageFileName("러그리뷰6-1.jpg")
+                            .imageFileName("RugReview6-1.jpg")
                             .sortOrder(1)
                             .build());
                 } else {
