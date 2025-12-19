@@ -1,0 +1,76 @@
+name: 'frontend-deploy'
+
+on:
+  push:
+    paths:
+      - 'frontapp/**'  # 1. frontapp 폴더 내의 변경사항만 감지합니다.
+    branches:
+      - 'main'
+
+env:
+  IMAGE_NAME: gb-frontend
+
+jobs:
+  makeTagAndRelease:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.create_tag.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: create_tag
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  buildImageAndPush:
+    needs: makeTagAndRelease
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker Buildx 설치
+        uses: docker/setup-buildx-action@v2
+      - name: 레지스트리 로그인
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> ${GITHUB_ENV}
+        env:
+          OWNER: "${{ github.repository_owner }}"
+
+      - name: 빌드 앤 푸시
+        uses: docker/build-push-action@v3
+        with:
+          # 2. Dockerfile이 위치한 frontapp 폴더를 빌드 컨텍스트로 지정합니다.
+          context: ./frontapp
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ needs.makeTagAndRelease.outputs.tag_name }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [ buildImageAndPush ]
+    steps:
+      - name: AWS SSM Send-Command
+        uses: peterkimzz/aws-ssm-send-command@master
+        id: ssm
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          instance-ids: ${{ secrets.AWS_EC2_INSTANCE_ID }}
+          working-directory: /
+          comment: Frontend Deploy
+          command: |
+            echo "=== 프론트엔드 배포 시작 (frontapp) ==="
+            docker stop ${{ env.IMAGE_NAME }} || true
+            docker rm ${{ env.IMAGE_NAME }} || true
+            docker rmi -f $(docker images "ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}" -q) || true
+            docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
+            # 3. 프론트엔드 포트 설정 (예: 3000번)
+            docker run -d --name ${{ env.IMAGE_NAME }} -p 3000:3000 ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
+            echo "=== 프론트엔드 배포 완료 ==="
