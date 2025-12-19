@@ -96,7 +96,7 @@ export default function SignupUser() {
             setIsNickNameValid(false)
             setNickNameCheckMsg('')
         }
-        // name 을 keyof SignupUser 로 캐스팅하여 전달
+        // name 을 keyof SignupUser 로 캐스팅하여 전달한다
         //validateField(name as keyof SignupUser, value, { ...formData, [name]: value })
     }
 
