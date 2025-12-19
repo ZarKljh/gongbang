@@ -50,6 +50,7 @@ export const useOrders = () => {
 
   const filterOrdersByStatus = (status) => {
     return orders.filter((o) => {
+      if (o.status !== "PAID") return false
       if (o.deliveryStatus !== status) return false
 
       if (status === "배송완료") {
