@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const API_BASE_URL = api.defaults.baseURL
-// export const IMAGE_BASE_URL = 'http://localhost:8090'
+export const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '')
 
 type TopStudio = {
     studioId: number
@@ -70,7 +70,7 @@ export default function TopStudios() {
                             <div key={studio.studioId} className="topStudioCard">
                                 <div className="topStudioBox">
                                     <img
-                                        src={`${API_BASE_URL}${studio.mainImageUrl}`}
+                                        src={`${IMAGE_BASE_URL}${studio.mainImageUrl}`}
                                         alt={studio.studioName}
                                         className="topStudioMainImg"
                                     />
@@ -92,7 +92,7 @@ export default function TopStudios() {
                                             className="topProductCardSmall"
                                         >
                                             <img
-                                                src={`${API_BASE_URL}${p.imageUrl}`}
+                                                src={`${IMAGE_BASE_URL}${p.imageUrl}`}
                                                 alt={p.productName}
                                                 className="topProductImgSmall"
                                             />
