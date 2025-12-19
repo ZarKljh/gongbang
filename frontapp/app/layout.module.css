@@ -141,6 +141,10 @@ body {
     font-size: 16px;
 }
 
+/* .subcategoryList li:last-child {
+    margin-bottom: 12px;
+} */
+
 .subcategoryList a:hover {
     color: #745f45;
 }
