@@ -22,7 +22,7 @@ public class PaymentService {
     public void confirm(PaymentConfirmRequest req, SiteUser user) {
 
         Orders order = ordersRepository
-                .findByOrderCodeAndSiteUser(req.getOrderCode(), user)
+                .findByOrderCodeAndSiteUser(req.getOrderId(), user)
                 .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
         if (!order.isTemp()) {
