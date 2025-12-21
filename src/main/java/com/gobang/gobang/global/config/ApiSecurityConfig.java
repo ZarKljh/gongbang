@@ -30,6 +30,10 @@ public class ApiSecurityConfig {
                                 //메인페이지,목록페이지,상세페이지 게스트용 허용
                                 .requestMatchers(HttpMethod.GET, "/api/v1/home/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/product/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/product/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/product/*/follow").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/product/*/cart").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/product/*/like").permitAll()
                                 //.requestMatchers(HttpMethod.POST, "/api/v1/product/**").permitAll() //<<비로그인 사용자 상품 등록, 상품 수정/삭제 가능 .authenticated()로 변경해야함
                                 .requestMatchers(HttpMethod.GET, "/api/v1/filter/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/category/**").permitAll()
@@ -48,6 +52,7 @@ public class ApiSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/*/members/login").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/*/members/logout").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/studio/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/product/**").permitAll()
                                 //.requestMatchers(HttpMethod.POST, "/api/v1/studio/**").permitAll() //<<셀러가 아니어도 누구나 스튜디오 생성 가능 .authenticated()로 변경해야함
                                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/reviews/**").authenticated()
