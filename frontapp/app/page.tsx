@@ -6,7 +6,6 @@ import styles from './main.module.css'
 import Link from 'next/link'
 import TopStudios from './mainComponents/section-topStudio'
 import ReviewRank from '@/app/utils/ReviewRank'
-// 컴포넌트 참조
 import MainSection02 from '@/app/components/main/sec02/MainSection02'
 
 // 타입 정의 (백엔드 DTO 구조에 맞춰 수정 가능)
@@ -38,13 +37,11 @@ export default function Main() {
 
             // ✅ 구조 분해 (axios는 자동으로 JSON 파싱)
             const categoryList: Category[] = res.data.data.categoryList
-
             setCategories(categoryList)
 
             // 2 카테고리 ID별로 서브카테고리 병렬 요청
             const subPromises = categoryList.map(async (cat) => {
                 const res = await api.get(`category/${cat.id}/sub`)
-
                 return [cat.id, res.data.data.subCategoryList] as const
             })
 
@@ -63,21 +60,57 @@ export default function Main() {
         }
     }
 
+    /**
+     * 방문 기록(팀원 코드 영향 없이 이 블록만 수정)
+     * - 세션 내 1회만 기록
+     * - 비로그인도 visitorId(localStorage)로 식별
+     * - api baseURL 구성에 따라 경로 2개를 순차 시도
+     */
     useEffect(() => {
-        if (process.env.NODE_ENV !== 'production') return
+        console.log('[VISIT] effect start')
 
         const VISITED_KEY = 'main_visited'
-
         if (sessionStorage.getItem(VISITED_KEY)) {
+            console.log('[VISIT] skipped by sessionStorage')
             return
         }
-
         sessionStorage.setItem(VISITED_KEY, '1')
 
-        api.post('/admin/metrics/visit', {
+        // 비로그인 방문자 식별자: localStorage에 저장/재사용
+        const VID_KEY = 'visitorId'
+        let visitorId = localStorage.getItem(VID_KEY)
+        if (!visitorId) {
+            visitorId = (crypto as any)?.randomUUID
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+            localStorage.setItem(VID_KEY, visitorId)
+        }
+
+        const payload = {
             path: '/',
             referrer: document.referrer || null,
-        }).catch(() => {})
+            userId: null,
+            visitorId,
+        }
+
+        console.log('[VISIT] posting payload:', payload)
+        console.log('[VISIT] api baseURL:', (api as any)?.defaults?.baseURL)
+
+        // baseURL이 http://localhost:8090 이면 '/api/v1/admin/metrics/visit'가 맞을 확률이 높고,
+        // baseURL이 http://localhost:8090/api/v1 이면 '/admin/metrics/visit'가 맞을 확률이 높습니다.
+        const tryPaths = ['/api/v1/admin/metrics/visit', '/admin/metrics/visit']
+
+        ;(async () => {
+            for (const p of tryPaths) {
+                try {
+                    const res = await api.post(p, payload)
+                    console.log('[VISIT] success path:', p, 'status:', res?.status)
+                    return
+                } catch (e: any) {
+                    console.warn('[VISIT] failed path:', p, e?.message || e)
+                }
+            }
+        })()
     }, [])
 
     return (
@@ -88,6 +121,7 @@ export default function Main() {
                     <img src={`${BASE_URL}/uploads/banner3.png`} alt="메인 배너" />
                 </div>
             </div>
+
             {/* 카테고리 */}
             <div className={styles.mainPage}>
                 <nav aria-label="카테고리 슬라이더">
@@ -124,9 +158,10 @@ export default function Main() {
                     </div>
                 </nav>
             </div>
+
             {/* 섹션 */}
             <section className={styles.recommendWrap}>
-                {/* 섹션2번 컴포넌트로 묶음*/}
+                {/* 섹션2번 컴포넌트로 묶음 */}
                 <MainSection02 />
                 <TopStudios />
                 <ReviewRank />
