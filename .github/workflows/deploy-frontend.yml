@@ -9,6 +9,7 @@ on:
 
 env:
   IMAGE_NAME: gb-frontend
+  OWNER_LC: zarkljh
 
 jobs:
   makeTagAndRelease:
