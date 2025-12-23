@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+    // 1. 여기에 추가합니다.
+    output: 'standalone',
+
     typescript: {
         ignoreBuildErrors: true,
     },
