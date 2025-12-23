@@ -25,7 +25,6 @@ function getFocusableElements(root: HTMLElement | null) {
     ].join(',')
 
     return Array.from(root.querySelectorAll<HTMLElement>(selectors)).filter((el) => {
-        // display none / visibility hidden 제외
         const style = window.getComputedStyle(el)
         return style.display !== 'none' && style.visibility !== 'hidden'
     })
@@ -35,9 +34,16 @@ export default function Modal({ open, onClose, title, children, size = 'md', clo
     const dialogRef = useRef<HTMLDivElement | null>(null)
     const lastActiveElRef = useRef<HTMLElement | null>(null)
 
+    // ✅ 핵심: onClose를 ref로 고정해서 effect 의존성에서 제거
+    const onCloseRef = useRef(onClose)
+    useEffect(() => {
+        onCloseRef.current = onClose
+    }, [onClose])
+
     const reactId = useId()
     const titleId = useMemo(() => `modal-title-${reactId}`, [reactId])
 
+    // ✅ open만 의존: 입력/렌더로 effect cleanup 재실행되지 않음
     useEffect(() => {
         if (!open) return
 
@@ -47,11 +53,10 @@ export default function Modal({ open, onClose, title, children, size = 'md', clo
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 e.preventDefault()
-                onClose()
+                onCloseRef.current()
                 return
             }
 
-            // 간단 포커스 트랩 (Tab 순환)
             if (e.key === 'Tab') {
                 const root = dialogRef.current
                 const focusables = getFocusableElements(root)
@@ -81,8 +86,8 @@ export default function Modal({ open, onClose, title, children, size = 'md', clo
         const prevOverflow = document.body.style.overflow
         document.body.style.overflow = 'hidden'
 
-        // 최초 포커스: 모달 안 첫 focusable 또는 닫기 버튼/다이얼로그
-        window.setTimeout(() => {
+        // 최초 포커스 (오픈 “한 번”만)
+        const t = window.setTimeout(() => {
             const root = dialogRef.current
             const focusables = getFocusableElements(root)
             if (focusables.length > 0) focusables[0].focus()
@@ -90,6 +95,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', clo
         }, 0)
 
         return () => {
+            window.clearTimeout(t)
             document.removeEventListener('keydown', onKey)
             document.body.style.overflow = prevOverflow
 
@@ -97,7 +103,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', clo
             lastActiveElRef.current?.focus?.()
             lastActiveElRef.current = null
         }
-    }, [open, onClose])
+    }, [open])
 
     if (!open) return null
 
@@ -105,10 +111,14 @@ export default function Modal({ open, onClose, title, children, size = 'md', clo
 
     return createPortal(
         <div className={styles.modalRoot}>
-            {/* 어두운 배경 */}
-            <div className={styles.modalBackdrop} onClick={() => closeOnBackdrop && onClose()} aria-hidden="true" />
+            <div
+                className={styles.modalBackdrop}
+                onClick={() => {
+                    if (closeOnBackdrop) onCloseRef.current()
+                }}
+                aria-hidden="true"
+            />
 
-            {/* 모달 박스 */}
             <div
                 ref={dialogRef}
                 role="dialog"
@@ -116,13 +126,18 @@ export default function Modal({ open, onClose, title, children, size = 'md', clo
                 aria-labelledby={title ? titleId : undefined}
                 className={`${styles.modalDialog} ${sizeClass}`}
                 onClick={(e) => e.stopPropagation()}
-                tabIndex={-1} // focus fallback
+                tabIndex={-1}
             >
                 <div className={styles.modalHeader}>
                     <h2 id={titleId} className={styles.modalTitle}>
                         {title ?? '알림'}
                     </h2>
-                    <button type="button" onClick={onClose} className={styles.modalCloseButton} aria-label="닫기">
+                    <button
+                        type="button"
+                        onClick={() => onCloseRef.current()}
+                        className={styles.modalCloseButton}
+                        aria-label="닫기"
+                    >
                         ✕
                     </button>
                 </div>
