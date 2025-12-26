@@ -243,7 +243,7 @@ export const useProfile = (userData: any, setUserData: any) => {
   }
 
 
-  // ===== 프로필 이미지 GET =====
+  // ===== 프로필 이미지 GET ===== // retry
   const fetchProfileImage = async (userId: number) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/image/profile/${userId}`, {
