@@ -586,7 +586,7 @@ export default function Review() {
                                 <SwiperSlide key={r.reviewId}>
                                     <div className="photoCard" onClick={openPhotoModal}>
                                         {r.imageUrls?.[0] && (
-                                            <img src={`https://api.gongyedam.shop/images/${r.imageUrls[0]}`} alt="" />
+                                            <img src={`https://api.gongyedam.shop${r.imageUrls[0]}`} alt="" />
                                         )}
                                         <p>{r.title}</p>
                                     </div>
@@ -759,7 +759,7 @@ export default function Review() {
                                                 <img
                                                     src={
                                                         review.profileImageUrl
-                                                            ? `https://api.gongyedam.shop/images/${review.profileImageUrl}`
+                                                            ? `https://api.gongyedam.shop${review.profileImageUrl}`
                                                             : '/images/default_profile.jpg'
                                                     }
                                                     alt="프로필"
