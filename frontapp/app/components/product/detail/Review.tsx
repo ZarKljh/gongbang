@@ -221,7 +221,7 @@ export default function Review() {
         const allReviewImages = photoReviews.flatMap((review) =>
             (review.imageUrls ?? []).map((url) => ({
                 reviewId: review.reviewId,
-                img: `https://api.gongyedam.shop/images/${url}`,
+                img: `https://api.gongyedam.shop${url}`,
             })),
         )
 
@@ -826,7 +826,7 @@ export default function Review() {
                                             <p className="review-content-text">{review.content}</p>
                                             {review.imageUrls && review.imageUrls.length > 0 && (
                                                 <img
-                                                    src={`https://api.gongyedam.shop/images/${review.imageUrls[0]}`}
+                                                    src={`https://api.gongyedam.shop${review.imageUrls[0]}`}
                                                     alt="리뷰 이미지"
                                                     className="review-image"
                                                 />
