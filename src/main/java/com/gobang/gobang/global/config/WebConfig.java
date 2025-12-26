@@ -31,6 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
                 "https://www.gongyedam.shop",     // www 포함 주소
                 "http://localhost:3000",          // 로컬 개발 환경
                 "http://43.202.46.218:3000"       // 만약 IP로 직접 접속하는 경우 (필요시)
+
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
