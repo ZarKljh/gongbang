@@ -189,7 +189,7 @@ export const useProfile = (userData: any, setUserData: any) => {
 
     try {
       const { data } = await axios.patch(
-        `${IMAGE_BASE_URL}/image/profile`,
+        `${API_BASE_URL}/image/profile`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -223,7 +223,7 @@ export const useProfile = (userData: any, setUserData: any) => {
     if (!confirm('프로필 이미지를 삭제하시겠습니까?')) return
 
     try {
-      const { data } = await axios.delete(`${IMAGE_BASE_URL}/image/profile`, {
+      const { data } = await axios.delete(`${API_BASE_URL}/image/profile`, {
         withCredentials: true,
       })
 
@@ -246,7 +246,7 @@ export const useProfile = (userData: any, setUserData: any) => {
   // ===== 프로필 이미지 GET =====
   const fetchProfileImage = async (userId: number) => {
     try {
-      const response = await axios.get(`${IMAGE_BASE_URL}/image/profile/${userId}`, {
+      const response = await axios.get(`${API_BASE_URL}/image/profile/${userId}`, {
         responseType: 'blob',
         withCredentials: true,
       })
