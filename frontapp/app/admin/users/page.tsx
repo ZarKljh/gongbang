@@ -7,16 +7,15 @@ import styles from '@/app/admin/styles/AdminReports.module.css'
 import Link from 'next/link'
 
 type Role = 'USER' | 'SELLER'
-
-type UserStatus = 'ACTIVE' | 'BAN'
+type UserStatus = 'ACTIVE' | 'BAN' | string
 
 type SiteUserRow = {
     id: number
     userName: string
-    fullName?: String
+    fullName?: string
     email: string
     role: Role
-    status: string
+    status?: UserStatus
     createdDate?: string
     updatedDate?: string
 }
@@ -40,51 +39,60 @@ export default function AdminUsersPage() {
         return p
     }, [roleFilter, statusFilter, q])
 
-    const load = async () => {
+    const load = async (opts?: { silent?: boolean }) => {
+        const silent = opts?.silent ?? false
         try {
             setError(null)
+            if (!silent) setLoading(true)
+
+            // baseURL = .../api/v1 이므로 /api/v1 같은 prefix는 붙이지 않음
             const res = await api.get('/admin/users', { params })
+
             const list: SiteUserRow[] = Array.isArray(res.data) ? res.data : res.data?.data ?? []
             setRows(list)
             setLastUpdated(new Date())
         } catch (e: any) {
-            setError(e?.response?.data?.message ?? e?.message ?? '유저 목록을 불러오지 못했습니다.')
+            if (!silent) {
+                setError(e?.response?.data?.message ?? e?.message ?? '유저 목록을 불러오지 못했습니다.')
+            }
         } finally {
-            setLoading(false)
+            if (!silent) setLoading(false)
         }
     }
 
-    const statusLabel = (status: string) => {
+    const statusLabel = (status?: string) => {
         switch (status) {
             case 'ACTIVE':
                 return '정상'
             case 'BAN':
                 return '정지'
             default:
-                return status // 혹시 모를 다른 값 대비
+                return status ?? '-'
         }
     }
 
-    // 최초 로드 + 3초 폴링
-    useEffect(() => {
-        setLoading(true)
-        load()
-        const tm = setInterval(load, 3000)
-        return () => clearInterval(tm)
-    }, [params]) // 필터/검색 바뀌면 즉시 재폴링
+    const badge = (status?: string) => {
+        if (!status) return styles.badge
 
-    const badge = (status: string) => {
         switch (status) {
             case 'ACTIVE':
-                return `${styles.badge} ${styles.badgeActive}`
+                return (styles as any).badgeActive ? `${styles.badge} ${(styles as any).badgeActive}` : styles.badge
             case 'BAN':
-                return `${styles.badge} ${styles.badgeBAN}`
+                return (styles as any).badgeBAN ? `${styles.badge} ${(styles as any).badgeBAN}` : styles.badge
             default:
                 return styles.badge
         }
     }
 
-    // 역할 변경
+    // 최초 로드 + 3초 폴링 (필터/검색 바뀌면 즉시 재폴링)
+    useEffect(() => {
+        load()
+        const tm = setInterval(() => load({ silent: true }), 3000)
+        return () => clearInterval(tm)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params])
+
+    // 역할 변경 (현재 UI에서는 호출 안 하고 있지만 함수는 유지)
     const changeRole = async (id: number, role: Role) => {
         try {
             await api.patch(`/admin/users/${id}/role`, { role })
@@ -115,6 +123,7 @@ export default function AdminUsersPage() {
                                 className={styles.searchInput}
                             />
                         </div>
+
                         <select
                             className={styles.select}
                             value={statusFilter}
@@ -124,22 +133,21 @@ export default function AdminUsersPage() {
                             <option value="ACTIVE">정상</option>
                             <option value="BAN">정지</option>
                         </select>
-                        <div className={styles.filterGroup}>
-                            <select
-                                className={styles.select}
-                                value={roleFilter}
-                                onChange={(e) => setRoleFilter(e.target.value as any)}
-                            >
-                                <option value="ALL">전체</option>
-                                <option value="USER">USER</option>
-                                <option value="SELLER">SELLER</option>
-                            </select>
-                        </div>
+
+                        <select
+                            className={styles.select}
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value as any)}
+                        >
+                            <option value="ALL">전체</option>
+                            <option value="USER">USER</option>
+                            <option value="SELLER">SELLER</option>
+                        </select>
                     </div>
                 </div>
 
                 <section className={styles.card}>
-                    {error && <div className={styles.error}>{error}</div>}
+                    {error && <div className={(styles as any).errorBox ?? styles.empty}>{error}</div>}
 
                     {loading ? (
                         <div className={styles.empty}>불러오는 중...</div>
@@ -171,15 +179,17 @@ export default function AdminUsersPage() {
                                             </td>
 
                                             <td>{u.userName}</td>
-                                            <td>{u.fullName}</td>
+                                            <td>{u.fullName ?? '-'}</td>
                                             <td>{u.email}</td>
+
                                             <td>
-                                                <div className={styles.roleCell}>
-                                                    <span className={styles.roleText}>{u.role}</span>
+                                                <div className={(styles as any).roleCell ?? ''}>
+                                                    <span className={(styles as any).roleText ?? ''}>{u.role}</span>
                                                 </div>
                                             </td>
 
                                             <td>{u.createdDate ? new Date(u.createdDate).toLocaleString() : '-'}</td>
+
                                             <td>
                                                 <div className={styles.actions}>
                                                     <Link

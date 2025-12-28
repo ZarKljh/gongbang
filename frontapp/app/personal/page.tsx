@@ -19,8 +19,8 @@ import { useQna } from '@/app/personal/hooks/useQna'
 import { useReviews } from '@/app/personal/hooks/useReviews'
 import { useWishlist } from '@/app/personal/hooks/useWishlist'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
-export const IMAGE_BASE_URL = 'http://localhost:8090'
+const API_BASE_URL = `${api.defaults.baseURL}`
+export const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '')
 
 interface Stats {
   totalQna: number
@@ -125,6 +125,7 @@ export default function MyPage() {
             submitReason,
             filterOrdersByStatus,
             ORDER_STATUS_LABEL,
+            visibleOrders,
         } = useOrders()
 
     // 장바구니
@@ -134,6 +135,7 @@ export default function MyPage() {
             selectedProducts,
             setCart,
             setSelectedItems,
+            handlePurchaseComplete,
             fetchCart,
             handleUpdateCart,
             handleDeleteCart,
@@ -230,7 +232,6 @@ export default function MyPage() {
         const {
             qna,
             openQnaId,
-            setQna,
             fetchQna,
             handleDeleteQna,
             toggleQna,
@@ -296,7 +297,7 @@ export default function MyPage() {
     // =============== 사용자 정보 조회 ===============
     const fetchUser = async () => {
         try {
-        const { data } = await axios.get(`${API_BASE_URL}/me`, {
+        const { data } = await axios.get(`${API_BASE_URL}/mypage/me`, {
             withCredentials: true,
         })
 
@@ -362,7 +363,7 @@ export default function MyPage() {
 
     // =============== 통계 계산 ===============
     const fetchStats = async (userId: number) => {
-        const res = await axios.get(`${API_BASE_URL}/stats`, {
+        const res = await axios.get(`${API_BASE_URL}/mypage/stats`, {
             params: { userId },
             withCredentials: true,
         })
@@ -372,15 +373,15 @@ export default function MyPage() {
     // =============== 삭제 모달 핸들러 ===============
     const handleReviewDeleteClick = (review: any) => {
         setDeleteModal({
-        open: true,
-        title: '리뷰 삭제',
-        message: '정말로 이 리뷰를 삭제하시겠습니까?',
-        warning: '삭제된 리뷰는 복구할 수 없습니다.',
-        onConfirm: () => {
-            handleDeleteReview(review.reviewId)
-            setDeleteModal(prev => ({ ...prev, open: false }))
-        },
-        onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
+            open: true,
+            title: '리뷰 삭제',
+            message: '정말로 이 리뷰를 삭제하시겠습니까?',
+            warning: '삭제된 리뷰는 복구할 수 없습니다.',
+            onConfirm: () => {
+                handleDeleteReview(review.reviewId)
+                setDeleteModal(prev => ({ ...prev, open: false }))
+            },
+            onCancel: () => setDeleteModal(prev => ({ ...prev, open: false })),
         })
     }
 
@@ -513,7 +514,7 @@ export default function MyPage() {
 
         try {
         const res = await axios.post(
-            `${API_BASE_URL}/cart/prepare`,
+            `${API_BASE_URL}/payments/cart/prepare`,
             {
             items: pendingOrderItems,
             addressId: selectedAddress.userAddressId,
@@ -529,6 +530,7 @@ export default function MyPage() {
         // 장바구니에서 구매한 cartId 기록 → 결제 성공 후 삭제용
         localStorage.setItem('ORDER_CART_IDS', JSON.stringify(selectedItems))
         localStorage.setItem('PAY_PENDING', '1')
+        localStorage.setItem('orderCode', orderCode)
 
         setIsAddressSelectModalOpen(false)
         setIsModalOpen(true)
@@ -584,13 +586,13 @@ export default function MyPage() {
             amount: total,
             orderId: orderCode,
             orderName: '장바구니 상품 결제',
-            successUrl: `${window.location.origin}/pay/success`,
+            successUrl: `${window.location.origin}/pay/success?orderId=${orderCode}&amount=${total}`,
             failUrl: `${window.location.origin}/pay/fail`,
         })
         } catch (e: any) {
         try {
             await axios.post(
-            `${API_BASE_URL}/orders/cancel-before-payment`,
+            `${API_BASE_URL}/mypage/orders/cancel-before-payment`,
             { orderCode },
             { withCredentials: true },
             )
@@ -619,7 +621,7 @@ export default function MyPage() {
             const cartIds = JSON.parse(stored)
 
             axios
-            .delete(`${API_BASE_URL}/cart/after-order`, {
+            .delete(`${API_BASE_URL}/mypage/cart/after-order`, {
                 data: { cartIds },
                 withCredentials: true,
             })
@@ -900,6 +902,7 @@ export default function MyPage() {
                                             <div className='order-title'>
                                                 <p>주문 일자: {order.createdDate} | 주문번호: {order.orderCode}</p>
                                                 <span className={`badge ${order.deliveryStatus}`}>{order.deliveryStatus}</span>
+                                                <span className={`badge ${order.status}`}>{ORDER_STATUS_LABEL[order.status]}</span>
                                             </div>
                                             <div className='order-img'>
                                                 {(order.items || []).slice(0, 4).map((item, idx) => (
@@ -1202,7 +1205,7 @@ export default function MyPage() {
                                                 onChange={(e) => setTempData({ ...tempData, nickName: e.target.value })}
                                                 className="editable"
                                             />
-                                            {errors.nickName && <p className="error-msg">{errors.nickName}</p>}
+                                            {profileErrors.nickName && <p className="error-msg">{profileErrors.nickName}</p>}
                                         </div>
                                     ) : (
                                         <p>{userData.nickName}</p>
@@ -1221,7 +1224,7 @@ export default function MyPage() {
                                                 onChange={(e) => setNewPassword(e.target.value)}
                                                 className="editable"
                                             />
-                                            {errors.newPassword && <p className="error-msg">{errors.newPassword}</p>}
+                                            {profileErrors.newPassword && <p className="error-msg">{profileErrors.newPassword}</p>}
                                         </div>
                                     )}
                                 </div>
@@ -1236,7 +1239,7 @@ export default function MyPage() {
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                             />
-                                            {errors.confirmPassword && <p className="error-msg">{errors.confirmPassword}</p>}
+                                            {profileErrors.confirmPassword && <p className="error-msg">{profileErrors.confirmPassword}</p>}
                                         </div>
                                     )}
                                 </div>
@@ -1251,7 +1254,7 @@ export default function MyPage() {
                                                 onChange={(e) => setTempData({ ...tempData, email: e.target.value })}
                                                 className="editable"
                                             />
-                                            {errors.email && <p className="error-msg">{errors.email}</p>}
+                                            {profileErrors.email && <p className="error-msg">{profileErrors.email}</p>}
                                         </div>
                                     ) : (
                                         <p>{userData.email}</p>
@@ -1268,7 +1271,7 @@ export default function MyPage() {
                                                 onChange={(e) => setTempData({ ...tempData, mobilePhone: e.target.value })}
                                                 className="editable"
                                             />
-                                            {errors.mobilePhone && <p className="error-msg">{errors.mobilePhone}</p>}
+                                            {profileErrors.mobilePhone && <p className="error-msg">{profileErrors.mobilePhone}</p>}
                                         </div>
                                     ) : (
                                         <p>{userData.mobilePhone}</p>
@@ -1541,7 +1544,7 @@ export default function MyPage() {
                                     {infiniteReviews.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()).map((review) => (
                                         <div key={review.reviewId} className="my-review-card">
                                             <div className="my-review-header">
-                                                <Link href={`http://localhost:3000/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
+                                                <Link href={`/product/list/detail?productId=${review.productId}`} className="my-review-product-name">
                                                     {review.productName}
                                                 </Link>
                                                 <span className="my-review-rating">⭐ {review.rating} / 5</span>
@@ -1573,7 +1576,7 @@ export default function MyPage() {
                                                     수정
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteClick(review)}
+                                                    onClick={() => handleReviewDeleteClick(review)}
                                                     className="link-btn delete"
                                                 >
                                                     삭제
@@ -1600,23 +1603,26 @@ export default function MyPage() {
                             ) : (
                                 <div className="qna-list">
                                     {qna.map((item) => (
-                                        <div key={item.qnaId} className="qna-card"
-                                        onClick={() => toggleQna(item.qnaId)}
-                                        >
-                                            <div className="qna-header">
-                                                <div className="qna-title">{item.title}</div>
-                                                <span className="qna-type">{item.type}</span>
-                                            </div>
+                                        <div key={item.qnaId} className="qna-card">
+                                            <div
+                                                className="qna-click-area"
+                                                onClick={() => toggleQna(item.qnaId)}
+                                            >
+                                                <div className="qna-header">
+                                                    <div className="qna-title">{item.title}</div>
+                                                    <span className="qna-type">{item.type}</span>
+                                                </div>
 
-                                            <div className="qna-status">
-                                                {item.answered ? (
-                                                    <span className="answered">답변 완료</span>
-                                                ) : (
-                                                    <span className="waiting">답변 대기 중</span>
-                                                )}
-                                            </div>
+                                                <div className="qna-status">
+                                                    {item.answered ? (
+                                                        <span className="answered">답변 완료</span>
+                                                    ) : (
+                                                        <span className="waiting">답변 대기 중</span>
+                                                    )}
+                                                </div>
 
-                                            <div className="qna-content">{item.content}</div>
+                                                <div className="qna-content">{item.content}</div>
+                                            </div>
 
                                             <div className="qna-footer">
                                                 <span>작성일: {' '}
@@ -1627,11 +1633,10 @@ export default function MyPage() {
                                                     })}
                                                 </span>
                                                 <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleDeleteQna(item.qnaId)
-                                                    }}
-                                                    className="link-btn delete"
+                                                    onClick={(e) => {handleDeleteQna(item.qnaId)}}
+                                                    type="button"
+                                                    className={`link-btn delete ${item.answered ? 'disabled' : ''}`}
+                                                    disabled={item.answered}
                                                 >
                                                     삭제
                                                 </button>
@@ -1666,11 +1671,11 @@ export default function MyPage() {
                         </div>
 
                         <div className="modal-body">
-                            {filterOrdersByStatus(selectedStatus).length === 0 ? (
-                                <p className='empty-state'>주문 내역이 없습니다.</p>
+                            {visibleOrders.length === 0 ? (
+                                <p className="empty-state">주문 내역이 없습니다.</p>
                             ) : (
                                 <div className="modal-orders-list">
-                                    {filterOrdersByStatus(selectedStatus).map((order) => (
+                                    {visibleOrders.map((order) => (
                                         <div key={order.orderId} className="modal-order-card">
                                             <div className="modal-order-header">
                                                 <span className="order-date">{order.createdDate}</span>
@@ -1678,9 +1683,11 @@ export default function MyPage() {
                                             </div>
 
                                             <div className="modal-order-info">
-                                                <span className="product-name">
-                                                    {order.items?.[0]?.productName || "상품 없음"}
-                                                </span>
+                                                <Link href={`/product/list/detail?productId=${p.productId}`}>
+                                                    <span className="product-name">
+                                                        {order.items?.[0]?.productName || '상품 없음'}
+                                                    </span>
+                                                </Link>
                                                 <span className={`badge ${order.deliveryStatus}`}>
                                                     {order.deliveryStatus}
                                                 </span>
@@ -1916,7 +1923,7 @@ export default function MyPage() {
                                             value={bankName} 
                                             onChange={(e) => setBankName(e.target.value)} 
                                         />
-                                        {errors.bankName && <p className="error-msg">{errors.bankName}</p>}
+                                        {paymentErrors.bankName && <p className="error-msg">{paymentErrors.bankName}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>계좌번호</label>
@@ -1926,7 +1933,7 @@ export default function MyPage() {
                                             value={accountNumber} 
                                             onChange={(e) => setAccountNumber(e.target.value)} 
                                         />
-                                        {errors.accountNumber && <p className="error-msg">{errors.accountNumber}</p>}
+                                        {paymentErrors.accountNumber && <p className="error-msg">{paymentErrors.accountNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>예금주</label>
@@ -1960,7 +1967,7 @@ export default function MyPage() {
                                             value={cardNumber} 
                                             onChange={(e) => setCardNumber(e.target.value)} 
                                         />
-                                        {errors.cardNumber && <p className="error-msg">{errors.cardNumber}</p>}
+                                        {paymentErrors.cardNumber && <p className="error-msg">{paymentErrors.cardNumber}</p>}
                                     </div>
                                     <div className="form-field">
                                         <label>유효기간</label>
@@ -1970,7 +1977,7 @@ export default function MyPage() {
                                             value={cardExpire} 
                                             onChange={(e) => setCardExpire(e.target.value)} 
                                         />
-                                        {errors.cardExpire && <p className="error-msg">{errors.cardExpire}</p>}
+                                        {paymentErrors.cardExpire && <p className="error-msg">{paymentErrors.cardExpire}</p>}
                                     </div>
                                 </>
                             )}

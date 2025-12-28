@@ -1,6 +1,5 @@
 package com.gobang.gobang.domain.personal.dto.request;
 
-import com.gobang.gobang.domain.auth.entity.SiteUser;
 import com.gobang.gobang.domain.personal.enums.PaymentType;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +18,4 @@ public class PaymentMethodRequest {
     private String cardExpire;         // MM/YY
 
     private Boolean defaultPayment;
-    private SiteUser siteUser;
 }

@@ -141,6 +141,10 @@ body {
     font-size: 16px;
 }
 
+/* .subcategoryList li:last-child {
+    margin-bottom: 12px;
+} */
+
 .subcategoryList a:hover {
     color: #745f45;
 }
@@ -181,6 +185,107 @@ body {
 
 .mobileCategoryWrapper {
     display: none;
+}
+
+/* 알림 버튼 */
+.alarmWrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.alarmButton {
+    position: relative;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 8px 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alarmBadge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
+    background: #ff3b30;
+    color: #fff;
+}
+
+.alarmDropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    max-height: 320px;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    z-index: 9999;
+}
+
+.alarmHeader {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.alarmEmpty {
+    padding: 12px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.alarmList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.alarmItem {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.alarmItemUnread .alarmMessage {
+    font-weight: 700;
+}
+
+.alarmLink,
+.alarmRowButton {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+}
+
+.alarmLink:hover,
+.alarmRowButton:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.alarmMessage {
+    font-size: 13px;
+}
+
+.alarmTime {
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.55);
 }
 
 @media (max-width: 460px) {
@@ -322,5 +427,9 @@ body {
 
     .mobileCategoryTitleOpen .mobileCategoryArrow {
         transform: rotate(180deg);
+    }
+
+    .alarmButton {
+        display: none;
     }
 }

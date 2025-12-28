@@ -7,6 +7,12 @@ import ErrorMessage from '@/app/auth/common/errorMessage'
 import axios from 'axios'
 import { api } from '@/app/utils/api'
 
+// 💡 1. handleSubmit을 위한 타입 선언
+type FormSubmitEvent = React.FormEvent<HTMLFormElement>
+
+// 💡 2. handleChange를 위한 타입 선언
+type InputChangeEvent = React.ChangeEvent<HTMLInputElement>
+
 export default function LoginSeller() {
     const router = useRouter()
 
@@ -18,7 +24,7 @@ export default function LoginSeller() {
 
     const { errors, validate, validateField } = loginUserValidation()
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormSubmitEvent) => {
         e.preventDefault()
 
         //아이디와 password검증
@@ -37,24 +43,26 @@ export default function LoginSeller() {
         }
     }
 
-    //로그아웃을 위한 메소드
-    const handleLogout = async () => {
-        try {
-            await api.post('/auth/logout')
-            alert('로그아웃 성공하였습니다')
-            router.push('/')
-        } catch (error) {
-            alert('로그아웃에 실패하였습니다.')
-        }
-    }
-
+    /*
     const handleChange = (e) => {
         const { name, value } = e.target
         setSeller({ ...seller, [name]: value })
         //console.log({...article, [name]: value});
         validateField(name, value)
     }
+    */
+    const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+        const { name, value } = e.target
 
+        // 💡 별칭 없이, name을 직접 'typeof seller'의 키로 단언
+        const fieldName = name as keyof typeof seller
+
+        setSeller({ ...seller, [fieldName]: value })
+        //validateField(fieldName, value)
+        if (name === 'userName' || name === 'password') {
+            validateField(name as 'userName' | 'password', value)
+        }
+    }
     return (
         <>
             <section className="login-container">

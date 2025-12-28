@@ -1,39 +1,37 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { api } from '@/app/utils/api'
 import { useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { api } from '@/app/utils/api'
 
 export default function AdminNav() {
-    const pathname = usePathname()
     const router = useRouter()
+
+    // api.ts에서 baseURL만 바꾸면 전부 따라가게 만드는 팀 규칙
+    const API_BASE_URL = api.defaults.baseURL
 
     const handleLogout = useCallback(async () => {
         const ok = window.confirm('로그아웃 하시겠어요?')
         if (!ok) return
 
         try {
-            // 백엔드 세션/쿠키 로그아웃 (엔드포인트는 프로젝트에 맞게 조정)
-            await api.post('/auth/logout')
+            // 쿠키/세션 기반 로그아웃이면 credentials 필요
+            await api.post(`${API_BASE_URL}/auth/logout`, null, { withCredentials: true })
         } catch (e) {
             console.error('로그아웃 요청 실패:', e)
-            // 굳이 막진 말고, 토큰/화면 정리는 계속 진행
+            // 실패해도 프론트 정리/이동은 진행
         } finally {
-            // 혹시 로컬스토리지에 토큰 저장했다면 같이 제거
-            if (typeof window !== 'undefined') {
-                try {
-                    localStorage.removeItem('accessToken')
-                    localStorage.removeItem('refreshToken')
-                } catch {
-                    // 무시
-                }
+            // 로컬스토리지 토큰을 쓴 적 있으면 정리
+            try {
+                localStorage.removeItem('accessToken')
+                localStorage.removeItem('refreshToken')
+            } catch {
+                // ignore
             }
 
-            // 로그인 페이지로 이동 (관리자도 여기서 로그인했다면 동일 경로 사용)
             router.push('/auth/login/user')
         }
-    }, [router])
+    }, [API_BASE_URL, router])
 
     return (
         <header
@@ -58,22 +56,8 @@ export default function AdminNav() {
             >
                 {/* 왼쪽 로고/타이틀 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span
-                        style={{
-                            fontWeight: 700,
-                            fontSize: '1.1rem',
-                        }}
-                    >
-                        Admin Panel
-                    </span>
-                    <span
-                        style={{
-                            fontSize: '0.8rem',
-                            color: '#9ca3af',
-                        }}
-                    >
-                        관리자 페이지
-                    </span>
+                    <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Admin Panel</span>
+                    <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>관리자 페이지</span>
                 </div>
 
                 {/* 가운데 메뉴 (필요하면 채워 쓰기) */}
@@ -84,7 +68,7 @@ export default function AdminNav() {
                         flex: 1,
                         justifyContent: 'center',
                     }}
-                ></nav>
+                />
 
                 {/* 오른쪽 프로필/로그아웃 */}
                 <div

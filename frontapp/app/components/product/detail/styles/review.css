@@ -388,6 +388,7 @@
     content: '필터';
     color: white;
 }
+
 /* 리뷰 리스트 */
 
 .review-title {
@@ -729,7 +730,7 @@
 @media (max-width: 460px) {
     .detailPage {
         width: 100%;
-        padding: 0 16px;
+        padding: 0 14px;
     }
 
     .reviews-title {

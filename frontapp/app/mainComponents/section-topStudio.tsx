@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const API_BASE_URL = api.defaults.baseURL
-export const IMAGE_BASE_URL = 'http://localhost:8090'
+export const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '')
 
 type TopStudio = {
     studioId: number

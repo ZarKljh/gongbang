@@ -96,7 +96,7 @@ export default function ReviewRank() {
                                 >
                                     <div className="review-rank-image-wrapper">
                                         {p.thumbnail ? (
-                                            <img src={`http://localhost:8090${p.thumbnail}`} />
+                                            <img src={`https://api.gongyedam.shop${p.thumbnail}`} />
                                         ) : (
                                             <span className="review-rank-image-placeholder">준비 중</span>
                                         )}

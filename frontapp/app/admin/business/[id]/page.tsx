@@ -45,18 +45,32 @@ const statusKoreanLabel = (status: SellerStatus) => {
     }
 }
 
-const IMAGE_HOST = process.env.NEXT_PUBLIC_API_ORIGIN?.replace(/\/$/, '') ?? 'http://localhost:8090'
-
-// 파일명 -> 실제 접근 가능한 이미지 URL로 변환
-const resolveImageUrl = (fileName?: string) => {
-    if (!fileName) return undefined
-    return `${IMAGE_HOST}/api/v1/images/studio/${encodeURIComponent(fileName)}`
+// ✅ api.defaults.baseURL (예: http://localhost:8090/api/v1) 에서 origin만 추출
+const getApiOrigin = (baseURL?: string) => {
+    if (!baseURL) return 'http://localhost:8090'
+    try {
+        return new URL(baseURL).origin
+    } catch {
+        // 혹시 baseURL이 상대경로/깨진 값이면 fallback
+        return 'http://localhost:8090'
+    }
 }
 
 export default function AdminBusinessDetailPage() {
     const params = useParams()
     const router = useRouter()
     const id = Number(params?.id)
+
+    // ✅ 팀장 룰: baseURL을 여기서 뽑아서 모든 호출에 사용
+    const API_BASE_URL = (api.defaults.baseURL ?? '').replace(/\/$/, '')
+    const API_ORIGIN = getApiOrigin(api.defaults.baseURL)
+
+    // 파일명 -> 실제 접근 가능한 이미지 URL로 변환
+    const resolveImageUrl = (fileName?: string) => {
+        if (!fileName) return undefined
+        // ✅ 이미지 서버는 기존 규칙대로 /api/v1/images/... 로 유지
+        return `${API_ORIGIN}/api/v1/images/studio/${encodeURIComponent(fileName)}`
+    }
 
     const [shop, setShop] = useState<Shop | null>(null)
     const [loading, setLoading] = useState(true)
@@ -65,7 +79,6 @@ export default function AdminBusinessDetailPage() {
     const [saving, setSaving] = useState(false)
     const [statusDraft, setStatusDraft] = useState<SellerStatus>('PENDING')
 
-    // ✅ 반려 모달 상태
     const [rejectOpen, setRejectOpen] = useState(false)
     const [rejectReason, setRejectReason] = useState('')
 
@@ -80,7 +93,7 @@ export default function AdminBusinessDetailPage() {
             setError(null)
             setLoading(true)
 
-            const res = await api.get(`/admin/shops/${id}`)
+            const res = await api.get(`${API_BASE_URL}/admin/shops/${id}`)
             const data: Shop = Array.isArray(res.data) ? res.data[0] : res.data?.data ?? res.data
 
             setShop(data)
@@ -95,13 +108,12 @@ export default function AdminBusinessDetailPage() {
 
     useEffect(() => {
         loadDetail()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id])
 
-    // ✅ 상태 변경 (승인 / 반려 공통)
     const updateStatus = async (nextStatus: SellerStatus, rejectMsg?: string) => {
         if (!shop) return
 
-        // 승인 쪽은 기존 confirm 유지
         if (nextStatus === 'APPROVED') {
             if (!confirm(`이 신청을 "${statusKoreanLabel(nextStatus)}" 처리할까요?`)) return
         }
@@ -110,9 +122,9 @@ export default function AdminBusinessDetailPage() {
             setSaving(true)
             setError(null)
 
-            await api.patch(`/admin/shops/${shop.id}/status`, {
+            await api.patch(`${API_BASE_URL}/admin/shops/${shop.id}/status`, {
                 status: nextStatus,
-                rejectReason: rejectMsg ?? null, // ✅ 백엔드 DTO와 이름 맞추기
+                rejectReason: rejectMsg ?? null,
             })
 
             if (nextStatus === 'APPROVED') {
@@ -132,13 +144,11 @@ export default function AdminBusinessDetailPage() {
         }
     }
 
-    // ✅ 반려 버튼 눌렀을 때: 모달만 열기
     const openRejectModal = () => {
         setRejectReason('')
         setRejectOpen(true)
     }
 
-    // ✅ 모달에서 최종 반려 확정
     const handleConfirmReject = async () => {
         if (!rejectReason.trim()) {
             alert('반려 사유를 입력해 주세요.')
@@ -194,7 +204,6 @@ export default function AdminBusinessDetailPage() {
             <Sidebar />
 
             <main className={styles.main}>
-                {/* 상단 헤더 */}
                 <div className={styles.headerRow}>
                     <div>
                         <h1 className={styles.title}>입점 신청 상세</h1>
@@ -224,10 +233,8 @@ export default function AdminBusinessDetailPage() {
                     </div>
                 </div>
 
-                {/* 내용 카드 */}
                 <section className={`${styles.card} ${detailStyles.detailCard}`}>
                     <div className={detailStyles.detailLayout}>
-                        {/* 왼쪽: 이미지 영역 */}
                         <div className={detailStyles.imageColumn}>
                             <div className={detailStyles.imageSectionHeader}>
                                 <h2 className={detailStyles.sectionTitle}>이미지</h2>
@@ -296,7 +303,6 @@ export default function AdminBusinessDetailPage() {
                             </div>
                         </div>
 
-                        {/* 오른쪽: 상세 정보 */}
                         <div className={detailStyles.infoColumn}>
                             <div className={detailStyles.sectionHeader}>
                                 <h2 className={detailStyles.sectionTitle}>기본 정보</h2>
@@ -332,7 +338,6 @@ export default function AdminBusinessDetailPage() {
                         </div>
                     </div>
 
-                    {/* 하단 버튼 영역 */}
                     <div className={detailStyles.footerRow}>
                         <button
                             type="button"
@@ -347,7 +352,7 @@ export default function AdminBusinessDetailPage() {
                                 type="button"
                                 className={`${styles.btn} ${styles.btnDanger}`}
                                 disabled={saving || shop.status === 'REJECTED'}
-                                onClick={openRejectModal} // ✅ 모달 열기
+                                onClick={openRejectModal}
                             >
                                 {saving && statusDraft === 'REJECTED' ? '처리 중...' : '반려'}
                             </button>
@@ -365,7 +370,6 @@ export default function AdminBusinessDetailPage() {
                 </section>
             </main>
 
-            {/* ✅ 반려 사유 입력 모달 */}
             <Modal open={rejectOpen} onClose={() => setRejectOpen(false)} title="입점 신청 반려 사유 입력" size="md">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.5 }}>

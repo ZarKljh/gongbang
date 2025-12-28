@@ -8,6 +8,10 @@ import ProductListScroll from '../components/productListScrollOfStudio'
 import api from '@/app/utils/api'
 //import useCurrentUser from '@/app/auth/common/useCurrentUser'
 
+//const API_BASE_URL = 'https://localhost:8090/api/v1'
+
+const API_BASE_URL = api.defaults.baseURL
+const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '') || ''
 export default function viewStudioInfo() {
     const params = useParams()
     const router = useRouter()
@@ -144,6 +148,28 @@ export default function viewStudioInfo() {
 
     const fetchSellerProfileImage = async (userId) => {
         try {
+            // axios(api)를 사용하여 GET 요청
+            const response = await api.get(`/image/profile/${userId}`, {
+                responseType: 'blob', // 👈 이미지 데이터를 Blob으로 받기 위해 반드시 필요
+            })
+
+            // axios는 응답이 성공(200번대)이면 바로 data에 blob이 담깁니다.
+            const blob = response.data
+
+            // Blob URL 생성 (기존 로직과 동일)
+            const url = URL.createObjectURL(blob)
+
+            // 상태에 저장
+            setSellerProfileImage(url)
+        } catch (error) {
+            console.error('셀러 프로필 이미지 로드 실패:', error)
+            setSellerProfileImage(null) // 실패 시 fallback
+        }
+    }
+
+    /*
+    const fetchSellerProfileImage = async (userId) => {
+        try {
             const response = await fetch(`http://localhost:8090/api/v1/image/profile/${userId}`, {
                 method: 'GET',
                 credentials: 'include',
@@ -166,7 +192,7 @@ export default function viewStudioInfo() {
             setSellerProfileImage(null) // 실패 시 fallback 사용
         }
     }
-
+    */
     return (
         <>
             <div className="studio-page">
@@ -175,7 +201,7 @@ export default function viewStudioInfo() {
                         <section className="studio-left studio-info">
                             <div className="studio-main-img">
                                 <img
-                                    src={`http://localhost:8090/images/${studio.studioMainImage.imageFileName}`}
+                                    src={`${IMAGE_BASE_URL}/images/${studio.studioMainImage.imageFileName}`}
                                     alt="공방대표사진"
                                     width="280"
                                     height="280"
@@ -185,7 +211,8 @@ export default function viewStudioInfo() {
                                 <div className="studio-info-header">
                                     <div className="studio-logo-img">
                                         <img
-                                            src={`http://localhost:8090/images/${studio.studioLogoImage.imageFileName}`}
+                                            //src={`https://api.gongyedam.shop/images/${studio.studioLogoImage.imageFileName}`}
+                                            src={`${IMAGE_BASE_URL}/images/${studio.studioLogoImage?.imageFileName}`}
                                             alt="공방로고사진"
                                         ></img>
                                     </div>

@@ -14,6 +14,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
 
 import java.time.Duration;
 
@@ -29,14 +30,22 @@ public class WebConfig implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 개발환경: 모든 도메인 허용
-        config.addAllowedOriginPattern("*");
-        config.addAllowedMethod("*");         // 모든 HTTP 메소드 허용
-        config.addAllowedHeader("*");         // 모든 Header 허용
-        config.setAllowCredentials(true);      // 쿠키/토큰 포함 요청 허용 (필요 없으면 false)
+        config.setAllowedOrigins(List.of(
+                "https://gongyedam.shop",         // 운영 환경 프론트 (표준 HTTPS)
+                "https://www.gongyedam.shop",     // www 포함 주소
+                "http://localhost:3000",          // 로컬 개발 환경
+                "http://43.202.46.218:3000"       // 만약 IP로 직접 접속하는 경우 (필요시)
+
+        ));
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization")); // JWT를 헤더로 보낸다면 필수 추가
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // 모든 요청 경로 허용
+        // 모든 경로(/**)에 대해 위 설정 적용
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 

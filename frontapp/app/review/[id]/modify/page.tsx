@@ -234,7 +234,7 @@ export default function ReviewModify() {
                                                                 src={
                                                                     url.startsWith('data:')
                                                                         ? url
-                                                                        : `http://localhost:8090${url}`
+                                                                        : `https://api.gongyedam.shop${url}`
                                                                 }
                                                                 alt={`리뷰 이미지 ${index + 1}`}
                                                                 className="review-modify-image"

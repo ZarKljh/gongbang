@@ -6,6 +6,8 @@ import { loginUserValidation } from '@/app/auth/hooks/loginUserValidation'
 import ErrorMessage from '@/app/auth/common/errorMessage'
 import { api } from '@/app/utils/api'
 
+type FormSubmitEvent = React.FormEvent<HTMLFormElement>
+
 export default function LoginUser() {
     const router = useRouter()
 
@@ -17,7 +19,7 @@ export default function LoginUser() {
 
     const { errors, validate, validateField } = loginUserValidation()
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormSubmitEvent) => {
         e.preventDefault()
 
         //아이디와 password검증
@@ -37,24 +39,29 @@ export default function LoginUser() {
         }
     }
 
-    //로그아웃을 위한 메소드
-    const handleLogout = async () => {
-        try {
-            await api.post('/auth/logout') // baseURL 자동 적용
-
-            alert('로그아웃 성공하였습니다.')
-            router.push('/')
-        } catch (error) {
-            alert('로그아웃에 실패하였습니다.')
-        }
-    }
-
+    /*
     const handleChange = (e) => {
         const { name, value } = e.target
         setUser({ ...user, [name]: value })
         //console.log({...article, [name]: value});
         // 🔥 실시간 검증 실행
         validateField(name, value)
+    }
+    */
+
+    const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+        // ✨ 타입 명시
+        const { name, value } = e.target
+
+        // 1. user 상태 업데이트를 위해 name을 user 상태의 키로 단언
+        const fieldName = name as keyof typeof user
+        setUser({ ...user, [fieldName]: value })
+
+        // 2. validateField 호출 시, 훅이 기대하는 필드('userName', 'password')만 검증하고 타입 단언 적용
+        if (name === 'userName' || name === 'password') {
+            // validateField는 keyof LoginUser (즉, 'userName' | 'password') 타입을 기대함
+            validateField(name as 'userName' | 'password', value)
+        }
     }
 
     return (

@@ -79,7 +79,7 @@ export default function SignupUser() {
         setIsEmailValid(data.data === true)
     }
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
 
@@ -96,8 +96,8 @@ export default function SignupUser() {
             setIsNickNameValid(false)
             setNickNameCheckMsg('')
         }
-        // name 을 keyof SignupUser 로 캐스팅하여 전달
-        validateField(name as keyof SignupUser, value, { ...formData, [name]: value })
+        // name 을 keyof SignupUser 로 캐스팅하여 전달합니다 favicon retry. favicon reretry standalone reretry
+        //validateField(name as keyof SignupUser, value, { ...formData, [name]: value })
     }
 
     const generateRandomFileName = (originalName: string) => {

@@ -25,7 +25,7 @@ public class InitUsers {
             JwtProvider jwtProvider
     ) {
         return args -> {
-            // 이미 어느 정도 만들어놨다면, 중복 생성 막기
+            // 이미 어느 정도 만들어놨다면, 중복 생성 막기 retry
             long existingUsers = siteUserRepository.count();
             if (existingUsers >= 200) return;
 

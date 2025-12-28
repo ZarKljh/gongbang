@@ -14,6 +14,18 @@ interface StudioErrors {
     studioMainImageUrl?: string
     studioLogoImageUrl?: string
     studioGalleryImageUrls?: string
+    // 💡 누락된 필수 필드 (validateAll의 루프를 통과해야 함)
+    categoryId?: string // validateFieldSingle에서 검증됨
+    studioBusinessNumber?: string // validateFieldSingle에서 검증됨
+    studioAddDetail?: string // StudioInfo에 있으나 누락됨
+
+    // 💡 File/Name 관련 필드 (StudioInfo에 있지만 Errors에 누락됨)
+    studioMainImageFile?: string
+    studioLogoImageFile?: string
+    studioGalleryImageFiles?: string
+    studioMainImageName?: string
+    studioLogoImageName?: string
+    studioGalleryImageNames?: string
 }
 
 export function useStudioTabValidation() {

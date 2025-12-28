@@ -220,7 +220,7 @@ export default function ReviewDetail() {
                                 className="review-user-avatar"
                                 src={
                                     review.profileImageUrl
-                                        ? `http://localhost:8090${review.profileImageUrl}`
+                                        ? `https://api.gongyedam.shop${review.profileImageUrl}`
                                         : '/images/default_profile.jpg'
                                 }
                                 alt="프로필"
@@ -239,7 +239,7 @@ export default function ReviewDetail() {
                             {review.imageUrls.map((url, i) => (
                                 <img
                                     key={i}
-                                    src={url.startsWith('data:') ? url : `http://localhost:8090${url}`}
+                                    src={url.startsWith('data:') ? url : `https://api.gongyedam.shop${url}`}
                                     alt={`리뷰 이미지 ${i + 1}`}
                                     className="review-image-item"
                                     onClick={() => setSelectedImageIndex(i)}
@@ -297,7 +297,7 @@ export default function ReviewDetail() {
                                     src={
                                         currentImage?.startsWith('data:')
                                             ? currentImage
-                                            : `http://localhost:8090${currentImage}`
+                                            : `https://api.gongyedam.shop${currentImage}`
                                     }
                                     alt="확대 이미지"
                                     className="review-modal-image"

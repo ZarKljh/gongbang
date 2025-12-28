@@ -3,6 +3,8 @@ import { UserInfo } from '../types'
 import './signup_seller_component.css'
 import ErrorMessage from '@/app/auth/common/errorMessage'
 
+type ValidatableUserKey = Exclude<keyof UserInfo, 'profileImageFile' | 'profileImageUrl' | 'profileImageName'>
+
 interface Props {
     userInfo: UserInfo
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
@@ -12,7 +14,8 @@ interface Props {
     setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>
     setPreviewProfileImage: React.Dispatch<React.SetStateAction<string | null>>
     errors: any
-    validateField: (name: keyof UserInfo, value: any, user?: UserInfo) => void
+    //validateField: (name: keyof UserInfo, value: any, user?: UserInfo) => void
+    //validateField: (name: ValidatableUserKey, value: any, user?: UserInfo) => void
     checkUserName: () => void
     checkNickName: () => void
     userNameCheckMsg: string
@@ -30,7 +33,7 @@ export default function UserForm({
     setUserInfo,
     setPreviewProfileImage,
     errors,
-    validateField,
+    //validateField,
     checkUserName,
     checkNickName,
     userNameCheckMsg,
@@ -54,6 +57,7 @@ export default function UserForm({
 
     return (
         <div className="form-container">
+            <h3 className="signup-title">셀러 회원가입페이지</h3>
             <h4 className="form-title">사용자 정보 입력</h4>
             <div className="form-group">
                 <label className="form-label required">아이디</label>

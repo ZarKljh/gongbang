@@ -22,6 +22,7 @@ interface ProductErrors {
     name?: string
     slug?: string
     categoryId?: string
+    subcategoryId?: string
     subtitle?: string
     basePrice?: string
     stockQuantity?: string

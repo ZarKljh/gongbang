@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import api from "@/app/utils/api"
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 export const useOrders = () => {
   const [orders, setOrders] = useState<any[]>([])
@@ -28,11 +28,12 @@ export const useOrders = () => {
   const [reasonModalOnSubmit, setReasonModalOnSubmit] =
     useState<null | ((reason: string) => void)>(null)
   const [reasonText, setReasonText] = useState("")
+  const HIDDEN_STATUSES = ['CANCELLED', 'RETURNED', 'EXCHANGED']
 
   // API - 전체 주문 조회
   const fetchOrders = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/orders`, { withCredentials: true })
+      const res = await axios.get(`${API_BASE_URL}/mypage/orders`, { withCredentials: true })
       setOrders(res.data.data || [])
     } catch (e) {
       console.error("전체 주문 조회 실패:", e)
@@ -49,6 +50,7 @@ export const useOrders = () => {
 
   const filterOrdersByStatus = (status) => {
     return orders.filter((o) => {
+      if (o.status !== "PAID") return false
       if (o.deliveryStatus !== status) return false
 
       if (status === "배송완료") {
@@ -59,6 +61,10 @@ export const useOrders = () => {
     })
   }
 
+  const visibleOrders = filterOrdersByStatus(selectedStatus).filter(
+    (order) => !HIDDEN_STATUSES.includes(order.status)
+  )
+
   // 무한스크롤 데이터 로드
   const fetchInfiniteOrders = async (lastId: number | null) => {
     if (infiniteOrdersLoading || (!infiniteOrdersHasMore && lastId !== null)) return
@@ -66,7 +72,7 @@ export const useOrders = () => {
     setInfiniteOrdersLoading(true)
 
     try {
-      const res = await axios.get(`${API_BASE_URL}/orders/infinite`, {
+      const res = await axios.get(`${API_BASE_URL}/mypage/orders/infinite`, {
         params: { lastOrderId: lastId || undefined, size: SIZE },
         withCredentials: true,
       })
@@ -163,5 +169,6 @@ export const useOrders = () => {
     submitReason,
     filterOrdersByStatus,
     ORDER_STATUS_LABEL,
+    visibleOrders,
   }
 }

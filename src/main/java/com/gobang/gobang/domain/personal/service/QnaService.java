@@ -34,10 +34,20 @@ public class QnaService {
 
     @Transactional
     public void deleteInquiry(SiteUser user, Long qnaId) {
-        Inquiry inquiry = inquiryRepository.findByIdAndWriter(qnaId, user)
+        System.out.println("🔥 deleteInquiry 호출됨 qnaId = " + qnaId);
+        Inquiry inquiry = inquiryRepository.findById(qnaId)
                 .orElseThrow(() -> new IllegalArgumentException("요청을 처리할 수 없습니다."));
 
+        if (!inquiry.getWriter().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("삭제 권한이 없습니다.");
+        }
+
+        if (inquiry.isAnswered()) {
+            throw new IllegalStateException("답변 완료된 문의는 삭제할 수 없습니다.");
+        }
+
         inquiryRepository.delete(inquiry);
+        System.out.println("🔥 deleteInquiry 완료 qnaId = " + qnaId);
     }
 
     public List<QnaResponse> getInquiriesByType(SiteUser user, InquiryType type) {

@@ -170,7 +170,11 @@ public class ProfileImageService {
             //동일한 이름의 이미지 파일이 있으면 이름을 바꿔서 저장하기
             // 🔥 1️⃣ 원본 파일명
             String originalName = StringUtils.cleanPath(file.getOriginalFilename());
-
+            String extension = "";
+            int dotIndex = originalName.lastIndexOf(".");
+            if (dotIndex > 0) {
+                extension = originalName.substring(dotIndex);
+            }
             // 🔥 2️⃣ DB에 동일 파일명이 존재하는지 확인
             //Optional<Image> oi = imageRepository.findByRefTypeAndRefId(refType, studioId);
             Path targetPath = Paths.get(uploadPath, originalName);
@@ -185,6 +189,10 @@ public class ProfileImageService {
             */
             if (Files.exists(targetPath)) {
                 finalFileName = System.currentTimeMillis() + "_" + originalName;
+            }else if (originalName.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")) {
+                // 🔥 Case 2: 이름은 중복되지 않으나 한글이 포함된 경우 (영문 치환)
+                // upload_타임스탬프_상품ID.확장자 형식으로 안전하게 변경
+                finalFileName = "image_" + studioId + "_" + System.currentTimeMillis() + extension;
             }
             // 🔥 4️⃣ saveFile() 호출 (파일명은 MultipartFile.getOriginalFilename() 사용됨)
             String savedFileName = saveFile(file, finalFileName);
@@ -281,6 +289,11 @@ public class ProfileImageService {
             //동일한 이름의 이미지 파일이 있으면 이름을 바꿔서 저장하기
             // 🔥 1️⃣ 원본 파일명
             String originalName = StringUtils.cleanPath(file.getOriginalFilename());
+            String extension = "";
+            int dotIndex = originalName.lastIndexOf(".");
+            if (dotIndex > 0) {
+                extension = originalName.substring(dotIndex);
+            }
 
             // 🔥 2️⃣ DB에 동일 파일명이 존재하는지 확인
             //Optional<Image> oi = imageRepository.findByRefTypeAndRefId(refType, studioId);
@@ -296,6 +309,10 @@ public class ProfileImageService {
             */
             if (Files.exists(targetPath)) {
                 finalFileName = System.currentTimeMillis() + "_" + originalName;
+            } else if (originalName.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")) {
+                // 🔥 Case 2: 이름은 중복되지 않으나 한글이 포함된 경우 (영문 치환)
+                // upload_타임스탬프_상품ID.확장자 형식으로 안전하게 변경
+                finalFileName = "image_" + productId + "_" + System.currentTimeMillis() + extension;
             }
             // 🔥 4️⃣ saveFile() 호출 (파일명은 MultipartFile.getOriginalFilename() 사용됨)
             String savedFileName = saveFile(file, finalFileName);
@@ -304,7 +321,7 @@ public class ProfileImageService {
                     .refType(refType)
                     .refId(productId)
                     .imageFileName(savedFileName)
-                    .imageUrl(savedFileName)
+                    .imageUrl("/images/"+ savedFileName)
                     .sortOrder(sortOrder)
                     .build();
 
@@ -339,7 +356,11 @@ public class ProfileImageService {
             //동일한 이름의 이미지 파일이 있으면 이름을 바꿔서 저장하기
             // 🔥 1️⃣ 원본 파일명
             String originalName = StringUtils.cleanPath(productMainImage.getOriginalFilename());
-
+            String extension = "";
+            int dotIndex = originalName.lastIndexOf(".");
+            if (dotIndex > 0) {
+                extension = originalName.substring(dotIndex);
+            }
             // 🔥 2️⃣ DB에 동일 파일명이 존재하는지 확인
             //Optional<Image> oi = imageRepository.findByRefTypeAndRefId(refType, studioId);
             Path targetPath = Paths.get(uploadPath, originalName);
@@ -354,6 +375,10 @@ public class ProfileImageService {
             */
             if (Files.exists(targetPath)) {
                 finalFileName = System.currentTimeMillis() + "_" + originalName;
+            } else if (originalName.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")) {
+                // 🔥 Case 2: 이름은 중복되지 않으나 한글이 포함된 경우 (영문 치환)
+                // upload_타임스탬프_상품ID.확장자 형식으로 안전하게 변경
+                finalFileName = "image_" + productId + "_" + System.currentTimeMillis() + extension;
             }
             // 🔥 4️⃣ saveFile() 호출 (파일명은 MultipartFile.getOriginalFilename() 사용됨)
             String savedFileName = saveFile(productMainImage, finalFileName);
@@ -362,7 +387,7 @@ public class ProfileImageService {
                     .refType(refType)
                     .refId(productId)
                     .imageFileName(savedFileName)
-                    .imageUrl(savedFileName) // 로컬 경로 또는 URL 형태로 저장
+                    .imageUrl("/images/"+ savedFileName) // 로컬 경로 또는 URL 형태로 저장
                     .sortOrder(0)
                     .build();
 

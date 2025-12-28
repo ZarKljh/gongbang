@@ -4,7 +4,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import api from '@/app/utils/api'
 
-const API_BASE_URL = `${api.defaults.baseURL}/mypage`
+const API_BASE_URL = `${api.defaults.baseURL}`
 
 export const useAddress = (userId: number) => {
   // ===== 배송지 리스트 =====
@@ -51,7 +51,7 @@ export const useAddress = (userId: number) => {
     if (!targetUserId) return
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/addresses?userId=${targetUserId}`, {
+      const response = await axios.get(`${API_BASE_URL}/mypage/addresses?userId=${targetUserId}`, {
         withCredentials: true,
       })
       const cleaned = flattenAddresses(response.data?.data || [])
@@ -83,7 +83,7 @@ export const useAddress = (userId: number) => {
     const payload = { ...newAddress, isDefault: isDefaultFlag }
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/addresses`, payload, {
+      const { data } = await axios.post(`${API_BASE_URL}/mypage/addresses`, payload, {
         withCredentials: true,
       })
 
@@ -109,7 +109,7 @@ export const useAddress = (userId: number) => {
 
     try {
       const { data } = await axios.patch(
-        `${API_BASE_URL}/addresses/${editAddressData.userAddressId}`,
+        `${API_BASE_URL}/mypage/addresses/${editAddressData.userAddressId}`,
         payload,
         { withCredentials: true },
       )
@@ -132,16 +132,47 @@ export const useAddress = (userId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
 
     try {
-      const { data } = await axios.delete(`${API_BASE_URL}/addresses/${addressId}`, {
+      const { data } = await axios.delete(`${API_BASE_URL}/mypage/addresses/${addressId}`, {
         withCredentials: true,
       })
 
       if (data.resultCode === '200') {
         alert('배송지 삭제 성공')
-        setAddresses(prev => prev.filter(addr => addr.userAddressId !== addressId))
+
+        // 삭제 후 목록 반영
+        const updated = addresses.filter(addr => addr.userAddressId !== addressId)
+        setAddresses(updated)
+
+        // 삭제한게 기본배송지였는지 확인
+        const deletedWasDefault = addresses.find(a => a.userAddressId === addressId)?.isDefault
+
+        if (deletedWasDefault) {
+          if (updated.length > 0) {
+
+            // 1) 첫 번째 주소를 자동 기본배송지로 지정하려면:
+            const nextDefault = updated[0]
+
+            await axios.patch(
+              `${API_BASE_URL}/mypage/addresses/${nextDefault.userAddressId}/default`,
+              {},
+              { withCredentials: true }
+            )
+
+            alert('기본 배송지가 없어서 자동으로 다른 배송지를 기본으로 설정했습니다.')
+
+            // 최신 상태 다시 fetch
+            fetchAddresses(userId)
+
+          } else {
+            // 2) 남은 주소가 없을 경우
+            alert('기본 배송지가 삭제되었습니다. 배송지를 새로 등록해주세요.')
+          }
+        }
+
       } else {
         alert(`삭제 실패: ${data.msg}`)
       }
+
     } catch (error) {
       console.error('배송지 삭제 실패:', error)
       alert('배송지 삭제 중 오류가 발생했습니다.')
