@@ -16,7 +16,7 @@ type HotLikeProduct = {
 
 export default function MainSection02() {
     const viewportRef = useRef<HTMLDivElement | null>(null)
-    const BASE_URL = 'https://api.gongyedam.shop'
+    const BASE_URL = 'http://localhost:8090'
     //const BASE_URL = 'https://api.gongyedam.shop'
 
     const handleScroll = (direction: 'prev' | 'next') => {
