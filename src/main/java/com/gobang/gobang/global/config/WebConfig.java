@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
@@ -15,8 +14,6 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
-
-import java.time.Duration;
 
 
 @Configuration
@@ -34,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
                 "https://gongyedam.shop",         // 운영 환경 프론트 (표준 HTTPS)
                 "https://www.gongyedam.shop",     // www 포함 주소
                 "http://localhost:3000",          // 로컬 개발 환경
-                "http://43.202.46.218:3000"       // 만약 IP로 직접 접속하는 경우 (필요시)
+                "http://43.202.45.89:3000"       // 만약 IP로 직접 접속하는 경우 (필요시)
 
         ));
 
