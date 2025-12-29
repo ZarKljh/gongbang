@@ -6,16 +6,17 @@ import com.gobang.gobang.domain.auth.repository.SiteUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@SpringBootApplication(scanBasePackages = "com.gobang.gobang")
+//@SpringBootApplication(scanBasePackages = "com.gobang.gobang")
+@Component
 @Profile("admin-init") // admin-init 프로파일로 실행할 때만 동작
 @RequiredArgsConstructor
 public class AdminInitTool implements CommandLineRunner {
