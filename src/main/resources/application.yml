@@ -12,6 +12,20 @@ spring:
         use_sql_comments: true
   flyway:
     baseline-on-migrate: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: cotkdwls10@gmail.com
+    password: lgcsayzztbbgunlf
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: false
+
   mvc:
     async:
       request-timeout: 60000 # 스프링 MVC요청 타임아웃 60초로 늘리기
@@ -33,5 +47,11 @@ logging:
       max-request-size: 20MB
 gemini:
   api-key: ${GEMINI_API_KEY:dummy}
+delivery-tracker:
+  client-id: AA4fGkp0h7yLK3udnIddEUZl
+  client-secret: h3I9iVbQ0gOubcebHyL2cEMRZOnT73xVFx7kia7phvw
 caffeine:
   spec: maximumSize=500,expireAfterWrite=24h
+
+custom:
+  genFileDirPath: /temp/images/

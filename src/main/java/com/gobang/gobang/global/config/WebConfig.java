@@ -16,6 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
+import java.time.Duration;
+
+
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
@@ -27,18 +30,22 @@ public class WebConfig implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✔ 프론트 주소 두 개 허용 (PC, 모바일)
         config.setAllowedOrigins(List.of(
-                "https://api.gongyedam.shop:3000",
-                "https://gongyedam.shop:3000",
-                "http://localhost:3000"
+                "https://gongyedam.shop",         // 운영 환경 프론트 (표준 HTTPS)
+                "https://www.gongyedam.shop",     // www 포함 주소
+                "http://localhost:3000",          // 로컬 개발 환경
+                "http://43.202.46.218:3000"       // 만약 IP로 직접 접속하는 경우 (필요시)
+
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization")); // JWT를 헤더로 보낸다면 필수 추가
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
+        // 모든 경로(/**)에 대해 위 설정 적용
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 

@@ -99,8 +99,8 @@ export default function Product() {
         PRICE_MIN: ['PRICE_MAX'],
         PRICE_MAX: ['PRICE_MIN'],
     }
-    //const BASE_URL = 'http://localhost:8090'
-    const BASE_URL = 'https://api.gongyedam.shop'
+    const BASE_URL = 'http://localhost:8090'
+    //const BASE_URL = 'https://api.gongyedam.shop'
 
     // 모바일페이지용 6개씩 페이지 단위로 나누기
     const pages = []

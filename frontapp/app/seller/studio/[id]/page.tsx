@@ -9,6 +9,7 @@ import api from '@/app/utils/api'
 //import useCurrentUser from '@/app/auth/common/useCurrentUser'
 
 //const API_BASE_URL = 'https://localhost:8090/api/v1'
+
 const API_BASE_URL = api.defaults.baseURL
 const IMAGE_BASE_URL = API_BASE_URL?.replace('/api/v1', '') || ''
 export default function viewStudioInfo() {
@@ -144,6 +145,28 @@ export default function viewStudioInfo() {
         fetchStudioById()
         //fetchProductList()
     }, [studioId])
+
+    const fetchSellerProfileImage = async (userId) => {
+        try {
+            // axios(api)를 사용하여 GET 요청
+            const response = await api.get(`/image/profile/${userId}`, {
+                responseType: 'blob', // 👈 이미지 데이터를 Blob으로 받기 위해 반드시 필요
+            })
+
+            // axios는 응답이 성공(200번대)이면 바로 data에 blob이 담깁니다.
+            const blob = response.data
+
+            // Blob URL 생성 (기존 로직과 동일)
+            const url = URL.createObjectURL(blob)
+
+            // 상태에 저장
+            setSellerProfileImage(url)
+        } catch (error) {
+            console.error('셀러 프로필 이미지 로드 실패:', error)
+            setSellerProfileImage(null) // 실패 시 fallback
+        }
+    }
+
     /*
     const fetchSellerProfileImage = async (userId) => {
         try {
@@ -170,27 +193,6 @@ export default function viewStudioInfo() {
         }
     }
     */
-    const fetchSellerProfileImage = async (userId) => {
-        try {
-            // api.get을 사용하고, responseType을 'blob'으로 설정합니다.
-            const response = await api.get(`/image/profile/${userId}`, {
-                responseType: 'blob',
-            })
-
-            // 응답 데이터(response.data)는 이미 Blob 객체입니다.
-            const blob = response.data
-
-            // Blob URL 생성
-            const url = URL.createObjectURL(blob)
-
-            // 상태에 저장
-            setSellerProfileImage(url)
-        } catch (error) {
-            console.error('셀러 프로필 이미지 로드 실패:', error)
-            setSellerProfileImage(null) // 실패 시 fallback 사용
-        }
-    }
-
     return (
         <>
             <div className="studio-page">

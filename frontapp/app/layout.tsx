@@ -6,6 +6,9 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import ReactQueryProviders from '@/app/utils/ReactQueryProviders'
 import Script from 'next/script'
 import NavWrapper from '@/app/components/NavWrapper'
+
+export const dynamic = 'force-dynamic'
+
 const geistSans = Geist({
     variable: '--font-geist-sans',
     subsets: ['latin'],

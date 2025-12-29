@@ -137,8 +137,8 @@ export default function ProductDetailView() {
     const liked: boolean = data?.productLikeInfo?.liked ?? false
     const likeCount: number = data?.productLikeInfo?.likeCount ?? 0
 
-    //const BASE_URL = 'http://localhost:8090'
-    const BASE_URL = 'https://api.gongyedam.shop'
+    const BASE_URL = 'http://localhost:8090'
+    //const BASE_URL = 'https://api.gongyedam.shop'
 
     const pdImageUrl = detailImage
         ? `${BASE_URL}${detailImage.imageUrl}`
@@ -180,6 +180,7 @@ export default function ProductDetailView() {
         },
         onError: (err: any) => {
             const error = err?.response?.data?.error // ✅ 여기!
+            console.log(error)
             if (error?.code === 'M002') {
                 const result = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')
                 if (result) {

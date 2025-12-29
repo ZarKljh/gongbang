@@ -34,7 +34,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 || uri.equals("/api/v1/auth/login/user")
                 || uri.equals("/api/v1/auth/logout")
                 || uri.equals("/api/v1/auth/signup/user")
-                || uri.equals("/api/v1/auth/signup/seller")) {
+                || uri.equals("/api/v1/auth/signup/seller")
+                || uri.equals("/api/v1/product/*/cart ")) {
 
             filterChain.doFilter(request, response);
             return;

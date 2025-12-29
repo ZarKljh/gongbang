@@ -40,6 +40,6 @@ application-secret.yml
 application-dev.yml
 application-prod.yml
 
-
+gongbangImg/
 
 gemini.api-key

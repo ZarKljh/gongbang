@@ -8,6 +8,8 @@ import { signupSellerValidation } from '@/app/auth/hooks/signupSellerValidation'
 import { api } from '@/app/utils/api'
 import '@/app/auth/signup/user/signup_user.css'
 
+type ValidatableUserKey = Exclude<keyof UserInfo, 'profileImageFile' | 'profileImageUrl' | 'profileImageName'>
+
 export default function SellerSignupPage() {
     const [step, setStep] = useState(1)
     const router = useRouter()
@@ -96,11 +98,12 @@ export default function SellerSignupPage() {
 
     const handleUserChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
+        //const validKey = name as ValidatableUserKey;
         const newUser = { ...userInfo, [name]: value }
+
         setUserInfo(newUser)
-
-        validateUserField(name as keyof UserInfo, value, newUser)
-
+        //validateUserField(validKey, value, newUser)
+        //validateUserField(fieldName, value, newUser)
         if (name === 'userName') {
             setIsUserNameValid(false)
             setUserNameCheckMsg('')
@@ -299,7 +302,7 @@ export default function SellerSignupPage() {
                     setUserInfo={setUserInfo}
                     setPreviewProfileImage={setPreviewProfileImage}
                     errors={errors}
-                    validateField={validateUserField}
+                    //validateField={validateUserField}
                     checkUserName={checkUserName}
                     checkNickName={checkNickName}
                     userNameCheckMsg={userNameCheckMsg}

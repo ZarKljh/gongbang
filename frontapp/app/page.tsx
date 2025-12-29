@@ -24,8 +24,8 @@ type SubCategory = {
 export default function Main() {
     const [categories, setCategories] = useState<Category[]>([])
     const [subCategoriesByCat, setSubCategoriesByCat] = useState<Record<number, SubCategory[]>>({})
+    const BASE_URL = 'http://localhost:8090'
     //const BASE_URL = 'https://api.gongyedam.shop'
-    const BASE_URL = 'https://api.gongyedam.shop'
 
     useEffect(() => {
         fetchAll()
@@ -85,7 +85,7 @@ export default function Main() {
             {/* 배너 */}
             <div className={styles.pageContainer}>
                 <div className={styles.heroBanner}>
-                    <img src={`${BASE_URL}/images/initImg/banner3.png`} alt="메인 배너" />
+                    <img src={`${BASE_URL}/images/initImg/banner3.png`} alt="메인 배너입니다" />
                 </div>
             </div>
             {/* 카테고리 */}
