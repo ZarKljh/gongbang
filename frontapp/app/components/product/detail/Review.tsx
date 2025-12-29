@@ -221,7 +221,7 @@ export default function Review() {
         const allReviewImages = photoReviews.flatMap((review) =>
             (review.imageUrls ?? []).map((url) => ({
                 reviewId: review.reviewId,
-                img: `https://api.gongyedam.shop/images/${url}`,
+                img: `https://api.gongyedam.shop${url}`,
             })),
         )
 
