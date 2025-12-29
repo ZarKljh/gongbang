@@ -6,3 +6,10 @@ spring:
     username: postgres
     password: 1234
     driver-class-name: org.postgresql.Driver
+
+admin:
+  init:
+    enabled: false   # 기본은 꺼두고, 필요할 때만 true로 올려서 배포
+    username: ${ADMIN_INIT_USERNAME:admin}
+    password: ${ADMIN_INIT_PASSWORD:}
+    email: ${ADMIN_INIT_EMAIL:admin@example.com}
