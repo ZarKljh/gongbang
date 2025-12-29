@@ -19,9 +19,9 @@ repositories {
 }
 
 dependencyManagement {
-    imports {
-        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1"
-    }
+	imports {
+		mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1"
+	}
 }
 
 dependencies {
@@ -38,13 +38,13 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 	runtimeOnly 'org.postgresql:postgresql'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation "org.flywaydb:flyway-core"
-    implementation "org.flywaydb:flyway-database-postgresql"
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation "org.flywaydb:flyway-core"
+	implementation "org.flywaydb:flyway-database-postgresql"
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 
 
-    // jwt
+	// jwt
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
@@ -53,13 +53,17 @@ dependencies {
 	//implementation('org.springframework.boot:spring-boot-starter-mail')
 	// 스프링 시큐리티 사용 스타터
 	//implementation('org.springframework.boot:spring-boot-starter-security')
-    //Redis cache
-    //implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	//Redis cache
+	//implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+	implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 }
 
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+springBoot {
+	mainClass = 'com.gobang.gobang.GobangApplication'
 }
