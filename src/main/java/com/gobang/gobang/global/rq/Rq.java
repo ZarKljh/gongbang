@@ -19,13 +19,17 @@ import java.util.Optional;
 @RequestScope
 @RequiredArgsConstructor
 public class Rq {
+    private static final String COOKIE_DOMAIN = ".gongyedam.shop";
+
     private final HttpServletResponse resp;
     private final HttpServletRequest req;
     private final EntityManager entityManager;
+
     private SiteUser siteUser;
 
     public void setCrossDomainCookie(String tokenName, String token) {
         ResponseCookie cookie = ResponseCookie.from(tokenName, token)
+                .domain(COOKIE_DOMAIN)
                 .path("/")
                 .sameSite("None")
                 .secure(true)
@@ -37,31 +41,35 @@ public class Rq {
 
     public String getCookie(String name) {
         Cookie[] cookies = req.getCookies();
+        if (cookies == null || cookies.length == 0) return "";
 
-        return  Arrays.stream(cookies)
+        return Arrays.stream(cookies)
                 .filter(cookie -> cookie.getName().equals(name))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse("");
     }
 
-    public SiteUser getSiteUser () {
+    public SiteUser getSiteUser() {
         if (isLogout()) return null;
+
         if (siteUser == null) {
-            siteUser = entityManager.getReference(SiteUser.class, getUser().getId());
+            SecurityUser user = getUser();
+            if (user == null) return null;
+            siteUser = entityManager.getReference(SiteUser.class, user.getId());
         }
+
         return siteUser;
     }
 
     public void setLogin(SecurityUser securityUser) {
-        // 인가 처리
         SecurityContextHolder.getContext().setAuthentication(securityUser.getAuthentication());
     }
 
     private SecurityUser getUser() {
         return Optional.ofNullable(SecurityContextHolder.getContext())
                 .map(context -> context.getAuthentication())
-                .filter(authentication -> authentication.getPrincipal() instanceof SecurityUser)
+                .filter(authentication -> authentication != null && authentication.getPrincipal() instanceof SecurityUser)
                 .map(authentication -> (SecurityUser) authentication.getPrincipal())
                 .orElse(null);
     }
@@ -75,13 +83,22 @@ public class Rq {
     }
 
     public void removeCrossDomainCookie(String tokenName) {
-        ResponseCookie cookie = ResponseCookie.from(tokenName, null)
+        expireCookie(tokenName, COOKIE_DOMAIN);
+        expireCookie(tokenName, null);
+    }
+
+    private void expireCookie(String tokenName, String domainOrNull) {
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(tokenName, "")
                 .path("/")
                 .maxAge(0)
                 .sameSite("None")
                 .secure(true)
-                .httpOnly(true)
-                .build();
-        resp.addHeader("Set-Cookie", cookie.toString());
+                .httpOnly(true);
+
+        if (domainOrNull != null && !domainOrNull.isBlank()) {
+            builder.domain(domainOrNull);
+        }
+
+        resp.addHeader("Set-Cookie", builder.build().toString());
     }
 }
