@@ -1433,7 +1433,7 @@ export default function MyPage() {
                                                     }}
                                                 >
                                                     <img
-                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : "/no-image.png"}
+                                                        src={item.imageUrl ? `${IMAGE_BASE_URL}${item.imageUrl}` : `${IMAGE_BASE_URL}/images/initImg/no-image-soft.png`}
                                                         className={`rs-thumb ${item.imageUrl ? "" : "placeholder"}`}
                                                         alt={item.productName}
                                                         draggable={false}
